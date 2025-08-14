@@ -1,0 +1,25 @@
+name: financo
+
+packages:
+  - .
+
+command:
+  bootstrap:
+    hooks:
+      post: melos run build_runner
+
+scripts:
+  build_runner:
+    run: dart run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: "build_runner"
+
+  packages_update:
+    run: dart pub outdated
+  
+  generate_assets_folders: 
+    run: dart run defaultproject:assets
+    
+  run_release:
+    run: flutter run --release
+
