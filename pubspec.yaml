@@ -12,14 +12,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  cupertino_icons: ^1.0.8
+  flutter_localizations:
+    sdk: flutter
+  slang_flutter: ^4.8.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   build_runner: ^2.6.0
   melos: ^6.3.3
   intl: ^0.20.2
+  slang: ^4.8.1
+  very_good_analysis: 9.0.0
+
+
+workspace:
+  - packages/app_core
+  - packages/app_widgets
+  - packages/domain
 
 flutter:
   uses-material-design: true

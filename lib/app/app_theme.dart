@@ -3,11 +3,11 @@ import 'package:financo/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static Color get textColor => const Color(0xff273050);
+  static Color get textColor => const Color(0xffFFFFFF);
 
   static TextStyle get defaultTextStyle => TextStyle(
         fontFamily: FontFamily.inter,
-        fontSize: 20,
+        fontSize: 12,
         color: textColor,
         height: 1,
       );
@@ -16,10 +16,10 @@ class AppTheme {
     final defaultTextStyle = AppTheme.defaultTextStyle;
 
     final theme = ThemeData(
-      scaffoldBackgroundColor: const Color(0xffECEFF9),
-      dividerColor: const Color(0xffCCD3EA),
+      scaffoldBackgroundColor: const Color(0xff181818),
+      dividerColor: const Color(0xffFFFFFF),
       shadowColor: const Color(0xffCCD3EA),
-      cardColor: const Color(0xffF9F9F9),
+      cardColor: const Color(0xff282828),
       inputDecorationTheme: const InputDecorationTheme(isCollapsed: true),
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -51,19 +51,23 @@ class AppTheme {
 class CustomColorsData {
   const CustomColorsData({
     required this.textColor,
-    this.secondary = const Color(0xff8AB0D9),
-    this.third = const Color(0xFFC3E0FE),
-    this.fourth = const Color(0xff4E80B4),
-    this.fifth = const Color(0xff9DB7D6),
-    this.sixth = const Color(0xff83BFFF),
+    this.secondary = const Color(0xff212121),
+    this.third = const Color(0xFF282828),
+    this.fourth = const Color(0xff232323),
+    this.income = const Color(0xff199428),
+    this.expense = const Color(0xffCE6050),
+    this.button01 = const Color(0xff00A797),
+    this.button02 = const Color(0xffFF4081),
   });
 
   final Color secondary;
   final Color third;
   final Color textColor;
   final Color fourth;
-  final Color fifth;
-  final Color sixth;
+  final Color income;
+  final Color expense;
+  final Color button01;
+  final Color button02;
 }
 
 extension CustomColorsTheme on ThemeData {

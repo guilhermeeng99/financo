@@ -53,29 +53,20 @@ class $LibAppAssetsSvgsGen {
   /// File path: lib/app/assets/svgs/chart_pie.svg
   String get chartPie => 'lib/app/assets/svgs/chart_pie.svg';
 
-  /// File path: lib/app/assets/svgs/circle_with_arrow.svg
-  String get circleWithArrow => 'lib/app/assets/svgs/circle_with_arrow.svg';
-
-  /// File path: lib/app/assets/svgs/company.svg
-  String get company => 'lib/app/assets/svgs/company.svg';
-
-  /// File path: lib/app/assets/svgs/copy.svg
-  String get copy => 'lib/app/assets/svgs/copy.svg';
+  /// File path: lib/app/assets/svgs/clip.svg
+  String get clip => 'lib/app/assets/svgs/clip.svg';
 
   /// File path: lib/app/assets/svgs/filter.svg
   String get filter => 'lib/app/assets/svgs/filter.svg';
-
-  /// File path: lib/app/assets/svgs/logo.svg
-  String get logo => 'lib/app/assets/svgs/logo.svg';
-
-  /// File path: lib/app/assets/svgs/money.svg
-  String get money => 'lib/app/assets/svgs/money.svg';
 
   /// File path: lib/app/assets/svgs/settings.svg
   String get settings => 'lib/app/assets/svgs/settings.svg';
 
   /// File path: lib/app/assets/svgs/simple_arrow.svg
   String get simpleArrow => 'lib/app/assets/svgs/simple_arrow.svg';
+
+  /// File path: lib/app/assets/svgs/triangle.svg
+  String get triangle => 'lib/app/assets/svgs/triangle.svg';
 
   /// File path: lib/app/assets/svgs/x.svg
   String get x => 'lib/app/assets/svgs/x.svg';
@@ -84,14 +75,11 @@ class $LibAppAssetsSvgsGen {
   List<String> get values => [
     calendar,
     chartPie,
-    circleWithArrow,
-    company,
-    copy,
+    clip,
     filter,
-    logo,
-    money,
     settings,
     simpleArrow,
+    triangle,
     x,
   ];
 }

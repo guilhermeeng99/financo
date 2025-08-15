@@ -1,0 +1,29 @@
+name: app_core
+version: 0.0.1
+
+publish_to: "none"
+
+environment:
+  sdk: ^3.6.0
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  app_widgets:
+    path: ../app_widgets
+  financo:
+    path: ../../
+  flutter:
+    sdk: flutter
+  flutter_modular: 6.4.1
+  get: 4.7.2
+  flutter_hooks: 0.21.3
+  url_launcher: 6.3.2
+  isar: 3.1.0+1
+  intl:
+
+dev_dependencies:
+  # flutter_test:
+  #   sdk: flutter
+  very_good_analysis: 9.0.0
