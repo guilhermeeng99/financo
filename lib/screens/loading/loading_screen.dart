@@ -15,7 +15,7 @@ class LoadingScreen extends HookWidget {
     return Material(
       child: Center(
         child: LoadingAnimationWidget.threeRotatingDots(
-          color: Theme.of(context).customColors.button01,
+          color: Theme.of(context).customColors.button02,
           size: 100,
         ),
       ),

@@ -47,6 +47,9 @@ class $LibAppAssetsFontsGen {
 class $LibAppAssetsSvgsGen {
   const $LibAppAssetsSvgsGen();
 
+  /// File path: lib/app/assets/svgs/calc.svg
+  String get calc => 'lib/app/assets/svgs/calc.svg';
+
   /// File path: lib/app/assets/svgs/calendar.svg
   String get calendar => 'lib/app/assets/svgs/calendar.svg';
 
@@ -56,8 +59,14 @@ class $LibAppAssetsSvgsGen {
   /// File path: lib/app/assets/svgs/clip.svg
   String get clip => 'lib/app/assets/svgs/clip.svg';
 
+  /// File path: lib/app/assets/svgs/credit_card.svg
+  String get creditCard => 'lib/app/assets/svgs/credit_card.svg';
+
   /// File path: lib/app/assets/svgs/filter.svg
   String get filter => 'lib/app/assets/svgs/filter.svg';
+
+  /// File path: lib/app/assets/svgs/search.svg
+  String get search => 'lib/app/assets/svgs/search.svg';
 
   /// File path: lib/app/assets/svgs/settings.svg
   String get settings => 'lib/app/assets/svgs/settings.svg';
@@ -65,21 +74,32 @@ class $LibAppAssetsSvgsGen {
   /// File path: lib/app/assets/svgs/simple_arrow.svg
   String get simpleArrow => 'lib/app/assets/svgs/simple_arrow.svg';
 
+  /// File path: lib/app/assets/svgs/tag.svg
+  String get tag => 'lib/app/assets/svgs/tag.svg';
+
   /// File path: lib/app/assets/svgs/triangle.svg
   String get triangle => 'lib/app/assets/svgs/triangle.svg';
+
+  /// File path: lib/app/assets/svgs/wallet.svg
+  String get wallet => 'lib/app/assets/svgs/wallet.svg';
 
   /// File path: lib/app/assets/svgs/x.svg
   String get x => 'lib/app/assets/svgs/x.svg';
 
   /// List of all assets
   List<String> get values => [
+    calc,
     calendar,
     chartPie,
     clip,
+    creditCard,
     filter,
+    search,
     settings,
     simpleArrow,
+    tag,
     triangle,
+    wallet,
     x,
   ];
 }

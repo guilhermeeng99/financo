@@ -34,17 +34,69 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
-	late final TranslationsCommonEn common = TranslationsCommonEn.internal(_root);
+
+	/// en: 'Overview'
+	String get overview => 'Overview';
+
+	/// en: 'Releases'
+	String get releases => 'Releases';
+
+	/// en: 'Register'
+	String get register => 'Register';
+
+	/// en: 'Categories'
+	String get categories => 'Categories';
+
+	/// en: 'Accounts'
+	String get accounts => 'Accounts';
+
+	/// en: 'To Pay'
+	String get to_pay => 'To Pay';
+
+	/// en: 'Paied'
+	String get paied => 'Paied';
+
+	/// en: 'Type'
+	String get type => 'Type';
+
+	/// en: 'Coin'
+	String get coin => 'Coin';
+
+	/// en: 'Available balance'
+	String get available_balance => 'Available balance';
+
+	/// en: 'Name'
+	String get name => 'Name';
+
+	/// en: 'Save'
+	String get save => 'Save';
+
+	late final TranslationsAccountTypeEn account_type = TranslationsAccountTypeEn.internal(_root);
+
+	/// en: 'New Account'
+	String get new_account => 'New Account';
+
+	/// en: 'Additional Settings'
+	String get additional_settings => 'Additional Settings';
 }
 
-// Path: common
-class TranslationsCommonEn {
-	TranslationsCommonEn.internal(this._root);
+// Path: account_type
+class TranslationsAccountTypeEn {
+	TranslationsAccountTypeEn.internal(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Overview'
-	String get overview => 'Overview';
+	/// en: 'Checking Account'
+	String get checking_account => 'Checking Account';
+
+	/// en: 'Credit Card'
+	String get credit_card => 'Credit Card';
+
+	/// en: 'Money'
+	String get money => 'Money';
+
+	/// en: 'Others'
+	String get others => 'Others';
 }

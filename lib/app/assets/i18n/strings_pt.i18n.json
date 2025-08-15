@@ -1,5 +1,23 @@
 {
-  "common": {
-    "overview": "Visão Geral"
-  }
+  "overview": "Overview",
+  "releases": "Releases",
+  "register": "Register",
+  "categories": "Categories",
+  "accounts": "Accounts",
+  "to_pay": "To Pay",
+  "paied": "Paied",
+  "type": "Type",
+  "coin": "Coin",
+  "available_balance": "Available balance",
+  "name": "Name",
+  "save": "Save",
+  "account_type": {
+    "checking_account": "Checking Account",
+    "credit_card": "Credit Card",
+    "money": "Money",
+    "others": "Others"
+  },
+  "new_account": "New Account",
+  "additional_settings": "Additional Settings"
+
 }

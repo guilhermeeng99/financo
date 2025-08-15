@@ -1,4 +1,7 @@
 import 'package:app_core/app_core.dart';
+import 'package:financo/screens/main_flow/main_flow_bloc.dart';
+import 'package:financo/screens/main_flow/screens/accounts/accounts_module.dart';
+import 'package:financo/screens/main_flow/screens/categories/categories_module.dart';
 import 'package:financo/screens/main_flow/screens/home/home_module.dart';
 
 import 'main_flow_model.dart';
@@ -7,7 +10,12 @@ import 'main_flow_screen.dart';
 class MainFlowModule extends Module {
   @override
   void binds(Injector i) {
-    i.addSingleton<MainFlowModel>(MainFlowModel.new);
+    i
+      ..addSingleton<MainFlowTopBarModel>(MainFlowTopBarModel.new)
+      ..addSingleton<MainFlowSideBarModel>(MainFlowSideBarModel.new)
+      ..addSingleton<MainFlowTopBarController>(MainFlowTopBarController.new)
+      ..addSingleton<MainFlowSideBarController>(MainFlowSideBarController.new)
+      ..addSingleton<MainFlowBloc>(MainFlowBloc.new);
   }
 
   @override
@@ -21,6 +29,18 @@ class MainFlowModule extends Module {
         ModuleRoute(
           '/home',
           module: HomeModule(),
+          duration: Duration.zero,
+          transition: TransitionType.fadeIn,
+        ),
+        ModuleRoute(
+          '/categories',
+          module: CategoriesModule(),
+          duration: Duration.zero,
+          transition: TransitionType.fadeIn,
+        ),
+        ModuleRoute(
+          '/accounts',
+          module: AccountsModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),

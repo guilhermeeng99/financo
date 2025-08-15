@@ -32,15 +32,32 @@ class TranslationsPt extends Translations {
 	TranslationsPt $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsPt(meta: meta ?? this.$meta);
 
 	// Translations
-	@override late final _TranslationsCommonPt common = _TranslationsCommonPt._(_root);
+	@override String get overview => 'Overview';
+	@override String get releases => 'Releases';
+	@override String get register => 'Register';
+	@override String get categories => 'Categories';
+	@override String get accounts => 'Accounts';
+	@override String get to_pay => 'To Pay';
+	@override String get paied => 'Paied';
+	@override String get type => 'Type';
+	@override String get coin => 'Coin';
+	@override String get available_balance => 'Available balance';
+	@override String get name => 'Name';
+	@override String get save => 'Save';
+	@override late final _TranslationsAccountTypePt account_type = _TranslationsAccountTypePt._(_root);
+	@override String get new_account => 'New Account';
+	@override String get additional_settings => 'Additional Settings';
 }
 
-// Path: common
-class _TranslationsCommonPt extends TranslationsCommonEn {
-	_TranslationsCommonPt._(TranslationsPt root) : this._root = root, super.internal(root);
+// Path: account_type
+class _TranslationsAccountTypePt extends TranslationsAccountTypeEn {
+	_TranslationsAccountTypePt._(TranslationsPt root) : this._root = root, super.internal(root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get overview => 'Visão Geral';
+	@override String get checking_account => 'Checking Account';
+	@override String get credit_card => 'Credit Card';
+	@override String get money => 'Money';
+	@override String get others => 'Others';
 }

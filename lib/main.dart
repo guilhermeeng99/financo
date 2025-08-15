@@ -9,8 +9,9 @@ void main() async {
 
 void _errorTrack() {
   FlutterError.onError = (FlutterErrorDetails details) {
-    final isRenderFlexOverflowed =
-        details.exceptionAsString().contains('A RenderFlex overflowed by');
+    final isRenderFlexOverflowed = details.exceptionAsString().contains(
+      'A RenderFlex overflowed by',
+    );
     if (!isRenderFlexOverflowed) {
       FlutterError.dumpErrorToConsole(details);
     }

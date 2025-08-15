@@ -1,4 +1,3 @@
-
 import 'package:financo/gen/fonts.gen.dart';
 import 'package:flutter/material.dart';
 
@@ -6,11 +5,11 @@ class AppTheme {
   static Color get textColor => const Color(0xffFFFFFF);
 
   static TextStyle get defaultTextStyle => TextStyle(
-        fontFamily: FontFamily.inter,
-        fontSize: 12,
-        color: textColor,
-        height: 1,
-      );
+    fontFamily: FontFamily.inter,
+    fontSize: 20,
+    color: textColor,
+    height: 1,
+  );
 
   static ThemeData get lightTheme {
     final defaultTextStyle = AppTheme.defaultTextStyle;
@@ -42,9 +41,7 @@ class AppTheme {
       ),
     );
 
-    return theme.copyWithCustomColors(
-      CustomColorsData(textColor: textColor),
-    );
+    return theme.copyWithCustomColors(CustomColorsData(textColor: textColor));
   }
 }
 

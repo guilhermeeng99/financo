@@ -21,7 +21,22 @@ class AppRoutesMainFlow {
   const AppRoutesMainFlow();
 
   final String route = '/main_flow/';
+  final AppRoutesMainFlowAccounts accounts = const AppRoutesMainFlowAccounts();
+  final AppRoutesMainFlowCategories categories =
+      const AppRoutesMainFlowCategories();
   final AppRoutesMainFlowHome home = const AppRoutesMainFlowHome();
+}
+
+class AppRoutesMainFlowAccounts {
+  const AppRoutesMainFlowAccounts();
+
+  final String route = '/main_flow/accounts/';
+}
+
+class AppRoutesMainFlowCategories {
+  const AppRoutesMainFlowCategories();
+
+  final String route = '/main_flow/categories/';
 }
 
 class AppRoutesMainFlowHome {
