@@ -1,10 +1,10 @@
-name: domain
+name: app_database
 version: 0.0.1
 
 publish_to: "none"
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.8.0
   flutter: ">=1.17.0"
 
 resolution: workspace
@@ -19,6 +19,9 @@ dependencies:
     sdk: flutter
   freezed_annotation: 3.1.0
   json_annotation: 4.9.0
+  drift: ^2.28.1
+  sqlite3_flutter_libs: ^0.5.0
+  path: ^1.8.0
 
 dependency_overrides:
   freezed_annotation: 3.1.0
@@ -28,4 +31,5 @@ dev_dependencies:
   # flutter_test:
   #   sdk: flutter
   json_serializable: 6.10.0
+  drift_dev: ^2.28.0
   very_good_analysis: 9.0.0

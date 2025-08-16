@@ -5,8 +5,8 @@ LoadingModel get loadingModel => Modular.get<LoadingModel>();
 
 class LoadingModel {
   Future<void> initialize() async {
-    await Future.delayed(const Duration(seconds: 1));
     await AppIntializer.initializeOnLoading();
+    await Future.delayed(const Duration(seconds: 1));
     Modular.to.navigate(ro.mainFlow.home.route);
   }
 }

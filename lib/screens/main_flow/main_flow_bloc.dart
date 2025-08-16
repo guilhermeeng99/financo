@@ -1,5 +1,4 @@
-import 'package:app_core/app_core.dart';
-import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/main_flow_model.dart';
 
 MainFlowBloc get mainFlowBloc => Modular.get<MainFlowBloc>();

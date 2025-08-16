@@ -31,6 +31,14 @@ class AppRoutesMainFlowAccounts {
   const AppRoutesMainFlowAccounts();
 
   final String route = '/main_flow/accounts/';
+  final AppRoutesMainFlowAccountsNewAccounts newAccounts =
+      const AppRoutesMainFlowAccountsNewAccounts();
+}
+
+class AppRoutesMainFlowAccountsNewAccounts {
+  const AppRoutesMainFlowAccountsNewAccounts();
+
+  final String route = '/main_flow/accounts/new_accounts/';
 }
 
 class AppRoutesMainFlowCategories {

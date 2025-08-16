@@ -1,4 +1,5 @@
 import 'package:app_core/app_core.dart';
+import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 
 import 'accounts_model.dart';
 import 'accounts_screen.dart';
@@ -6,7 +7,10 @@ import 'accounts_screen.dart';
 class AccountsModule extends Module {
   @override
   void binds(Injector i) {
-    i.addSingleton<AccountsModel>(AccountsModel.new);
+    i
+      ..addSingleton<AccountsBloc>(AccountsBloc.new)
+      ..addSingleton<AccountsModel>(AccountsModel.new)
+      ..addSingleton<AccountsController>(AccountsController.new);
   }
 
   @override

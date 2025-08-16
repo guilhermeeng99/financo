@@ -15,10 +15,10 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   slang_flutter: ^4.8.0
+  sqlite3_flutter_libs: ^0.5.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
-  build_runner: ^2.6.0
   melos: ^6.3.3
   intl: ^0.20.2
   slang: ^4.8.1
@@ -28,7 +28,7 @@ dev_dependencies:
 workspace:
   - packages/app_core
   - packages/app_widgets
-  - packages/domain
+  - packages/app_database
 
 flutter:
   uses-material-design: true
