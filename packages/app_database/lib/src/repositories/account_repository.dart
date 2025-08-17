@@ -6,6 +6,11 @@ import '../domains/account_domain.dart';
 abstract class IAccountRepository {
   Future<Either<Failure, AccountData>> createAccount(AccountsCompanion account);
   Future<Either<Failure, List<AccountData>>> getAllAccounts();
+  Future<Either<Failure, AccountData>> updateAccount(
+    int id,
+    AccountsCompanion account,
+  );
+  Future<Either<Failure, bool>> deleteAccount(int id);
 }
 
 class AccountRepository implements IAccountRepository {
@@ -34,6 +39,43 @@ class AccountRepository implements IAccountRepository {
       return Either.right(result);
     } catch (e) {
       return Either.left(DatabaseFailure('Error fetching accounts: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AccountData>> updateAccount(
+    int id,
+    AccountsCompanion account,
+  ) async {
+    try {
+      final updated = await (_database.update(
+        _database.accounts,
+      )..where((tbl) => tbl.id.equals(id))).writeReturning(account);
+
+      if (updated.isEmpty) {
+        return Either.left(DatabaseFailure('Account with id $id not found'));
+      }
+
+      return Either.right(updated.first);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error updating account: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> deleteAccount(int id) async {
+    try {
+      final rowsAffected = await (_database.delete(
+        _database.accounts,
+      )..where((tbl) => tbl.id.equals(id))).go();
+
+      if (rowsAffected == 0) {
+        return Either.left(DatabaseFailure('Account with id $id not found'));
+      }
+
+      return Either.right(true);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error deleting account: $e'));
     }
   }
 }

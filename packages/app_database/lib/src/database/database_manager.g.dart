@@ -29,12 +29,21 @@ class $AccountsTable extends Accounts
     aliasedName,
     false,
     additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 100,
+      minTextLength: 3,
+      maxTextLength: 15,
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  @override
+  late final GeneratedColumnWithTypeConverter<AccountIconType, String> icon =
+      GeneratedColumn<String>(
+        'icon',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<AccountIconType>($AccountsTable.$convertericon);
   @override
   late final GeneratedColumnWithTypeConverter<AccountType, String> accountType =
       GeneratedColumn<String>(
@@ -56,22 +65,15 @@ class $AccountsTable extends Accounts
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _currencyMeta = const VerificationMeta(
-    'currency',
-  );
   @override
-  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
-    'currency',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 3,
-      maxTextLength: 3,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('BRL'),
-  );
+  late final GeneratedColumnWithTypeConverter<CurrencyType, String> currency =
+      GeneratedColumn<String>(
+        'currency',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<CurrencyType>($AccountsTable.$convertercurrency);
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
   );
@@ -103,6 +105,7 @@ class $AccountsTable extends Accounts
   List<GeneratedColumn> get $columns => [
     id,
     name,
+    icon,
     accountType,
     balance,
     currency,
@@ -138,12 +141,6 @@ class $AccountsTable extends Accounts
         balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
       );
     }
-    if (data.containsKey('currency')) {
-      context.handle(
-        _currencyMeta,
-        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
-      );
-    }
     if (data.containsKey('is_active')) {
       context.handle(
         _isActiveMeta,
@@ -175,10 +172,12 @@ class $AccountsTable extends Accounts
         DriftSqlType.double,
         data['${effectivePrefix}balance'],
       )!,
-      currency: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}currency'],
-      )!,
+      currency: $AccountsTable.$convertercurrency.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}currency'],
+        )!,
+      ),
       isActive: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
@@ -195,6 +194,12 @@ class $AccountsTable extends Accounts
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      icon: $AccountsTable.$convertericon.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}icon'],
+        )!,
+      ),
     );
   }
 
@@ -203,21 +208,27 @@ class $AccountsTable extends Accounts
     return $AccountsTable(attachedDatabase, alias);
   }
 
+  static JsonTypeConverter2<AccountIconType, String, String> $convertericon =
+      const EnumNameConverter<AccountIconType>(AccountIconType.values);
   static JsonTypeConverter2<AccountType, String, String> $converteraccountType =
       const EnumNameConverter<AccountType>(AccountType.values);
+  static JsonTypeConverter2<CurrencyType, String, String> $convertercurrency =
+      const EnumNameConverter<CurrencyType>(CurrencyType.values);
 }
 
 class AccountsCompanion extends UpdateCompanion<AccountData> {
   final Value<int> id;
   final Value<String> name;
+  final Value<AccountIconType> icon;
   final Value<AccountType> accountType;
   final Value<double> balance;
-  final Value<String> currency;
+  final Value<CurrencyType> currency;
   final Value<bool> isActive;
   final Value<DateTime> initDate;
   const AccountsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.icon = const Value.absent(),
     this.accountType = const Value.absent(),
     this.balance = const Value.absent(),
     this.currency = const Value.absent(),
@@ -227,16 +238,20 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   AccountsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
+    required AccountIconType icon,
     required AccountType accountType,
     this.balance = const Value.absent(),
-    this.currency = const Value.absent(),
+    required CurrencyType currency,
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
   }) : name = Value(name),
-       accountType = Value(accountType);
+       icon = Value(icon),
+       accountType = Value(accountType),
+       currency = Value(currency);
   static Insertable<AccountData> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<String>? icon,
     Expression<String>? accountType,
     Expression<double>? balance,
     Expression<String>? currency,
@@ -246,6 +261,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
       if (accountType != null) 'account_type': accountType,
       if (balance != null) 'balance': balance,
       if (currency != null) 'currency': currency,
@@ -257,15 +273,17 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   AccountsCompanion copyWith({
     Value<int>? id,
     Value<String>? name,
+    Value<AccountIconType>? icon,
     Value<AccountType>? accountType,
     Value<double>? balance,
-    Value<String>? currency,
+    Value<CurrencyType>? currency,
     Value<bool>? isActive,
     Value<DateTime>? initDate,
   }) {
     return AccountsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      icon: icon ?? this.icon,
       accountType: accountType ?? this.accountType,
       balance: balance ?? this.balance,
       currency: currency ?? this.currency,
@@ -283,6 +301,11 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (icon.present) {
+      map['icon'] = Variable<String>(
+        $AccountsTable.$convertericon.toSql(icon.value),
+      );
+    }
     if (accountType.present) {
       map['account_type'] = Variable<String>(
         $AccountsTable.$converteraccountType.toSql(accountType.value),
@@ -292,7 +315,9 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       map['balance'] = Variable<double>(balance.value);
     }
     if (currency.present) {
-      map['currency'] = Variable<String>(currency.value);
+      map['currency'] = Variable<String>(
+        $AccountsTable.$convertercurrency.toSql(currency.value),
+      );
     }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
@@ -308,6 +333,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     return (StringBuffer('AccountsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('icon: $icon, ')
           ..write('accountType: $accountType, ')
           ..write('balance: $balance, ')
           ..write('currency: $currency, ')
@@ -333,9 +359,10 @@ typedef $$AccountsTableCreateCompanionBuilder =
     AccountsCompanion Function({
       Value<int> id,
       required String name,
+      required AccountIconType icon,
       required AccountType accountType,
       Value<double> balance,
-      Value<String> currency,
+      required CurrencyType currency,
       Value<bool> isActive,
       Value<DateTime> initDate,
     });
@@ -343,9 +370,10 @@ typedef $$AccountsTableUpdateCompanionBuilder =
     AccountsCompanion Function({
       Value<int> id,
       Value<String> name,
+      Value<AccountIconType> icon,
       Value<AccountType> accountType,
       Value<double> balance,
-      Value<String> currency,
+      Value<CurrencyType> currency,
       Value<bool> isActive,
       Value<DateTime> initDate,
     });
@@ -369,6 +397,12 @@ class $$AccountsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnWithTypeConverterFilters<AccountIconType, AccountIconType, String>
+  get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
   ColumnWithTypeConverterFilters<AccountType, AccountType, String>
   get accountType => $composableBuilder(
     column: $table.accountType,
@@ -380,9 +414,10 @@ class $$AccountsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get currency => $composableBuilder(
+  ColumnWithTypeConverterFilters<CurrencyType, CurrencyType, String>
+  get currency => $composableBuilder(
     column: $table.currency,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<bool> get isActive => $composableBuilder(
@@ -412,6 +447,11 @@ class $$AccountsTableOrderingComposer
 
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -456,6 +496,9 @@ class $$AccountsTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
+  GeneratedColumnWithTypeConverter<AccountIconType, String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
   GeneratedColumnWithTypeConverter<AccountType, String> get accountType =>
       $composableBuilder(
         column: $table.accountType,
@@ -465,7 +508,7 @@ class $$AccountsTableAnnotationComposer
   GeneratedColumn<double> get balance =>
       $composableBuilder(column: $table.balance, builder: (column) => column);
 
-  GeneratedColumn<String> get currency =>
+  GeneratedColumnWithTypeConverter<CurrencyType, String> get currency =>
       $composableBuilder(column: $table.currency, builder: (column) => column);
 
   GeneratedColumn<bool> get isActive =>
@@ -508,14 +551,16 @@ class $$AccountsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<AccountIconType> icon = const Value.absent(),
                 Value<AccountType> accountType = const Value.absent(),
                 Value<double> balance = const Value.absent(),
-                Value<String> currency = const Value.absent(),
+                Value<CurrencyType> currency = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
               }) => AccountsCompanion(
                 id: id,
                 name: name,
+                icon: icon,
                 accountType: accountType,
                 balance: balance,
                 currency: currency,
@@ -526,14 +571,16 @@ class $$AccountsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
+                required AccountIconType icon,
                 required AccountType accountType,
                 Value<double> balance = const Value.absent(),
-                Value<String> currency = const Value.absent(),
+                required CurrencyType currency,
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
               }) => AccountsCompanion.insert(
                 id: id,
                 name: name,
+                icon: icon,
                 accountType: accountType,
                 balance: balance,
                 currency: currency,

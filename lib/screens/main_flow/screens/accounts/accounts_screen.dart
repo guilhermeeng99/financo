@@ -1,7 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_model.dart';
+import 'package:financo/screens/main_flow/screens/accounts/widgets/accounts_screen_menu_button.dart';
 
 class AccountsScreen extends StatelessWidget {
   const AccountsScreen({super.key});
@@ -58,7 +60,11 @@ class _AccountsTypeArea extends StatelessWidget {
       spacing: 15,
       children: [
         Text(title, style: Theme.of(context).textTheme.titleLarge),
-        ...accountList.map(_AccountItem.new),
+        Wrap(
+          spacing: 15,
+          runSpacing: 15,
+          children: [...accountList.map(_AccountItem.new)],
+        ),
       ],
     );
   }
@@ -71,15 +77,52 @@ class _AccountItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 4,
-          children: [
-            Text(account.name, style: Theme.of(context).textTheme.titleMedium),
-          ],
+    return Opacity(
+      opacity: account.isActive ? 1 : 0.5,
+      child: CWCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: 300,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 12,
+              children: [
+                Row(
+                  children: [
+                    Image.asset(
+                      accountsController.accountBankIcon(account.icon),
+                      width: 24,
+                      height: 24,
+                    ),
+                    const Gap(5),
+                    Text(account.name),
+                    const Spacer(),
+                    AccountsScreenThreeBallsButton(account),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      account.initDate.formattedDateddMMyyyy(context: context),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(
+                          context,
+                        ).customColors.secondaryTextColor,
+                      ),
+                    ),
+                    Image.asset(
+                      accountsController.currencyImage(account.currency),
+                      width: 24,
+                      height: 24,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

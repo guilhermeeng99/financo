@@ -7,6 +7,8 @@
   "to_pay": "To Pay",
   "paied": "Paied",
   "type": "Type",
+  "edit": "Edit",
+  "delete": "Delete",
   "coin": "Coin",
   "available_balance": "Available balance",
   "name": "Name",
@@ -17,7 +19,17 @@
     "money": "Money",
     "others": "Others"
   },
+  "currency_type": {
+    "brl": "Real",
+    "usd": "Dolar",
+    "eur": "Euro"
+  },
   "new_account": "New Account",
-  "additional_settings": "Additional Settings"
+  "edit_account": "Edit Account",
+  "additional_settings": "Additional Settings",
+  "freeze": "Freeze",
+  "unfreeze": "Unfreeze",
+  "balance": "Balance",
+  "initial_date": "Initial Date"
 
 }

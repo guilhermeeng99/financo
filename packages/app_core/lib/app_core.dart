@@ -22,4 +22,6 @@ BuildContext get currentContext =>
 
 $LibAppAssetsSvgsGen get svgs => Assets.lib.app.assets.svgs;
 
+$LibAppAssetsImagesGen get images => Assets.lib.app.assets.images;
+
 final Logger logger = Logger();

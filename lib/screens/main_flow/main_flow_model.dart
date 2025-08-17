@@ -19,7 +19,13 @@ MainFlowSideBarModel get mainFlowSideBarModel =>
     Modular.get<MainFlowSideBarModel>();
 
 class MainFlowSideBarModel {
-  void onTapCategories() => Modular.to.navigate(ro.mainFlow.categories.route);
+  void onTapCategories() {
+    mainFlowBloc.isSideBarOn.value = false;
+    Modular.to.navigate(ro.mainFlow.categories.route);
+  }
 
-  void onTapAccounts() => Modular.to.navigate(ro.mainFlow.accounts.route);
+  void onTapAccounts() {
+    mainFlowBloc.isSideBarOn.value = false;
+    Modular.to.navigate(ro.mainFlow.accounts.route);
+  }
 }

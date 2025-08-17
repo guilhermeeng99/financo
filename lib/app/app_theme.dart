@@ -55,6 +55,7 @@ class CustomColorsData {
     this.expense = const Color(0xffCE6050),
     this.button01 = const Color(0xff00A797),
     this.button02 = const Color(0xffFF4081),
+    this.secondaryTextColor = const Color(0xff888888),
   });
 
   final Color secondary;
@@ -65,6 +66,7 @@ class CustomColorsData {
   final Color expense;
   final Color button01;
   final Color button02;
+  final Color secondaryTextColor;
 }
 
 extension CustomColorsTheme on ThemeData {

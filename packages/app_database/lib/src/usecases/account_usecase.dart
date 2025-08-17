@@ -9,31 +9,125 @@ class AccountUsecase {
   Future<Either<Failure, AccountData>> createAccount({
     required String name,
     required AccountType accountType,
+    AccountIconType icon = AccountIconType.none,
     double initialBalance = 0.0,
-    String currency = 'BRL',
+    CurrencyType currency = CurrencyType.brl,
+    DateTime? initDate,
   }) async {
     try {
       final accountName = AccountName.create(name);
-      final accountCurrency = Currency.create(currency);
       final balance = Balance.create(initialBalance);
 
       final accountCompanion = AccountsCompanion(
         name: Value(accountName.value),
         accountType: Value(accountType),
         balance: Value(balance.value),
-        currency: Value(accountCurrency.value),
+        currency: Value(currency),
         isActive: const Value(true),
+        icon: Value(icon),
+        initDate: Value(initDate ?? DateTime.now()),
       );
 
       return await _accountRepository.createAccount(accountCompanion);
     } on ValidationException catch (e) {
       return Either.left(ValidationFailure(e.message));
     } catch (e) {
-      return Either.left(DatabaseFailure('Erro inesperado ao criar conta: $e'));
+      return Either.left(
+        DatabaseFailure('Unexpected error creating account: $e'),
+      );
     }
   }
 
   Future<Either<Failure, List<AccountData>>> getAllAccounts() async {
     return _accountRepository.getAllAccounts();
+  }
+
+  Future<Either<Failure, AccountData>> updateAccount({
+    required int id,
+    String? name,
+    AccountType? accountType,
+    double? balance,
+    CurrencyType? currency,
+    bool? isActive,
+    AccountIconType? icon,
+    DateTime? initDate,
+  }) async {
+    try {
+      Value<String>? nameValue;
+      Value<AccountType>? accountTypeValue;
+      Value<double>? balanceValue;
+      Value<CurrencyType>? currencyValue;
+      Value<bool>? isActiveValue;
+      Value<AccountIconType>? iconValue;
+      Value<DateTime>? initDateValue;
+
+      if (name != null) {
+        final accountName = AccountName.create(name);
+        nameValue = Value(accountName.value);
+      }
+
+      if (accountType != null) {
+        accountTypeValue = Value(accountType);
+      }
+
+      if (balance != null) {
+        final accountBalance = Balance.create(balance);
+        balanceValue = Value(accountBalance.value);
+      }
+
+      if (currency != null) {
+        currencyValue = Value(currency);
+      }
+
+      if (isActive != null) {
+        isActiveValue = Value(isActive);
+      }
+
+      if (icon != null) {
+        iconValue = Value(icon);
+      }
+
+      if (initDate != null) {
+        initDateValue = Value(initDate);
+      }
+
+      if (nameValue == null &&
+          accountTypeValue == null &&
+          balanceValue == null &&
+          currencyValue == null &&
+          isActiveValue == null &&
+          iconValue == null &&
+          initDateValue == null) {
+        return Either.left(const ValidationFailure('No changes were provided'));
+      }
+
+      final accountCompanion = AccountsCompanion(
+        name: nameValue ?? const Value.absent(),
+        accountType: accountTypeValue ?? const Value.absent(),
+        balance: balanceValue ?? const Value.absent(),
+        currency: currencyValue ?? const Value.absent(),
+        isActive: isActiveValue ?? const Value.absent(),
+        icon: iconValue ?? const Value.absent(),
+        initDate: initDateValue ?? const Value.absent(),
+      );
+
+      return await _accountRepository.updateAccount(id, accountCompanion);
+    } on ValidationException catch (e) {
+      return Either.left(ValidationFailure(e.message));
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error editing account: $e'),
+      );
+    }
+  }
+
+  Future<Either<Failure, bool>> deleteAccount(int id) async {
+    try {
+      return await _accountRepository.deleteAccount(id);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error deleting account: $e'),
+      );
+    }
   }
 }

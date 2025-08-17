@@ -59,6 +59,12 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Type'
 	String get type => 'Type';
 
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Delete'
+	String get delete => 'Delete';
+
 	/// en: 'Coin'
 	String get coin => 'Coin';
 
@@ -72,12 +78,28 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	String get save => 'Save';
 
 	late final TranslationsAccountTypeEn account_type = TranslationsAccountTypeEn.internal(_root);
+	late final TranslationsCurrencyTypeEn currency_type = TranslationsCurrencyTypeEn.internal(_root);
 
 	/// en: 'New Account'
 	String get new_account => 'New Account';
 
+	/// en: 'Edit Account'
+	String get edit_account => 'Edit Account';
+
 	/// en: 'Additional Settings'
 	String get additional_settings => 'Additional Settings';
+
+	/// en: 'Freeze'
+	String get freeze => 'Freeze';
+
+	/// en: 'Unfreeze'
+	String get unfreeze => 'Unfreeze';
+
+	/// en: 'Balance'
+	String get balance => 'Balance';
+
+	/// en: 'Initial Date'
+	String get initial_date => 'Initial Date';
 }
 
 // Path: account_type
@@ -99,4 +121,22 @@ class TranslationsAccountTypeEn {
 
 	/// en: 'Others'
 	String get others => 'Others';
+}
+
+// Path: currency_type
+class TranslationsCurrencyTypeEn {
+	TranslationsCurrencyTypeEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Real'
+	String get brl => 'Real';
+
+	/// en: 'Dolar'
+	String get usd => 'Dolar';
+
+	/// en: 'Euro'
+	String get eur => 'Euro';
 }

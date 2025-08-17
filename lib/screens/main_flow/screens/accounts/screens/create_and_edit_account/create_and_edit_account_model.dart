@@ -1,0 +1,70 @@
+import 'package:app_database/app_database.dart';
+import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
+
+import 'create_and_edit_account_bloc.dart';
+
+CreateAndEditAccountModel get createAndEditAccountModel =>
+    Modular.get<CreateAndEditAccountModel>();
+
+class CreateAndEditAccountModel {
+  final DatabaseService _databaseService = DatabaseService();
+
+  Future<void> onTapSave(AccountData? account) async {
+    final canSave = createAndEditAccountBloc.name.value.trim().isNotEmpty;
+
+    if (canSave) {
+      if (account != null) {
+        await _updateAccount(account);
+      } else {
+        await _createAccount();
+      }
+    }
+  }
+
+  Future<void> _createAccount() async {
+    final result = await _databaseService.accountUsecase.createAccount(
+      name: createAndEditAccountBloc.name.value.trim(),
+      accountType: createAndEditAccountBloc.selectedAccountType.value,
+      initialBalance: createAndEditAccountBloc.initialBalance.value,
+      currency: createAndEditAccountBloc.selectedCurrency.value,
+      icon: createAndEditAccountBloc.selectedIcon.value,
+      initDate: createAndEditAccountBloc.selectedInitDate.value,
+    );
+
+    result.fold(
+      (failure) {
+        logger.e('Error creating account: ${failure.message}');
+      },
+      (account) {
+        logger.i('Account created successfully: ${account.name}');
+        accountsBloc.loadAccounts();
+        PopUpManager.pop();
+      },
+    );
+  }
+
+  Future<void> _updateAccount(AccountData originalAccount) async {
+    final result = await _databaseService.accountUsecase.updateAccount(
+      id: originalAccount.id,
+      name: createAndEditAccountBloc.name.value.trim(),
+      accountType: createAndEditAccountBloc.selectedAccountType.value,
+      balance: createAndEditAccountBloc.initialBalance.value,
+      currency: createAndEditAccountBloc.selectedCurrency.value,
+      isActive: originalAccount.isActive,
+      icon: createAndEditAccountBloc.selectedIcon.value,
+      initDate: createAndEditAccountBloc.selectedInitDate.value,
+    );
+
+    result.fold(
+      (failure) {
+        logger.e('Error updating account: ${failure.message}');
+      },
+      (account) {
+        logger.i('Account updated successfully: ${account.name}');
+        accountsBloc.loadAccounts();
+        PopUpManager.pop();
+      },
+    );
+  }
+}
