@@ -30,6 +30,7 @@
   "freeze": "Freeze",
   "unfreeze": "Unfreeze",
   "balance": "Balance",
-  "initial_date": "Initial Date"
+  "icon": "Icon",
+  "initial_balance_date": "Initial balance date"
 
 }

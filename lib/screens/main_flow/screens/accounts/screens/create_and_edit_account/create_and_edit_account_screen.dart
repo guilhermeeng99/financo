@@ -5,7 +5,6 @@ import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_model.dart';
-import 'package:flutter/services.dart';
 
 enum CreateAndEditAccountPopUpType { create, edit }
 
@@ -157,7 +156,8 @@ class _Icon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
+    return _ItemTitle(
+      title: context.t.icon,
       child: Obx(() {
         final selectedIcon = createAndEditAccountBloc.selectedIcon.value;
         return DropdownButton<AccountIconType>(
@@ -191,37 +191,33 @@ class _Balance extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = useTextEditingController();
+    final balance = createAndEditAccountBloc.initialBalance.value;
+    final formattedBalance = CurrencyHelper.formatAmount(balance, context);
 
-    useEffect(() {
-      final balance = createAndEditAccountBloc.initialBalance.value;
-      controller.text = balance == 0.0 ? '' : balance.toStringAsFixed(2);
-      return null;
-    }, [createAndEditAccountBloc.initialBalance.value]);
+    final controller = useTextEditingController(text: formattedBalance);
 
     return Expanded(
-      child: TextField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
-        ],
-        onChanged: (value) {
-          var parsedValue = 0.0;
-          if (value.isNotEmpty) {
-            parsedValue = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
-          }
-          createAndEditAccountBloc.initialBalance.value = parsedValue;
-        },
-        cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-        cursorHeight: 22,
-        style: const TextStyle(fontSize: 18),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.only(bottom: 10),
-          hintText: '0',
-          hintStyle: TextStyle(
-            color: Theme.of(context).customColors.secondaryTextColor,
-            fontSize: 16,
+      child: _ItemTitle(
+        title: context.t.balance,
+        spacing: 12,
+        child: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: const [CurrencyInputFormatter()],
+          onChanged: (value) {
+            final parsedValue = CurrencyHelper.parseAmount(value, context);
+            createAndEditAccountBloc.initialBalance.value = parsedValue;
+          },
+          cursorColor: Theme.of(context).textTheme.titleMedium?.color,
+          cursorHeight: 22,
+          style: const TextStyle(fontSize: 18),
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.only(bottom: 10),
+            hintText: '0',
+            hintStyle: TextStyle(
+              color: Theme.of(context).customColors.secondaryTextColor,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
@@ -297,7 +293,7 @@ class _InitDate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ItemTitle(
-      title: context.t.initial_date,
+      title: context.t.initial_balance_date,
       spacing: 10,
       child: Obx(() {
         final selectedDate = createAndEditAccountBloc.selectedInitDate.value;
@@ -315,7 +311,7 @@ class _InitDate extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 5,
+              spacing: 25,
               children: [
                 Text(
                   selectedDate.formattedDateddMMyyyy(context: context),

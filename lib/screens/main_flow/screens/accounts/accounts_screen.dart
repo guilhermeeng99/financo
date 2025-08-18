@@ -17,7 +17,7 @@ class AccountsScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
         child: Obx(() {
-          final groupedAccounts = accountsController.groupAccountsByType();
+          final groupedAccounts = accountsBloc.groupedAccounts;
 
           return SingleChildScrollView(
             child: Column(

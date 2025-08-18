@@ -5,29 +5,35 @@ AccountsBloc get accountsBloc => Modular.get<AccountsBloc>();
 
 class AccountsBloc extends GetxController {
   AccountsBloc() {
-    loadAccounts();
+    loadGroupedAccounts();
   }
 
-  final DatabaseService _databaseService = DatabaseService();
-  final RxList<AccountData> _accounts = <AccountData>[].obs;
-  List<AccountData> get accounts => _accounts;
+  final RxMap<AccountType, List<AccountData>> groupedAccounts =
+      <AccountType, List<AccountData>>{}.obs;
 
-  Future<void> loadAccounts() async {
-    final result = await _databaseService.accountUsecase.getAllAccounts();
+  Future<void> loadGroupedAccounts() async {
+    try {
+      final cacheManager = DataCacheManager();
 
-    result.fold(
-      (failure) {
-        logger.e('Error loading accounts: ${failure.message}');
-      },
-      (accounts) {
-        _accounts.value = accounts;
-      },
-    );
+      final grouped = <AccountType, List<AccountData>>{};
+
+      for (final type in AccountType.values) {
+        final accounts = cacheManager.accounts.getByType(type);
+        if (accounts.isNotEmpty) {
+          grouped[type] = accounts;
+        }
+      }
+
+      groupedAccounts.value = grouped;
+      logger.i('✅ Grouped accounts loaded from cache');
+    } catch (e) {
+      logger.e('❌ Error loading accounts from cache: $e');
+    }
   }
 
   @override
   void onClose() {
-    _accounts.close();
+    groupedAccounts.close();
     super.onClose();
   }
 }
@@ -83,21 +89,5 @@ class AccountsController {
       case CurrencyType.eur:
         return images.flags.unitedKingdom.path;
     }
-  }
-
-  Map<AccountType, List<AccountData>> groupAccountsByType() {
-    final grouped = <AccountType, List<AccountData>>{};
-
-    for (final type in AccountType.values) {
-      grouped[type] = [];
-    }
-
-    for (final account in accountsBloc.accounts) {
-      grouped[account.accountType]?.add(account);
-    }
-
-    grouped.removeWhere((key, value) => value.isEmpty);
-
-    return grouped;
   }
 }

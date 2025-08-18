@@ -1,7 +1,9 @@
 import 'package:app_core/app_core.dart';
 import 'package:financo/app/index.dart';
+import 'package:flutter/widgets.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await AppIntializer.initializeBeforeApp();
   _errorTrack();
   runApp(const AppWidget());

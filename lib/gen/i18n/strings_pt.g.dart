@@ -32,21 +32,21 @@ class TranslationsPt extends Translations {
 	TranslationsPt $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsPt(meta: meta ?? this.$meta);
 
 	// Translations
-	@override String get overview => 'Overview';
-	@override String get releases => 'Releases';
-	@override String get register => 'Register';
-	@override String get categories => 'Categories';
-	@override String get accounts => 'Accounts';
-	@override String get to_pay => 'To Pay';
-	@override String get paied => 'Paied';
-	@override String get type => 'Type';
-	@override String get coin => 'Coin';
-	@override String get available_balance => 'Available balance';
-	@override String get name => 'Name';
-	@override String get save => 'Save';
+	@override String get overview => 'Visão Geral';
+	@override String get releases => 'Lançamentos';
+	@override String get register => 'Cadastrar';
+	@override String get categories => 'Categorias';
+	@override String get accounts => 'Contas';
+	@override String get to_pay => 'A Pagar';
+	@override String get paied => 'Pago';
+	@override String get type => 'Tipo';
+	@override String get coin => 'Moeda';
+	@override String get available_balance => 'Saldo disponível';
+	@override String get name => 'Nome';
+	@override String get save => 'Salvar';
 	@override late final _TranslationsAccountTypePt account_type = _TranslationsAccountTypePt._(_root);
-	@override String get new_account => 'New Account';
-	@override String get additional_settings => 'Additional Settings';
+	@override String get new_account => 'Nova Conta';
+	@override String get additional_settings => 'Configurações Adicionais';
 }
 
 // Path: account_type
@@ -56,8 +56,8 @@ class _TranslationsAccountTypePt extends TranslationsAccountTypeEn {
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get checking_account => 'Checking Account';
-	@override String get credit_card => 'Credit Card';
-	@override String get money => 'Money';
-	@override String get others => 'Others';
+	@override String get checking_account => 'Conta Corrente';
+	@override String get credit_card => 'Cartão de Crédito';
+	@override String get money => 'Dinheiro';
+	@override String get others => 'Outros';
 }

@@ -5,15 +5,16 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 
 import '../domains/account_domain.dart';
+import '../domains/category_domain.dart';
 
 part 'database_manager.g.dart';
 
-@DriftDatabase(tables: [Accounts])
+@DriftDatabase(tables: [Accounts, Categories])
 class DatabaseManager extends _$DatabaseManager {
   DatabaseManager() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 }
 
 LazyDatabase _openConnection() {

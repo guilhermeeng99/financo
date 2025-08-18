@@ -6,6 +6,9 @@ import '../domains/account_domain.dart';
 abstract class IAccountRepository {
   Future<Either<Failure, AccountData>> createAccount(AccountsCompanion account);
   Future<Either<Failure, List<AccountData>>> getAllAccounts();
+  Future<Either<Failure, List<AccountData>>> getAccountsByType(
+    AccountType type,
+  );
   Future<Either<Failure, AccountData>> updateAccount(
     int id,
     AccountsCompanion account,
@@ -39,6 +42,22 @@ class AccountRepository implements IAccountRepository {
       return Either.right(result);
     } catch (e) {
       return Either.left(DatabaseFailure('Error fetching accounts: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<AccountData>>> getAccountsByType(
+    AccountType type,
+  ) async {
+    try {
+      final result = await (_database.select(
+        _database.accounts,
+      )..where((tbl) => tbl.accountType.equals(type.value))).get();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error fetching accounts by type: $e'),
+      );
     }
   }
 

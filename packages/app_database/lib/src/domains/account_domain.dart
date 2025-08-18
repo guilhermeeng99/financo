@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import '../core/exceptions.dart';
+
 enum AccountType {
   checking('checking'),
   creditCard('creditCard'),
@@ -79,14 +81,6 @@ class AccountData {
         'isActive: $isActive, '
         '}';
   }
-}
-
-class ValidationException implements Exception {
-  const ValidationException(this.message);
-  final String message;
-
-  @override
-  String toString() => 'ValidationException: $message';
 }
 
 class AccountName {

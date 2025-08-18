@@ -42,6 +42,12 @@ class AccountUsecase {
     return _accountRepository.getAllAccounts();
   }
 
+  Future<Either<Failure, List<AccountData>>> getAccountsByType(
+    AccountType type,
+  ) async {
+    return _accountRepository.getAccountsByType(type);
+  }
+
   Future<Either<Failure, AccountData>> updateAccount({
     required int id,
     String? name,

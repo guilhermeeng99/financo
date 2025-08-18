@@ -8,7 +8,7 @@ CreateAndEditAccountModel get createAndEditAccountModel =>
     Modular.get<CreateAndEditAccountModel>();
 
 class CreateAndEditAccountModel {
-  final DatabaseService _databaseService = DatabaseService();
+  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
 
   Future<void> onTapSave(AccountData? account) async {
     final canSave = createAndEditAccountBloc.name.value.trim().isNotEmpty;
@@ -23,7 +23,7 @@ class CreateAndEditAccountModel {
   }
 
   Future<void> _createAccount() async {
-    final result = await _databaseService.accountUsecase.createAccount(
+    final result = await _accountUsecase.createAccount(
       name: createAndEditAccountBloc.name.value.trim(),
       accountType: createAndEditAccountBloc.selectedAccountType.value,
       initialBalance: createAndEditAccountBloc.initialBalance.value,
@@ -38,14 +38,17 @@ class CreateAndEditAccountModel {
       },
       (account) {
         logger.i('Account created successfully: ${account.name}');
-        accountsBloc.loadAccounts();
+
+        DataCacheManager().accounts.add(account);
+
+        accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },
     );
   }
 
   Future<void> _updateAccount(AccountData originalAccount) async {
-    final result = await _databaseService.accountUsecase.updateAccount(
+    final result = await _accountUsecase.updateAccount(
       id: originalAccount.id,
       name: createAndEditAccountBloc.name.value.trim(),
       accountType: createAndEditAccountBloc.selectedAccountType.value,
@@ -62,7 +65,12 @@ class CreateAndEditAccountModel {
       },
       (account) {
         logger.i('Account updated successfully: ${account.name}');
-        accountsBloc.loadAccounts();
+
+        // Atualiza a conta no cache
+        DataCacheManager().accounts.update(account);
+
+        // Recarrega a UI
+        accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },
     );

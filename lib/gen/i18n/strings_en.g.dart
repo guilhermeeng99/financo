@@ -98,8 +98,11 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Balance'
 	String get balance => 'Balance';
 
-	/// en: 'Initial Date'
-	String get initial_date => 'Initial Date';
+	/// en: 'Icon'
+	String get icon => 'Icon';
+
+	/// en: 'Initial balance date'
+	String get initial_balance_date => 'Initial balance date';
 }
 
 // Path: account_type

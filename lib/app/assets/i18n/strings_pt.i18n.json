@@ -1,23 +1,23 @@
 {
-  "overview": "Overview",
-  "releases": "Releases",
-  "register": "Register",
-  "categories": "Categories",
-  "accounts": "Accounts",
-  "to_pay": "To Pay",
-  "paied": "Paied",
-  "type": "Type",
-  "coin": "Coin",
-  "available_balance": "Available balance",
-  "name": "Name",
-  "save": "Save",
+  "overview": "Visão Geral",
+  "releases": "Lançamentos",
+  "register": "Cadastrar",
+  "categories": "Categorias",
+  "accounts": "Contas",
+  "to_pay": "A Pagar",
+  "paied": "Pago",
+  "type": "Tipo",
+  "coin": "Moeda",
+  "available_balance": "Saldo disponível",
+  "name": "Nome",
+  "save": "Salvar",
   "account_type": {
-    "checking_account": "Checking Account",
-    "credit_card": "Credit Card",
-    "money": "Money",
-    "others": "Others"
+    "checking_account": "Conta Corrente",
+    "credit_card": "Cartão de Crédito",
+    "money": "Dinheiro",
+    "others": "Outros"
   },
-  "new_account": "New Account",
-  "additional_settings": "Additional Settings"
+  "new_account": "Nova Conta",
+  "additional_settings": "Configurações Adicionais"
 
 }

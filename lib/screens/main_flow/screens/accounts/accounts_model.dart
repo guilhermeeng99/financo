@@ -8,7 +8,7 @@ import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_ed
 AccountsModel get accountsModel => Modular.get<AccountsModel>();
 
 class AccountsModel {
-  final DatabaseService _databaseService = DatabaseService();
+  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
 
   void onTapFloatingActionButton() => PopUpManager.showDialog(
     builder: (c) => WidgetModuleProvider(
@@ -37,8 +37,7 @@ class AccountsModel {
     required AccountData account,
     required bool freeze,
   }) async {
-
-    final result = await _databaseService.accountUsecase.updateAccount(
+    final result = await _accountUsecase.updateAccount(
       id: account.id,
       isActive: !freeze,
     );
@@ -49,23 +48,27 @@ class AccountsModel {
       },
       (updatedAccount) {
         logger.i('Account status updated successfully');
-        accountsBloc.loadAccounts();
+
+        DataCacheManager().accounts.update(updatedAccount);
+
+        accountsBloc.loadGroupedAccounts();
       },
     );
   }
 
   Future<void> onTapDeleteAccout(AccountData account) async {
-    final result = await _databaseService.accountUsecase.deleteAccount(
-      account.id,
-    );
+    final result = await _accountUsecase.deleteAccount(account.id);
 
     result.fold(
       (failure) {
         logger.e('Error deleting account: ${failure.message}');
       },
-      (account) {
+      (deletedAccount) {
         logger.i('Account deleted successfully');
-        accountsBloc.loadAccounts();
+
+        DataCacheManager().accounts.remove(account.id);
+
+        accountsBloc.loadGroupedAccounts();
       },
     );
   }
