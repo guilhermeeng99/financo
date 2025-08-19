@@ -2,7 +2,6 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_model.dart';
 
@@ -25,8 +24,6 @@ class CreateAndEditAccountPopUp extends HookWidget {
     useEffect(() {
       if (args.type == CreateAndEditAccountPopUpType.edit) {
         createAndEditAccountBloc.initializeWithAccountData(args.account!);
-      } else {
-        createAndEditAccountBloc.resetForNewAccount();
       }
       return null;
     }, [args.type, args.account]);
@@ -89,12 +86,7 @@ class _Type extends StatelessWidget {
           items: AccountType.values.map((AccountType type) {
             return DropdownMenuItem<AccountType>(
               value: type,
-              child: Text(
-                accountsController.accountTypeName(
-                  type: type,
-                  context: context,
-                ),
-              ),
+              child: Text(type.title(context)),
             );
           }).toList(),
         );
@@ -112,12 +104,12 @@ class _Coin extends StatelessWidget {
       title: context.t.coin,
       child: Obx(() {
         final selectedCurrency =
-            createAndEditAccountBloc.selectedCurrency.value;
+            createAndEditAccountBloc.selectedCurrencyType.value;
         return DropdownButton<CurrencyType>(
           value: selectedCurrency,
           onChanged: (CurrencyType? value) {
             if (value != null) {
-              createAndEditAccountBloc.selectedCurrency.value = value;
+              createAndEditAccountBloc.selectedCurrencyType.value = value;
             }
           },
           dropdownColor: Theme.of(context).scaffoldBackgroundColor,
@@ -130,17 +122,12 @@ class _Coin extends StatelessWidget {
                 spacing: 7,
                 children: [
                   Image.asset(
-                    accountsController.currencyImage(currency),
+                    currency.iconPath,
                     width: 18,
                     height: 18,
                     fit: BoxFit.contain,
                   ),
-                  Text(
-                    accountsController.currencyName(
-                      currency: currency,
-                      context: context,
-                    ),
-                  ),
+                  Text(currency.title(context)),
                 ],
               ),
             );
@@ -173,7 +160,7 @@ class _Icon extends StatelessWidget {
             return DropdownMenuItem<AccountIconType>(
               value: icon,
               child: Image.asset(
-                accountsController.accountBankIcon(icon),
+                icon.iconPath,
                 width: 20,
                 height: 20,
                 fit: BoxFit.contain,
@@ -192,7 +179,7 @@ class _Balance extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final balance = createAndEditAccountBloc.initialBalance.value;
-    final formattedBalance = CurrencyHelper.formatAmount(balance, context);
+    final formattedBalance = CurrencyFormatter.formatAmount(balance, context);
 
     final controller = useTextEditingController(text: formattedBalance);
 
@@ -205,7 +192,7 @@ class _Balance extends HookWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: const [CurrencyInputFormatter()],
           onChanged: (value) {
-            final parsedValue = CurrencyHelper.parseAmount(value, context);
+            final parsedValue = CurrencyFormatter.parseAmount(value, context);
             createAndEditAccountBloc.initialBalance.value = parsedValue;
           },
           cursorColor: Theme.of(context).textTheme.titleMedium?.color,

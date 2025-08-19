@@ -1,4 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:financo/gen/assets.gen.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/material.dart' as flutter;
 
 import '../core/exceptions.dart';
 
@@ -27,13 +30,6 @@ enum CurrencyType {
 
   const CurrencyType(this.value);
   final String value;
-
-  static CurrencyType fromString(String value) {
-    return CurrencyType.values.firstWhere(
-      (currency) => currency.value == value.toUpperCase(),
-      orElse: () => CurrencyType.brl,
-    );
-  }
 }
 
 @UseRowClass(AccountData)
@@ -43,7 +39,7 @@ class Accounts extends Table {
   TextColumn get icon => textEnum<AccountIconType>()();
   TextColumn get accountType => textEnum<AccountType>()();
   RealColumn get balance => real().withDefault(const Constant(0))();
-  TextColumn get currency => textEnum<CurrencyType>()();
+  TextColumn get currencyType => textEnum<CurrencyType>()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get initDate => dateTime().withDefault(currentDateAndTime)();
 }
@@ -52,7 +48,7 @@ class AccountData {
   AccountData({
     required this.accountType,
     required this.balance,
-    required this.currency,
+    required this.currencyType,
     required this.isActive,
     required this.initDate,
     required this.id,
@@ -65,7 +61,7 @@ class AccountData {
   final AccountIconType icon;
   final AccountType accountType;
   final double balance;
-  final CurrencyType currency;
+  final CurrencyType currencyType;
   final bool isActive;
   final DateTime initDate;
 
@@ -77,7 +73,7 @@ class AccountData {
         'icon: $icon, '
         'accountType: $accountType, '
         'balance: $balance, '
-        'currency: $currency, '
+        'currencyType: $currencyType, '
         'isActive: $isActive, '
         '}';
   }
@@ -148,4 +144,71 @@ class Balance {
 
   factory Balance.zero() => Balance._(0);
   final double value;
+}
+
+$LibAppAssetsImagesGen get _images => Assets.lib.app.assets.images;
+
+class CurrencyHelper {
+  const CurrencyHelper(this._currency);
+
+  final CurrencyType _currency;
+
+  String get iconPath => _currency.iconPath;
+  String title(flutter.BuildContext context) => _currency.title(context);
+}
+
+extension AccountTypeExtension on AccountType {
+  String title(flutter.BuildContext context) {
+    switch (this) {
+      case AccountType.checking:
+        return context.t.account_type.checking_account;
+      case AccountType.creditCard:
+        return context.t.account_type.credit_card;
+      case AccountType.others:
+        return context.t.account_type.others;
+      case AccountType.cash:
+        return context.t.account_type.money;
+    }
+  }
+}
+
+extension CurrencyTypeExtension on CurrencyType {
+  String get iconPath {
+    switch (this) {
+      case CurrencyType.brl:
+        return _images.flags.brazil.path;
+      case CurrencyType.usd:
+        return _images.flags.unitedStates.path;
+      case CurrencyType.eur:
+        return _images.flags.unitedKingdom.path;
+    }
+  }
+
+  String title(flutter.BuildContext context) {
+    switch (this) {
+      case CurrencyType.brl:
+        return context.t.currency_type.brl;
+      case CurrencyType.usd:
+        return context.t.currency_type.usd;
+      case CurrencyType.eur:
+        return context.t.currency_type.eur;
+    }
+  }
+}
+
+extension AccountIconTypeExtension on AccountIconType {
+  String get iconPath {
+    switch (this) {
+      case AccountIconType.none:
+        return _images.banks.bank.path;
+      case AccountIconType.nubank:
+        return _images.banks.nubank.path;
+    }
+  }
+}
+
+extension AccountDataExtension on AccountData {
+  String title(flutter.BuildContext context) => accountType.title(context);
+  String get iconPath => icon.iconPath;
+  CurrencyHelper get currency => CurrencyHelper(currencyType);
 }

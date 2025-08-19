@@ -14,7 +14,7 @@ class DatabaseManager extends _$DatabaseManager {
   DatabaseManager() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 1;
 }
 
 LazyDatabase _openConnection() {

@@ -9,8 +9,7 @@ class AccountsModule extends Module {
   void binds(Injector i) {
     i
       ..addSingleton<AccountsBloc>(AccountsBloc.new)
-      ..addSingleton<AccountsModel>(AccountsModel.new)
-      ..addSingleton<AccountsController>(AccountsController.new);
+      ..addSingleton<AccountsModel>(AccountsModel.new);
   }
 
   @override

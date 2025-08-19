@@ -66,14 +66,14 @@ class $AccountsTable extends Accounts
     defaultValue: const Constant(0),
   );
   @override
-  late final GeneratedColumnWithTypeConverter<CurrencyType, String> currency =
-      GeneratedColumn<String>(
-        'currency',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<CurrencyType>($AccountsTable.$convertercurrency);
+  late final GeneratedColumnWithTypeConverter<CurrencyType, String>
+  currencyType = GeneratedColumn<String>(
+    'currency_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<CurrencyType>($AccountsTable.$convertercurrencyType);
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
   );
@@ -108,7 +108,7 @@ class $AccountsTable extends Accounts
     icon,
     accountType,
     balance,
-    currency,
+    currencyType,
     isActive,
     initDate,
   ];
@@ -172,10 +172,10 @@ class $AccountsTable extends Accounts
         DriftSqlType.double,
         data['${effectivePrefix}balance'],
       )!,
-      currency: $AccountsTable.$convertercurrency.fromSql(
+      currencyType: $AccountsTable.$convertercurrencyType.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
-          data['${effectivePrefix}currency'],
+          data['${effectivePrefix}currency_type'],
         )!,
       ),
       isActive: attachedDatabase.typeMapping.read(
@@ -212,8 +212,10 @@ class $AccountsTable extends Accounts
       const EnumNameConverter<AccountIconType>(AccountIconType.values);
   static JsonTypeConverter2<AccountType, String, String> $converteraccountType =
       const EnumNameConverter<AccountType>(AccountType.values);
-  static JsonTypeConverter2<CurrencyType, String, String> $convertercurrency =
-      const EnumNameConverter<CurrencyType>(CurrencyType.values);
+  static JsonTypeConverter2<CurrencyType, String, String>
+  $convertercurrencyType = const EnumNameConverter<CurrencyType>(
+    CurrencyType.values,
+  );
 }
 
 class AccountsCompanion extends UpdateCompanion<AccountData> {
@@ -222,7 +224,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   final Value<AccountIconType> icon;
   final Value<AccountType> accountType;
   final Value<double> balance;
-  final Value<CurrencyType> currency;
+  final Value<CurrencyType> currencyType;
   final Value<bool> isActive;
   final Value<DateTime> initDate;
   const AccountsCompanion({
@@ -231,7 +233,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     this.icon = const Value.absent(),
     this.accountType = const Value.absent(),
     this.balance = const Value.absent(),
-    this.currency = const Value.absent(),
+    this.currencyType = const Value.absent(),
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
   });
@@ -241,20 +243,20 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     required AccountIconType icon,
     required AccountType accountType,
     this.balance = const Value.absent(),
-    required CurrencyType currency,
+    required CurrencyType currencyType,
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
   }) : name = Value(name),
        icon = Value(icon),
        accountType = Value(accountType),
-       currency = Value(currency);
+       currencyType = Value(currencyType);
   static Insertable<AccountData> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? icon,
     Expression<String>? accountType,
     Expression<double>? balance,
-    Expression<String>? currency,
+    Expression<String>? currencyType,
     Expression<bool>? isActive,
     Expression<DateTime>? initDate,
   }) {
@@ -264,7 +266,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       if (icon != null) 'icon': icon,
       if (accountType != null) 'account_type': accountType,
       if (balance != null) 'balance': balance,
-      if (currency != null) 'currency': currency,
+      if (currencyType != null) 'currency_type': currencyType,
       if (isActive != null) 'is_active': isActive,
       if (initDate != null) 'init_date': initDate,
     });
@@ -276,7 +278,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     Value<AccountIconType>? icon,
     Value<AccountType>? accountType,
     Value<double>? balance,
-    Value<CurrencyType>? currency,
+    Value<CurrencyType>? currencyType,
     Value<bool>? isActive,
     Value<DateTime>? initDate,
   }) {
@@ -286,7 +288,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       icon: icon ?? this.icon,
       accountType: accountType ?? this.accountType,
       balance: balance ?? this.balance,
-      currency: currency ?? this.currency,
+      currencyType: currencyType ?? this.currencyType,
       isActive: isActive ?? this.isActive,
       initDate: initDate ?? this.initDate,
     );
@@ -314,9 +316,9 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     if (balance.present) {
       map['balance'] = Variable<double>(balance.value);
     }
-    if (currency.present) {
-      map['currency'] = Variable<String>(
-        $AccountsTable.$convertercurrency.toSql(currency.value),
+    if (currencyType.present) {
+      map['currency_type'] = Variable<String>(
+        $AccountsTable.$convertercurrencyType.toSql(currencyType.value),
       );
     }
     if (isActive.present) {
@@ -336,7 +338,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
           ..write('icon: $icon, ')
           ..write('accountType: $accountType, ')
           ..write('balance: $balance, ')
-          ..write('currency: $currency, ')
+          ..write('currencyType: $currencyType, ')
           ..write('isActive: $isActive, ')
           ..write('initDate: $initDate')
           ..write(')'))
@@ -617,7 +619,7 @@ typedef $$AccountsTableCreateCompanionBuilder =
       required AccountIconType icon,
       required AccountType accountType,
       Value<double> balance,
-      required CurrencyType currency,
+      required CurrencyType currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
     });
@@ -628,7 +630,7 @@ typedef $$AccountsTableUpdateCompanionBuilder =
       Value<AccountIconType> icon,
       Value<AccountType> accountType,
       Value<double> balance,
-      Value<CurrencyType> currency,
+      Value<CurrencyType> currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
     });
@@ -670,8 +672,8 @@ class $$AccountsTableFilterComposer
   );
 
   ColumnWithTypeConverterFilters<CurrencyType, CurrencyType, String>
-  get currency => $composableBuilder(
-    column: $table.currency,
+  get currencyType => $composableBuilder(
+    column: $table.currencyType,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
@@ -720,8 +722,8 @@ class $$AccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get currency => $composableBuilder(
-    column: $table.currency,
+  ColumnOrderings<String> get currencyType => $composableBuilder(
+    column: $table.currencyType,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -763,8 +765,11 @@ class $$AccountsTableAnnotationComposer
   GeneratedColumn<double> get balance =>
       $composableBuilder(column: $table.balance, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<CurrencyType, String> get currency =>
-      $composableBuilder(column: $table.currency, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<CurrencyType, String> get currencyType =>
+      $composableBuilder(
+        column: $table.currencyType,
+        builder: (column) => column,
+      );
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -809,7 +814,7 @@ class $$AccountsTableTableManager
                 Value<AccountIconType> icon = const Value.absent(),
                 Value<AccountType> accountType = const Value.absent(),
                 Value<double> balance = const Value.absent(),
-                Value<CurrencyType> currency = const Value.absent(),
+                Value<CurrencyType> currencyType = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
               }) => AccountsCompanion(
@@ -818,7 +823,7 @@ class $$AccountsTableTableManager
                 icon: icon,
                 accountType: accountType,
                 balance: balance,
-                currency: currency,
+                currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,
               ),
@@ -829,7 +834,7 @@ class $$AccountsTableTableManager
                 required AccountIconType icon,
                 required AccountType accountType,
                 Value<double> balance = const Value.absent(),
-                required CurrencyType currency,
+                required CurrencyType currencyType,
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
               }) => AccountsCompanion.insert(
@@ -838,7 +843,7 @@ class $$AccountsTableTableManager
                 icon: icon,
                 accountType: accountType,
                 balance: balance,
-                currency: currency,
+                currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,
               ),

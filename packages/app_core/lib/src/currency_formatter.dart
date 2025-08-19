@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-class CurrencyHelper {
+class CurrencyFormatter {
   static double parseAmount(String input, BuildContext context) {
     final locale = Localizations.localeOf(context);
 
@@ -91,7 +91,7 @@ class CurrencyInputFormatter extends TextInputFormatter {
 
     if (text.isEmpty) return newValue;
 
-    final currentLocale = locale ?? CurrencyHelper.getCurrentLocale();
+    final currentLocale = locale ?? CurrencyFormatter.getCurrentLocale();
 
     final allowedPattern = _getAllowedPattern(currentLocale);
 

@@ -10,28 +10,24 @@ AccountsModel get accountsModel => Modular.get<AccountsModel>();
 class AccountsModel {
   AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
 
-  void onTapFloatingActionButton() => PopUpManager.showDialog(
-    builder: (c) => WidgetModuleProvider(
-      module: CreateAndEditAccountModule(),
-      child: () => CreateAndEditAccountPopUp(
-        CreateAndEditAccountPopUpArgs(
-          type: CreateAndEditAccountPopUpType.create,
-        ),
-      ),
+  void onTapFloatingActionButton() => _showAccountPopUp(
+    CreateAndEditAccountPopUpArgs(type: CreateAndEditAccountPopUpType.create),
+  );
+
+  void onTapUpdateAccountPopUp(AccountData account) => _showAccountPopUp(
+    CreateAndEditAccountPopUpArgs(
+      type: CreateAndEditAccountPopUpType.edit,
+      account: account,
     ),
   );
 
-  void onTapUpdateAccountPopUp(AccountData account) => PopUpManager.showDialog(
-    builder: (c) => WidgetModuleProvider(
-      module: CreateAndEditAccountModule(),
-      child: () => CreateAndEditAccountPopUp(
-        CreateAndEditAccountPopUpArgs(
-          type: CreateAndEditAccountPopUpType.edit,
-          account: account,
+  void _showAccountPopUp(CreateAndEditAccountPopUpArgs args) =>
+      PopUpManager.showDialog(
+        builder: (c) => WidgetModuleProvider(
+          module: CreateAndEditAccountModule(),
+          child: () => CreateAndEditAccountPopUp(args),
         ),
-      ),
-    ),
-  );
+      );
 
   Future<void> onTapFreezeOrUnfreeze({
     required AccountData account,

@@ -27,7 +27,7 @@ class CreateAndEditAccountModel {
       name: createAndEditAccountBloc.name.value.trim(),
       accountType: createAndEditAccountBloc.selectedAccountType.value,
       initialBalance: createAndEditAccountBloc.initialBalance.value,
-      currency: createAndEditAccountBloc.selectedCurrency.value,
+      currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
       icon: createAndEditAccountBloc.selectedIcon.value,
       initDate: createAndEditAccountBloc.selectedInitDate.value,
     );
@@ -53,7 +53,7 @@ class CreateAndEditAccountModel {
       name: createAndEditAccountBloc.name.value.trim(),
       accountType: createAndEditAccountBloc.selectedAccountType.value,
       balance: createAndEditAccountBloc.initialBalance.value,
-      currency: createAndEditAccountBloc.selectedCurrency.value,
+      currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
       isActive: originalAccount.isActive,
       icon: createAndEditAccountBloc.selectedIcon.value,
       initDate: createAndEditAccountBloc.selectedInitDate.value,

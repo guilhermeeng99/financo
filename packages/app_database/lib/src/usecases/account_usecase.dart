@@ -11,7 +11,7 @@ class AccountUsecase {
     required AccountType accountType,
     AccountIconType icon = AccountIconType.none,
     double initialBalance = 0.0,
-    CurrencyType currency = CurrencyType.brl,
+    CurrencyType currencyType = CurrencyType.brl,
     DateTime? initDate,
   }) async {
     try {
@@ -22,7 +22,7 @@ class AccountUsecase {
         name: Value(accountName.value),
         accountType: Value(accountType),
         balance: Value(balance.value),
-        currency: Value(currency),
+        currencyType: Value(currencyType),
         isActive: const Value(true),
         icon: Value(icon),
         initDate: Value(initDate ?? DateTime.now()),
@@ -53,7 +53,7 @@ class AccountUsecase {
     String? name,
     AccountType? accountType,
     double? balance,
-    CurrencyType? currency,
+    CurrencyType? currencyType,
     bool? isActive,
     AccountIconType? icon,
     DateTime? initDate,
@@ -62,7 +62,7 @@ class AccountUsecase {
       Value<String>? nameValue;
       Value<AccountType>? accountTypeValue;
       Value<double>? balanceValue;
-      Value<CurrencyType>? currencyValue;
+      Value<CurrencyType>? currencyTypeValue;
       Value<bool>? isActiveValue;
       Value<AccountIconType>? iconValue;
       Value<DateTime>? initDateValue;
@@ -81,8 +81,8 @@ class AccountUsecase {
         balanceValue = Value(accountBalance.value);
       }
 
-      if (currency != null) {
-        currencyValue = Value(currency);
+      if (currencyType != null) {
+        currencyTypeValue = Value(currencyType);
       }
 
       if (isActive != null) {
@@ -100,7 +100,7 @@ class AccountUsecase {
       if (nameValue == null &&
           accountTypeValue == null &&
           balanceValue == null &&
-          currencyValue == null &&
+          currencyTypeValue == null &&
           isActiveValue == null &&
           iconValue == null &&
           initDateValue == null) {
@@ -111,7 +111,7 @@ class AccountUsecase {
         name: nameValue ?? const Value.absent(),
         accountType: accountTypeValue ?? const Value.absent(),
         balance: balanceValue ?? const Value.absent(),
-        currency: currencyValue ?? const Value.absent(),
+        currencyType: currencyTypeValue ?? const Value.absent(),
         isActive: isActiveValue ?? const Value.absent(),
         icon: iconValue ?? const Value.absent(),
         initDate: initDateValue ?? const Value.absent(),

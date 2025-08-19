@@ -50,10 +50,7 @@ class _AccountsTypeArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = accountsController.accountTypeName(
-      type: accountType,
-      context: context,
-    );
+    final title = accountType.title(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,11 +87,7 @@ class _AccountItem extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Image.asset(
-                      accountsController.accountBankIcon(account.icon),
-                      width: 24,
-                      height: 24,
-                    ),
+                    Image.asset(account.iconPath, width: 24, height: 24),
                     const Gap(5),
                     Text(account.name),
                     const Spacer(),
@@ -114,7 +107,7 @@ class _AccountItem extends StatelessWidget {
                       ),
                     ),
                     Image.asset(
-                      accountsController.currencyImage(account.currency),
+                      account.currency.iconPath,
                       width: 24,
                       height: 24,
                     ),

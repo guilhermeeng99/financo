@@ -11,7 +11,7 @@ class CreateAndEditAccountBloc extends GetxController {
 
   final selectedAccountType = AccountType.checking.obs;
 
-  final selectedCurrency = CurrencyType.brl.obs;
+  final selectedCurrencyType = CurrencyType.brl.obs;
 
   final selectedIcon = AccountIconType.none.obs;
 
@@ -21,17 +21,8 @@ class CreateAndEditAccountBloc extends GetxController {
     name.value = account.name;
     initialBalance.value = account.balance;
     selectedAccountType.value = account.accountType;
-    selectedCurrency.value = account.currency;
+    selectedCurrencyType.value = account.currencyType;
     selectedIcon.value = account.icon;
     selectedInitDate.value = account.initDate;
-  }
-
-  void resetForNewAccount() {
-    name.value = '';
-    initialBalance.value = 0.0;
-    selectedAccountType.value = AccountType.checking;
-    selectedCurrency.value = CurrencyType.brl;
-    selectedIcon.value = AccountIconType.none;
-    selectedInitDate.value = DateTime.now();
   }
 }
