@@ -1,7 +1,7 @@
-import '../core/either.dart';
-import '../core/failures.dart';
-import '../database/database_manager.dart';
-import '../domains/account_domain.dart';
+import '../../core/either.dart';
+import '../../core/failures.dart';
+import '../../database/database_manager.dart';
+import 'account_domain.dart';
 
 abstract class IAccountRepository {
   Future<Either<Failure, AccountData>> createAccount(AccountsCompanion account);

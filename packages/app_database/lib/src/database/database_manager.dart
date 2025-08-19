@@ -4,8 +4,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 
-import '../domains/account_domain.dart';
-import '../domains/category_domain.dart';
+import '../items/account/account_domain.dart';
+import '../items/category/category_domain.dart';
 
 part 'database_manager.g.dart';
 

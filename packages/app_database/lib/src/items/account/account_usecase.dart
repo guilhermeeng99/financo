@@ -9,7 +9,7 @@ class AccountUsecase {
   Future<Either<Failure, AccountData>> createAccount({
     required String name,
     required AccountType accountType,
-    AccountIconType icon = AccountIconType.none,
+    AccountIconType iconType = AccountIconType.none,
     double initialBalance = 0.0,
     CurrencyType currencyType = CurrencyType.brl,
     DateTime? initDate,
@@ -24,7 +24,7 @@ class AccountUsecase {
         balance: Value(balance.value),
         currencyType: Value(currencyType),
         isActive: const Value(true),
-        icon: Value(icon),
+        iconType: Value(iconType),
         initDate: Value(initDate ?? DateTime.now()),
       );
 
@@ -55,7 +55,7 @@ class AccountUsecase {
     double? balance,
     CurrencyType? currencyType,
     bool? isActive,
-    AccountIconType? icon,
+    AccountIconType? iconType,
     DateTime? initDate,
   }) async {
     try {
@@ -64,7 +64,7 @@ class AccountUsecase {
       Value<double>? balanceValue;
       Value<CurrencyType>? currencyTypeValue;
       Value<bool>? isActiveValue;
-      Value<AccountIconType>? iconValue;
+      Value<AccountIconType>? iconTypeValue;
       Value<DateTime>? initDateValue;
 
       if (name != null) {
@@ -89,8 +89,8 @@ class AccountUsecase {
         isActiveValue = Value(isActive);
       }
 
-      if (icon != null) {
-        iconValue = Value(icon);
+      if (iconType != null) {
+        iconTypeValue = Value(iconType);
       }
 
       if (initDate != null) {
@@ -102,7 +102,7 @@ class AccountUsecase {
           balanceValue == null &&
           currencyTypeValue == null &&
           isActiveValue == null &&
-          iconValue == null &&
+          iconTypeValue == null &&
           initDateValue == null) {
         return Either.left(const ValidationFailure('No changes were provided'));
       }
@@ -113,7 +113,7 @@ class AccountUsecase {
         balance: balanceValue ?? const Value.absent(),
         currencyType: currencyTypeValue ?? const Value.absent(),
         isActive: isActiveValue ?? const Value.absent(),
-        icon: iconValue ?? const Value.absent(),
+        iconType: iconTypeValue ?? const Value.absent(),
         initDate: initDateValue ?? const Value.absent(),
       );
 

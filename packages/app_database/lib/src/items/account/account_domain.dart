@@ -3,7 +3,7 @@ import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart' as flutter;
 
-import '../core/exceptions.dart';
+import '../../core/exceptions.dart';
 
 enum AccountType {
   checking('checking'),
@@ -36,7 +36,7 @@ enum CurrencyType {
 class Accounts extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 3, max: 15)();
-  TextColumn get icon => textEnum<AccountIconType>()();
+  TextColumn get iconType => textEnum<AccountIconType>()();
   TextColumn get accountType => textEnum<AccountType>()();
   RealColumn get balance => real().withDefault(const Constant(0))();
   TextColumn get currencyType => textEnum<CurrencyType>()();
@@ -53,12 +53,12 @@ class AccountData {
     required this.initDate,
     required this.id,
     required this.name,
-    required this.icon,
+    required this.iconType,
   });
 
   final int id;
   final String name;
-  final AccountIconType icon;
+  final AccountIconType iconType;
   final AccountType accountType;
   final double balance;
   final CurrencyType currencyType;
@@ -70,7 +70,7 @@ class AccountData {
     return 'AccountData{'
         'id: $id, '
         'name: $name, '
-        'icon: $icon, '
+        'iconType: $iconType, '
         'accountType: $accountType, '
         'balance: $balance, '
         'currencyType: $currencyType, '
@@ -209,6 +209,6 @@ extension AccountIconTypeExtension on AccountIconType {
 
 extension AccountDataExtension on AccountData {
   String title(flutter.BuildContext context) => accountType.title(context);
-  String get iconPath => icon.iconPath;
+  String get iconPath => iconType.iconPath;
   CurrencyHelper get currency => CurrencyHelper(currencyType);
 }

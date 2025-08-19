@@ -13,7 +13,7 @@ class CreateAndEditAccountBloc extends GetxController {
 
   final selectedCurrencyType = CurrencyType.brl.obs;
 
-  final selectedIcon = AccountIconType.none.obs;
+  final selectedIconType = AccountIconType.none.obs;
 
   final Rx<DateTime> selectedInitDate = DateTime.now().obs;
 
@@ -22,7 +22,7 @@ class CreateAndEditAccountBloc extends GetxController {
     initialBalance.value = account.balance;
     selectedAccountType.value = account.accountType;
     selectedCurrencyType.value = account.currencyType;
-    selectedIcon.value = account.icon;
+    selectedIconType.value = account.iconType;
     selectedInitDate.value = account.initDate;
   }
 }

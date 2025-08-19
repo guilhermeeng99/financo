@@ -59,6 +59,12 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Type'
 	String get type => 'Type';
 
+	/// en: 'Income'
+	String get income => 'Income';
+
+	/// en: 'Expense'
+	String get expense => 'Expense';
+
 	/// en: 'Edit'
 	String get edit => 'Edit';
 
@@ -86,8 +92,20 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Edit Account'
 	String get edit_account => 'Edit Account';
 
+	/// en: 'New Category'
+	String get new_category => 'New Category';
+
+	/// en: 'Edit Category'
+	String get edit_category => 'Edit Category';
+
+	/// en: 'Create Subcategory'
+	String get create_sub_category => 'Create Subcategory';
+
 	/// en: 'Additional Settings'
 	String get additional_settings => 'Additional Settings';
+
+	/// en: 'Subcategory of'
+	String get subcategory_of => 'Subcategory of';
 
 	/// en: 'Freeze'
 	String get freeze => 'Freeze';

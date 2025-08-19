@@ -28,7 +28,7 @@ class CreateAndEditAccountModel {
       accountType: createAndEditAccountBloc.selectedAccountType.value,
       initialBalance: createAndEditAccountBloc.initialBalance.value,
       currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
-      icon: createAndEditAccountBloc.selectedIcon.value,
+      iconType: createAndEditAccountBloc.selectedIconType.value,
       initDate: createAndEditAccountBloc.selectedInitDate.value,
     );
 
@@ -55,7 +55,7 @@ class CreateAndEditAccountModel {
       balance: createAndEditAccountBloc.initialBalance.value,
       currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
       isActive: originalAccount.isActive,
-      icon: createAndEditAccountBloc.selectedIcon.value,
+      iconType: createAndEditAccountBloc.selectedIconType.value,
       initDate: createAndEditAccountBloc.selectedInitDate.value,
     );
 
@@ -66,10 +66,8 @@ class CreateAndEditAccountModel {
       (account) {
         logger.i('Account updated successfully: ${account.name}');
 
-        // Atualiza a conta no cache
         DataCacheManager().accounts.update(account);
 
-        // Recarrega a UI
         accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },

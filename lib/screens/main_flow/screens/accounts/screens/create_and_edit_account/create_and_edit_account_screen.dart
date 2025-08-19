@@ -68,7 +68,7 @@ class _Type extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _ItemTitle(
+    return CWPopUpItemTitle(
       title: context.t.type,
       child: Obx(() {
         final selectedType = createAndEditAccountBloc.selectedAccountType.value;
@@ -81,8 +81,7 @@ class _Type extends StatelessWidget {
           },
           dropdownColor: Theme.of(context).scaffoldBackgroundColor,
           style: const TextStyle(fontSize: 18),
-          underline: _dropdownUnderline(context),
-
+          underline: const CWPopUpUnderLine(),
           items: AccountType.values.map((AccountType type) {
             return DropdownMenuItem<AccountType>(
               value: type,
@@ -100,7 +99,7 @@ class _Coin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _ItemTitle(
+    return CWPopUpItemTitle(
       title: context.t.coin,
       child: Obx(() {
         final selectedCurrency =
@@ -114,7 +113,7 @@ class _Coin extends StatelessWidget {
           },
           dropdownColor: Theme.of(context).scaffoldBackgroundColor,
           style: const TextStyle(fontSize: 18),
-          underline: _dropdownUnderline(context),
+          underline: const CWPopUpUnderLine(),
           items: CurrencyType.values.map((CurrencyType currency) {
             return DropdownMenuItem<CurrencyType>(
               value: currency,
@@ -143,19 +142,19 @@ class _Icon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _ItemTitle(
+    return CWPopUpItemTitle(
       title: context.t.icon,
       child: Obx(() {
-        final selectedIcon = createAndEditAccountBloc.selectedIcon.value;
+        final selectedIcon = createAndEditAccountBloc.selectedIconType.value;
         return DropdownButton<AccountIconType>(
           value: selectedIcon,
           onChanged: (AccountIconType? value) {
             if (value != null) {
-              createAndEditAccountBloc.selectedIcon.value = value;
+              createAndEditAccountBloc.selectedIconType.value = value;
             }
           },
           dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          underline: _dropdownUnderline(context),
+          underline: const CWPopUpUnderLine(),
           items: AccountIconType.values.map((AccountIconType icon) {
             return DropdownMenuItem<AccountIconType>(
               value: icon,
@@ -184,7 +183,7 @@ class _Balance extends HookWidget {
     final controller = useTextEditingController(text: formattedBalance);
 
     return Expanded(
-      child: _ItemTitle(
+      child: CWPopUpItemTitle(
         title: context.t.balance,
         spacing: 12,
         child: TextField(
@@ -244,42 +243,12 @@ class _Name extends HookWidget {
   }
 }
 
-class _ItemTitle extends StatelessWidget {
-  const _ItemTitle({
-    required this.child,
-    required this.title,
-    this.spacing = 0,
-  });
-
-  final Widget child;
-  final String title;
-  final double spacing;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: spacing,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).customColors.secondaryTextColor,
-          ),
-        ),
-        child,
-      ],
-    );
-  }
-}
-
 class _InitDate extends StatelessWidget {
   const _InitDate();
 
   @override
   Widget build(BuildContext context) {
-    return _ItemTitle(
+    return CWPopUpItemTitle(
       title: context.t.initial_balance_date,
       spacing: 10,
       child: Obx(() {
@@ -383,8 +352,4 @@ class _InitDate extends StatelessWidget {
       selectedYearTextStyle: selectedTextStyle,
     );
   }
-}
-
-Container _dropdownUnderline(BuildContext context) {
-  return Container(height: 0.5, color: Theme.of(context).dividerColor);
 }

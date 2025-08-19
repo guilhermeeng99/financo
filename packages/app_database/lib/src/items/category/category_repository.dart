@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
 
-import '../core/either.dart';
-import '../core/failures.dart';
-import '../database/database_manager.dart';
-import '../domains/category_domain.dart';
+import '../../core/either.dart';
+import '../../core/failures.dart';
+import '../../database/database_manager.dart';
+import 'category_domain.dart';
 
 abstract class ICategoryRepository {
   Future<Either<Failure, CategoryData>> createCategory(
@@ -13,8 +13,11 @@ abstract class ICategoryRepository {
   Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
     CategoryType type,
   );
-  Future<Either<Failure, List<CategoryData>>> getSubcategories(int parentId);
-  Future<Either<Failure, CategoryData>> getCategoryById(int id);
+
+  Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
+    CategoryType type,
+    int? excludeCategoryId,
+  );
   Future<Either<Failure, CategoryData>> updateCategory(
     int id,
     CategoriesCompanion category,
@@ -78,39 +81,54 @@ class CategoryRepository implements ICategoryRepository {
   }
 
   @override
-  Future<Either<Failure, List<CategoryData>>> getSubcategories(
-    int parentId,
+  Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
+    CategoryType type,
+    int? excludeCategoryId,
   ) async {
     try {
-      final result =
-          await (_database.select(_database.categories)
-                ..where(
-                  (tbl) =>
-                      tbl.parentCategoryId.equals(parentId) &
-                      tbl.isActive.equals(true),
-                )
-                ..orderBy([(t) => OrderingTerm(expression: t.name)]))
-              .get();
-      return Either.right(result);
-    } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching subcategories: $e'));
-    }
-  }
+      // Buscar todas as categorias do tipo especificado
+      final allCategoriesQuery = _database.select(_database.categories)
+        ..where(
+          (tbl) =>
+              tbl.categoryType.equals(type.value) & tbl.isActive.equals(true),
+        );
 
-  @override
-  Future<Either<Failure, CategoryData>> getCategoryById(int id) async {
-    try {
-      final result = await (_database.select(
-        _database.categories,
-      )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
-
-      if (result == null) {
-        return Either.left(DatabaseFailure('Category with id $id not found'));
+      // Se há uma categoria a ser excluída (modo edição), excluí-la
+      if (excludeCategoryId != null) {
+        allCategoriesQuery.where(
+          (tbl) => tbl.id.equals(excludeCategoryId).not(),
+        );
       }
 
-      return Either.right(result);
+      final allCategories = await allCategoriesQuery.get();
+
+      // Buscar todas as categorias que têm subcategorias
+      final categoriesWithSubcategories =
+          await (_database.select(_database.categories)..where(
+                (tbl) =>
+                    tbl.parentCategoryId.isNotNull() &
+                    tbl.isActive.equals(true),
+              ))
+              .get();
+
+      // Extrair IDs das categorias que são pais (têm subcategorias)
+      final parentIds = categoriesWithSubcategories
+          .map((category) => category.parentCategoryId!)
+          .toSet();
+
+      // Filtrar categorias que não têm subcategorias
+      final eligibleParents = allCategories
+          .where((category) => !parentIds.contains(category.id))
+          .toList();
+
+      // Ordenar por nome
+      eligibleParents.sort((a, b) => a.name.compareTo(b.name));
+
+      return Either.right(eligibleParents);
     } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching category: $e'));
+      return Either.left(
+        DatabaseFailure('Error fetching eligible parent categories: $e'),
+      );
     }
   }
 

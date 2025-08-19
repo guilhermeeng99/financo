@@ -3,7 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_model.dart';
-import 'package:financo/screens/main_flow/screens/accounts/widgets/accounts_screen_menu_button.dart';
+import 'package:financo/screens/main_flow/screens/accounts/widgets/accounts_item_menu_actions.dart.dart';
 
 class AccountsScreen extends StatelessWidget {
   const AccountsScreen({super.key});
@@ -12,6 +12,7 @@ class AccountsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: CWFloatingActionButton(
+        tooltipMessage: context.t.new_account,
         onTap: accountsModel.onTapFloatingActionButton,
       ),
       body: Padding(
@@ -91,7 +92,7 @@ class _AccountItem extends StatelessWidget {
                     const Gap(5),
                     Text(account.name),
                     const Spacer(),
-                    AccountsScreenThreeBallsButton(account),
+                    CWThreeBallsButton(account),
                   ],
                 ),
                 Row(

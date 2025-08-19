@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/material.dart' as flutter;
 
-import '../core/exceptions.dart';
+import '../../core/exceptions.dart';
 
 enum CategoryType {
   expense('expense'),
@@ -113,4 +115,15 @@ class ParentCategoryId {
   final int? value;
 
   bool get hasParent => value != null;
+}
+
+extension CategoryTypeExtension on CategoryType {
+  String title(flutter.BuildContext context) {
+    switch (this) {
+      case CategoryType.expense:
+        return context.t.expense;
+      case CategoryType.income:
+        return context.t.income;
+    }
+  }
 }

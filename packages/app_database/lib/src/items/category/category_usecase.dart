@@ -43,41 +43,53 @@ class CategoryUsecase {
     return _categoryRepository.getCategoriesByType(CategoryType.income);
   }
 
-  Future<Either<Failure, List<CategoryData>>> getSubcategories(
-    int parentId,
+  Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
+    CategoryType type,
+    int? excludeCategoryId,
   ) async {
-    return _categoryRepository.getSubcategories(parentId);
+    return _categoryRepository.getEligibleParentCategories(type, excludeCategoryId);
   }
 
-  Future<Either<Failure, CategoryData>> getCategoryById(int id) async {
-    return _categoryRepository.getCategoryById(id);
-  }
 
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,
     String? name,
     int? parentCategoryId,
+    bool? isActive,
   }) async {
     try {
-      CategoriesCompanion categoryCompanion;
+      Value<String>? nameValue;
+      Value<int?>? parentIdValue;
+      Value<bool>? isActiveValue;
 
       if (name != null) {
         final categoryName = CategoryName.create(name);
-        final parentId = ParentCategoryId.create(parentCategoryId);
+        nameValue = Value(categoryName.value);
+      }
 
-        categoryCompanion = CategoriesCompanion(
-          id: Value(id),
-          name: Value(categoryName.value),
-          parentCategoryId: Value.absentIfNull(parentId.value),
-        );
-      } else {
+      if (parentCategoryId != null || name != null) {
         final parentId = ParentCategoryId.create(parentCategoryId);
+        parentIdValue = Value.absentIfNull(parentId.value);
+      }
 
-        categoryCompanion = CategoriesCompanion(
-          id: Value(id),
-          parentCategoryId: Value.absentIfNull(parentId.value),
+      if (isActive != null) {
+        isActiveValue = Value(isActive);
+      }
+
+      if (nameValue == null && parentIdValue == null && isActiveValue == null) {
+        return Either.left(
+          const ValidationFailure(
+            'At least one field must be provided for update',
+          ),
         );
       }
+
+      final categoryCompanion = CategoriesCompanion(
+        id: Value(id),
+        name: nameValue ?? const Value.absent(),
+        parentCategoryId: parentIdValue ?? const Value.absent(),
+        isActive: isActiveValue ?? const Value.absent(),
+      );
 
       return await _categoryRepository.updateCategory(id, categoryCompanion);
     } on ValidationException catch (e) {

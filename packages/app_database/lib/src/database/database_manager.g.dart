@@ -36,14 +36,14 @@ class $AccountsTable extends Accounts
     requiredDuringInsert: true,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<AccountIconType, String> icon =
-      GeneratedColumn<String>(
-        'icon',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<AccountIconType>($AccountsTable.$convertericon);
+  late final GeneratedColumnWithTypeConverter<AccountIconType, String>
+  iconType = GeneratedColumn<String>(
+    'icon_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<AccountIconType>($AccountsTable.$convertericonType);
   @override
   late final GeneratedColumnWithTypeConverter<AccountType, String> accountType =
       GeneratedColumn<String>(
@@ -105,7 +105,7 @@ class $AccountsTable extends Accounts
   List<GeneratedColumn> get $columns => [
     id,
     name,
-    icon,
+    iconType,
     accountType,
     balance,
     currencyType,
@@ -194,10 +194,10 @@ class $AccountsTable extends Accounts
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
-      icon: $AccountsTable.$convertericon.fromSql(
+      iconType: $AccountsTable.$convertericonType.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
-          data['${effectivePrefix}icon'],
+          data['${effectivePrefix}icon_type'],
         )!,
       ),
     );
@@ -208,8 +208,10 @@ class $AccountsTable extends Accounts
     return $AccountsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<AccountIconType, String, String> $convertericon =
-      const EnumNameConverter<AccountIconType>(AccountIconType.values);
+  static JsonTypeConverter2<AccountIconType, String, String>
+  $convertericonType = const EnumNameConverter<AccountIconType>(
+    AccountIconType.values,
+  );
   static JsonTypeConverter2<AccountType, String, String> $converteraccountType =
       const EnumNameConverter<AccountType>(AccountType.values);
   static JsonTypeConverter2<CurrencyType, String, String>
@@ -221,7 +223,7 @@ class $AccountsTable extends Accounts
 class AccountsCompanion extends UpdateCompanion<AccountData> {
   final Value<int> id;
   final Value<String> name;
-  final Value<AccountIconType> icon;
+  final Value<AccountIconType> iconType;
   final Value<AccountType> accountType;
   final Value<double> balance;
   final Value<CurrencyType> currencyType;
@@ -230,7 +232,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   const AccountsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
-    this.icon = const Value.absent(),
+    this.iconType = const Value.absent(),
     this.accountType = const Value.absent(),
     this.balance = const Value.absent(),
     this.currencyType = const Value.absent(),
@@ -240,20 +242,20 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   AccountsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
-    required AccountIconType icon,
+    required AccountIconType iconType,
     required AccountType accountType,
     this.balance = const Value.absent(),
     required CurrencyType currencyType,
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
   }) : name = Value(name),
-       icon = Value(icon),
+       iconType = Value(iconType),
        accountType = Value(accountType),
        currencyType = Value(currencyType);
   static Insertable<AccountData> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<String>? icon,
+    Expression<String>? iconType,
     Expression<String>? accountType,
     Expression<double>? balance,
     Expression<String>? currencyType,
@@ -263,7 +265,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (icon != null) 'icon': icon,
+      if (iconType != null) 'icon_type': iconType,
       if (accountType != null) 'account_type': accountType,
       if (balance != null) 'balance': balance,
       if (currencyType != null) 'currency_type': currencyType,
@@ -275,7 +277,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   AccountsCompanion copyWith({
     Value<int>? id,
     Value<String>? name,
-    Value<AccountIconType>? icon,
+    Value<AccountIconType>? iconType,
     Value<AccountType>? accountType,
     Value<double>? balance,
     Value<CurrencyType>? currencyType,
@@ -285,7 +287,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     return AccountsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      icon: icon ?? this.icon,
+      iconType: iconType ?? this.iconType,
       accountType: accountType ?? this.accountType,
       balance: balance ?? this.balance,
       currencyType: currencyType ?? this.currencyType,
@@ -303,9 +305,9 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (icon.present) {
-      map['icon'] = Variable<String>(
-        $AccountsTable.$convertericon.toSql(icon.value),
+    if (iconType.present) {
+      map['icon_type'] = Variable<String>(
+        $AccountsTable.$convertericonType.toSql(iconType.value),
       );
     }
     if (accountType.present) {
@@ -335,7 +337,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     return (StringBuffer('AccountsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('icon: $icon, ')
+          ..write('iconType: $iconType, ')
           ..write('accountType: $accountType, ')
           ..write('balance: $balance, ')
           ..write('currencyType: $currencyType, ')
@@ -616,7 +618,7 @@ typedef $$AccountsTableCreateCompanionBuilder =
     AccountsCompanion Function({
       Value<int> id,
       required String name,
-      required AccountIconType icon,
+      required AccountIconType iconType,
       required AccountType accountType,
       Value<double> balance,
       required CurrencyType currencyType,
@@ -627,7 +629,7 @@ typedef $$AccountsTableUpdateCompanionBuilder =
     AccountsCompanion Function({
       Value<int> id,
       Value<String> name,
-      Value<AccountIconType> icon,
+      Value<AccountIconType> iconType,
       Value<AccountType> accountType,
       Value<double> balance,
       Value<CurrencyType> currencyType,
@@ -655,8 +657,8 @@ class $$AccountsTableFilterComposer
   );
 
   ColumnWithTypeConverterFilters<AccountIconType, AccountIconType, String>
-  get icon => $composableBuilder(
-    column: $table.icon,
+  get iconType => $composableBuilder(
+    column: $table.iconType,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
@@ -707,8 +709,8 @@ class $$AccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get icon => $composableBuilder(
-    column: $table.icon,
+  ColumnOrderings<String> get iconType => $composableBuilder(
+    column: $table.iconType,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -753,8 +755,8 @@ class $$AccountsTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<AccountIconType, String> get icon =>
-      $composableBuilder(column: $table.icon, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<AccountIconType, String> get iconType =>
+      $composableBuilder(column: $table.iconType, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<AccountType, String> get accountType =>
       $composableBuilder(
@@ -811,7 +813,7 @@ class $$AccountsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
-                Value<AccountIconType> icon = const Value.absent(),
+                Value<AccountIconType> iconType = const Value.absent(),
                 Value<AccountType> accountType = const Value.absent(),
                 Value<double> balance = const Value.absent(),
                 Value<CurrencyType> currencyType = const Value.absent(),
@@ -820,7 +822,7 @@ class $$AccountsTableTableManager
               }) => AccountsCompanion(
                 id: id,
                 name: name,
-                icon: icon,
+                iconType: iconType,
                 accountType: accountType,
                 balance: balance,
                 currencyType: currencyType,
@@ -831,7 +833,7 @@ class $$AccountsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
-                required AccountIconType icon,
+                required AccountIconType iconType,
                 required AccountType accountType,
                 Value<double> balance = const Value.absent(),
                 required CurrencyType currencyType,
@@ -840,7 +842,7 @@ class $$AccountsTableTableManager
               }) => AccountsCompanion.insert(
                 id: id,
                 name: name,
-                icon: icon,
+                iconType: iconType,
                 accountType: accountType,
                 balance: balance,
                 currencyType: currencyType,

@@ -1,6 +1,6 @@
 import 'package:app_core/app_core.dart';
-import 'package:app_database/src/database/cache_service/data_cache_accounts.dart';
-import 'package:app_database/src/database/cache_service/data_cache_categories.dart';
+import 'package:app_database/src/items/account/account_cache_manager.dart';
+import 'package:app_database/src/items/category/category_cache_manager.dart';
 
 abstract class BaseCacheManager<T> {
   List<T>? _allItems;

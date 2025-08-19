@@ -13,12 +13,12 @@ class AccountsBloc extends GetxController {
 
   Future<void> loadGroupedAccounts() async {
     try {
-      final cacheManager = DataCacheManager();
+      final accountsCache = DataCacheManager().accounts;
 
       final grouped = <AccountType, List<AccountData>>{};
 
       for (final type in AccountType.values) {
-        final accounts = cacheManager.accounts.getByType(type);
+        final accounts = accountsCache.getByType(type);
         if (accounts.isNotEmpty) {
           grouped[type] = accounts;
         }
