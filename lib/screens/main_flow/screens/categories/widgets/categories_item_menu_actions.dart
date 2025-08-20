@@ -71,8 +71,9 @@ enum CategoryMenuAction implements PopupMenuAction<CategoryData> {
         return category.isActive;
       case CategoryMenuAction.unfreeze:
         return !category.isActive;
-      case CategoryMenuAction.edit:
       case CategoryMenuAction.createSubCategory:
+        return category.parentCategoryId == null;
+      case CategoryMenuAction.edit:
       case CategoryMenuAction.delete:
         return true;
     }

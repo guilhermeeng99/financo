@@ -86,14 +86,13 @@ class CategoryRepository implements ICategoryRepository {
     int? excludeCategoryId,
   ) async {
     try {
-      // Buscar todas as categorias do tipo especificado
+
       final allCategoriesQuery = _database.select(_database.categories)
         ..where(
           (tbl) =>
               tbl.categoryType.equals(type.value) & tbl.isActive.equals(true),
         );
 
-      // Se há uma categoria a ser excluída (modo edição), excluí-la
       if (excludeCategoryId != null) {
         allCategoriesQuery.where(
           (tbl) => tbl.id.equals(excludeCategoryId).not(),
@@ -102,7 +101,6 @@ class CategoryRepository implements ICategoryRepository {
 
       final allCategories = await allCategoriesQuery.get();
 
-      // Buscar todas as categorias que têm subcategorias
       final categoriesWithSubcategories =
           await (_database.select(_database.categories)..where(
                 (tbl) =>
@@ -111,17 +109,14 @@ class CategoryRepository implements ICategoryRepository {
               ))
               .get();
 
-      // Extrair IDs das categorias que são pais (têm subcategorias)
       final parentIds = categoriesWithSubcategories
           .map((category) => category.parentCategoryId!)
           .toSet();
 
-      // Filtrar categorias que não têm subcategorias
       final eligibleParents = allCategories
           .where((category) => !parentIds.contains(category.id))
           .toList();
-
-      // Ordenar por nome
+          
       eligibleParents.sort((a, b) => a.name.compareTo(b.name));
 
       return Either.right(eligibleParents);
@@ -155,7 +150,6 @@ class CategoryRepository implements ICategoryRepository {
   @override
   Future<Either<Failure, bool>> deleteCategory(int id) async {
     try {
-      // Soft delete - mark as inactive
       final companion = CategoriesCompanion(
         id: Value(id),
         isActive: const Value(false),

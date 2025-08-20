@@ -47,15 +47,18 @@ class CategoryUsecase {
     CategoryType type,
     int? excludeCategoryId,
   ) async {
-    return _categoryRepository.getEligibleParentCategories(type, excludeCategoryId);
+    return _categoryRepository.getEligibleParentCategories(
+      type,
+      excludeCategoryId,
+    );
   }
-
 
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,
     String? name,
     int? parentCategoryId,
     bool? isActive,
+    bool updateParentId = false,
   }) async {
     try {
       Value<String>? nameValue;
@@ -67,9 +70,9 @@ class CategoryUsecase {
         nameValue = Value(categoryName.value);
       }
 
-      if (parentCategoryId != null || name != null) {
+      if (updateParentId) {
         final parentId = ParentCategoryId.create(parentCategoryId);
-        parentIdValue = Value.absentIfNull(parentId.value);
+        parentIdValue = Value(parentId.value);
       }
 
       if (isActive != null) {

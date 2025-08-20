@@ -107,6 +107,9 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Subcategory of'
 	String get subcategory_of => 'Subcategory of';
 
+	/// en: 'Uncategorized parent'
+	String get uncategorized_parent => 'Uncategorized parent';
+
 	/// en: 'Freeze'
 	String get freeze => 'Freeze';
 

@@ -120,15 +120,9 @@ class CategoriesCacheManager extends BaseCacheManager<CategoryData> {
               .toList()
         : allCategoriesOfType;
 
-    final parentIds =
-        allItems
-            ?.where((category) => category.parentCategoryId != null)
-            .map((category) => category.parentCategoryId!)
-            .toSet() ??
-        <int>{};
 
     eligibleCategories = eligibleCategories
-        .where((category) => !parentIds.contains(category.id))
+        .where((category) => category.parentCategoryId == null)
         .toList();
 
     eligibleCategories.sort((a, b) => a.name.compareTo(b.name));

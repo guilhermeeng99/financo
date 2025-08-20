@@ -52,13 +52,15 @@ class CategoriesModel {
     );
   }
 
-  void onTapCreateSubCategory(CategoryData category) => _showCategoryPopUp(
-    CreateAndEditCategoryPopUpArgs(
-      type: CreateAndEditCategoryPopUpType.edit,
-      category: category,
-    ),
-  );
-  
+  void onTapCreateSubCategory(CategoryData category) {
+    _showCategoryPopUp(
+      CreateAndEditCategoryPopUpArgs(
+        type: CreateAndEditCategoryPopUpType.create,
+        parentCategoryId: category.id,
+      ),
+    );
+  }
+
   Future<void> onTapDeleteCategory(CategoryData category) async {
     final result = await _categoryUsecase.deleteCategory(category.id);
 

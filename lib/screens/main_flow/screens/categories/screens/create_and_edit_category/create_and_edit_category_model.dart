@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dart';
@@ -20,6 +22,7 @@ class CreateAndEditCategoryModel {
         await _createCategory();
       }
     }
+    await PopUpManager.pop();
   }
 
   Future<void> _createCategory() async {
@@ -39,16 +42,27 @@ class CreateAndEditCategoryModel {
         DataCacheManager().categories.add(category);
 
         categoriesBloc.loadGroupedCategories();
-        PopUpManager.pop();
       },
     );
   }
 
   Future<void> _updateCategory(CategoryData originalCategory) async {
+    final newName = createAndEditCategoryBloc.name.value.trim();
+    final newParentId = createAndEditCategoryBloc.parentCategoryId.value;
+
+    final nameChanged = newName != originalCategory.name;
+    final parentChanged = newParentId != originalCategory.parentCategoryId;
+
+    if (!nameChanged && !parentChanged) {
+      logger.i('No changes detected, closing popup');
+      return;
+    }
+
     final result = await _categoryUsecase.updateCategory(
       id: originalCategory.id,
-      name: createAndEditCategoryBloc.name.value.trim(),
-      parentCategoryId: createAndEditCategoryBloc.parentCategoryId.value,
+      name: nameChanged ? newName : null,
+      parentCategoryId: newParentId,
+      updateParentId: parentChanged,
     );
 
     result.fold(
@@ -61,7 +75,6 @@ class CreateAndEditCategoryModel {
         DataCacheManager().categories.update(category);
 
         categoriesBloc.loadGroupedCategories();
-        PopUpManager.pop();
       },
     );
   }

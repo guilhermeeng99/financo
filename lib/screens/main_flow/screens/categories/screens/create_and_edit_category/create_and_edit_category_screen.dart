@@ -7,10 +7,15 @@ import 'package:financo/screens/main_flow/screens/categories/screens/create_and_
 enum CreateAndEditCategoryPopUpType { create, edit }
 
 class CreateAndEditCategoryPopUpArgs {
-  CreateAndEditCategoryPopUpArgs({required this.type, this.category});
+  CreateAndEditCategoryPopUpArgs({
+    required this.type,
+    this.category,
+    this.parentCategoryId,
+  });
 
   final CategoryData? category;
   final CreateAndEditCategoryPopUpType type;
+  final int? parentCategoryId;
 }
 
 class CreateAndEditCategoryPopUp extends HookWidget {
@@ -24,9 +29,14 @@ class CreateAndEditCategoryPopUp extends HookWidget {
       if (args.type == CreateAndEditCategoryPopUpType.edit) {
         createAndEditCategoryBloc.initializeWithCategoryData(args.category!);
       }
+      if (args.parentCategoryId != null) {
+        createAndEditCategoryBloc.initializeSubCategoryFromCategory(
+          args.parentCategoryId!,
+        );
+      }
 
       return null;
-    }, [args.type, args.category]);
+    }, [args.type, args.category, args.parentCategoryId]);
 
     return CWPopUp(
       title: args.type == CreateAndEditCategoryPopUpType.edit
@@ -38,7 +48,9 @@ class CreateAndEditCategoryPopUp extends HookWidget {
         child: Column(
           spacing: 30,
           children: [
-            if (args.type != CreateAndEditCategoryPopUpType.edit) const _Type(),
+            if (args.type != CreateAndEditCategoryPopUpType.edit &&
+                args.parentCategoryId == null)
+              const _Type(),
             const _Name(),
             const _SubCategory(),
           ],
@@ -149,6 +161,16 @@ class _SubCategory extends StatelessWidget {
             ),
           ),
           items: [
+            if (selectedParentId != null)
+              DropdownMenuItem<int?>(
+                child: Text(
+                  context.t.uncategorized_parent,
+                  style: TextStyle(
+                    color: Theme.of(context).customColors.secondaryTextColor,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
             ...availableParents.map((CategoryData category) {
               return DropdownMenuItem<int?>(
                 value: category.id,
