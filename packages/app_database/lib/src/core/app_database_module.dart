@@ -1,5 +1,7 @@
 import 'package:app_core/app_core.dart';
 import 'package:app_database/app_database.dart';
+import 'package:app_database/src/items/account/account_repository.dart';
+import 'package:app_database/src/items/category/category_repository.dart';
 
 class AppDatabaseModule extends Module {
   @override

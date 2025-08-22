@@ -1,6 +1,8 @@
 import 'package:app_core/app_core.dart';
 import 'package:app_database/app_database.dart';
 
+import 'category_cache_service.dart';
+
 class CategoriesCacheManager extends BaseCacheManager<CategoryData> {
   factory CategoriesCacheManager() {
     _instance ??= CategoriesCacheManager._();
@@ -11,6 +13,12 @@ class CategoriesCacheManager extends BaseCacheManager<CategoryData> {
   static CategoriesCacheManager? _instance;
 
   Map<CategoryType, List<CategoryData>>? _categoriesByType;
+
+  CategoryCacheService? _cacheService;
+  CategoryCacheService get _cache {
+    _cacheService ??= CategoryCacheService(this);
+    return _cacheService!;
+  }
 
   @override
   Future<List<CategoryData>?> fetchDataFromSource() async {
@@ -52,82 +60,20 @@ class CategoriesCacheManager extends BaseCacheManager<CategoryData> {
     };
   }
 
-  List<CategoryData> getByType(CategoryType type) {
-    if (!isLoaded) {
-      throw StateError('Data not loaded. Please execute loadData() first.');
-    }
-    return _categoriesByType?[type] ?? [];
-  }
-
-  List<CategoryData> getMainCategoriesByType(CategoryType type) {
-    if (!isLoaded) {
-      throw StateError('Data not loaded. Please execute loadData() first.');
-    }
-    return getByType(
-      type,
-    ).where((category) => category.parentCategoryId == null).toList();
-  }
-
-  List<CategoryData> getSubcategoriesFor(int parentCategoryId) {
-    if (!isLoaded) {
-      throw StateError('Data not loaded. Please execute loadData() first.');
-    }
-    return allItems
-            ?.where((category) => category.parentCategoryId == parentCategoryId)
-            .toList() ??
-        [];
-  }
-
   Map<CategoryType, Map<CategoryData, List<CategoryData>>>
-  getCategoriesWithSubcategories() {
-    if (!isLoaded) {
-      throw StateError('Data not loaded. Please execute loadData() first.');
-    }
-
-    final result = <CategoryType, Map<CategoryData, List<CategoryData>>>{};
-
-    for (final type in CategoryType.values) {
-      final mainCategories = getMainCategoriesByType(type);
-
-      if (mainCategories.isNotEmpty) {
-        final categorySubcategoryMap = <CategoryData, List<CategoryData>>{};
-
-        for (final mainCategory in mainCategories) {
-          final subcategories = getSubcategoriesFor(mainCategory.id);
-          categorySubcategoryMap[mainCategory] = subcategories;
-        }
-
-        result[type] = categorySubcategoryMap;
-      }
-    }
-
-    return result;
+  getCategoriesAndSubcategories({bool onlyActive = false}) {
+    return _cache.getCategoriesAndSubcategories(onlyActive: onlyActive);
   }
 
   List<CategoryData> getEligibleParentCategories(
     CategoryType type,
     int? excludeCategoryId,
   ) {
-    if (!isLoaded) {
-      throw StateError('Data not loaded. Please execute loadData() first.');
-    }
+    return _cache.getEligibleParentCategories(type, excludeCategoryId);
+  }
 
-    final allCategoriesOfType = getByType(type);
-
-    var eligibleCategories = excludeCategoryId != null
-        ? allCategoriesOfType
-              .where((category) => category.id != excludeCategoryId)
-              .toList()
-        : allCategoriesOfType;
-
-
-    eligibleCategories = eligibleCategories
-        .where((category) => category.parentCategoryId == null)
-        .toList();
-
-    eligibleCategories.sort((a, b) => a.name.compareTo(b.name));
-
-    return eligibleCategories;
+  List<CategoryData> getSubcategoriesFor(int parentCategoryId) {
+    return _cache.getSubcategoriesFor(parentCategoryId);
   }
 
   void add(CategoryData category) {

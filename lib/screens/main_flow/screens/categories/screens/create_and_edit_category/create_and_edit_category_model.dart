@@ -41,7 +41,7 @@ class CreateAndEditCategoryModel {
 
         DataCacheManager().categories.add(category);
 
-        categoriesBloc.loadGroupedCategories();
+        categoriesBloc.loadCategories();
       },
     );
   }
@@ -74,7 +74,7 @@ class CreateAndEditCategoryModel {
 
         DataCacheManager().categories.update(category);
 
-        categoriesBloc.loadGroupedCategories();
+        categoriesBloc.loadCategories();
       },
     );
   }

@@ -14,6 +14,12 @@ class CategoriesModel {
     CreateAndEditCategoryPopUpArgs(type: CreateAndEditCategoryPopUpType.create),
   );
 
+  void onTapShowOnlyActiveCategories() {
+    categoriesBloc.showOnlyActiveCategories.value =
+        !categoriesBloc.showOnlyActiveCategories.value;
+    categoriesBloc.loadCategories();
+  }
+
   void onTapUpdateCategoryPopUp(CategoryData category) => _showCategoryPopUp(
     CreateAndEditCategoryPopUpArgs(
       type: CreateAndEditCategoryPopUpType.edit,
@@ -47,7 +53,7 @@ class CategoriesModel {
 
         DataCacheManager().categories.update(updatedCategory);
 
-        categoriesBloc.loadGroupedCategories();
+        categoriesBloc.loadCategories();
       },
     );
   }
@@ -73,7 +79,7 @@ class CategoriesModel {
 
         DataCacheManager().categories.remove(category.id);
 
-        categoriesBloc.loadGroupedCategories();
+        categoriesBloc.loadCategories();
       },
     );
   }

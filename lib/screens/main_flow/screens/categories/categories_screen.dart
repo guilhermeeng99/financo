@@ -17,27 +17,51 @@ class CategoriesScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
-        child: Obx(() {
-          final categoriesWithSubcategories =
-              categoriesBloc.categoriesWithSubcategories;
-
-          return SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 35,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                ...categoriesWithSubcategories.entries.map(
-                  (entry) => Expanded(
-                    child: _CategoriesTypeArea(
-                      categoryType: entry.key,
-                      categoriesWithSubcategories: entry.value,
-                    ),
-                  ),
-                ),
+                Obx(() {
+                  return Row(
+                    spacing: 10,
+                    children: [
+                      Text(context.t.show_only_active_categories),
+                      Switch(
+                        value: categoriesBloc.showOnlyActiveCategories.value,
+                        onChanged: (_) =>
+                            categoriesModel.onTapShowOnlyActiveCategories(),
+                      ),
+                    ],
+                  );
+                }),
               ],
             ),
-          );
-        }),
+            Expanded(
+              child: Obx(() {
+                final categoriesWithSubcategories =
+                    categoriesBloc.categoriesWithSubcategories;
+
+                return SingleChildScrollView(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 35,
+                    children: [
+                      ...categoriesWithSubcategories.entries.map(
+                        (entry) => Expanded(
+                          child: _CategoriesTypeArea(
+                            categoryType: entry.key,
+                            categoriesWithSubcategories: entry.value,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }

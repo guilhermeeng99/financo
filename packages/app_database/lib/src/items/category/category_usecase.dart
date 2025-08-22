@@ -1,4 +1,5 @@
 import 'package:app_database/app_database.dart';
+import 'package:app_database/src/items/category/category_repository.dart';
 import 'package:drift/drift.dart';
 
 class CategoryUsecase {
@@ -35,23 +36,6 @@ class CategoryUsecase {
     return _categoryRepository.getAllCategories();
   }
 
-  Future<Either<Failure, List<CategoryData>>> getExpenseCategories() async {
-    return _categoryRepository.getCategoriesByType(CategoryType.expense);
-  }
-
-  Future<Either<Failure, List<CategoryData>>> getIncomeCategories() async {
-    return _categoryRepository.getCategoriesByType(CategoryType.income);
-  }
-
-  Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
-    CategoryType type,
-    int? excludeCategoryId,
-  ) async {
-    return _categoryRepository.getEligibleParentCategories(
-      type,
-      excludeCategoryId,
-    );
-  }
 
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,

@@ -5,32 +5,23 @@ CategoriesBloc get categoriesBloc => Modular.get<CategoriesBloc>();
 
 class CategoriesBloc extends GetxController {
   CategoriesBloc() {
-    loadGroupedCategories();
+    loadCategories();
   }
-
-  final RxMap<CategoryType, List<CategoryData>> groupedCategories =
-      <CategoryType, List<CategoryData>>{}.obs;
 
   final RxMap<CategoryType, Map<CategoryData, List<CategoryData>>>
   categoriesWithSubcategories =
       <CategoryType, Map<CategoryData, List<CategoryData>>>{}.obs;
 
-  Future<void> loadGroupedCategories() async {
+  final RxBool showOnlyActiveCategories = true.obs;
+
+  Future<void> loadCategories() async {
     try {
       final categoriesCache = DataCacheManager().categories;
 
-      final grouped = <CategoryType, List<CategoryData>>{};
-      for (final type in CategoryType.values) {
-        final mainCategories = categoriesCache.getMainCategoriesByType(type);
-        if (mainCategories.isNotEmpty) {
-          grouped[type] = mainCategories;
-        }
-      }
+      final withSubcategories = categoriesCache.getCategoriesAndSubcategories(
+        onlyActive: showOnlyActiveCategories.value,
+      );
 
-      final withSubcategories = categoriesCache
-          .getCategoriesWithSubcategories();
-
-      groupedCategories.value = grouped;
       categoriesWithSubcategories.value = withSubcategories;
       logger.i('✅ Grouped categories loaded from cache');
     } catch (e) {
@@ -40,8 +31,8 @@ class CategoriesBloc extends GetxController {
 
   @override
   void onClose() {
-    groupedCategories.close();
     categoriesWithSubcategories.close();
+    showOnlyActiveCategories.close();
     super.onClose();
   }
 }

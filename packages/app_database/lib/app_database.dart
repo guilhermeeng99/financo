@@ -6,9 +6,7 @@ export 'src/database/database_cache_manager.dart';
 export 'src/database/database_manager.dart';
 // Account
 export 'src/items/account/account_domain.dart';
-export 'src/items/account/account_repository.dart';
 export 'src/items/account/account_usecase.dart';
 // Category
 export 'src/items/category/category_domain.dart';
-export 'src/items/category/category_repository.dart';
 export 'src/items/category/category_usecase.dart';

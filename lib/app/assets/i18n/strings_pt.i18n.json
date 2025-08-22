@@ -3,10 +3,15 @@
   "releases": "Lançamentos",
   "register": "Cadastrar",
   "categories": "Categorias",
+  "show_only_active_categories": "Exibir apenas categorias ativas",
   "accounts": "Contas",
   "to_pay": "A Pagar",
   "paied": "Pago",
   "type": "Tipo",
+  "income": "Receita",
+  "expense": "Despesa",
+  "edit": "Editar",
+  "delete": "Excluir",
   "coin": "Moeda",
   "available_balance": "Saldo disponível",
   "name": "Nome",
@@ -17,7 +22,23 @@
     "money": "Dinheiro",
     "others": "Outros"
   },
+  "currency_type": {
+    "brl": "Real",
+    "usd": "Dólar",
+    "eur": "Euro"
+  },
   "new_account": "Nova Conta",
-  "additional_settings": "Configurações Adicionais"
+  "edit_account": "Editar Conta",
+  "new_category": "Nova Categoria",
+  "edit_category": "Editar Categoria",
+  "create_sub_category": "Criar Subcategoria",
+  "additional_settings": "Configurações Adicionais",
+  "subcategory_of": "Subcategoria de",
+  "uncategorized_parent": "Pai sem categoria",
+  "freeze": "Congelar",
+  "unfreeze": "Descongelar",
+  "balance": "Saldo",
+  "icon": "Ícone",
+  "initial_balance_date": "Data do saldo inicial"
 
 }
