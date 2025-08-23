@@ -17,24 +17,45 @@ class AccountsScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
-        child: Obx(() {
-          final groupedAccounts = accountsBloc.groupedAccounts;
-
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 35,
-              children: [
-                ...groupedAccounts.entries.map(
-                  (entry) => _AccountsTypeArea(
-                    accountType: entry.key,
-                    accountList: entry.value,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Obx(() {
+              return Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(context.t.show_only_active_accounts),
+                  Switch(
+                    value: accountsBloc.showOnlyActiveAccounts.value,
+                    onChanged: (_) =>
+                        accountsModel.onTapShowOnlyActiveAccounts(),
                   ),
-                ),
-              ],
+                ],
+              );
+            }),
+            Expanded(
+              child: Obx(() {
+                final groupedAccounts = accountsBloc.groupedAccounts;
+
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 35,
+                    children: [
+                      ...groupedAccounts.entries.map(
+                        (entry) => _AccountsTypeArea(
+                          accountType: entry.key,
+                          accountList: entry.value,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
-          );
-        }),
+          ],
+        ),
       ),
     );
   }

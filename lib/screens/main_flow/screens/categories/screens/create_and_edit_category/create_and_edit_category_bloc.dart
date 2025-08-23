@@ -9,7 +9,7 @@ class CreateAndEditCategoryBloc extends GetxController {
     loadAvailableParentCategories();
   }
 
-    CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
 
   final RxString name = ''.obs;
 
@@ -20,6 +20,19 @@ class CreateAndEditCategoryBloc extends GetxController {
   final RxList<CategoryData> availableParentCategories = <CategoryData>[].obs;
 
   final RxnInt currentCategoryId = RxnInt();
+
+  int? get validatedParentCategoryId {
+    final selectedId = parentCategoryId.value;
+    if (selectedId == null) return null;
+
+    final availableIds = availableParentCategories.map((c) => c.id).toSet();
+    return availableIds.contains(selectedId) ? selectedId : null;
+  }
+
+  List<int?> get validDropdownValues => [
+    null,
+    ...availableParentCategories.map((category) => category.id),
+  ];
 
   bool get currentCategoryHasSubcategories {
     final categoryId = currentCategoryId.value;
@@ -52,11 +65,12 @@ class CreateAndEditCategoryBloc extends GetxController {
         }
       },
     );
+
+    await loadAvailableParentCategories();
   }
 
   Future<void> loadAvailableParentCategories() async {
     try {
-
       final result = await _categoryUsecase.getEligibleParentCategories(
         selectedCategoryType.value,
         currentCategoryId.value,

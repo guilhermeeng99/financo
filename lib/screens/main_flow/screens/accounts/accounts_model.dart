@@ -29,6 +29,12 @@ class AccountsModel {
         ),
       );
 
+  void onTapShowOnlyActiveAccounts() {
+    accountsBloc.showOnlyActiveAccounts.value =
+        !accountsBloc.showOnlyActiveAccounts.value;
+    accountsBloc.loadGroupedAccounts();
+  }
+
   Future<void> onTapFreezeOrUnfreeze({
     required AccountData account,
     required bool freeze,

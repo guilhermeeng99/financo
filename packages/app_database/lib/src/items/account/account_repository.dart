@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../core/either.dart';
 import '../../core/failures.dart';
 import '../../database/database_manager.dart';
@@ -5,11 +7,12 @@ import 'account_domain.dart';
 
 abstract class IAccountRepository {
   Future<Either<Failure, AccountData>> createAccount(AccountsCompanion account);
-  Future<Either<Failure, List<AccountData>>> getAllAccounts();
+
   Future<Either<Failure, List<AccountData>>> getAccountsByType(
-    AccountType type,
-  );
-  Future<Either<Failure, AccountData?>> getAccountById(int id);
+    AccountType type, {
+    bool onlyActive = true,
+  });
+
   Future<Either<Failure, AccountData>> updateAccount(
     int id,
     AccountsCompanion account,
@@ -37,40 +40,26 @@ class AccountRepository implements IAccountRepository {
   }
 
   @override
-  Future<Either<Failure, List<AccountData>>> getAllAccounts() async {
-    try {
-      final result = await _database.select(_database.accounts).get();
-      return Either.right(result);
-    } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching accounts: $e'));
-    }
-  }
-
-  @override
   Future<Either<Failure, List<AccountData>>> getAccountsByType(
-    AccountType type,
-  ) async {
+    AccountType type, {
+    bool onlyActive = true,
+  }) async {
     try {
-      final result = await (_database.select(
-        _database.accounts,
-      )..where((tbl) => tbl.accountType.equals(type.value))).get();
+      var query = _database.select(_database.accounts)
+        ..where((tbl) => tbl.accountType.equals(type.value));
+
+      if (onlyActive) {
+        query = query..where((tbl) => tbl.isActive.equals(true));
+      }
+
+      query = query..orderBy([(t) => OrderingTerm(expression: t.name)]);
+
+      final result = await query.get();
       return Either.right(result);
     } catch (e) {
       return Either.left(
         DatabaseFailure('Error fetching accounts by type: $e'),
       );
-    }
-  }
-
-  @override
-  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
-    try {
-      final result = await (_database.select(
-        _database.accounts,
-      )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
-      return Either.right(result);
-    } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching account by id: $e'));
     }
   }
 

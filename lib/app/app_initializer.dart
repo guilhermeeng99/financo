@@ -13,8 +13,80 @@ class AppIntializer {
 
       await databaseManager.customSelect('SELECT 1').get();
 
+      await _showAllCategories();
+      await _showAllAccounts();
     } catch (e) {
       logger.e('❌ Error during database initialization: $e');
     }
   }
+}
+
+Future<void> _showAllCategories() async {
+  final categoryUsecase = Modular.get<CategoryUsecase>();
+  final categoriesResult = await categoryUsecase
+      .getCategoriesAndSubcategories();
+
+  categoriesResult.fold(
+    (Failure failure) =>
+        logger.e('❌ Error loading categories: ${failure.message}'),
+    (Map<CategoryType, Map<CategoryData, List<CategoryData>>> categoriesMap) {
+      final buffer = StringBuffer()
+        ..writeln('📁 Categories and subcategories loaded:');
+
+      var totalCategories = 0;
+      for (final entry in categoriesMap.entries) {
+        buffer.writeln('  📂 ${entry.key.name.toUpperCase()} categories:');
+
+        for (final categoryEntry in entry.value.entries) {
+          final parentCategory = categoryEntry.key;
+          final subcategories = categoryEntry.value;
+
+          totalCategories++;
+          buffer.writeln(
+            '    📁 ${parentCategory.name} (ID: ${parentCategory.id})',
+          );
+
+          for (final subcategory in subcategories) {
+            totalCategories++;
+            buffer.writeln(
+              '      📄 ${subcategory.name} (ID: ${subcategory.id})',
+            );
+          }
+        }
+      }
+
+      buffer.writeln('📊 Total categories loaded: $totalCategories');
+      logger.i(buffer.toString().trim());
+    },
+  );
+}
+
+Future<void> _showAllAccounts() async {
+  final accountUsecase = Modular.get<AccountUsecase>();
+  final accountsResult = await accountUsecase.getGroupedAccounts();
+
+  accountsResult.fold(
+    (failure) => logger.e('❌ Error loading accounts: ${failure.message}'),
+    (groupedAccounts) {
+      final buffer = StringBuffer()..writeln('💳 Grouped accounts loaded:');
+
+      var totalAccounts = 0;
+      for (final entry in groupedAccounts.entries) {
+        final accountType = entry.key;
+        final accounts = entry.value;
+
+        buffer.writeln('  💼 ${accountType.name.toUpperCase()} accounts:');
+
+        for (final account in accounts) {
+          totalAccounts++;
+          buffer.writeln(
+            '    💳 ${account.name} (Balance: ${account.balance}, ID: ${account.id})',
+          );
+        }
+      }
+
+      buffer.writeln('📊 Total accounts loaded: $totalAccounts');
+      logger.i(buffer.toString().trim());
+    },
+  );
 }

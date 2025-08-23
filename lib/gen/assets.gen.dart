@@ -55,9 +55,6 @@ class $LibAppAssetsFontsGen {
 class $LibAppAssetsI18nGen {
   const $LibAppAssetsI18nGen();
 
-  /// File path: lib/app/assets/i18n/strings.i18n.json
-  String get stringsI18n => 'lib/app/assets/i18n/strings.i18n.json';
-
   /// File path: lib/app/assets/i18n/strings_en.i18n.json
   String get stringsEnI18n => 'lib/app/assets/i18n/strings_en.i18n.json';
 
@@ -65,7 +62,7 @@ class $LibAppAssetsI18nGen {
   String get stringsPtI18n => 'lib/app/assets/i18n/strings_pt.i18n.json';
 
   /// List of all assets
-  List<String> get values => [stringsI18n, stringsEnI18n, stringsPtI18n];
+  List<String> get values => [stringsEnI18n, stringsPtI18n];
 }
 
 class $LibAppAssetsImagesGen {

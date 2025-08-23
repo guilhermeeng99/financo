@@ -91,7 +91,6 @@ class CWPopUp extends StatelessWidget {
   }
 }
 
-
 abstract class PopupMenuAction<T> {
   String getLabel(BuildContext context);
   IconData getIcon();
@@ -164,7 +163,6 @@ class CWPopupMenuButton<T, A extends PopupMenuAction<T>>
   }
 }
 
-
 class CWPopUpItemTitle extends StatelessWidget {
   const CWPopUpItemTitle({
     required this.child,
@@ -197,10 +195,7 @@ class CWPopUpItemTitle extends StatelessWidget {
 }
 
 class CWPopUpUnderLine extends StatelessWidget {
-  const CWPopUpUnderLine({
-
-    super.key,
-  });
+  const CWPopUpUnderLine({super.key});
 
   @override
   Widget build(BuildContext context) {

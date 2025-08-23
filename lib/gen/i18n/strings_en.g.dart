@@ -50,6 +50,9 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Show only active categories'
 	String get show_only_active_categories => 'Show only active categories';
 
+	/// en: 'Show only active accounts'
+	String get show_only_active_accounts => 'Show only active accounts';
+
 	/// en: 'Accounts'
 	String get accounts => 'Accounts';
 

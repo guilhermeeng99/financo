@@ -50,7 +50,6 @@ class CategoriesModel {
       },
       (updatedCategory) {
         logger.i('Category status updated successfully');
-
         categoriesBloc.loadCategories();
       },
     );

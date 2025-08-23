@@ -32,10 +32,6 @@ class CategoryUsecase {
     }
   }
 
-  Future<Either<Failure, List<CategoryData>>> getAllCategories() async {
-    return _categoryRepository.getAllCategories();
-  }
-
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,
     String? name,
@@ -95,18 +91,6 @@ class CategoryUsecase {
     return _categoryRepository.getCategoryById(id);
   }
 
-  Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
-    CategoryType type, {
-    bool onlyActive = true,
-    bool onlyMainCategories = false,
-  }) async {
-    return _categoryRepository.getCategoriesByType(
-      type,
-      onlyActive: onlyActive,
-      onlyMainCategories: onlyMainCategories,
-    );
-  }
-
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
     CategoryType type,
     int? excludeCategoryId,
@@ -117,52 +101,50 @@ class CategoryUsecase {
     );
   }
 
-  Future<Either<Failure, List<CategoryData>>> getSubcategoriesFor(
-    int parentCategoryId,
-  ) async {
-    return _categoryRepository.getSubcategoriesFor(parentCategoryId);
-  }
-
   Future<
     Either<Failure, Map<CategoryType, Map<CategoryData, List<CategoryData>>>>
   >
   getCategoriesAndSubcategories({bool onlyActive = true}) async {
     try {
-      final categoriesResult = await getAllCategories();
+      final result = <CategoryType, Map<CategoryData, List<CategoryData>>>{};
 
-      return categoriesResult.fold(Either.left, (
-        allCategories,
-      ) {
-        final result = <CategoryType, Map<CategoryData, List<CategoryData>>>{};
+      for (final type in CategoryType.values) {
+        final categoriesResult = await _categoryRepository.getCategoriesByType(
+          type,
+          onlyActive: onlyActive,
+        );
 
-        final activeCategories = onlyActive
-            ? allCategories.where((cat) => cat.isActive).toList()
-            : allCategories;
-
-        for (final type in CategoryType.values) {
-          final mainCategories = activeCategories
-              .where(
-                (cat) =>
-                    cat.categoryType == type && cat.parentCategoryId == null,
-              )
-              .toList();
-
-          if (mainCategories.isNotEmpty) {
-            final categorySubcategoryMap = <CategoryData, List<CategoryData>>{};
-
-            for (final mainCategory in mainCategories) {
-              final subcategories = activeCategories
-                  .where((sub) => sub.parentCategoryId == mainCategory.id)
-                  .toList();
-              categorySubcategoryMap[mainCategory] = subcategories;
-            }
-
-            result[type] = categorySubcategoryMap;
-          }
+        if (categoriesResult.isLeft) {
+          return categoriesResult.fold(
+            Either.left,
+            (_) => Either.left(const DatabaseFailure('Unexpected error')),
+          );
         }
 
-        return Either.right(result);
-      });
+        final allCategories = categoriesResult.fold(
+          (_) => <CategoryData>[],
+          (categories) => categories,
+        );
+
+        final categorySubcategoryMap = <CategoryData, List<CategoryData>>{};
+
+        final parentCategories = allCategories
+            .where((cat) => cat.parentCategoryId == null)
+            .toList();
+
+        for (final parentCategory in parentCategories) {
+          final subcategories = allCategories
+              .where((sub) => sub.parentCategoryId == parentCategory.id)
+              .toList();
+          categorySubcategoryMap[parentCategory] = subcategories;
+        }
+
+        if (categorySubcategoryMap.isNotEmpty) {
+          result[type] = categorySubcategoryMap;
+        }
+      }
+
+      return Either.right(result);
     } catch (e) {
       return Either.left(
         DatabaseFailure('Error fetching categories and subcategories: $e'),

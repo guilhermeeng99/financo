@@ -19,24 +19,20 @@ class CategoriesScreen extends StatelessWidget {
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Obx(() {
-                  return Row(
-                    spacing: 10,
-                    children: [
-                      Text(context.t.show_only_active_categories),
-                      Switch(
-                        value: categoriesBloc.showOnlyActiveCategories.value,
-                        onChanged: (_) =>
-                            categoriesModel.onTapShowOnlyActiveCategories(),
-                      ),
-                    ],
-                  );
-                }),
-              ],
-            ),
+            Obx(() {
+              return Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(context.t.show_only_active_categories),
+                  Switch(
+                    value: categoriesBloc.showOnlyActiveCategories.value,
+                    onChanged: (_) =>
+                        categoriesModel.onTapShowOnlyActiveCategories(),
+                  ),
+                ],
+              );
+            }),
             Expanded(
               child: Obx(() {
                 final categoriesWithSubcategories =

@@ -138,14 +138,10 @@ class _SubCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedParentId = createAndEditCategoryBloc.parentCategoryId.value;
-      final availableParents =
-          createAndEditCategoryBloc.availableParentCategories;
-
       return SizedBox(
         width: double.infinity,
         child: DropdownButton<int?>(
-          value: selectedParentId,
+          value: createAndEditCategoryBloc.validatedParentCategoryId,
           onChanged: (int? value) {
             createAndEditCategoryBloc.parentCategoryId.value = value;
           },
@@ -161,17 +157,18 @@ class _SubCategory extends StatelessWidget {
             ),
           ),
           items: [
-            if (selectedParentId != null)
-              DropdownMenuItem<int?>(
-                child: Text(
-                  context.t.uncategorized_parent,
-                  style: TextStyle(
-                    color: Theme.of(context).customColors.secondaryTextColor,
-                    fontStyle: FontStyle.italic,
-                  ),
+            DropdownMenuItem<int?>(
+              child: Text(
+                context.t.uncategorized_parent,
+                style: TextStyle(
+                  color: Theme.of(context).customColors.secondaryTextColor,
+                  fontStyle: FontStyle.italic,
                 ),
               ),
-            ...availableParents.map((CategoryData category) {
+            ),
+            ...createAndEditCategoryBloc.availableParentCategories.map((
+              CategoryData category,
+            ) {
               return DropdownMenuItem<int?>(
                 value: category.id,
                 child: Text(category.name),

@@ -39,7 +39,6 @@ class CreateAndEditAccountModel {
       (account) {
         logger.i('Account created successfully: ${account.name}');
 
-        // Recarrega as contas na tela principal
         accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },
@@ -65,7 +64,6 @@ class CreateAndEditAccountModel {
       (account) {
         logger.i('Account updated successfully: ${account.name}');
 
-        // Recarrega as contas na tela principal
         accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },

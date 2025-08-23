@@ -32,38 +32,38 @@ class TranslationsPt extends Translations {
 	TranslationsPt $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsPt(meta: meta ?? this.$meta);
 
 	// Translations
-	@override String get overview => 'Overview';
-	@override String get releases => 'Releases';
-	@override String get register => 'Register';
-	@override String get categories => 'Categories';
-	@override String get show_only_active_categories => 'Show only active categories';
-	@override String get accounts => 'Accounts';
-	@override String get to_pay => 'To Pay';
-	@override String get paied => 'Paied';
-	@override String get type => 'Type';
-	@override String get income => 'Income';
-	@override String get expense => 'Expense';
-	@override String get edit => 'Edit';
-	@override String get delete => 'Delete';
-	@override String get coin => 'Coin';
-	@override String get available_balance => 'Available balance';
-	@override String get name => 'Name';
-	@override String get save => 'Save';
+	@override String get overview => 'Visão Geral';
+	@override String get releases => 'Lançamentos';
+	@override String get register => 'Cadastrar';
+	@override String get categories => 'Categorias';
+	@override String get show_only_active_categories => 'Exibir apenas categorias ativas';
+	@override String get accounts => 'Contas';
+	@override String get to_pay => 'A Pagar';
+	@override String get paied => 'Pago';
+	@override String get type => 'Tipo';
+	@override String get income => 'Receita';
+	@override String get expense => 'Despesa';
+	@override String get edit => 'Editar';
+	@override String get delete => 'Excluir';
+	@override String get coin => 'Moeda';
+	@override String get available_balance => 'Saldo disponível';
+	@override String get name => 'Nome';
+	@override String get save => 'Salvar';
 	@override late final _TranslationsAccountTypePt account_type = _TranslationsAccountTypePt._(_root);
 	@override late final _TranslationsCurrencyTypePt currency_type = _TranslationsCurrencyTypePt._(_root);
-	@override String get new_account => 'New Account';
-	@override String get edit_account => 'Edit Account';
-	@override String get new_category => 'New Category';
-	@override String get edit_category => 'Edit Category';
-	@override String get create_sub_category => 'Create Subcategory';
-	@override String get additional_settings => 'Additional Settings';
-	@override String get subcategory_of => 'Subcategory of';
-	@override String get uncategorized_parent => 'Uncategorized parent';
-	@override String get freeze => 'Freeze';
-	@override String get unfreeze => 'Unfreeze';
-	@override String get balance => 'Balance';
-	@override String get icon => 'Icon';
-	@override String get initial_balance_date => 'Initial balance date';
+	@override String get new_account => 'Nova Conta';
+	@override String get edit_account => 'Editar Conta';
+	@override String get new_category => 'Nova Categoria';
+	@override String get edit_category => 'Editar Categoria';
+	@override String get create_sub_category => 'Criar Subcategoria';
+	@override String get additional_settings => 'Configurações Adicionais';
+	@override String get subcategory_of => 'Subcategoria de';
+	@override String get uncategorized_parent => 'Pai sem categoria';
+	@override String get freeze => 'Congelar';
+	@override String get unfreeze => 'Descongelar';
+	@override String get balance => 'Saldo';
+	@override String get icon => 'Ícone';
+	@override String get initial_balance_date => 'Data do saldo inicial';
 }
 
 // Path: account_type
@@ -73,10 +73,10 @@ class _TranslationsAccountTypePt extends TranslationsAccountTypeEn {
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get checking_account => 'Checking Account';
-	@override String get credit_card => 'Credit Card';
-	@override String get money => 'Money';
-	@override String get others => 'Others';
+	@override String get checking_account => 'Conta Corrente';
+	@override String get credit_card => 'Cartão de Crédito';
+	@override String get money => 'Dinheiro';
+	@override String get others => 'Outros';
 }
 
 // Path: currency_type
@@ -87,6 +87,6 @@ class _TranslationsCurrencyTypePt extends TranslationsCurrencyTypeEn {
 
 	// Translations
 	@override String get brl => 'Real';
-	@override String get usd => 'Dolar';
+	@override String get usd => 'Dólar';
 	@override String get eur => 'Euro';
 }

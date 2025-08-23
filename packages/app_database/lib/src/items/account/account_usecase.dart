@@ -39,16 +39,6 @@ class AccountUsecase {
     }
   }
 
-  Future<Either<Failure, List<AccountData>>> getAllAccounts() async {
-    return _accountRepository.getAllAccounts();
-  }
-
-  Future<Either<Failure, List<AccountData>>> getAccountsByType(
-    AccountType type,
-  ) async {
-    return _accountRepository.getAccountsByType(type);
-  }
-
   Future<Either<Failure, AccountData>> updateAccount({
     required int id,
     String? name,
@@ -138,31 +128,35 @@ class AccountUsecase {
     }
   }
 
-  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
-    return _accountRepository.getAccountById(id);
-  }
-
   Future<Either<Failure, Map<AccountType, List<AccountData>>>>
-  getGroupedAccounts() async {
+  getGroupedAccounts({bool onlyActive = true}) async {
     try {
-      final accountsResult = await getAllAccounts();
+      final grouped = <AccountType, List<AccountData>>{};
 
-      return accountsResult.fold(Either.left, (
-        allAccounts,
-      ) {
-        final grouped = <AccountType, List<AccountData>>{};
+      for (final type in AccountType.values) {
+        final accountsResult = await _accountRepository.getAccountsByType(
+          type,
+          onlyActive: onlyActive,
+        );
 
-        for (final type in AccountType.values) {
-          final accountsOfType = allAccounts
-              .where((account) => account.accountType == type)
-              .toList();
-          if (accountsOfType.isNotEmpty) {
-            grouped[type] = accountsOfType;
-          }
+        final accounts = accountsResult.fold(
+          (failure) => null,
+          (accounts) => accounts,
+        );
+
+        if (accounts == null) {
+          return accountsResult.fold(
+            Either.left,
+            (_) => throw StateError('This should never happen'),
+          );
         }
 
-        return Either.right(grouped);
-      });
+        if (accounts.isNotEmpty) {
+          grouped[type] = accounts;
+        }
+      }
+
+      return Either.right(grouped);
     } catch (e) {
       return Either.left(DatabaseFailure('Error grouping accounts: $e'));
     }

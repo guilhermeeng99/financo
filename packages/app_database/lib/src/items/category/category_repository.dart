@@ -9,11 +9,17 @@ abstract class ICategoryRepository {
   Future<Either<Failure, CategoryData>> createCategory(
     CategoriesCompanion category,
   );
-  Future<Either<Failure, List<CategoryData>>> getAllCategories();
+
+  Future<Either<Failure, CategoryData>> updateCategory(
+    int id,
+    CategoriesCompanion category,
+  );
+
+  Future<Either<Failure, bool>> deleteCategory(int id);
+
   Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
     CategoryType type, {
     bool onlyActive = true,
-    bool onlyMainCategories = false,
   });
 
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
@@ -21,17 +27,7 @@ abstract class ICategoryRepository {
     int? excludeCategoryId,
   );
 
-  Future<Either<Failure, List<CategoryData>>> getSubcategoriesFor(
-    int parentCategoryId,
-  );
-
   Future<Either<Failure, CategoryData?>> getCategoryById(int id);
-
-  Future<Either<Failure, CategoryData>> updateCategory(
-    int id,
-    CategoriesCompanion category,
-  );
-  Future<Either<Failure, bool>> deleteCategory(int id);
 }
 
 class CategoryRepository implements ICategoryRepository {
@@ -54,24 +50,9 @@ class CategoryRepository implements ICategoryRepository {
   }
 
   @override
-  Future<Either<Failure, List<CategoryData>>> getAllCategories() async {
-    try {
-      final result =
-          await (_database.select(_database.categories)
-                ..where((tbl) => tbl.isActive.equals(true))
-                ..orderBy([(t) => OrderingTerm(expression: t.name)]))
-              .get();
-      return Either.right(result);
-    } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching categories: $e'));
-    }
-  }
-
-  @override
   Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
     CategoryType type, {
     bool onlyActive = true,
-    bool onlyMainCategories = false,
   }) async {
     try {
       var query = _database.select(_database.categories)
@@ -79,10 +60,6 @@ class CategoryRepository implements ICategoryRepository {
 
       if (onlyActive) {
         query = query..where((tbl) => tbl.isActive.equals(true));
-      }
-
-      if (onlyMainCategories) {
-        query = query..where((tbl) => tbl.parentCategoryId.isNull());
       }
 
       query = query..orderBy([(t) => OrderingTerm(expression: t.name)]);
@@ -116,20 +93,8 @@ class CategoryRepository implements ICategoryRepository {
 
       final allCategories = await allCategoriesQuery.get();
 
-      final categoriesWithSubcategories =
-          await (_database.select(_database.categories)..where(
-                (tbl) =>
-                    tbl.parentCategoryId.isNotNull() &
-                    tbl.isActive.equals(true),
-              ))
-              .get();
-
-      final parentIds = categoriesWithSubcategories
-          .map((category) => category.parentCategoryId!)
-          .toSet();
-
       final eligibleParents = allCategories
-          .where((category) => !parentIds.contains(category.id))
+          .where((category) => category.parentCategoryId == null)
           .toList();
 
       eligibleParents.sort((a, b) => a.name.compareTo(b.name));
@@ -139,26 +104,6 @@ class CategoryRepository implements ICategoryRepository {
       return Either.left(
         DatabaseFailure('Error fetching eligible parent categories: $e'),
       );
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<CategoryData>>> getSubcategoriesFor(
-    int parentCategoryId,
-  ) async {
-    try {
-      final result =
-          await (_database.select(_database.categories)
-                ..where(
-                  (tbl) =>
-                      tbl.parentCategoryId.equals(parentCategoryId) &
-                      tbl.isActive.equals(true),
-                )
-                ..orderBy([(t) => OrderingTerm(expression: t.name)]))
-              .get();
-      return Either.right(result);
-    } catch (e) {
-      return Either.left(DatabaseFailure('Error fetching subcategories: $e'));
     }
   }
 
@@ -197,16 +142,15 @@ class CategoryRepository implements ICategoryRepository {
   @override
   Future<Either<Failure, bool>> deleteCategory(int id) async {
     try {
-      final companion = CategoriesCompanion(
-        id: Value(id),
-        isActive: const Value(false),
-      );
-
-      final updated = await (_database.update(
+      await (_database.delete(
         _database.categories,
-      )..where((tbl) => tbl.id.equals(id))).writeReturning(companion);
+      )..where((tbl) => tbl.parentCategoryId.equals(id))).go();
 
-      if (updated.isEmpty) {
+      final deletedCount = await (_database.delete(
+        _database.categories,
+      )..where((tbl) => tbl.id.equals(id))).go();
+
+      if (deletedCount == 0) {
         return Either.left(DatabaseFailure('Category with id $id not found'));
       }
 
