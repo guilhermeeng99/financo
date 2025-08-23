@@ -7,27 +7,26 @@ class AccountsBloc extends GetxController {
   AccountsBloc() {
     loadGroupedAccounts();
   }
+  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
 
   final RxMap<AccountType, List<AccountData>> groupedAccounts =
       <AccountType, List<AccountData>>{}.obs;
 
   Future<void> loadGroupedAccounts() async {
     try {
-      final accountsCache = DataCacheManager().accounts;
+      final result = await _accountUsecase.getGroupedAccounts();
 
-      final grouped = <AccountType, List<AccountData>>{};
-
-      for (final type in AccountType.values) {
-        final accounts = accountsCache.getByType(type);
-        if (accounts.isNotEmpty) {
-          grouped[type] = accounts;
-        }
-      }
-
-      groupedAccounts.value = grouped;
-      logger.i('✅ Grouped accounts loaded from cache');
+      result.fold(
+        (failure) {
+          logger.e('❌ Error loading accounts: ${failure.message}');
+        },
+        (grouped) {
+          groupedAccounts.value = grouped;
+          logger.i('✅ Grouped accounts loaded from database');
+        },
+      );
     } catch (e) {
-      logger.e('❌ Error loading accounts from cache: $e');
+      logger.e('❌ Error loading accounts: $e');
     }
   }
 

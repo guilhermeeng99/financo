@@ -7,6 +7,7 @@ class CategoriesBloc extends GetxController {
   CategoriesBloc() {
     loadCategories();
   }
+  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
 
   final RxMap<CategoryType, Map<CategoryData, List<CategoryData>>>
   categoriesWithSubcategories =
@@ -16,16 +17,21 @@ class CategoriesBloc extends GetxController {
 
   Future<void> loadCategories() async {
     try {
-      final categoriesCache = DataCacheManager().categories;
-
-      final withSubcategories = categoriesCache.getCategoriesAndSubcategories(
+      final result = await _categoryUsecase.getCategoriesAndSubcategories(
         onlyActive: showOnlyActiveCategories.value,
       );
 
-      categoriesWithSubcategories.value = withSubcategories;
-      logger.i('✅ Grouped categories loaded from cache');
+      result.fold(
+        (failure) {
+          logger.e('❌ Error loading categories: ${failure.message}');
+        },
+        (withSubcategories) {
+          categoriesWithSubcategories.value = withSubcategories;
+          logger.i('✅ Grouped categories loaded from database');
+        },
+      );
     } catch (e) {
-      logger.e('❌ Error loading categories from cache: $e');
+      logger.e('❌ Error loading categories: $e');
     }
   }
 

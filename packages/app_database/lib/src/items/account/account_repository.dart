@@ -9,6 +9,7 @@ abstract class IAccountRepository {
   Future<Either<Failure, List<AccountData>>> getAccountsByType(
     AccountType type,
   );
+  Future<Either<Failure, AccountData?>> getAccountById(int id);
   Future<Either<Failure, AccountData>> updateAccount(
     int id,
     AccountsCompanion account,
@@ -58,6 +59,18 @@ class AccountRepository implements IAccountRepository {
       return Either.left(
         DatabaseFailure('Error fetching accounts by type: $e'),
       );
+    }
+  }
+
+  @override
+  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
+    try {
+      final result = await (_database.select(
+        _database.accounts,
+      )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error fetching account by id: $e'));
     }
   }
 

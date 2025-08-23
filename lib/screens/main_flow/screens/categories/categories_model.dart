@@ -51,8 +51,6 @@ class CategoriesModel {
       (updatedCategory) {
         logger.i('Category status updated successfully');
 
-        DataCacheManager().categories.update(updatedCategory);
-
         categoriesBloc.loadCategories();
       },
     );
@@ -76,8 +74,6 @@ class CategoriesModel {
       },
       (success) {
         logger.i('Category deleted successfully');
-
-        DataCacheManager().categories.remove(category.id);
 
         categoriesBloc.loadCategories();
       },

@@ -9,17 +9,12 @@ class AppIntializer {
 
   static Future<void> initializeOnLoading() async {
     try {
-      logger.i('🔄 Initializing application...');
-      final success = await DataCacheManager().preloadAllData();
+      final databaseManager = Modular.get<DatabaseManager>();
 
-      if (!success) {
-        throw Exception('📦❌ Failed to preload data');
-      }
+      await databaseManager.customSelect('SELECT 1').get();
 
-      logger.i('✅ Initialization complete!');
     } catch (e) {
-      logger.e('❌ Error during initialization: $e');
-      rethrow;
+      logger.e('❌ Error during database initialization: $e');
     }
   }
 }

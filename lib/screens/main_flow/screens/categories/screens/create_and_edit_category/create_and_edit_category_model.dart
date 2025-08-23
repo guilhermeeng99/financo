@@ -39,8 +39,6 @@ class CreateAndEditCategoryModel {
       (category) {
         logger.i('Category created successfully: ${category.name}');
 
-        DataCacheManager().categories.add(category);
-
         categoriesBloc.loadCategories();
       },
     );
@@ -71,8 +69,6 @@ class CreateAndEditCategoryModel {
       },
       (category) {
         logger.i('Category updated successfully: ${category.name}');
-
-        DataCacheManager().categories.update(category);
 
         categoriesBloc.loadCategories();
       },

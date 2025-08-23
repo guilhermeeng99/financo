@@ -8,6 +8,9 @@ class CreateAndEditCategoryBloc extends GetxController {
   CreateAndEditCategoryBloc() {
     loadAvailableParentCategories();
   }
+
+    CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+
   final RxString name = ''.obs;
 
   final RxnInt parentCategoryId = RxnInt();
@@ -22,14 +25,7 @@ class CreateAndEditCategoryBloc extends GetxController {
     final categoryId = currentCategoryId.value;
     if (categoryId == null) return false;
 
-    try {
-      final categoriesCache = DataCacheManager().categories;
-      final subcategories = categoriesCache.getSubcategoriesFor(categoryId);
-      return subcategories.isNotEmpty;
-    } catch (e) {
-      logger.e('Error checking if category has subcategories: $e');
-      return false;
-    }
+    return false;
   }
 
   void initializeWithCategoryData(CategoryData category) {
@@ -40,30 +36,43 @@ class CreateAndEditCategoryBloc extends GetxController {
     loadAvailableParentCategories();
   }
 
-  void initializeSubCategoryFromCategory(int parentCategoryId) {
+  Future<void> initializeSubCategoryFromCategory(int parentCategoryId) async {
     createAndEditCategoryBloc.parentCategoryId.value = parentCategoryId;
 
-    final parentCategory = DataCacheManager().categories.getById(
-      parentCategoryId,
+    final result = await _categoryUsecase.getCategoryById(parentCategoryId);
+
+    result.fold(
+      (failure) {
+        logger.e('Error getting parent category: ${failure.message}');
+      },
+      (parentCategory) {
+        if (parentCategory != null) {
+          createAndEditCategoryBloc.selectedCategoryType.value =
+              parentCategory.categoryType;
+        }
+      },
     );
-    if (parentCategory != null) {
-      createAndEditCategoryBloc.selectedCategoryType.value =
-          parentCategory.categoryType;
-    }
   }
 
   Future<void> loadAvailableParentCategories() async {
     try {
-      final categoriesCache = DataCacheManager().categories;
 
-      final categories = categoriesCache.getEligibleParentCategories(
+      final result = await _categoryUsecase.getEligibleParentCategories(
         selectedCategoryType.value,
         currentCategoryId.value,
       );
 
-      availableParentCategories.value = categories;
+      result.fold(
+        (failure) {
+          logger.e('Error loading parent categories: ${failure.message}');
+          availableParentCategories.clear();
+        },
+        (categories) {
+          availableParentCategories.value = categories;
+        },
+      );
     } catch (e) {
-      logger.e('Error loading parent categories from cache: $e');
+      logger.e('Error loading parent categories: $e');
       availableParentCategories.clear();
     }
   }

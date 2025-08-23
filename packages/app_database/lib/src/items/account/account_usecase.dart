@@ -137,4 +137,34 @@ class AccountUsecase {
       );
     }
   }
+
+  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
+    return _accountRepository.getAccountById(id);
+  }
+
+  Future<Either<Failure, Map<AccountType, List<AccountData>>>>
+  getGroupedAccounts() async {
+    try {
+      final accountsResult = await getAllAccounts();
+
+      return accountsResult.fold(Either.left, (
+        allAccounts,
+      ) {
+        final grouped = <AccountType, List<AccountData>>{};
+
+        for (final type in AccountType.values) {
+          final accountsOfType = allAccounts
+              .where((account) => account.accountType == type)
+              .toList();
+          if (accountsOfType.isNotEmpty) {
+            grouped[type] = accountsOfType;
+          }
+        }
+
+        return Either.right(grouped);
+      });
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error grouping accounts: $e'));
+    }
+  }
 }

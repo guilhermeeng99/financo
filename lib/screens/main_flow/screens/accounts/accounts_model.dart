@@ -45,8 +45,6 @@ class AccountsModel {
       (updatedAccount) {
         logger.i('Account status updated successfully');
 
-        DataCacheManager().accounts.update(updatedAccount);
-
         accountsBloc.loadGroupedAccounts();
       },
     );
@@ -61,8 +59,6 @@ class AccountsModel {
       },
       (deletedAccount) {
         logger.i('Account deleted successfully');
-
-        DataCacheManager().accounts.remove(account.id);
 
         accountsBloc.loadGroupedAccounts();
       },

@@ -39,8 +39,7 @@ class CreateAndEditAccountModel {
       (account) {
         logger.i('Account created successfully: ${account.name}');
 
-        DataCacheManager().accounts.add(account);
-
+        // Recarrega as contas na tela principal
         accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },
@@ -66,8 +65,7 @@ class CreateAndEditAccountModel {
       (account) {
         logger.i('Account updated successfully: ${account.name}');
 
-        DataCacheManager().accounts.update(account);
-
+        // Recarrega as contas na tela principal
         accountsBloc.loadGroupedAccounts();
         PopUpManager.pop();
       },
