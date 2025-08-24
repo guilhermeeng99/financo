@@ -1,6 +1,5 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/app/index.dart';
 import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dart';
 import 'package:financo/screens/main_flow/screens/categories/categories_model.dart';
 import 'package:financo/screens/main_flow/screens/categories/widgets/categories_item_menu_actions.dart';
@@ -11,28 +10,12 @@ class CategoriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: CWFloatingActionButton(
-        tooltipMessage: context.t.new_category,
-        onTap: categoriesModel.onTapFloatingActionButton,
-      ),
+      floatingActionButton: const _FloatingActionButton(),
       body: Padding(
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
         child: Column(
           children: [
-            Obx(() {
-              return Row(
-                spacing: 10,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(context.t.show_only_active_categories),
-                  Switch(
-                    value: categoriesBloc.showOnlyActiveCategories.value,
-                    onChanged: (_) =>
-                        categoriesModel.onTapShowOnlyActiveCategories(),
-                  ),
-                ],
-              );
-            }),
+            const _TopButtons(),
             Expanded(
               child: Obx(() {
                 final categoriesWithSubcategories =
@@ -56,6 +39,93 @@ class CategoriesScreen extends StatelessWidget {
                 );
               }),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TopButtons extends StatelessWidget {
+  const _TopButtons();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return Row(
+        spacing: 10,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(
+            context.t.show_only_active_categories,
+            style: const TextStyle(fontSize: 18),
+          ),
+          Switch(
+            value: categoriesBloc.showOnlyActiveCategories.value,
+            onChanged: (_) => categoriesModel.onTapShowOnlyActiveCategories(),
+          ),
+          ElevatedButton.icon(
+            onPressed: () =>
+                categoriesModelExcel.onTapDownloadUserCategories(context),
+            icon: Icon(
+              Icons.download,
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+            label: Text(
+              context.t.export_categories,
+              style: TextStyle(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                fontSize: 18,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+class _FloatingActionButton extends HookWidget {
+  const _FloatingActionButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final showSecondButton = useState(false);
+
+    return MouseRegion(
+      onEnter: (_) => showSecondButton.value = true,
+      onExit: (_) => showSecondButton.value = false,
+      child: Container(
+        width: 80,
+        height: 170,
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              bottom: 0,
+              child: CWFloatingActionButton(
+                tooltipMessage: context.t.new_category,
+                onTap: categoriesModel.onTapFloatingActionButton,
+              ),
+            ),
+            if (showSecondButton.value)
+              Positioned(
+                bottom: 70,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: showSecondButton.value ? 1.0 : 0.0,
+                  child: CWFloatingActionButton(
+                    icon: Icons.upload,
+                    size: 40,
+                    tooltipMessage: context.t.import_categories,
+                    onTap: categoriesModel.onTapImportPopUp,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -151,22 +221,11 @@ class _CategoryItem extends StatelessWidget {
                   child: Icon(
                     Icons.subdirectory_arrow_right,
                     size: 16,
-                    color: Theme.of(context).customColors.secondaryTextColor,
+                    color: Theme.of(context).dividerColor,
                   ),
                 ),
               ],
-              Expanded(
-                child: Text(
-                  category.name,
-                  style: isMainCategory
-                      ? null
-                      : TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).customColors.secondaryTextColor,
-                        ),
-                ),
-              ),
+              Expanded(child: Text(category.name)),
               CWPopupMenuButton<CategoryData, CategoryMenuAction>(
                 item: category,
                 actions: CategoryMenuAction.values,

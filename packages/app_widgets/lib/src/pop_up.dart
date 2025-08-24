@@ -4,14 +4,14 @@ import 'package:financo/app/app_theme.dart';
 class CWPopUp extends StatelessWidget {
   const CWPopUp({
     required this.centerContent,
-    required this.bottomContent,
     required this.title,
+    this.bottomContent,
     this.padding,
     super.key,
   });
 
   final Widget centerContent;
-  final Widget bottomContent;
+  final Widget? bottomContent;
   final EdgeInsetsGeometry? padding;
   final String title;
 
@@ -66,19 +66,21 @@ class CWPopUp extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Spacer(),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).customColors.fourth,
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
+                      if (bottomContent != null) ...[
+                        const Spacer(),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).customColors.fourth,
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(8),
+                              bottomRight: Radius.circular(8),
+                            ),
                           ),
+                          child: bottomContent,
                         ),
-                        child: bottomContent,
-                      ),
+                      ],
                     ],
                   ),
                 ),

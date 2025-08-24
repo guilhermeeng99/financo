@@ -15,7 +15,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   slang_flutter: ^4.8.0
-  sqlite3_flutter_libs: ^0.5.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -43,6 +42,7 @@ flutter:
 
 
   assets:
+    - lib/app/assets/excels/
     - lib/app/assets/fonts/
     - lib/app/assets/i18n/
     - lib/app/assets/images/

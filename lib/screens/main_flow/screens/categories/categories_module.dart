@@ -9,6 +9,7 @@ class CategoriesModule extends Module {
   void binds(Injector i) {
     i
       ..addSingleton<CategoriesBloc>(CategoriesBloc.new)
+      ..addSingleton<CategoriesModelExcel>(CategoriesModelExcel.new)
       ..addSingleton<CategoriesModel>(CategoriesModel.new);
   }
 

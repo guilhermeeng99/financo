@@ -5,33 +5,34 @@ class CWFloatingActionButton extends StatelessWidget {
   const CWFloatingActionButton({
     required this.onTap,
     required this.tooltipMessage,
-     this.onHover,
+    this.icon,
     super.key,
+    this.size,
   });
 
   final void Function() onTap;
   final String tooltipMessage;
-  final void Function(bool isHovering)? onHover;
-
+  final IconData? icon;
+  final double? size;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10, bottom: 10),
-      child: Tooltip(
-        message: context.t.new_account,
-        child: SizedBox(
-          width: 60,
-          height: 60,
-          child: FloatingActionButton(
-            onPressed: onTap,
-            backgroundColor: Theme.of(context).customColors.button02,
-            elevation: 0,
-            hoverElevation: 0,
-            shape: const CircleBorder(),
-            child: Transform.rotate(
-              angle: 45.toRadians(),
-              child: SvgPicture.asset(svgs.x, width: 14, height: 14),
-            ),
+    final auxSize = size ?? 60;
+    
+    return Tooltip(
+      message: tooltipMessage,
+      child: SizedBox(
+        width: auxSize,
+        height: auxSize,
+        child: FloatingActionButton(
+          onPressed: onTap,
+          backgroundColor: Theme.of(context).customColors.button02,
+          elevation: 0,
+          hoverElevation: 0,
+          shape: const CircleBorder(),
+          child: Icon(
+            icon ?? Icons.add,
+            size: auxSize / 2,
+            color: Theme.of(context).dividerColor,
           ),
         ),
       ),

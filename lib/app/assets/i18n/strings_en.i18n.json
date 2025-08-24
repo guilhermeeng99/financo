@@ -4,6 +4,7 @@
   "register": "Register",
   "categories": "Categories",
   "show_only_active_categories": "Show only active categories",
+  "export_categories": "Export Categories",
   "show_only_active_accounts": "Show only active accounts",
   "accounts": "Accounts",
   "to_pay": "To Pay",
@@ -40,6 +41,11 @@
   "unfreeze": "Unfreeze",
   "balance": "Balance",
   "icon": "Icon",
-  "initial_balance_date": "Initial balance date"
+  "initial_balance_date": "Initial balance date",
+  "import_categories": "Import Categories",
+  "export_successfully": "Exported successfully!",
+  "export_error": "Error exporting",
+  "download_example": "Download Example",
+  "choose_file": "Choose File"
 
 }

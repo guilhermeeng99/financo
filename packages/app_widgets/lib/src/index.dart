@@ -4,3 +4,4 @@ export 'card.dart';
 export 'divider.dart';
 export 'floating_action_button.dart';
 export 'pop_up.dart';
+export 'utils.dart';

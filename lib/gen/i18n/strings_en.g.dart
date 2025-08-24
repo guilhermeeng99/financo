@@ -50,6 +50,9 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Show only active categories'
 	String get show_only_active_categories => 'Show only active categories';
 
+	/// en: 'Export Categories'
+	String get export_categories => 'Export Categories';
+
 	/// en: 'Show only active accounts'
 	String get show_only_active_accounts => 'Show only active accounts';
 
@@ -130,6 +133,21 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Initial balance date'
 	String get initial_balance_date => 'Initial balance date';
+
+	/// en: 'Import Categories'
+	String get import_categories => 'Import Categories';
+
+	/// en: 'Exported successfully!'
+	String get export_successfully => 'Exported successfully!';
+
+	/// en: 'Error exporting'
+	String get export_error => 'Error exporting';
+
+	/// en: 'Download Example'
+	String get download_example => 'Download Example';
+
+	/// en: 'Choose File'
+	String get choose_file => 'Choose File';
 }
 
 // Path: account_type

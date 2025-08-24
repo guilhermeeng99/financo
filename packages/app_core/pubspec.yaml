@@ -22,6 +22,8 @@ dependencies:
   logger: 2.6.1
   get: 4.7.2
   flutter_hooks: 0.21.3
+  file_saver: 0.3.1
+  excel: 4.0.6
   url_launcher: 6.3.2
   intl:
 

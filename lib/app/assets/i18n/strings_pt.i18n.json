@@ -4,6 +4,7 @@
   "register": "Cadastrar",
   "categories": "Categorias",
   "show_only_active_categories": "Exibir apenas categorias ativas",
+  "export_categories": "Exportar Categorias",
   "accounts": "Contas",
   "to_pay": "A Pagar",
   "paied": "Pago",
@@ -39,6 +40,8 @@
   "unfreeze": "Descongelar",
   "balance": "Saldo",
   "icon": "Ícone",
-  "initial_balance_date": "Data do saldo inicial"
+  "initial_balance_date": "Data do saldo inicial",
+  "export_successfully": "Exported successfully!",
+  "export_error": "Error exporting"
 
 }

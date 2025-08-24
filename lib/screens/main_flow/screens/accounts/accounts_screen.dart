@@ -11,9 +11,12 @@ class AccountsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: CWFloatingActionButton(
-        tooltipMessage: context.t.new_account,
-        onTap: accountsModel.onTapFloatingActionButton,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(right: 10, bottom: 10),
+        child: CWFloatingActionButton(
+          tooltipMessage: context.t.new_account,
+          onTap: accountsModel.onTapFloatingActionButton,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 40, left: 60, right: 60),

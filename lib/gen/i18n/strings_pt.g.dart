@@ -37,6 +37,7 @@ class TranslationsPt extends Translations {
 	@override String get register => 'Cadastrar';
 	@override String get categories => 'Categorias';
 	@override String get show_only_active_categories => 'Exibir apenas categorias ativas';
+	@override String get export_categories => 'Exportar Categorias';
 	@override String get accounts => 'Contas';
 	@override String get to_pay => 'A Pagar';
 	@override String get paied => 'Pago';
@@ -64,6 +65,8 @@ class TranslationsPt extends Translations {
 	@override String get balance => 'Saldo';
 	@override String get icon => 'Ícone';
 	@override String get initial_balance_date => 'Data do saldo inicial';
+	@override String get export_successfully => 'Exported successfully!';
+	@override String get export_error => 'Error exporting';
 }
 
 // Path: account_type
