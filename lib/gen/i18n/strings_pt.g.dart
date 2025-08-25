@@ -34,10 +34,11 @@ class TranslationsPt extends Translations {
 	// Translations
 	@override String get overview => 'Visão Geral';
 	@override String get releases => 'Lançamentos';
-	@override String get register => 'Cadastrar';
+	@override String get register => 'Registrar';
 	@override String get categories => 'Categorias';
-	@override String get show_only_active_categories => 'Exibir apenas categorias ativas';
+	@override String get show_only_active_categories => 'Mostrar apenas categorias ativas';
 	@override String get export_categories => 'Exportar Categorias';
+	@override String get show_only_active_accounts => 'Mostrar apenas contas ativas';
 	@override String get accounts => 'Contas';
 	@override String get to_pay => 'A Pagar';
 	@override String get paied => 'Pago';
@@ -59,14 +60,21 @@ class TranslationsPt extends Translations {
 	@override String get create_sub_category => 'Criar Subcategoria';
 	@override String get additional_settings => 'Configurações Adicionais';
 	@override String get subcategory_of => 'Subcategoria de';
-	@override String get uncategorized_parent => 'Pai sem categoria';
+	@override String get uncategorized_parent => 'Sem categoria pai';
+	@override String get category_name_already_exists => 'Já existe uma categoria com este nome';
 	@override String get freeze => 'Congelar';
 	@override String get unfreeze => 'Descongelar';
 	@override String get balance => 'Saldo';
 	@override String get icon => 'Ícone';
 	@override String get initial_balance_date => 'Data do saldo inicial';
-	@override String get export_successfully => 'Exported successfully!';
-	@override String get export_error => 'Error exporting';
+	@override String get import_categories => 'Importar Categorias';
+	@override String get export_successfully => 'Exportado com sucesso!';
+	@override String get export_error => 'Erro ao exportar';
+	@override String get download_example => 'Baixar Exemplo';
+	@override String get choose_file => 'Escolher Arquivo';
+	@override String get excel_not_found => 'Arquivo Excel não encontrado';
+	@override String get excel_not_valid => 'Arquivo Excel inválido';
+	@override String get excel_import_successfully => 'Arquivo Excel importado com sucesso';
 }
 
 // Path: account_type

@@ -1,4 +1,3 @@
-import 'package:app_core/app_core.dart';
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
@@ -47,6 +46,10 @@ class AccountsModel {
     result.fold(
       (failure) {
         logger.e('Error updating account status: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (updatedAccount) {
         logger.i('Account status updated successfully');
@@ -62,6 +65,10 @@ class AccountsModel {
     result.fold(
       (failure) {
         logger.e('Error deleting account: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (deletedAccount) {
         logger.i('Account deleted successfully');

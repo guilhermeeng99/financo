@@ -37,6 +37,7 @@
   "additional_settings": "Additional Settings",
   "subcategory_of": "Subcategory of",
   "uncategorized_parent": "Uncategorized parent",
+  "category_name_already_exists": "A category with this name already exists",
   "freeze": "Freeze",
   "unfreeze": "Unfreeze",
   "balance": "Balance",
@@ -46,6 +47,9 @@
   "export_successfully": "Exported successfully!",
   "export_error": "Error exporting",
   "download_example": "Download Example",
-  "choose_file": "Choose File"
+  "choose_file": "Choose File",
+  "excel_not_found": "Excel file not found",
+  "excel_not_valid": "Excel file not valid",
+  "excel_import_successfully": "Excel file imported successfully"
 
 }

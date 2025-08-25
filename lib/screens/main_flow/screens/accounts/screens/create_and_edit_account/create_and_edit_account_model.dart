@@ -35,6 +35,10 @@ class CreateAndEditAccountModel {
     result.fold(
       (failure) {
         logger.e('Error creating account: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (account) {
         logger.i('Account created successfully: ${account.name}');
@@ -60,6 +64,10 @@ class CreateAndEditAccountModel {
     result.fold(
       (failure) {
         logger.e('Error updating account: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (account) {
         logger.i('Account updated successfully: ${account.name}');

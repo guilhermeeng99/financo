@@ -14,3 +14,7 @@ class DatabaseFailure extends Failure {
 class NotFoundFailure extends Failure {
   const NotFoundFailure(super.message);
 }
+
+class DuplicateEntryFailure extends Failure {
+  const DuplicateEntryFailure(super.message);
+}

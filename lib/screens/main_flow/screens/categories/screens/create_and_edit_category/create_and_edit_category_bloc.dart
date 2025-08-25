@@ -57,6 +57,10 @@ class CreateAndEditCategoryBloc extends GetxController {
     result.fold(
       (failure) {
         logger.e('Error getting parent category: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (parentCategory) {
         if (parentCategory != null) {
@@ -79,6 +83,10 @@ class CreateAndEditCategoryBloc extends GetxController {
       result.fold(
         (failure) {
           logger.e('Error loading parent categories: ${failure.message}');
+          AppWidgetsUtils.snackBar(
+            title: failure.message,
+            type: SnackBarType.error,
+          );
           availableParentCategories.clear();
         },
         (categories) {

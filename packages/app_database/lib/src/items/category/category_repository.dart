@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 import '../../core/either.dart';
 import '../../core/failures.dart';
@@ -28,6 +29,12 @@ abstract class ICategoryRepository {
   );
 
   Future<Either<Failure, CategoryData?>> getCategoryById(int id);
+
+  Future<Either<Failure, CategoryData?>> getCategoryByNameAndTypeAndParent(
+    String name,
+    CategoryType type,
+    int? parentCategoryId,
+  );
 }
 
 class CategoryRepository implements ICategoryRepository {
@@ -36,15 +43,78 @@ class CategoryRepository implements ICategoryRepository {
   final DatabaseManager _database;
 
   @override
+  Future<Either<Failure, CategoryData?>> getCategoryByNameAndTypeAndParent(
+    String name,
+    CategoryType type,
+    int? parentCategoryId,
+  ) async {
+    try {
+      final query = _database.select(_database.categories)
+        ..where(
+          (tbl) =>
+              tbl.name.equals(name) &
+              tbl.categoryType.equals(type.value) &
+              (parentCategoryId != null
+                  ? tbl.parentCategoryId.equals(parentCategoryId)
+                  : tbl.parentCategoryId.isNull()),
+        );
+
+      final result = await query.getSingleOrNull();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error checking category existence: $e'),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, CategoryData>> createCategory(
     CategoriesCompanion category,
   ) async {
+    if (category.name.present && category.categoryType.present) {
+      final existingCheck = await getCategoryByNameAndTypeAndParent(
+        category.name.value,
+        category.categoryType.value,
+        category.parentCategoryId.present
+            ? category.parentCategoryId.value
+            : null,
+      );
+
+      final existing = existingCheck.fold(
+        (failure) => null,
+        (categoryData) => categoryData,
+      );
+
+      if (existing != null) {
+        return Either.left(
+          const DuplicateEntryFailure('Category name already exists'),
+        );
+      }
+    }
+
     try {
       final result = await _database
           .into(_database.categories)
           .insertReturning(category);
       return Either.right(result);
+    } on SqliteException catch (e) {
+      if (e.extendedResultCode == 2067 ||
+          e.message.toLowerCase().contains('unique')) {
+        return Either.left(
+          const DuplicateEntryFailure('Category name already exists'),
+        );
+      }
+      return Either.left(DatabaseFailure('SQLite error: ${e.message}'));
     } catch (e) {
+      final errorMessage = e.toString().toLowerCase();
+      if (errorMessage.contains('unique') ||
+          errorMessage.contains('constraint') ||
+          errorMessage.contains('duplicate')) {
+        return Either.left(
+          const DuplicateEntryFailure('Category name already exists'),
+        );
+      }
       return Either.left(DatabaseFailure('Error creating category: $e'));
     }
   }
@@ -124,6 +194,40 @@ class CategoryRepository implements ICategoryRepository {
     int id,
     CategoriesCompanion category,
   ) async {
+    if (category.name.present) {
+      final currentCategoryResult = await getCategoryById(id);
+      final currentCategory = currentCategoryResult.fold(
+        (failure) => null,
+        (categoryData) => categoryData,
+      );
+
+      if (currentCategory != null) {
+        final categoryType = category.categoryType.present
+            ? category.categoryType.value
+            : currentCategory.categoryType;
+        final parentCategoryId = category.parentCategoryId.present
+            ? category.parentCategoryId.value
+            : currentCategory.parentCategoryId;
+
+        final existingCheck = await getCategoryByNameAndTypeAndParent(
+          category.name.value,
+          categoryType,
+          parentCategoryId,
+        );
+
+        final existing = existingCheck.fold(
+          (failure) => null,
+          (categoryData) => categoryData,
+        );
+
+        if (existing != null && existing.id != id) {
+          return Either.left(
+            const DuplicateEntryFailure('Category name already exists'),
+          );
+        }
+      }
+    }
+
     try {
       final updated = await (_database.update(
         _database.categories,
@@ -135,6 +239,14 @@ class CategoryRepository implements ICategoryRepository {
 
       return Either.right(updated.first);
     } catch (e) {
+      final errorMessage = e.toString().toLowerCase();
+      if (errorMessage.contains('unique') ||
+          errorMessage.contains('constraint') ||
+          errorMessage.contains('duplicate')) {
+        return Either.left(
+          const DuplicateEntryFailure('Category name already exists'),
+        );
+      }
       return Either.left(DatabaseFailure('Error updating category: $e'));
     }
   }

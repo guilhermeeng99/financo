@@ -1,10 +1,11 @@
 {
   "overview": "Visão Geral",
   "releases": "Lançamentos",
-  "register": "Cadastrar",
+  "register": "Registrar",
   "categories": "Categorias",
-  "show_only_active_categories": "Exibir apenas categorias ativas",
+  "show_only_active_categories": "Mostrar apenas categorias ativas",
   "export_categories": "Exportar Categorias",
+  "show_only_active_accounts": "Mostrar apenas contas ativas",
   "accounts": "Contas",
   "to_pay": "A Pagar",
   "paied": "Pago",
@@ -35,13 +36,19 @@
   "create_sub_category": "Criar Subcategoria",
   "additional_settings": "Configurações Adicionais",
   "subcategory_of": "Subcategoria de",
-  "uncategorized_parent": "Pai sem categoria",
+  "uncategorized_parent": "Sem categoria pai",
+  "category_name_already_exists": "Já existe uma categoria com este nome",
   "freeze": "Congelar",
   "unfreeze": "Descongelar",
   "balance": "Saldo",
   "icon": "Ícone",
   "initial_balance_date": "Data do saldo inicial",
-  "export_successfully": "Exported successfully!",
-  "export_error": "Error exporting"
-
+  "import_categories": "Importar Categorias",
+  "export_successfully": "Exportado com sucesso!",
+  "export_error": "Erro ao exportar",
+  "download_example": "Baixar Exemplo",
+  "choose_file": "Escolher Arquivo",
+  "excel_not_found": "Arquivo Excel não encontrado",
+  "excel_not_valid": "Arquivo Excel inválido",
+  "excel_import_successfully": "Arquivo Excel importado com sucesso"
 }

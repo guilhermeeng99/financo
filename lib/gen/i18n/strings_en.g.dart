@@ -119,6 +119,9 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Uncategorized parent'
 	String get uncategorized_parent => 'Uncategorized parent';
 
+	/// en: 'A category with this name already exists'
+	String get category_name_already_exists => 'A category with this name already exists';
+
 	/// en: 'Freeze'
 	String get freeze => 'Freeze';
 
@@ -148,6 +151,15 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Choose File'
 	String get choose_file => 'Choose File';
+
+	/// en: 'Excel file not found'
+	String get excel_not_found => 'Excel file not found';
+
+	/// en: 'Excel file not valid'
+	String get excel_not_valid => 'Excel file not valid';
+
+	/// en: 'Excel file imported successfully'
+	String get excel_import_successfully => 'Excel file imported successfully';
 }
 
 // Path: account_type

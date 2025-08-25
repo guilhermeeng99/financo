@@ -35,10 +35,13 @@ class CreateAndEditCategoryModel {
     result.fold(
       (failure) {
         logger.e('Error creating category: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (category) {
         logger.i('Category created successfully: ${category.name}');
-
         categoriesBloc.loadCategories();
       },
     );
@@ -65,11 +68,14 @@ class CreateAndEditCategoryModel {
 
     result.fold(
       (failure) {
-        logger.e('Error updating category: ${failure.message}');
+        logger.e('Error creating category: ${failure.message}');
+        AppWidgetsUtils.snackBar(
+          title: failure.message,
+          type: SnackBarType.error,
+        );
       },
       (category) {
         logger.i('Category updated successfully: ${category.name}');
-
         categoriesBloc.loadCategories();
       },
     );
