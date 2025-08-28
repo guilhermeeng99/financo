@@ -7,7 +7,6 @@ class AccountsBloc extends GetxController {
   AccountsBloc() {
     loadGroupedAccounts();
 
-    // Observa mudanças no showOnlyActiveAccounts e recarrega as contas
     ever(showOnlyActiveAccounts, (_) => loadGroupedAccounts());
   }
   AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();

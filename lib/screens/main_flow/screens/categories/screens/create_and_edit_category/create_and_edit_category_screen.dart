@@ -108,9 +108,9 @@ class _Type extends StatelessWidget {
             createAndEditCategoryBloc.selectedCategoryType.value;
         return SizedBox(
           width: double.infinity,
-          child: DropdownButton<CategoryType>(
+          child: DropdownButton<FinancialType>(
             value: selectedType,
-            onChanged: (CategoryType? value) {
+            onChanged: (FinancialType? value) {
               if (value != null) {
                 createAndEditCategoryBloc.selectedCategoryType.value = value;
               }
@@ -119,8 +119,8 @@ class _Type extends StatelessWidget {
             dropdownColor: Theme.of(context).scaffoldBackgroundColor,
             style: const TextStyle(fontSize: 18),
             underline: const CWPopUpUnderLine(),
-            items: CategoryType.values.map((CategoryType type) {
-              return DropdownMenuItem<CategoryType>(
+            items: FinancialType.values.map((FinancialType type) {
+              return DropdownMenuItem<FinancialType>(
                 value: type,
                 child: Text(type.title(context)),
               );

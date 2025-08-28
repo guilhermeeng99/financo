@@ -9,9 +9,9 @@ class CategoriesBloc extends GetxController {
   }
   CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
 
-  final RxMap<CategoryType, Map<CategoryData, List<CategoryData>>>
+  final RxMap<FinancialType, Map<CategoryData, List<CategoryData>>>
   categoriesWithSubcategories =
-      <CategoryType, Map<CategoryData, List<CategoryData>>>{}.obs;
+      <FinancialType, Map<CategoryData, List<CategoryData>>>{}.obs;
 
   final RxBool showOnlyActiveCategories = true.obs;
 

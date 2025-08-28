@@ -1,22 +1,13 @@
 import 'package:drift/drift.dart';
-import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart' as flutter;
 
 import '../../core/exceptions.dart';
-
-enum CategoryType {
-  expense('expense'),
-  income('income');
-
-  const CategoryType(this.value);
-  final String value;
-}
+import '../../core/financial_type.dart';
 
 @UseRowClass(CategoryData)
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 2, max: 50)();
-  TextColumn get categoryType => textEnum<CategoryType>()();
+  TextColumn get categoryType => textEnum<FinancialType>()();
   IntColumn get parentCategoryId =>
       integer().nullable().references(Categories, #id)();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
@@ -38,14 +29,14 @@ class CategoryData {
 
   final int id;
   final String name;
-  final CategoryType categoryType;
+  final FinancialType categoryType;
   final int? parentCategoryId;
   final bool isActive;
 
   CategoryData copyWith({
     int? id,
     String? name,
-    CategoryType? categoryType,
+    FinancialType? categoryType,
     int? parentCategoryId,
     bool? isActive,
   }) {
@@ -115,15 +106,4 @@ class ParentCategoryId {
   final int? value;
 
   bool get hasParent => value != null;
-}
-
-extension CategoryTypeExtension on CategoryType {
-  String title(flutter.BuildContext context) {
-    switch (this) {
-      case CategoryType.expense:
-        return context.t.expense;
-      case CategoryType.income:
-        return context.t.income;
-    }
-  }
 }

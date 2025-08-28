@@ -1,6 +1,5 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_model.dart';
@@ -35,11 +34,11 @@ class CreateAndEditAccountPopUp extends HookWidget {
       centerContent: Container(
         width: 400,
         padding: const EdgeInsets.symmetric(vertical: 20),
-        child: const Column(
+        child: Column(
           spacing: 30,
           children: [
-            Row(children: [_Name()]),
-            Row(
+            const Row(children: [_Name()]),
+            const Row(
               spacing: 5,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -48,7 +47,13 @@ class CreateAndEditAccountPopUp extends HookWidget {
             Row(
               spacing: 15,
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [_InitDate(), _Balance()],
+              children: [
+                CWCalendarDropDown(
+                  title: context.t.initial_balance_date,
+                  selectedDateRx: createAndEditAccountBloc.selectedInitDate,
+                ),
+                const _Balance(),
+              ],
             ),
           ],
         ),
@@ -239,117 +244,6 @@ class _Name extends HookWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _InitDate extends StatelessWidget {
-  const _InitDate();
-
-  @override
-  Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.initial_balance_date,
-      spacing: 10,
-      child: Obx(() {
-        final selectedDate = createAndEditAccountBloc.selectedInitDate.value;
-        return GestureDetector(
-          onTap: () => _selectDate(context),
-          child: Container(
-            padding: const EdgeInsets.only(bottom: 6),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 25,
-              children: [
-                Text(
-                  selectedDate.formattedDateddMMyyyy(context: context),
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Icon(
-                  Icons.calendar_today,
-                  color: Theme.of(context).customColors.secondaryTextColor,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final results = await showCalendarDatePicker2Dialog(
-      context: context,
-      config: _buildCalendarConfig(context),
-      dialogSize: const Size(320, 400),
-      borderRadius: BorderRadius.circular(16),
-      value: [createAndEditAccountBloc.selectedInitDate.value],
-      dialogBackgroundColor: Theme.of(context).scaffoldBackgroundColor,
-    );
-
-    if (results != null && results.isNotEmpty && results.first != null) {
-      createAndEditAccountBloc.selectedInitDate.value = results.first!;
-    }
-  }
-
-  CalendarDatePicker2WithActionButtonsConfig _buildCalendarConfig(
-    BuildContext context,
-  ) {
-    const baseTextStyle = TextStyle(fontSize: 16);
-
-    final secondaryTextStyle = baseTextStyle.copyWith(
-      color: Theme.of(context).customColors.secondaryTextColor,
-    );
-
-    final selectedTextStyle = baseTextStyle.copyWith(
-      color: Theme.of(context).textTheme.bodyMedium?.color,
-      fontWeight: FontWeight.w500,
-    );
-
-    return CalendarDatePicker2WithActionButtonsConfig(
-      calendarType: CalendarDatePicker2Type.single,
-      selectedDayHighlightColor: Theme.of(context).customColors.button01,
-      firstDayOfWeek: 0,
-      controlsHeight: 56,
-      centerAlignModePicker: true,
-      customModePickerIcon: const SizedBox(),
-      dayBorderRadius: BorderRadius.circular(8),
-      selectedRangeHighlightColor: Theme.of(context).customColors.button01,
-      selectableDayPredicate: (day) =>
-          !day.isAfter(DateTime.now().add(const Duration(days: 365))),
-
-      selectedDayTextStyle: baseTextStyle.copyWith(
-        color: Colors.white,
-        fontWeight: FontWeight.w600,
-      ),
-      todayTextStyle: baseTextStyle.copyWith(
-        color: Theme.of(context).customColors.button01,
-        fontWeight: FontWeight.w600,
-      ),
-      weekdayLabelTextStyle: secondaryTextStyle.copyWith(
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
-      ),
-      dayTextStyle: selectedTextStyle,
-      disabledDayTextStyle: secondaryTextStyle,
-      controlsTextStyle: baseTextStyle.copyWith(
-        color: Theme.of(context).textTheme.titleMedium?.color,
-        fontSize: 18,
-        fontWeight: FontWeight.w500,
-      ),
-      monthTextStyle: secondaryTextStyle,
-      selectedMonthTextStyle: selectedTextStyle,
-      yearTextStyle: secondaryTextStyle,
-      selectedYearTextStyle: selectedTextStyle,
     );
   }
 }

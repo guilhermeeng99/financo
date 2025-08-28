@@ -15,9 +15,17 @@
   "edit": "Edit",
   "delete": "Delete",
   "coin": "Coin",
+  "date": "Date",
   "available_balance": "Available balance",
   "name": "Name",
   "save": "Save",
+  "amout": "Amout",
+  "account": "Account",
+  "description": "Description",
+  "recurrence": "Recurrence",
+  "frequency": "Frequency",
+  "select_category": "Select Category",
+  "select_account": "Select Account",
   "account_type": {
     "checking_account": "Checking Account",
     "credit_card": "Credit Card",
@@ -50,6 +58,8 @@
   "choose_file": "Choose File",
   "excel_not_found": "Excel file not found",
   "excel_not_valid": "Excel file not valid",
-  "excel_import_successfully": "Excel file imported successfully"
+  "excel_import_successfully": "Excel file imported successfully",
+  "new_transaction": "New Transaction",
+  "edit_transaction": "Edit Transaction"
 
 }

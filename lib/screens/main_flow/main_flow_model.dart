@@ -8,24 +8,12 @@ MainFlowTopBarModel get mainFlowTopBarModel =>
 class MainFlowTopBarModel {
   void onTapSideBar() => mainFlowBloc.isSideBarOn.toggle();
 
-  void onTapOverview() => Modular.to.navigate(ro.mainFlow.home.route);
+  void onTapOverview() {
+    mainFlowBloc.selectedSideBarItem.value = null;
+    Modular.to.navigate(ro.mainFlow.home.route);
+  }
 
   void onTapSearch() {}
 
   void onTapCalculator() {}
-}
-
-MainFlowSideBarModel get mainFlowSideBarModel =>
-    Modular.get<MainFlowSideBarModel>();
-
-class MainFlowSideBarModel {
-  void onTapCategories() {
-    mainFlowBloc.isSideBarOn.value = false;
-    Modular.to.navigate(ro.mainFlow.categories.route);
-  }
-
-  void onTapAccounts() {
-    mainFlowBloc.isSideBarOn.value = false;
-    Modular.to.navigate(ro.mainFlow.accounts.route);
-  }
 }

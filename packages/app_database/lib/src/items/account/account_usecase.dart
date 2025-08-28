@@ -39,6 +39,12 @@ class AccountUsecase {
     }
   }
 
+  Future<Either<Failure, List<AccountData>>> getAllAccounts({
+    bool onlyActive = true,
+  }) async {
+    return  _accountRepository.getAllAccounts(onlyActive: onlyActive);
+  }
+
   Future<Either<Failure, AccountData>> updateAccount({
     required int id,
     String? name,

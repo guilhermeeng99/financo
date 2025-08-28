@@ -139,7 +139,7 @@ class _CategoriesTypeArea extends StatelessWidget {
     required this.categoriesWithSubcategories,
   });
 
-  final CategoryType categoryType;
+  final FinancialType categoryType;
   final Map<CategoryData, List<CategoryData>> categoriesWithSubcategories;
 
   @override

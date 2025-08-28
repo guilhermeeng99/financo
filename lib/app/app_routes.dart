@@ -25,6 +25,7 @@ class AppRoutesMainFlow {
   final AppRoutesMainFlowCategories categories =
       const AppRoutesMainFlowCategories();
   final AppRoutesMainFlowHome home = const AppRoutesMainFlowHome();
+  final AppRoutesMainFlowReleases releases = const AppRoutesMainFlowReleases();
 }
 
 class AppRoutesMainFlowAccounts {
@@ -33,8 +34,6 @@ class AppRoutesMainFlowAccounts {
   final String route = '/main_flow/accounts/';
   final AppRoutesMainFlowAccountsCreateAndEditAccount createAndEditAccount =
       const AppRoutesMainFlowAccountsCreateAndEditAccount();
-  final AppRoutesMainFlowAccountsNewAccounts newAccounts =
-      const AppRoutesMainFlowAccountsNewAccounts();
 }
 
 class AppRoutesMainFlowAccountsCreateAndEditAccount {
@@ -43,20 +42,45 @@ class AppRoutesMainFlowAccountsCreateAndEditAccount {
   final String route = '/main_flow/accounts/create_and_edit_account/';
 }
 
-class AppRoutesMainFlowAccountsNewAccounts {
-  const AppRoutesMainFlowAccountsNewAccounts();
-
-  final String route = '/main_flow/accounts/new_accounts/';
-}
-
 class AppRoutesMainFlowCategories {
   const AppRoutesMainFlowCategories();
 
   final String route = '/main_flow/categories/';
+  final AppRoutesMainFlowCategoriesCreateAndEditCategory createAndEditCategory =
+      const AppRoutesMainFlowCategoriesCreateAndEditCategory();
+  final AppRoutesMainFlowCategoriesImportCategories importCategories =
+      const AppRoutesMainFlowCategoriesImportCategories();
+}
+
+class AppRoutesMainFlowCategoriesCreateAndEditCategory {
+  const AppRoutesMainFlowCategoriesCreateAndEditCategory();
+
+  final String route = '/main_flow/categories/create_and_edit_category/';
+}
+
+class AppRoutesMainFlowCategoriesImportCategories {
+  const AppRoutesMainFlowCategoriesImportCategories();
+
+  final String route = '/main_flow/categories/import_categories/';
 }
 
 class AppRoutesMainFlowHome {
   const AppRoutesMainFlowHome();
 
   final String route = '/main_flow/home/';
+}
+
+class AppRoutesMainFlowReleases {
+  const AppRoutesMainFlowReleases();
+
+  final String route = '/main_flow/releases/';
+  final AppRoutesMainFlowReleasesCreateAndEditTransaction
+  createAndEditTransaction =
+      const AppRoutesMainFlowReleasesCreateAndEditTransaction();
+}
+
+class AppRoutesMainFlowReleasesCreateAndEditTransaction {
+  const AppRoutesMainFlowReleasesCreateAndEditTransaction();
+
+  final String route = '/main_flow/releases/create_and_edit_transaction/';
 }

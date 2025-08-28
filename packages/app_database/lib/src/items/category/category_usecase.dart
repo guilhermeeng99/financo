@@ -9,7 +9,7 @@ class CategoryUsecase {
 
   Future<Either<Failure, CategoryData>> createCategory({
     required String name,
-    required CategoryType categoryType,
+    required FinancialType categoryType,
     int? parentCategoryId,
   }) async {
     try {
@@ -92,7 +92,7 @@ class CategoryUsecase {
   }
 
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
-    CategoryType type,
+    FinancialType type,
     int? excludeCategoryId,
   ) async {
     return _categoryRepository.getEligibleParentCategories(
@@ -101,14 +101,24 @@ class CategoryUsecase {
     );
   }
 
+  Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
+    FinancialType type, {
+    bool onlyActive = true,
+  }) async {
+    return _categoryRepository.getCategoriesByType(
+      type,
+      onlyActive: onlyActive,
+    );
+  }
+
   Future<
-    Either<Failure, Map<CategoryType, Map<CategoryData, List<CategoryData>>>>
+    Either<Failure, Map<FinancialType, Map<CategoryData, List<CategoryData>>>>
   >
   getCategoriesAndSubcategories({bool onlyActive = true}) async {
     try {
-      final result = <CategoryType, Map<CategoryData, List<CategoryData>>>{};
+      final result = <FinancialType, Map<CategoryData, List<CategoryData>>>{};
 
-      for (final type in CategoryType.values) {
+      for (final type in FinancialType.values) {
         final categoriesResult = await _categoryRepository.getCategoriesByType(
           type,
           onlyActive: onlyActive,

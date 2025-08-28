@@ -15,7 +15,7 @@ class CreateAndEditCategoryBloc extends GetxController {
 
   final RxnInt parentCategoryId = RxnInt();
 
-  final selectedCategoryType = CategoryType.expense.obs;
+  final selectedCategoryType = FinancialType.expense.obs;
 
   final RxList<CategoryData> availableParentCategories = <CategoryData>[].obs;
 

@@ -3,6 +3,7 @@ import 'package:sqlite3/sqlite3.dart';
 
 import '../../core/either.dart';
 import '../../core/failures.dart';
+import '../../core/financial_type.dart';
 import '../../database/database_manager.dart';
 import 'category_domain.dart';
 
@@ -19,12 +20,12 @@ abstract class ICategoryRepository {
   Future<Either<Failure, bool>> deleteCategory(int id);
 
   Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
-    CategoryType type, {
+    FinancialType type, {
     bool onlyActive = true,
   });
 
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
-    CategoryType type,
+    FinancialType type,
     int? excludeCategoryId,
   );
 
@@ -32,7 +33,7 @@ abstract class ICategoryRepository {
 
   Future<Either<Failure, CategoryData?>> getCategoryByNameAndTypeAndParent(
     String name,
-    CategoryType type,
+    FinancialType type,
     int? parentCategoryId,
   );
 }
@@ -45,7 +46,7 @@ class CategoryRepository implements ICategoryRepository {
   @override
   Future<Either<Failure, CategoryData?>> getCategoryByNameAndTypeAndParent(
     String name,
-    CategoryType type,
+    FinancialType type,
     int? parentCategoryId,
   ) async {
     try {
@@ -121,7 +122,7 @@ class CategoryRepository implements ICategoryRepository {
 
   @override
   Future<Either<Failure, List<CategoryData>>> getCategoriesByType(
-    CategoryType type, {
+    FinancialType type, {
     bool onlyActive = true,
   }) async {
     try {
@@ -145,7 +146,7 @@ class CategoryRepository implements ICategoryRepository {
 
   @override
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
-    CategoryType type,
+    FinancialType type,
     int? excludeCategoryId,
   ) async {
     try {

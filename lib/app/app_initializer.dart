@@ -29,7 +29,7 @@ Future<void> _showAllCategories() async {
   categoriesResult.fold(
     (Failure failure) =>
         logger.e('❌ Error loading categories: ${failure.message}'),
-    (Map<CategoryType, Map<CategoryData, List<CategoryData>>> categoriesMap) {
+    (Map<FinancialType, Map<CategoryData, List<CategoryData>>> categoriesMap) {
       final buffer = StringBuffer()
         ..writeln('📁 Categories and subcategories loaded:');
 

@@ -25,4 +25,15 @@ class CreateAndEditAccountBloc extends GetxController {
     selectedIconType.value = account.iconType;
     selectedInitDate.value = account.initDate;
   }
+
+  @override
+  void onClose() {
+    name.close();
+    initialBalance.close();
+    selectedAccountType.close();
+    selectedCurrencyType.close();
+    selectedIconType.close();
+    selectedInitDate.close();
+    super.onClose();
+  }
 }

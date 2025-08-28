@@ -83,6 +83,9 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Coin'
 	String get coin => 'Coin';
 
+	/// en: 'Date'
+	String get date => 'Date';
+
 	/// en: 'Available balance'
 	String get available_balance => 'Available balance';
 
@@ -91,6 +94,30 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Save'
 	String get save => 'Save';
+
+	/// en: 'Amout'
+	String get amout => 'Amout';
+
+	/// en: 'Account'
+	String get account => 'Account';
+
+	/// en: 'Description'
+	String get description => 'Description';
+
+	/// en: 'Recurrence'
+	String get recurrence => 'Recurrence';
+
+	/// en: 'Frequency'
+	String get frequency => 'Frequency';
+
+	/// en: 'Category'
+	String get category => 'Category';
+
+	/// en: 'Select Category'
+	String get select_category => 'Select Category';
+
+	/// en: 'Select Account'
+	String get select_account => 'Select Account';
 
 	late final TranslationsAccountTypeEn account_type = TranslationsAccountTypeEn.internal(_root);
 	late final TranslationsCurrencyTypeEn currency_type = TranslationsCurrencyTypeEn.internal(_root);
@@ -160,6 +187,12 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 
 	/// en: 'Excel file imported successfully'
 	String get excel_import_successfully => 'Excel file imported successfully';
+
+	/// en: 'New Transaction'
+	String get new_transaction => 'New Transaction';
+
+	/// en: 'Edit Transaction'
+	String get edit_transaction => 'Edit Transaction';
 }
 
 // Path: account_type

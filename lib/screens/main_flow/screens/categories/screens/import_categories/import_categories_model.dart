@@ -129,11 +129,11 @@ class ImportCategoriesModel {
     };
   }
 
-  CategoryType? _parseCategoryType(String typeStr) {
+  FinancialType? _parseCategoryType(String typeStr) {
     if (typeStr.contains('expense') || typeStr.contains('despesa')) {
-      return CategoryType.expense;
+      return FinancialType.expense;
     } else if (typeStr.contains('income') || typeStr.contains('receita')) {
-      return CategoryType.income;
+      return FinancialType.income;
     }
     return null;
   }
@@ -145,7 +145,7 @@ class ImportCategoriesModel {
   ) {
     final categoryName = categoryData['categoryName'] as String;
     final subcategoryName = categoryData['subcategoryName'] as String?;
-    final categoryType = categoryData['categoryType'] as CategoryType;
+    final categoryType = categoryData['categoryType'] as FinancialType;
 
     if (subcategoryName == null || subcategoryName.isEmpty) {
      
@@ -224,7 +224,7 @@ class ImportCategoriesModel {
   ) async {
     final result = await _categoryUsecase.createCategory(
       name: categoryData['name'] as String,
-      categoryType: categoryData['type'] as CategoryType,
+      categoryType: categoryData['type'] as FinancialType,
     );
 
     result.fold(
@@ -254,7 +254,7 @@ class ImportCategoriesModel {
 
     final result = await _categoryUsecase.createCategory(
       name: subcategoryData['name'] as String,
-      categoryType: subcategoryData['type'] as CategoryType,
+      categoryType: subcategoryData['type'] as FinancialType,
       parentCategoryId: parentId,
     );
 
