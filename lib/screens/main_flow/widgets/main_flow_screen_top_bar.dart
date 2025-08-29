@@ -15,7 +15,7 @@ class MainFlowScreenTopBar extends StatelessWidget {
         children: [
           _Item(mainFlowTopBarController.topBarItems[0]),
           const Gap(9),
-          Text(context.t.overview),
+          Text(context.t.navigation.overview),
           const Gap(9),
           const CWDivider(),
           const Gap(12),

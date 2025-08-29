@@ -19,7 +19,7 @@ class ReleasesModel {
     );
   }
 
-  void onTapTransaction(TransactionData transaction) {
+  void onTapOpenTransaction(TransactionData transaction) {
     PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
@@ -32,4 +32,12 @@ class ReleasesModel {
       ),
     );
   }
+
+  void onTapDeleteTransaction(TransactionData transaction) {}
+
+  void onTapCloneTransaction(TransactionData transaction) {}
+
+  void onTapPayTransaction(TransactionData transaction) {}
+
+  void onTapUnPayTransaction(TransactionData transaction) {}
 }

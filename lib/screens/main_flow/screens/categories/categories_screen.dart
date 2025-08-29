@@ -57,7 +57,7 @@ class _TopButtons extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            context.t.show_only_active_categories,
+            context.t.categories.show_only_active,
             style: const TextStyle(fontSize: 18),
           ),
           Switch(
@@ -72,7 +72,7 @@ class _TopButtons extends StatelessWidget {
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
             label: Text(
-              context.t.export_categories,
+              context.t.categories.export_categories,
               style: TextStyle(
                 color: Theme.of(context).scaffoldBackgroundColor,
                 fontSize: 18,
@@ -108,7 +108,7 @@ class _FloatingActionButton extends HookWidget {
             Positioned(
               bottom: 0,
               child: CWFloatingActionButton(
-                tooltipMessage: context.t.new_category,
+                tooltipMessage: context.t.categories.new_category,
                 onTap: categoriesModel.onTapFloatingActionButton,
               ),
             ),
@@ -121,7 +121,7 @@ class _FloatingActionButton extends HookWidget {
                   child: CWFloatingActionButton(
                     icon: Icons.upload,
                     size: 40,
-                    tooltipMessage: context.t.import_categories,
+                    tooltipMessage: context.t.categories.import_categories,
                     onTap: categoriesModel.onTapImportPopUp,
                   ),
                 ),
@@ -216,13 +216,9 @@ class _CategoryItem extends StatelessWidget {
           child: Row(
             children: [
               if (!isMainCategory) ...[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(
-                    Icons.subdirectory_arrow_right,
-                    size: 16,
-                    color: Theme.of(context).dividerColor,
-                  ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.subdirectory_arrow_right, size: 16),
                 ),
               ],
               Expanded(child: Text(category.name)),

@@ -1,65 +1,100 @@
 {
-  "overview": "Overview",
-  "releases": "Releases",
-  "register": "Register",
-  "categories": "Categories",
-  "show_only_active_categories": "Show only active categories",
-  "export_categories": "Export Categories",
-  "show_only_active_accounts": "Show only active accounts",
-  "accounts": "Accounts",
-  "to_pay": "To Pay",
-  "paied": "Paied",
-  "type": "Type",
-  "income": "Income",
-  "expense": "Expense",
-  "edit": "Edit",
-  "delete": "Delete",
-  "coin": "Coin",
-  "date": "Date",
-  "available_balance": "Available balance",
-  "name": "Name",
-  "save": "Save",
-  "amout": "Amout",
-  "account": "Account",
-  "description": "Description",
-  "recurrence": "Recurrence",
-  "frequency": "Frequency",
-  "select_category": "Select Category",
-  "select_account": "Select Account",
-  "account_type": {
-    "checking_account": "Checking Account",
-    "credit_card": "Credit Card",
-    "money": "Money",
-    "others": "Others"
+  "navigation": {
+    "overview": "Overview",
+    "releases": "Releases",
+    "categories": "Categories",
+    "accounts": "Accounts"
   },
-  "currency_type": {
-    "brl": "Real",
-    "usd": "Dolar",
-    "eur": "Euro"
+  "common": {
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "register": "Register",
+      "pay": "Pay",
+      "unpay": "Cancel Payment",
+      "clone": "Clone",
+      "freeze": "Freeze",
+      "unfreeze": "Unfreeze",
+      "export": "Export",
+      "import": "Import",
+      "choose_file": "Choose File",
+      "download_example": "Download Example"
+    },
+    "labels": {
+      "name": "Name",
+      "type": "Type",
+      "amount": "Amount",
+      "date": "Date",
+      "description": "Description",
+      "account": "Account",
+      "category": "Category",
+      "balance": "Balance",
+      "available_balance": "Available Balance",
+      "initial_balance_date": "Initial Balance Date",
+      "icon": "Icon",
+      "coin": "Currency",
+      "recurrence": "Recurrence",
+      "frequency": "Frequency"
+    }
   },
-  "new_account": "New Account",
-  "edit_account": "Edit Account",
-  "new_category": "New Category",
-  "edit_category": "Edit Category",
-  "create_sub_category": "Create Subcategory",
-  "additional_settings": "Additional Settings",
-  "subcategory_of": "Subcategory of",
-  "uncategorized_parent": "Uncategorized parent",
-  "category_name_already_exists": "A category with this name already exists",
-  "freeze": "Freeze",
-  "unfreeze": "Unfreeze",
-  "balance": "Balance",
-  "icon": "Icon",
-  "initial_balance_date": "Initial balance date",
-  "import_categories": "Import Categories",
-  "export_successfully": "Exported successfully!",
-  "export_error": "Error exporting",
-  "download_example": "Download Example",
-  "choose_file": "Choose File",
-  "excel_not_found": "Excel file not found",
-  "excel_not_valid": "Excel file not valid",
-  "excel_import_successfully": "Excel file imported successfully",
-  "new_transaction": "New Transaction",
-  "edit_transaction": "Edit Transaction"
-
+  "accounts": {
+    "title": "Accounts",
+    "new_account": "New Account",
+    "edit_account": "Edit Account",
+    "select_account": "Select Account",
+    "show_only_active": "Show Only Active Accounts",
+    "types": {
+      "checking_account": "Checking Account",
+      "credit_card": "Credit Card",
+      "money": "Cash",
+      "others": "Others"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "new_category": "New Category",
+    "edit_category": "Edit Category",
+    "create_sub_category": "Create Subcategory",
+    "show_only_active": "Show Only Active Categories",
+    "export_categories": "Export Categories",
+    "import_categories": "Import Categories",
+    "select_category": "Select Category",
+    "subcategory_of": "Subcategory of",
+    "uncategorized_parent": "Parent Category Not Defined",
+    "category_name_already_exists": "A category with this name already exists"
+  },
+  "transactions": {
+    "new_transaction": "New Transaction",
+    "edit_transaction": "Edit Transaction",
+    "types": {
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "status": {
+      "to_pay": "To Pay",
+      "paid": "Paid"
+    },
+    "currency": {
+      "types": {
+        "brl": "Real",
+        "usd": "Dollar",
+        "eur": "Euro"
+      }
+    }
+  },
+  "settings": {
+    "additional_settings": "Additional Settings"
+  },
+  "messages": {
+    "success": {
+      "export_successfully": "Exported successfully!",
+      "excel_import_successfully": "Excel file imported successfully"
+    },
+    "errors": {
+      "export_error": "Error while exporting",
+      "excel_not_found": "Excel file not found",
+      "excel_not_valid": "Invalid Excel file"
+    }
+  }
 }

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:financo/app/app_theme.dart';
 import 'package:flutter/material.dart' as flutter;
 
 import '../../core/financial_type.dart';
@@ -131,56 +132,16 @@ class TransactionData {
         '}';
   }
 
-  flutter.Color get statusColor {
-    switch (paymentStatus) {
-      case TransactionPaymentStatus.paid:
-        return flutter.Colors.green;
-      case TransactionPaymentStatus.unpaid:
-        return flutter.Colors.red;
-    }
-  }
-
-  String get statusText {
-    switch (paymentStatus) {
-      case TransactionPaymentStatus.paid:
-        return 'Pago';
-      case TransactionPaymentStatus.unpaid:
-        return 'Não Pago';
-    }
-  }
-
-  String get recurrenceText {
-    switch (recurrenceType) {
-      case TransactionRecurrenceType.unique:
-        return 'Única';
-      case TransactionRecurrenceType.fixed:
-        if (recurrenceFrequency == null) return 'Fixa';
-        switch (recurrenceFrequency!) {
-          case TransactionRecurrenceFrequency.daily:
-            return 'Diária';
-          case TransactionRecurrenceFrequency.weekly:
-            return 'Semanal';
-          case TransactionRecurrenceFrequency.monthly:
-            return 'Mensal';
-          case TransactionRecurrenceFrequency.yearly:
-            return 'Anual';
-        }
-    }
-  }
-
-  bool get isExpense => amount < 0;
-  bool get isIncome => amount > 0;
-
   double get absoluteAmount => amount.abs();
 }
 
 extension TransactionPaymentStatusExtension on TransactionPaymentStatus {
-  String get displayName {
+  flutter.Color getColor(flutter.BuildContext context) {
     switch (this) {
       case TransactionPaymentStatus.paid:
-        return 'Pago';
+        return flutter.Theme.of(context).customColors.button01;
       case TransactionPaymentStatus.unpaid:
-        return 'Não Pago';
+        return flutter.Theme.of(context).customColors.button02;
     }
   }
 }
@@ -208,6 +169,16 @@ extension TransactionRecurrenceFrequencyExtension
         return 'Mensal';
       case TransactionRecurrenceFrequency.yearly:
         return 'Anual';
+    }
+  }
+}
+
+extension AmountColorExtension on double {
+  flutter.Color getColor(flutter.BuildContext context) {
+    if (this < 0) {
+      return flutter.Theme.of(context).customColors.expense;
+    } else {
+      return flutter.Theme.of(context).customColors.income;
     }
   }
 }

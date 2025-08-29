@@ -17,7 +17,7 @@ class CWFloatingActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auxSize = size ?? 60;
-    
+
     return Tooltip(
       message: tooltipMessage,
       child: SizedBox(
@@ -32,7 +32,6 @@ class CWFloatingActionButton extends StatelessWidget {
           child: Icon(
             icon ?? Icons.add,
             size: auxSize / 2,
-            color: Theme.of(context).dividerColor,
           ),
         ),
       ),

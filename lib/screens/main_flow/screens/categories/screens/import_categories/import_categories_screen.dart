@@ -8,7 +8,7 @@ class ImportCategoriesPopUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUp(
-      title: context.t.import_categories,
+      title: context.t.categories.import_categories,
       centerContent: Container(
         width: 400,
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -18,13 +18,13 @@ class ImportCategoriesPopUp extends StatelessWidget {
             _Button(
               onTap: () => importCategoriesModel
                   .onTapDownloadDefaultExcelCategories(context),
-              title: context.t.download_example,
+              title: context.t.common.actions.download_example,
               icon: Icons.download,
             ),
             _Button(
               onTap: () =>
                   importCategoriesModel.onTapUploadExcelCategories(context),
-              title: context.t.choose_file,
+              title: context.t.common.actions.choose_file,
               icon: Icons.upload,
               backgroundColor: Theme.of(context).customColors.button01,
             ),

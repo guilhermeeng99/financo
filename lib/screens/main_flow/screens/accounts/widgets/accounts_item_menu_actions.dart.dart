@@ -16,13 +16,13 @@ enum AccountMenuAction implements PopupMenuAction<AccountData> {
   String getLabel(BuildContext context) {
     switch (this) {
       case AccountMenuAction.edit:
-        return context.t.edit;
+        return context.t.common.actions.edit;
       case AccountMenuAction.freeze:
-        return context.t.freeze;
+        return context.t.common.actions.freeze;
       case AccountMenuAction.unfreeze:
-        return context.t.unfreeze;
+        return context.t.common.actions.unfreeze;
       case AccountMenuAction.delete:
-        return context.t.delete;
+        return context.t.common.actions.delete;
     }
   }
 
@@ -65,19 +65,5 @@ enum AccountMenuAction implements PopupMenuAction<AccountData> {
       case AccountMenuAction.delete:
         return true;
     }
-  }
-}
-
-class CWThreeBallsButton extends StatelessWidget {
-  const CWThreeBallsButton(this.account, {super.key});
-
-  final AccountData account;
-
-  @override
-  Widget build(BuildContext context) {
-    return CWPopupMenuButton<AccountData, AccountMenuAction>(
-      item: account,
-      actions: AccountMenuAction.values,
-    );
   }
 }

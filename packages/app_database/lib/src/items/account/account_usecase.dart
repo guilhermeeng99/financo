@@ -42,7 +42,17 @@ class AccountUsecase {
   Future<Either<Failure, List<AccountData>>> getAllAccounts({
     bool onlyActive = true,
   }) async {
-    return  _accountRepository.getAllAccounts(onlyActive: onlyActive);
+    return _accountRepository.getAllAccounts(onlyActive: onlyActive);
+  }
+
+  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
+    try {
+      return await _accountRepository.getAccountById(id);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error fetching account by id: $e'),
+      );
+    }
   }
 
   Future<Either<Failure, AccountData>> updateAccount({

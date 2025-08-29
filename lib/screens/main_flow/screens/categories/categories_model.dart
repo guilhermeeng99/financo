@@ -109,7 +109,7 @@ class CategoriesModelExcel {
         (failure) {
           logger.e('Error loading categories for export: ${failure.message}');
           AppWidgetsUtils.snackBar(
-            title: context.t.export_error,
+            title: context.t.messages.errors.export_error,
             type: SnackBarType.error,
           );
         },
@@ -215,7 +215,7 @@ class CategoriesModelExcel {
             logger.e('Error generating Excel file');
 
             AppWidgetsUtils.snackBar(
-              title: context.t.export_error,
+              title: context.t.messages.errors.export_error,
               type: SnackBarType.error,
             );
 
@@ -232,7 +232,7 @@ class CategoriesModelExcel {
 
           if (context.mounted) {
             AppWidgetsUtils.snackBar(
-              title: context.t.export_successfully,
+              title: context.t.messages.success.export_successfully,
               type: SnackBarType.success,
             );
           }
@@ -242,7 +242,7 @@ class CategoriesModelExcel {
       logger.e('Error exporting categories: $e');
       if (context.mounted) {
         AppWidgetsUtils.snackBar(
-          title: context.t.export_error,
+          title: context.t.messages.errors.export_error,
           type: SnackBarType.error,
         );
       }

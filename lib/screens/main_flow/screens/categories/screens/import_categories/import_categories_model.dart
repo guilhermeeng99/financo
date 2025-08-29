@@ -31,7 +31,7 @@ class ImportCategoriesModel {
 
       if (context.mounted) {
         AppWidgetsUtils.snackBar(
-          title: context.t.export_successfully,
+          title: context.t.messages.success.export_successfully,
           type: SnackBarType.success,
         );
       }
@@ -40,7 +40,7 @@ class ImportCategoriesModel {
 
       if (context.mounted) {
         AppWidgetsUtils.snackBar(
-          title: context.t.export_error,
+          title: context.t.messages.errors.export_error,
           type: SnackBarType.error,
         );
       }
@@ -63,7 +63,7 @@ class ImportCategoriesModel {
 
       final categoriesToCreate = _parseExcelData(sheet);
       if (categoriesToCreate.isEmpty) {
-        await _showError(context, context.t.excel_not_valid);
+        await _showError(context, context.t.messages.errors.excel_not_valid);
         return;
       }
 
@@ -78,7 +78,7 @@ class ImportCategoriesModel {
 
       if (context.mounted) {
         AppWidgetsUtils.snackBar(
-          title: context.t.excel_not_valid,
+          title: context.t.messages.errors.excel_not_valid,
           type: SnackBarType.error,
         );
       }
@@ -277,12 +277,12 @@ class ImportCategoriesModel {
 
     if (result.errorCount == 0) {
       AppWidgetsUtils.snackBar(
-        title: context.t.excel_import_successfully,
+        title: context.t.messages.success.excel_import_successfully,
         type: SnackBarType.success,
       );
     } else {
       AppWidgetsUtils.snackBar(
-        title: context.t.excel_not_valid,
+        title: context.t.messages.errors.excel_not_valid,
         type: SnackBarType.error,
       );
     }

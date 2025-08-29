@@ -34,6 +34,22 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
+	late final TranslationsNavigationEn navigation = TranslationsNavigationEn.internal(_root);
+	late final TranslationsCommonEn common = TranslationsCommonEn.internal(_root);
+	late final TranslationsAccountsEn accounts = TranslationsAccountsEn.internal(_root);
+	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn.internal(_root);
+	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn.internal(_root);
+	late final TranslationsSettingsEn settings = TranslationsSettingsEn.internal(_root);
+	late final TranslationsMessagesEn messages = TranslationsMessagesEn.internal(_root);
+}
+
+// Path: navigation
+class TranslationsNavigationEn {
+	TranslationsNavigationEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
 
 	/// en: 'Overview'
 	String get overview => 'Overview';
@@ -41,92 +57,60 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Releases'
 	String get releases => 'Releases';
 
-	/// en: 'Register'
-	String get register => 'Register';
-
 	/// en: 'Categories'
 	String get categories => 'Categories';
 
-	/// en: 'Show only active categories'
-	String get show_only_active_categories => 'Show only active categories';
-
-	/// en: 'Export Categories'
-	String get export_categories => 'Export Categories';
-
-	/// en: 'Show only active accounts'
-	String get show_only_active_accounts => 'Show only active accounts';
-
 	/// en: 'Accounts'
 	String get accounts => 'Accounts';
+}
 
-	/// en: 'To Pay'
-	String get to_pay => 'To Pay';
+// Path: common
+class TranslationsCommonEn {
+	TranslationsCommonEn.internal(this._root);
 
-	/// en: 'Paied'
-	String get paied => 'Paied';
+	final Translations _root; // ignore: unused_field
 
-	/// en: 'Type'
-	String get type => 'Type';
+	// Translations
+	late final TranslationsCommonActionsEn actions = TranslationsCommonActionsEn.internal(_root);
+	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn.internal(_root);
+}
 
-	/// en: 'Income'
-	String get income => 'Income';
+// Path: accounts
+class TranslationsAccountsEn {
+	TranslationsAccountsEn.internal(this._root);
 
-	/// en: 'Expense'
-	String get expense => 'Expense';
+	final Translations _root; // ignore: unused_field
 
-	/// en: 'Edit'
-	String get edit => 'Edit';
+	// Translations
 
-	/// en: 'Delete'
-	String get delete => 'Delete';
-
-	/// en: 'Coin'
-	String get coin => 'Coin';
-
-	/// en: 'Date'
-	String get date => 'Date';
-
-	/// en: 'Available balance'
-	String get available_balance => 'Available balance';
-
-	/// en: 'Name'
-	String get name => 'Name';
-
-	/// en: 'Save'
-	String get save => 'Save';
-
-	/// en: 'Amout'
-	String get amout => 'Amout';
-
-	/// en: 'Account'
-	String get account => 'Account';
-
-	/// en: 'Description'
-	String get description => 'Description';
-
-	/// en: 'Recurrence'
-	String get recurrence => 'Recurrence';
-
-	/// en: 'Frequency'
-	String get frequency => 'Frequency';
-
-	/// en: 'Category'
-	String get category => 'Category';
-
-	/// en: 'Select Category'
-	String get select_category => 'Select Category';
-
-	/// en: 'Select Account'
-	String get select_account => 'Select Account';
-
-	late final TranslationsAccountTypeEn account_type = TranslationsAccountTypeEn.internal(_root);
-	late final TranslationsCurrencyTypeEn currency_type = TranslationsCurrencyTypeEn.internal(_root);
+	/// en: 'Accounts'
+	String get title => 'Accounts';
 
 	/// en: 'New Account'
 	String get new_account => 'New Account';
 
 	/// en: 'Edit Account'
 	String get edit_account => 'Edit Account';
+
+	/// en: 'Select Account'
+	String get select_account => 'Select Account';
+
+	/// en: 'Show Only Active Accounts'
+	String get show_only_active => 'Show Only Active Accounts';
+
+	late final TranslationsAccountsTypesEn types = TranslationsAccountsTypesEn.internal(_root);
+}
+
+// Path: categories
+class TranslationsCategoriesEn {
+	TranslationsCategoriesEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Categories'
+	String get title => 'Categories';
 
 	/// en: 'New Category'
 	String get new_category => 'New Category';
@@ -137,17 +121,98 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Create Subcategory'
 	String get create_sub_category => 'Create Subcategory';
 
-	/// en: 'Additional Settings'
-	String get additional_settings => 'Additional Settings';
+	/// en: 'Show Only Active Categories'
+	String get show_only_active => 'Show Only Active Categories';
+
+	/// en: 'Export Categories'
+	String get export_categories => 'Export Categories';
+
+	/// en: 'Import Categories'
+	String get import_categories => 'Import Categories';
+
+	/// en: 'Select Category'
+	String get select_category => 'Select Category';
 
 	/// en: 'Subcategory of'
 	String get subcategory_of => 'Subcategory of';
 
-	/// en: 'Uncategorized parent'
-	String get uncategorized_parent => 'Uncategorized parent';
+	/// en: 'Parent Category Not Defined'
+	String get uncategorized_parent => 'Parent Category Not Defined';
 
 	/// en: 'A category with this name already exists'
 	String get category_name_already_exists => 'A category with this name already exists';
+}
+
+// Path: transactions
+class TranslationsTransactionsEn {
+	TranslationsTransactionsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'New Transaction'
+	String get new_transaction => 'New Transaction';
+
+	/// en: 'Edit Transaction'
+	String get edit_transaction => 'Edit Transaction';
+
+	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn.internal(_root);
+	late final TranslationsTransactionsStatusEn status = TranslationsTransactionsStatusEn.internal(_root);
+	late final TranslationsTransactionsCurrencyEn currency = TranslationsTransactionsCurrencyEn.internal(_root);
+}
+
+// Path: settings
+class TranslationsSettingsEn {
+	TranslationsSettingsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Additional Settings'
+	String get additional_settings => 'Additional Settings';
+}
+
+// Path: messages
+class TranslationsMessagesEn {
+	TranslationsMessagesEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final TranslationsMessagesSuccessEn success = TranslationsMessagesSuccessEn.internal(_root);
+	late final TranslationsMessagesErrorsEn errors = TranslationsMessagesErrorsEn.internal(_root);
+}
+
+// Path: common.actions
+class TranslationsCommonActionsEn {
+	TranslationsCommonActionsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Delete'
+	String get delete => 'Delete';
+
+	/// en: 'Save'
+	String get save => 'Save';
+
+	/// en: 'Register'
+	String get register => 'Register';
+
+	/// en: 'Pay'
+	String get pay => 'Pay';
+
+	/// en: 'Cancel Payment'
+	String get unpay => 'Cancel Payment';
+
+	/// en: 'Clone'
+	String get clone => 'Clone';
 
 	/// en: 'Freeze'
 	String get freeze => 'Freeze';
@@ -155,49 +220,73 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	/// en: 'Unfreeze'
 	String get unfreeze => 'Unfreeze';
 
-	/// en: 'Balance'
-	String get balance => 'Balance';
+	/// en: 'Export'
+	String get export => 'Export';
 
-	/// en: 'Icon'
-	String get icon => 'Icon';
-
-	/// en: 'Initial balance date'
-	String get initial_balance_date => 'Initial balance date';
-
-	/// en: 'Import Categories'
-	String get import_categories => 'Import Categories';
-
-	/// en: 'Exported successfully!'
-	String get export_successfully => 'Exported successfully!';
-
-	/// en: 'Error exporting'
-	String get export_error => 'Error exporting';
-
-	/// en: 'Download Example'
-	String get download_example => 'Download Example';
+	/// en: 'Import'
+	String get import => 'Import';
 
 	/// en: 'Choose File'
 	String get choose_file => 'Choose File';
 
-	/// en: 'Excel file not found'
-	String get excel_not_found => 'Excel file not found';
-
-	/// en: 'Excel file not valid'
-	String get excel_not_valid => 'Excel file not valid';
-
-	/// en: 'Excel file imported successfully'
-	String get excel_import_successfully => 'Excel file imported successfully';
-
-	/// en: 'New Transaction'
-	String get new_transaction => 'New Transaction';
-
-	/// en: 'Edit Transaction'
-	String get edit_transaction => 'Edit Transaction';
+	/// en: 'Download Example'
+	String get download_example => 'Download Example';
 }
 
-// Path: account_type
-class TranslationsAccountTypeEn {
-	TranslationsAccountTypeEn.internal(this._root);
+// Path: common.labels
+class TranslationsCommonLabelsEn {
+	TranslationsCommonLabelsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Name'
+	String get name => 'Name';
+
+	/// en: 'Type'
+	String get type => 'Type';
+
+	/// en: 'Amount'
+	String get amount => 'Amount';
+
+	/// en: 'Date'
+	String get date => 'Date';
+
+	/// en: 'Description'
+	String get description => 'Description';
+
+	/// en: 'Account'
+	String get account => 'Account';
+
+	/// en: 'Category'
+	String get category => 'Category';
+
+	/// en: 'Balance'
+	String get balance => 'Balance';
+
+	/// en: 'Available Balance'
+	String get available_balance => 'Available Balance';
+
+	/// en: 'Initial Balance Date'
+	String get initial_balance_date => 'Initial Balance Date';
+
+	/// en: 'Icon'
+	String get icon => 'Icon';
+
+	/// en: 'Currency'
+	String get coin => 'Currency';
+
+	/// en: 'Recurrence'
+	String get recurrence => 'Recurrence';
+
+	/// en: 'Frequency'
+	String get frequency => 'Frequency';
+}
+
+// Path: accounts.types
+class TranslationsAccountsTypesEn {
+	TranslationsAccountsTypesEn.internal(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -209,16 +298,89 @@ class TranslationsAccountTypeEn {
 	/// en: 'Credit Card'
 	String get credit_card => 'Credit Card';
 
-	/// en: 'Money'
-	String get money => 'Money';
+	/// en: 'Cash'
+	String get money => 'Cash';
 
 	/// en: 'Others'
 	String get others => 'Others';
 }
 
-// Path: currency_type
-class TranslationsCurrencyTypeEn {
-	TranslationsCurrencyTypeEn.internal(this._root);
+// Path: transactions.types
+class TranslationsTransactionsTypesEn {
+	TranslationsTransactionsTypesEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Income'
+	String get income => 'Income';
+
+	/// en: 'Expense'
+	String get expense => 'Expense';
+}
+
+// Path: transactions.status
+class TranslationsTransactionsStatusEn {
+	TranslationsTransactionsStatusEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'To Pay'
+	String get to_pay => 'To Pay';
+
+	/// en: 'Paid'
+	String get paid => 'Paid';
+}
+
+// Path: transactions.currency
+class TranslationsTransactionsCurrencyEn {
+	TranslationsTransactionsCurrencyEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final TranslationsTransactionsCurrencyTypesEn types = TranslationsTransactionsCurrencyTypesEn.internal(_root);
+}
+
+// Path: messages.success
+class TranslationsMessagesSuccessEn {
+	TranslationsMessagesSuccessEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Exported successfully!'
+	String get export_successfully => 'Exported successfully!';
+
+	/// en: 'Excel file imported successfully'
+	String get excel_import_successfully => 'Excel file imported successfully';
+}
+
+// Path: messages.errors
+class TranslationsMessagesErrorsEn {
+	TranslationsMessagesErrorsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Error while exporting'
+	String get export_error => 'Error while exporting';
+
+	/// en: 'Excel file not found'
+	String get excel_not_found => 'Excel file not found';
+
+	/// en: 'Invalid Excel file'
+	String get excel_not_valid => 'Invalid Excel file';
+}
+
+// Path: transactions.currency.types
+class TranslationsTransactionsCurrencyTypesEn {
+	TranslationsTransactionsCurrencyTypesEn.internal(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -227,8 +389,8 @@ class TranslationsCurrencyTypeEn {
 	/// en: 'Real'
 	String get brl => 'Real';
 
-	/// en: 'Dolar'
-	String get usd => 'Dolar';
+	/// en: 'Dollar'
+	String get usd => 'Dollar';
 
 	/// en: 'Euro'
 	String get eur => 'Euro';

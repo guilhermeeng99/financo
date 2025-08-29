@@ -17,6 +17,8 @@ class AppTheme {
     final theme = ThemeData(
       scaffoldBackgroundColor: const Color(0xff181818),
       dividerColor: const Color(0xffFFFFFF),
+      iconTheme: const IconThemeData(color: Color(0xffFFFFFF)),
+      primaryIconTheme: const IconThemeData(color: Color(0xffFFFFFF)),
       shadowColor: const Color(0xffCCD3EA),
       cardColor: const Color(0xff282828),
       inputDecorationTheme: const InputDecorationTheme(isCollapsed: true),
@@ -24,6 +26,9 @@ class AppTheme {
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        foregroundColor: Color(0xffFFFFFF),
+      ),
       canvasColor: Colors.transparent,
       textTheme: TextTheme(
         titleLarge: defaultTextStyle,

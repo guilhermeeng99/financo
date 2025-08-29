@@ -8,6 +8,8 @@ import 'account_domain.dart';
 abstract class IAccountRepository {
   Future<Either<Failure, AccountData>> createAccount(AccountsCompanion account);
 
+  Future<Either<Failure, AccountData?>> getAccountById(int id);
+
   Future<Either<Failure, List<AccountData>>> getAllAccounts({
     bool onlyActive = true,
   });
@@ -40,6 +42,19 @@ class AccountRepository implements IAccountRepository {
       return Either.right(result);
     } catch (e) {
       return Either.left(DatabaseFailure('Error creating account: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AccountData?>> getAccountById(int id) async {
+    try {
+      final query = _database.select(_database.accounts)
+        ..where((tbl) => tbl.id.equals(id));
+
+      final result = await query.getSingleOrNull();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error fetching account by id: $e'));
     }
   }
 

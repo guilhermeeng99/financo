@@ -139,27 +139,8 @@ class CWPopupMenuButton<T, A extends PopupMenuAction<T>>
           )
           .toList(),
       child: Container(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 3,
-          children: [
-            _ballCircle(context),
-            _ballCircle(context),
-            _ballCircle(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Container _ballCircle(BuildContext context) {
-    return Container(
-      width: 3,
-      height: 3,
-      decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor,
-        shape: BoxShape.circle,
+        padding: const EdgeInsets.all(5),
+        child: const Icon(Icons.more_vert, size: 25),
       ),
     );
   }

@@ -31,8 +31,8 @@ class CreateAndEditTransactionPopUp extends HookWidget {
 
     return CWPopUp(
       title: args.type == CreateAndEditTransactionPopUpType.edit
-          ? context.t.edit_transaction
-          : context.t.new_transaction,
+          ? context.t.transactions.edit_transaction
+          : context.t.transactions.new_transaction,
       centerContent: Container(
         width: 500,
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -46,7 +46,7 @@ class CreateAndEditTransactionPopUp extends HookWidget {
               children: [
                 const _Amout(),
                 CWCalendarDropDown(
-                  title: context.t.date,
+                  title: context.t.common.labels.date,
                   selectedDateRx: createAndEditTransactionBloc.actualDate,
                 ),
                 const _Recurrence(),
@@ -79,7 +79,7 @@ class _Account extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.account,
+      title: context.t.common.labels.account,
       child: Obx(() {
         final accounts = createAndEditTransactionBloc.accounts;
         final selectedAccountId =
@@ -96,7 +96,7 @@ class _Account extends StatelessWidget {
           items: [
             DropdownMenuItem<int?>(
               child: Text(
-                context.t.select_account,
+                context.t.accounts.select_account,
                 style: TextStyle(
                   color: Theme.of(context).customColors.secondaryTextColor,
                   fontStyle: FontStyle.italic,
@@ -122,7 +122,7 @@ class _Type extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.type,
+      title: context.t.common.labels.type,
       child: Obx(() {
         final selectedType =
             createAndEditTransactionBloc.selectedTransactionType.value;
@@ -165,7 +165,7 @@ class _Amout extends HookWidget {
 
     return Expanded(
       child: CWPopUpItemTitle(
-        title: context.t.amout,
+        title: context.t.common.labels.amount,
         spacing: 12,
         child: TextField(
           controller: controller,
@@ -202,7 +202,7 @@ class _Recurrence extends StatelessWidget {
           createAndEditTransactionBloc.selectedRecurrenceType.value;
 
       return CWPopUpItemTitle(
-        title: context.t.recurrence,
+        title: context.t.common.labels.recurrence,
         child: DropdownButton<TransactionRecurrenceType>(
           value: selectedRecurrenceType,
           onChanged: (TransactionRecurrenceType? value) {
@@ -239,7 +239,7 @@ class _RecurrenceFrequency extends StatelessWidget {
           createAndEditTransactionBloc.selectedRecurrenceFrequency.value;
       if (selectedRecurrenceType == TransactionRecurrenceType.fixed) {
         return CWPopUpItemTitle(
-          title: context.t.frequency,
+          title: context.t.common.labels.frequency,
           child: DropdownButton<TransactionRecurrenceFrequency>(
             value: selectedRecurrenceFrequency,
             onChanged: (TransactionRecurrenceFrequency? value) {
@@ -291,7 +291,7 @@ class _Description extends HookWidget {
           style: const TextStyle(fontSize: 18),
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.only(bottom: 10),
-            hintText: context.t.description,
+            hintText: context.t.common.labels.description,
             hintStyle: TextStyle(
               color: Theme.of(context).customColors.secondaryTextColor,
               fontSize: 16,
@@ -309,7 +309,7 @@ class _Category extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.categories,
+      title: context.t.common.labels.category,
       child: Obx(() {
         final categories = createAndEditTransactionBloc.categories;
         final selectedCategoryId =
@@ -327,7 +327,7 @@ class _Category extends StatelessWidget {
           items: [
             DropdownMenuItem<int?>(
               child: Text(
-                context.t.select_category,
+                context.t.categories.select_category,
                 style: TextStyle(
                   color: Theme.of(context).customColors.secondaryTextColor,
                   fontStyle: FontStyle.italic,

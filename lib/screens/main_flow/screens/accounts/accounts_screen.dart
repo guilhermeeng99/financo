@@ -14,7 +14,7 @@ class AccountsScreen extends StatelessWidget {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(right: 10, bottom: 10),
         child: CWFloatingActionButton(
-          tooltipMessage: context.t.new_account,
+          tooltipMessage: context.t.accounts.new_account,
           onTap: accountsModel.onTapFloatingActionButton,
         ),
       ),
@@ -28,7 +28,7 @@ class AccountsScreen extends StatelessWidget {
                 spacing: 10,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(context.t.show_only_active_accounts),
+                  Text(context.t.accounts.show_only_active),
                   Switch(
                     value: accountsBloc.showOnlyActiveAccounts.value,
                     onChanged: (_) =>
@@ -116,7 +116,10 @@ class _AccountItem extends StatelessWidget {
                     const Gap(5),
                     Text(account.name),
                     const Spacer(),
-                    CWThreeBallsButton(account),
+                    CWPopupMenuButton<AccountData, AccountMenuAction>(
+                      item: account,
+                      actions: AccountMenuAction.values,
+                    ),
                   ],
                 ),
                 Row(

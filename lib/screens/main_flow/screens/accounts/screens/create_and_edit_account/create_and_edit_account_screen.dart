@@ -29,8 +29,8 @@ class CreateAndEditAccountPopUp extends HookWidget {
 
     return CWPopUp(
       title: args.type == CreateAndEditAccountPopUpType.edit
-          ? context.t.edit_account
-          : context.t.new_account,
+          ? context.t.accounts.edit_account
+          : context.t.accounts.new_account,
       centerContent: Container(
         width: 400,
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -49,7 +49,7 @@ class CreateAndEditAccountPopUp extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 CWCalendarDropDown(
-                  title: context.t.initial_balance_date,
+                  title: context.t.common.labels.initial_balance_date,
                   selectedDateRx: createAndEditAccountBloc.selectedInitDate,
                 ),
                 const _Balance(),
@@ -74,7 +74,7 @@ class _Type extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.type,
+      title: context.t.common.labels.type,
       child: Obx(() {
         final selectedType = createAndEditAccountBloc.selectedAccountType.value;
         return DropdownButton<AccountType>(
@@ -105,7 +105,7 @@ class _Coin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.coin,
+      title: context.t.common.labels.coin,
       child: Obx(() {
         final selectedCurrency =
             createAndEditAccountBloc.selectedCurrencyType.value;
@@ -148,7 +148,7 @@ class _Icon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.icon,
+      title: context.t.common.labels.icon,
       child: Obx(() {
         final selectedIcon = createAndEditAccountBloc.selectedIconType.value;
         return DropdownButton<AccountIconType>(
@@ -189,7 +189,7 @@ class _Balance extends HookWidget {
 
     return Expanded(
       child: CWPopUpItemTitle(
-        title: context.t.balance,
+        title: context.t.common.labels.balance,
         spacing: 12,
         child: TextField(
           controller: controller,
@@ -237,7 +237,7 @@ class _Name extends HookWidget {
         style: const TextStyle(fontSize: 18),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.only(bottom: 10),
-          hintText: '${context.t.name}*',
+          hintText: '${context.t.common.labels.name}*',
           hintStyle: TextStyle(
             color: Theme.of(context).customColors.secondaryTextColor,
             fontSize: 16,

@@ -69,11 +69,11 @@ enum SideBarItemType {
   String title(BuildContext context) {
     switch (this) {
       case SideBarItemType.releases:
-        return context.t.releases;
+        return context.t.navigation.releases;
       case SideBarItemType.categories:
-        return context.t.categories;
+        return context.t.navigation.categories;
       case SideBarItemType.accounts:
-        return context.t.accounts;
+        return context.t.navigation.accounts;
     }
   }
 

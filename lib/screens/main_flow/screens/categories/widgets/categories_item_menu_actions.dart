@@ -17,15 +17,15 @@ enum CategoryMenuAction implements PopupMenuAction<CategoryData> {
   String getLabel(BuildContext context) {
     switch (this) {
       case CategoryMenuAction.edit:
-        return context.t.edit;
+        return context.t.common.actions.edit;
       case CategoryMenuAction.freeze:
-        return context.t.freeze;
+        return context.t.common.actions.freeze;
       case CategoryMenuAction.unfreeze:
-        return context.t.unfreeze;
+        return context.t.common.actions.unfreeze;
       case CategoryMenuAction.createSubCategory:
-        return context.t.create_sub_category;
+        return context.t.categories.create_sub_category;
       case CategoryMenuAction.delete:
-        return context.t.delete;
+        return context.t.common.actions.delete;
     }
   }
 

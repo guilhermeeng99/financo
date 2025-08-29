@@ -40,8 +40,8 @@ class CreateAndEditCategoryPopUp extends HookWidget {
 
     return CWPopUp(
       title: args.type == CreateAndEditCategoryPopUpType.edit
-          ? context.t.edit_category
-          : context.t.new_category,
+          ? context.t.categories.edit_category
+          : context.t.categories.new_category,
       centerContent: Container(
         width: 400,
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -86,7 +86,7 @@ class _Name extends HookWidget {
       style: const TextStyle(fontSize: 18),
       decoration: InputDecoration(
         contentPadding: const EdgeInsets.only(bottom: 10),
-        hintText: '${context.t.name}*',
+        hintText: '${context.t.common.labels.name}*',
         hintStyle: TextStyle(
           color: Theme.of(context).customColors.secondaryTextColor,
           fontSize: 16,
@@ -102,7 +102,7 @@ class _Type extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
-      title: context.t.type,
+      title: context.t.common.labels.type,
       child: Obx(() {
         final selectedType =
             createAndEditCategoryBloc.selectedCategoryType.value;
@@ -150,7 +150,7 @@ class _SubCategory extends StatelessWidget {
           style: const TextStyle(fontSize: 18),
           underline: const CWPopUpUnderLine(),
           hint: Text(
-            context.t.subcategory_of,
+            context.t.categories.subcategory_of,
             style: TextStyle(
               color: Theme.of(context).customColors.secondaryTextColor,
               fontSize: 16,
@@ -159,7 +159,7 @@ class _SubCategory extends StatelessWidget {
           items: [
             DropdownMenuItem<int?>(
               child: Text(
-                context.t.uncategorized_parent,
+                context.t.categories.uncategorized_parent,
                 style: TextStyle(
                   color: Theme.of(context).customColors.secondaryTextColor,
                   fontStyle: FontStyle.italic,

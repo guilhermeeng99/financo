@@ -91,6 +91,10 @@ class CategoryUsecase {
     return _categoryRepository.getCategoryById(id);
   }
 
+  Future<Either<Failure, String>> getCategoryDisplayName(int id) async {
+    return _categoryRepository.getCategoryDisplayName(id);
+  }
+
   Future<Either<Failure, List<CategoryData>>> getEligibleParentCategories(
     FinancialType type,
     int? excludeCategoryId,

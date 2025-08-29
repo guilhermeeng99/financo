@@ -36,6 +36,8 @@ abstract class ICategoryRepository {
     FinancialType type,
     int? parentCategoryId,
   );
+
+  Future<Either<Failure, String>> getCategoryDisplayName(int id);
 }
 
 class CategoryRepository implements ICategoryRepository {
@@ -270,6 +272,48 @@ class CategoryRepository implements ICategoryRepository {
       return Either.right(true);
     } catch (e) {
       return Either.left(DatabaseFailure('Error deleting category: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> getCategoryDisplayName(int id) async {
+    try {
+      final query = _database.selectOnly(_database.categories)
+        ..addColumns([
+          _database.categories.name,
+          _database.categories.parentCategoryId,
+        ])
+        ..where(_database.categories.id.equals(id));
+
+      final result = await query.getSingleOrNull();
+
+      if (result == null) {
+        return Either.right('Category not found');
+      }
+
+      final categoryName = result.read(_database.categories.name)!;
+      final parentCategoryId = result.read(
+        _database.categories.parentCategoryId,
+      );
+
+      if (parentCategoryId == null) {
+        return Either.right(categoryName);
+      }
+
+      final parentQuery = _database.select(_database.categories)
+        ..where((tbl) => tbl.id.equals(parentCategoryId));
+
+      final parentResult = await parentQuery.getSingleOrNull();
+
+      if (parentResult != null) {
+        return Either.right('${parentResult.name} / $categoryName');
+      } else {
+        return Either.right(categoryName);
+      }
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error getting category display name: $e'),
+      );
     }
   }
 }

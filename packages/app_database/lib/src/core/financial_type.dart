@@ -13,9 +13,11 @@ extension FinancialTypeExtension on FinancialType {
   String title(flutter.BuildContext context) {
     switch (this) {
       case FinancialType.expense:
-        return context.t.expense;
+        return context.t.transactions.types.expense;
       case FinancialType.income:
-        return context.t.income;
+        return context.t.transactions.types.income;
     }
   }
+
+
 }

@@ -161,13 +161,13 @@ extension AccountTypeExtension on AccountType {
   String title(flutter.BuildContext context) {
     switch (this) {
       case AccountType.checking:
-        return context.t.account_type.checking_account;
+        return context.t.accounts.types.checking_account;
       case AccountType.creditCard:
-        return context.t.account_type.credit_card;
+        return context.t.accounts.types.credit_card;
       case AccountType.others:
-        return context.t.account_type.others;
+        return context.t.accounts.types.others;
       case AccountType.cash:
-        return context.t.account_type.money;
+        return context.t.accounts.types.money;
     }
   }
 }
@@ -187,11 +187,11 @@ extension CurrencyTypeExtension on CurrencyType {
   String title(flutter.BuildContext context) {
     switch (this) {
       case CurrencyType.brl:
-        return context.t.currency_type.brl;
+        return context.t.transactions.currency.types.brl;
       case CurrencyType.usd:
-        return context.t.currency_type.usd;
+        return context.t.transactions.currency.types.usd;
       case CurrencyType.eur:
-        return context.t.currency_type.eur;
+        return context.t.transactions.currency.types.eur;
     }
   }
 }

@@ -38,7 +38,7 @@ class CWSquareButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
-          context.t.save,
+          context.t.common.actions.save,
           style: const TextStyle(fontSize: 16),
         ),
       ),
