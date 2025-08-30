@@ -80,7 +80,7 @@ Future<void> _showAllAccounts() async {
         for (final account in accounts) {
           totalAccounts++;
           buffer.writeln(
-            '    💳 ${account.name} (Balance: ${account.balance}, ID: ${account.id})',
+            '    💳 ${account.name} (Balance: ${account.initialBalance}, ID: ${account.id})',
           );
         }
       }

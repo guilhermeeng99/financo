@@ -3,6 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/releases_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/releases_model.dart';
 import 'package:financo/screens/main_flow/screens/releases/widgets/releases_item_menu_actions.dart.dart';
+import 'package:financo/screens/main_flow/screens/releases/widgets/releases_screen_account_area.dart';
 
 class ReleasesScreen extends StatelessWidget {
   const ReleasesScreen({super.key});
@@ -17,19 +18,63 @@ class ReleasesScreen extends StatelessWidget {
           onTap: releasesModel.onTapFloatingActionButton,
         ),
       ),
-      body: Obx(
-        () => ListView.separated(
-          itemCount: releasesBloc.transactions.length + 2,
-          separatorBuilder: (context, index) =>
-              const CWDivider(width: double.infinity, height: 1),
-          itemBuilder: (context, index) {
-            if (index == 0 || index == releasesBloc.transactions.length + 1) {
-              return const SizedBox.shrink();
-            }
-            final transaction = releasesBloc.transactions[index - 1];
-            return _TransactionItem(transaction: transaction);
-          },
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.95,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Row(
+            spacing: 20,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: const Column(
+                  spacing: 10,
+                  children: [_Calendar(), CWAReleasesScreenAccount()],
+                ),
+              ),
+              const _TransactionsList(),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _Calendar extends StatelessWidget {
+  const _Calendar();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(height: 100, child: CWCard(child: Container()));
+  }
+}
+
+class _TransactionsList extends StatelessWidget {
+  const _TransactionsList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: CWCard(
+        child: Obx(() {
+          final transactions = transactionsBloc.getFilteredTransactions(
+            accountsBloc.enabledAccountIds,
+          );
+
+          return ListView.separated(
+            itemCount: transactions.length + 2,
+            separatorBuilder: (context, index) =>
+                const CWDivider(width: double.infinity, height: 1),
+            itemBuilder: (context, index) {
+              if (index == 0 || index == transactions.length + 1) {
+                return const SizedBox.shrink();
+              }
+              final transaction = transactions[index - 1];
+              return _TransactionItem(transaction: transaction);
+            },
+          );
+        }),
       ),
     );
   }
@@ -80,6 +125,7 @@ class _TransactionItem extends StatelessWidget {
                         style: const TextStyle(fontSize: 14),
                       ),
                     Row(
+                      spacing: 10,
                       children: [
                         _TransactionItemContainer(transaction.accountName),
                         _TransactionItemContainer(transaction.categoryName),
@@ -100,16 +146,7 @@ class _TransactionItem extends StatelessWidget {
                           TransactionRecurrenceType.fixed)
                         const Icon(Icons.restart_alt, size: 20),
                       const Spacer(),
-                      Text(
-                        CurrencyFormatter.formatAmount(
-                          transaction.t.amount,
-                          context,
-                        ),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: transaction.t.amount.getColor(context),
-                        ),
-                      ),
+                      CWAmoutValue(value: transaction.t.amount),
                       CWPopupMenuButton<TransactionData, TransactionMenuAction>(
                         item: transaction.t,
                         actions: TransactionMenuAction.values,

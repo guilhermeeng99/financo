@@ -55,9 +55,15 @@ enum TransactionMenuAction implements PopupMenuAction<TransactionData> {
       case TransactionMenuAction.clone:
         releasesModel.onTapCloneTransaction(transaction);
       case TransactionMenuAction.pay:
-        releasesModel.onTapPayTransaction(transaction);
+        releasesModel.onTapPayOrUnpayTransaction(
+          transaction: transaction,
+          paymentStatus: TransactionPaymentStatus.paid,
+        );
       case TransactionMenuAction.unPay:
-        releasesModel.onTapUnPayTransaction(transaction);
+        releasesModel.onTapPayOrUnpayTransaction(
+          transaction: transaction,
+          paymentStatus: TransactionPaymentStatus.unpaid,
+        );
     }
   }
 
@@ -65,9 +71,9 @@ enum TransactionMenuAction implements PopupMenuAction<TransactionData> {
   bool isVisible(TransactionData transaction) {
     switch (this) {
       case TransactionMenuAction.pay:
-        return transaction.paymentStatus == TransactionPaymentStatus.paid;
-      case TransactionMenuAction.unPay:
         return transaction.paymentStatus == TransactionPaymentStatus.unpaid;
+      case TransactionMenuAction.unPay:
+        return transaction.paymentStatus == TransactionPaymentStatus.paid;
       case TransactionMenuAction.edit:
       case TransactionMenuAction.clone:
       case TransactionMenuAction.delete:

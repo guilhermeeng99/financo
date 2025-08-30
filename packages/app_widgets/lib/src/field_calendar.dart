@@ -14,40 +14,44 @@ class CWCalendarDropDown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: title,
-      spacing: 10,
-      child: Obx(() {
-        return GestureDetector(
-          onTap: () => _selectDate(context),
-          child: Container(
-            padding: const EdgeInsets.only(bottom: 6),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                  width: 0.5,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: CWPopUpItemTitle(
+        title: title,
+        spacing: 18,
+        child: Obx(() {
+          return GestureDetector(
+            onTap: () => _selectDate(context),
+            child: Container(
+              padding: const EdgeInsets.only(bottom: 6),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 25,
+                children: [
+                  Text(
+                    selectedDateRx.value
+                        .formattedDateddMMyyyy(context: context),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Icon(
+                    Icons.calendar_today,
+                    color: Theme.of(context).customColors.secondaryTextColor,
+                    size: 16,
+                  ),
+                ],
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 25,
-              children: [
-                Text(
-                  selectedDateRx.value.formattedDateddMMyyyy(context: context),
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Icon(
-                  Icons.calendar_today,
-                  color: Theme.of(context).customColors.secondaryTextColor,
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 

@@ -8,7 +8,8 @@ class ReleasesModule extends Module {
   @override
   void binds(Injector i) {
     i
-      ..addSingleton<ReleasesBloc>(ReleasesBloc.new)
+      ..addSingleton<TransactionsBloc>(TransactionsBloc.new)
+      ..addSingleton<AccountsBloc>(AccountsBloc.new)
       ..addSingleton<ReleasesModel>(ReleasesModel.new);
   }
 

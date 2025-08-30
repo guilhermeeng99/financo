@@ -1,28 +1,30 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_database/src/items/account/account_repository.dart';
+import 'package:app_database/src/items/transaction/transaction_repository.dart';
 import 'package:drift/drift.dart';
 
 class AccountUsecase {
-  AccountUsecase(this._accountRepository);
+  AccountUsecase(this._accountRepository, this._transactionRepository);
 
   final IAccountRepository _accountRepository;
+  final ITransactionRepository _transactionRepository;
 
   Future<Either<Failure, AccountData>> createAccount({
     required String name,
     required AccountType accountType,
+    required double initialBalance,
     AccountIconType iconType = AccountIconType.none,
-    double initialBalance = 0.0,
     CurrencyType currencyType = CurrencyType.brl,
     DateTime? initDate,
   }) async {
     try {
       final accountName = AccountName.create(name);
-      final balance = Balance.create(initialBalance);
+      final initBalance = Balance.create(initialBalance);
 
       final accountCompanion = AccountsCompanion(
         name: Value(accountName.value),
         accountType: Value(accountType),
-        balance: Value(balance.value),
+        initialBalance: Value(initBalance.value),
         currencyType: Value(currencyType),
         isActive: const Value(true),
         iconType: Value(iconType),
@@ -45,6 +47,15 @@ class AccountUsecase {
     return _accountRepository.getAllAccounts(onlyActive: onlyActive);
   }
 
+  Future<Either<Failure, List<AccountData>>> getCheckingAccounts({
+    bool onlyActive = true,
+  }) async {
+    return _accountRepository.getAccountsByType(
+      AccountType.checking,
+      onlyActive: onlyActive,
+    );
+  }
+
   Future<Either<Failure, AccountData?>> getAccountById(int id) async {
     try {
       return await _accountRepository.getAccountById(id);
@@ -59,7 +70,7 @@ class AccountUsecase {
     required int id,
     String? name,
     AccountType? accountType,
-    double? balance,
+    double? initialBalance,
     CurrencyType? currencyType,
     bool? isActive,
     AccountIconType? iconType,
@@ -68,7 +79,7 @@ class AccountUsecase {
     try {
       Value<String>? nameValue;
       Value<AccountType>? accountTypeValue;
-      Value<double>? balanceValue;
+      Value<double>? initialBalanceValue;
       Value<CurrencyType>? currencyTypeValue;
       Value<bool>? isActiveValue;
       Value<AccountIconType>? iconTypeValue;
@@ -83,9 +94,10 @@ class AccountUsecase {
         accountTypeValue = Value(accountType);
       }
 
-      if (balance != null) {
-        final accountBalance = Balance.create(balance);
-        balanceValue = Value(accountBalance.value);
+   
+      if (initialBalance != null) {
+        final accountInitialBalance = Balance.create(initialBalance);
+        initialBalanceValue = Value(accountInitialBalance.value);
       }
 
       if (currencyType != null) {
@@ -106,7 +118,7 @@ class AccountUsecase {
 
       if (nameValue == null &&
           accountTypeValue == null &&
-          balanceValue == null &&
+          initialBalanceValue == null &&
           currencyTypeValue == null &&
           isActiveValue == null &&
           iconTypeValue == null &&
@@ -117,7 +129,7 @@ class AccountUsecase {
       final accountCompanion = AccountsCompanion(
         name: nameValue ?? const Value.absent(),
         accountType: accountTypeValue ?? const Value.absent(),
-        balance: balanceValue ?? const Value.absent(),
+        initialBalance: initialBalanceValue ?? const Value.absent(),
         currencyType: currencyTypeValue ?? const Value.absent(),
         isActive: isActiveValue ?? const Value.absent(),
         iconType: iconTypeValue ?? const Value.absent(),
@@ -175,6 +187,32 @@ class AccountUsecase {
       return Either.right(grouped);
     } catch (e) {
       return Either.left(DatabaseFailure('Error grouping accounts: $e'));
+    }
+  }
+
+  Future<Either<Failure, double>> getAccountFinalBalance(int accountId) async {
+    try {
+      final accountResult = await getAccountById(accountId);
+
+      return accountResult.fold(Either.left, (account) async {
+        if (account == null) {
+          return Either.left(const DatabaseFailure('Account not found'));
+        }
+
+        final transactionBalanceResult = await _transactionRepository
+            .getAccountBalanceById(accountId);
+
+        return transactionBalanceResult.fold(Either.left, (
+          double transactionBalance,
+        ) {
+          final finalBalance = account.initialBalance + transactionBalance;
+          return Either.right(finalBalance);
+        });
+      });
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error calculating account final balance: $e'),
+      );
     }
   }
 }

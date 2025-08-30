@@ -19,7 +19,7 @@ class CreateAndEditAccountBloc extends GetxController {
 
   void initializeWithAccountData(AccountData account) {
     name.value = account.name;
-    initialBalance.value = account.balance;
+    initialBalance.value = account.initialBalance;
     selectedAccountType.value = account.accountType;
     selectedCurrencyType.value = account.currencyType;
     selectedIconType.value = account.iconType;

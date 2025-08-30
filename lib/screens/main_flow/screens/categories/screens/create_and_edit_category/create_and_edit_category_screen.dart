@@ -71,28 +71,15 @@ class _Name extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = useTextEditingController();
+    return Obx(() {
+      final name = createAndEditCategoryBloc.name.value;
 
-    useEffect(() {
-      controller.text = createAndEditCategoryBloc.name.value;
-      return null;
-    }, [createAndEditCategoryBloc.name.value]);
-
-    return TextField(
-      controller: controller,
-      onChanged: (value) => createAndEditCategoryBloc.name.value = value,
-      cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-      cursorHeight: 22,
-      style: const TextStyle(fontSize: 18),
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.only(bottom: 10),
+      return CWTextField(
         hintText: '${context.t.common.labels.name}*',
-        hintStyle: TextStyle(
-          color: Theme.of(context).customColors.secondaryTextColor,
-          fontSize: 16,
-        ),
-      ),
-    );
+        initialValue: name,
+        onChanged: (value) => createAndEditCategoryBloc.name.value = value,
+      );
+    });
   }
 }
 
@@ -101,34 +88,23 @@ class _Type extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.type,
-      child: Obx(() {
-        final selectedType =
-            createAndEditCategoryBloc.selectedCategoryType.value;
-        return SizedBox(
-          width: double.infinity,
-          child: DropdownButton<FinancialType>(
-            value: selectedType,
-            onChanged: (FinancialType? value) {
-              if (value != null) {
-                createAndEditCategoryBloc.selectedCategoryType.value = value;
-              }
-            },
-            isExpanded: true,
-            dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-            style: const TextStyle(fontSize: 18),
-            underline: const CWPopUpUnderLine(),
-            items: FinancialType.values.map((FinancialType type) {
-              return DropdownMenuItem<FinancialType>(
-                value: type,
-                child: Text(type.title(context)),
-              );
-            }).toList(),
-          ),
-        );
-      }),
-    );
+    return Obx(() {
+      final selectedType = createAndEditCategoryBloc.selectedCategoryType.value;
+      return CWDropdownField<FinancialType>(
+        title: context.t.common.labels.type,
+        value: selectedType,
+        items: FinancialType.values,
+        isExpanded: true,
+        onChanged: (FinancialType? value) {
+          if (value != null) {
+            createAndEditCategoryBloc.selectedCategoryType.value = value;
+          }
+        },
+        itemBuilder: (FinancialType type, BuildContext context) {
+          return Text(type.title(context));
+        },
+      );
+    });
   }
 }
 
@@ -138,44 +114,37 @@ class _SubCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      return SizedBox(
-        width: double.infinity,
-        child: DropdownButton<int?>(
-          value: createAndEditCategoryBloc.validatedParentCategoryId,
-          onChanged: (int? value) {
-            createAndEditCategoryBloc.parentCategoryId.value = value;
-          },
-          isExpanded: true,
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          hint: Text(
-            context.t.categories.subcategory_of,
-            style: TextStyle(
-              color: Theme.of(context).customColors.secondaryTextColor,
-              fontSize: 16,
-            ),
-          ),
-          items: [
-            DropdownMenuItem<int?>(
-              child: Text(
-                context.t.categories.uncategorized_parent,
-                style: TextStyle(
-                  color: Theme.of(context).customColors.secondaryTextColor,
-                  fontStyle: FontStyle.italic,
-                ),
+      final items = <CategoryData?>[
+        null,
+        ...createAndEditCategoryBloc.availableParentCategories,
+      ];
+
+      return CWDropdownField<CategoryData?>(
+        value: createAndEditCategoryBloc.validatedParentCategoryId != null
+            ? createAndEditCategoryBloc.availableParentCategories
+                  .firstWhereOrNull(
+                    (cat) =>
+                        cat.id ==
+                        createAndEditCategoryBloc.validatedParentCategoryId,
+                  )
+            : null,
+        items: items,
+        isExpanded: true,
+        onChanged: (CategoryData? category) {
+          createAndEditCategoryBloc.parentCategoryId.value = category?.id;
+        },
+        itemBuilder: (CategoryData? category, BuildContext context) {
+          if (category == null) {
+            return Text(
+              context.t.categories.uncategorized_parent,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
               ),
-            ),
-            ...createAndEditCategoryBloc.availableParentCategories.map((
-              CategoryData category,
-            ) {
-              return DropdownMenuItem<int?>(
-                value: category.id,
-                child: Text(category.name),
-              );
-            }),
-          ],
-        ),
+            );
+          }
+          return Text(category.name);
+        },
       );
     });
   }

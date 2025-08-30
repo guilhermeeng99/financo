@@ -44,7 +44,7 @@ class CreateAndEditTransactionPopUp extends HookWidget {
             Row(
               spacing: 5,
               children: [
-                const _Amout(),
+                const Expanded(child: _Amount()),
                 CWCalendarDropDown(
                   title: context.t.common.labels.date,
                   selectedDateRx: createAndEditTransactionBloc.actualDate,
@@ -56,7 +56,10 @@ class CreateAndEditTransactionPopUp extends HookWidget {
             const Row(
               spacing: 5,
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [_Description(), _Account()],
+              children: [
+                Expanded(child: _Description()),
+                _Account(),
+              ],
             ),
             const _Category(),
           ],
@@ -78,41 +81,36 @@ class _Account extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.account,
-      child: Obx(() {
-        final accounts = createAndEditTransactionBloc.accounts;
-        final selectedAccountId =
-            createAndEditTransactionBloc.selectedAccountId.value;
+    return Obx(() {
+      final accounts = createAndEditTransactionBloc.accounts;
+      final selectedAccountId =
+          createAndEditTransactionBloc.selectedAccountId.value;
 
-        return DropdownButton<int?>(
-          value: selectedAccountId,
-          onChanged: (int? value) {
-            createAndEditTransactionBloc.selectedAccountId.value = value;
-          },
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          items: [
-            DropdownMenuItem<int?>(
-              child: Text(
-                context.t.accounts.select_account,
-                style: TextStyle(
-                  color: Theme.of(context).customColors.secondaryTextColor,
-                  fontStyle: FontStyle.italic,
-                ),
+      final items = <AccountData?>[null, ...accounts];
+
+      return CWDropdownField<AccountData?>(
+        title: context.t.common.labels.account,
+        value: selectedAccountId != null
+            ? accounts.firstWhereOrNull((acc) => acc.id == selectedAccountId)
+            : null,
+        items: items,
+        onChanged: (AccountData? account) {
+          createAndEditTransactionBloc.selectedAccountId.value = account?.id;
+        },
+        itemBuilder: (AccountData? account, BuildContext context) {
+          if (account == null) {
+            return Text(
+              context.t.accounts.select_account,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
               ),
-            ),
-            ...accounts.map((AccountData account) {
-              return DropdownMenuItem<int?>(
-                value: account.id,
-                child: Text(account.name),
-              );
-            }),
-          ],
-        );
-      }),
-    );
+            );
+          }
+          return Text(account.name);
+        },
+      );
+    });
   }
 }
 
@@ -121,73 +119,63 @@ class _Type extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.type,
-      child: Obx(() {
-        final selectedType =
-            createAndEditTransactionBloc.selectedTransactionType.value;
-        return SizedBox(
-          width: double.infinity,
-          child: DropdownButton<FinancialType>(
-            value: selectedType,
-            onChanged: (FinancialType? value) {
-              if (value != null) {
-                createAndEditTransactionBloc.selectedTransactionType.value =
-                    value;
-              }
-            },
-            isExpanded: true,
-            dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-            style: const TextStyle(fontSize: 18),
-            underline: const CWPopUpUnderLine(),
-            items: FinancialType.values.map((FinancialType type) {
-              return DropdownMenuItem<FinancialType>(
-                value: type,
-                child: Text(type.title(context)),
-              );
-            }).toList(),
-          ),
-        );
-      }),
-    );
+    return Obx(() {
+      final selectedType =
+          createAndEditTransactionBloc.selectedTransactionType.value;
+
+      return CWDropdownField<FinancialType>(
+        title: context.t.common.labels.type,
+        value: selectedType,
+        items: FinancialType.values,
+        isExpanded: true,
+        onChanged: (FinancialType? value) {
+          if (value != null) {
+            createAndEditTransactionBloc.selectedTransactionType.value = value;
+          }
+        },
+        itemBuilder: (FinancialType type, BuildContext context) {
+          return Text(type.title(context));
+        },
+      );
+    });
   }
 }
 
-class _Amout extends HookWidget {
-  const _Amout();
+class _Amount extends HookWidget {
+  const _Amount();
 
   @override
   Widget build(BuildContext context) {
-    final amout = createAndEditTransactionBloc.amount.value;
-    final formattedAmout = CurrencyFormatter.formatAmount(amout, context);
+    final controller = useTextEditingController();
+    final lastKnownAmount = useRef<double?>(null);
 
-    final controller = useTextEditingController(text: formattedAmout);
+    final amount = createAndEditTransactionBloc.amount.value;
 
-    return Expanded(
-      child: CWPopUpItemTitle(
-        title: context.t.common.labels.amount,
-        spacing: 12,
-        child: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: const [CurrencyInputFormatter()],
-          onChanged: (value) {
-            final parsedValue = CurrencyFormatter.parseAmount(value, context);
-            createAndEditTransactionBloc.amount.value = parsedValue;
-          },
-          cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-          cursorHeight: 22,
-          style: const TextStyle(fontSize: 18),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.only(bottom: 10),
-            hintText: '0',
-            hintStyle: TextStyle(
-              color: Theme.of(context).customColors.secondaryTextColor,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
+    useMemoized(() {
+      if (lastKnownAmount.value != amount) {
+        final formattedAmount = CurrencyFormatter.formatAmount(amount, context);
+        if (controller.text.isEmpty || controller.text != formattedAmount) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (controller.text != formattedAmount) {
+              controller.text = formattedAmount;
+            }
+          });
+        }
+        lastKnownAmount.value = amount;
+      }
+      return amount;
+    }, [amount]);
+
+    return CWTextField(
+      title: context.t.common.labels.amount,
+      hintText: '0',
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: const [CurrencyInputFormatter()],
+      onChanged: (value) {
+        final parsedValue = CurrencyFormatter.parseAmount(value, context);
+        createAndEditTransactionBloc.amount.value = parsedValue;
+      },
     );
   }
 }
@@ -200,28 +188,18 @@ class _Recurrence extends StatelessWidget {
     return Obx(() {
       final selectedRecurrenceType =
           createAndEditTransactionBloc.selectedRecurrenceType.value;
-
-      return CWPopUpItemTitle(
-        title: context.t.common.labels.recurrence,
-        child: DropdownButton<TransactionRecurrenceType>(
-          value: selectedRecurrenceType,
-          onChanged: (TransactionRecurrenceType? value) {
-            if (value != null) {
-              createAndEditTransactionBloc.selectedRecurrenceType.value = value;
-            }
-          },
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          items: TransactionRecurrenceType.values.map((
-            TransactionRecurrenceType type,
-          ) {
-            return DropdownMenuItem<TransactionRecurrenceType>(
-              value: type,
-              child: Text(type.displayName),
-            );
-          }).toList(),
-        ),
+      return CWDropdownField<TransactionRecurrenceType>(
+        title: context.t.common.labels.type,
+        value: selectedRecurrenceType,
+        items: TransactionRecurrenceType.values,
+        onChanged: (TransactionRecurrenceType? value) {
+          if (value != null) {
+            createAndEditTransactionBloc.selectedRecurrenceType.value = value;
+          }
+        },
+        itemBuilder: (TransactionRecurrenceType type, BuildContext context) {
+          return Text(type.displayName(context));
+        },
       );
     });
   }
@@ -237,29 +215,22 @@ class _RecurrenceFrequency extends StatelessWidget {
           createAndEditTransactionBloc.selectedRecurrenceType.value;
       final selectedRecurrenceFrequency =
           createAndEditTransactionBloc.selectedRecurrenceFrequency.value;
+
       if (selectedRecurrenceType == TransactionRecurrenceType.fixed) {
-        return CWPopUpItemTitle(
+        return CWDropdownField<TransactionRecurrenceFrequency>(
           title: context.t.common.labels.frequency,
-          child: DropdownButton<TransactionRecurrenceFrequency>(
-            value: selectedRecurrenceFrequency,
-            onChanged: (TransactionRecurrenceFrequency? value) {
-              if (value != null) {
-                createAndEditTransactionBloc.selectedRecurrenceFrequency.value =
-                    value;
-              }
-            },
-            dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-            style: const TextStyle(fontSize: 18),
-            underline: const CWPopUpUnderLine(),
-            items: TransactionRecurrenceFrequency.values.map((
-              TransactionRecurrenceFrequency frequency,
-            ) {
-              return DropdownMenuItem<TransactionRecurrenceFrequency>(
-                value: frequency,
-                child: Text(frequency.displayName),
-              );
-            }).toList(),
-          ),
+          value: selectedRecurrenceFrequency,
+          items: TransactionRecurrenceFrequency.values,
+          onChanged: (TransactionRecurrenceFrequency? value) {
+            if (value != null) {
+              createAndEditTransactionBloc.selectedRecurrenceFrequency.value =
+                  value;
+            }
+          },
+          itemBuilder:
+              (TransactionRecurrenceFrequency frequency, BuildContext context) {
+                return Text(frequency.displayName(context));
+              },
         );
       }
       return const SizedBox.shrink();
@@ -272,34 +243,16 @@ class _Description extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = useTextEditingController();
+    return Obx(() {
+      final description = createAndEditTransactionBloc.description.value;
 
-    useEffect(() {
-      controller.text = createAndEditTransactionBloc.description.value;
-      return null;
-    }, [createAndEditTransactionBloc.description.value]);
-
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 7),
-        child: TextField(
-          controller: controller,
-          onChanged: (value) =>
-              createAndEditTransactionBloc.description.value = value,
-          cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-          cursorHeight: 22,
-          style: const TextStyle(fontSize: 18),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.only(bottom: 10),
-            hintText: context.t.common.labels.description,
-            hintStyle: TextStyle(
-              color: Theme.of(context).customColors.secondaryTextColor,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
-    );
+      return CWTextField(
+        hintText: context.t.common.labels.description,
+        initialValue: description,
+        onChanged: (value) =>
+            createAndEditTransactionBloc.description.value = value,
+      );
+    });
   }
 }
 
@@ -308,59 +261,55 @@ class _Category extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.category,
-      child: Obx(() {
-        final categories = createAndEditTransactionBloc.categories;
-        final selectedCategoryId =
-            createAndEditTransactionBloc.selectedCategoryId.value;
+    return Obx(() {
+      final categories = createAndEditTransactionBloc.categories;
+      final selectedCategoryId =
+          createAndEditTransactionBloc.selectedCategoryId.value;
 
-        return DropdownButton<int?>(
-          value: selectedCategoryId,
-          onChanged: (int? value) {
-            createAndEditTransactionBloc.selectedCategoryId.value = value;
-          },
-          isExpanded: true,
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          items: [
-            DropdownMenuItem<int?>(
-              child: Text(
-                context.t.categories.select_category,
-                style: TextStyle(
-                  color: Theme.of(context).customColors.secondaryTextColor,
-                  fontStyle: FontStyle.italic,
-                ),
+      final items = <CategoryData?>[null, ...categories];
+
+      return CWDropdownField<CategoryData?>(
+        title: context.t.common.labels.category,
+        value: selectedCategoryId != null
+            ? categories.firstWhereOrNull((cat) => cat.id == selectedCategoryId)
+            : null,
+        items: items,
+        isExpanded: true,
+        onChanged: (CategoryData? category) {
+          createAndEditTransactionBloc.selectedCategoryId.value = category?.id;
+        },
+        itemBuilder: (CategoryData? category, BuildContext context) {
+          if (category == null) {
+            return Text(
+              context.t.categories.select_category,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
               ),
+            );
+          }
+
+          var displayName = category.name;
+
+          if (category.parentCategoryId != null) {
+            final parentCategory = categories.firstWhereOrNull(
+              (cat) => cat.id == category.parentCategoryId,
+            );
+            if (parentCategory != null) {
+              displayName = '  ${parentCategory.name} / ${category.name}';
+            }
+          }
+
+          return Text(
+            displayName,
+            style: TextStyle(
+              fontWeight: category.parentCategoryId == null
+                  ? FontWeight.w500
+                  : FontWeight.normal,
             ),
-            ...categories.map((CategoryData category) {
-              var displayName = category.name;
-
-              if (category.parentCategoryId != null) {
-                final parentCategory = categories.firstWhereOrNull(
-                  (cat) => cat.id == category.parentCategoryId,
-                );
-                if (parentCategory != null) {
-                  displayName = '  ${parentCategory.name} / ${category.name}';
-                }
-              }
-
-              return DropdownMenuItem<int?>(
-                value: category.id,
-                child: Text(
-                  displayName,
-                  style: TextStyle(
-                    fontWeight: category.parentCategoryId == null
-                        ? FontWeight.w500
-                        : FontWeight.normal,
-                  ),
-                ),
-              );
-            }),
-          ],
-        );
-      }),
-    );
+          );
+        },
+      );
+    });
   }
 }

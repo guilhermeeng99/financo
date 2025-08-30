@@ -18,6 +18,4 @@ extension FinancialTypeExtension on FinancialType {
         return context.t.transactions.types.income;
     }
   }
-
-
 }

@@ -38,7 +38,7 @@ class Accounts extends Table {
   TextColumn get name => text().withLength(min: 3, max: 15)();
   TextColumn get iconType => textEnum<AccountIconType>()();
   TextColumn get accountType => textEnum<AccountType>()();
-  RealColumn get balance => real().withDefault(const Constant(0))();
+  RealColumn get initialBalance => real().withDefault(const Constant(0))();
   TextColumn get currencyType => textEnum<CurrencyType>()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get initDate => dateTime().withDefault(currentDateAndTime)();
@@ -47,7 +47,7 @@ class Accounts extends Table {
 class AccountData {
   AccountData({
     required this.accountType,
-    required this.balance,
+    required this.initialBalance,
     required this.currencyType,
     required this.isActive,
     required this.initDate,
@@ -60,7 +60,7 @@ class AccountData {
   final String name;
   final AccountIconType iconType;
   final AccountType accountType;
-  final double balance;
+  final double initialBalance;
   final CurrencyType currencyType;
   final bool isActive;
   final DateTime initDate;
@@ -72,7 +72,7 @@ class AccountData {
         'name: $name, '
         'iconType: $iconType, '
         'accountType: $accountType, '
-        'balance: $balance, '
+        'initialBalance: $initialBalance, '
         'currencyType: $currencyType, '
         'isActive: $isActive, '
         '}';

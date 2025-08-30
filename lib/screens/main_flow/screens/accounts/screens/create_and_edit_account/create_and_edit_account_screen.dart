@@ -1,6 +1,5 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_edit_account/create_and_edit_account_model.dart';
 
@@ -37,7 +36,7 @@ class CreateAndEditAccountPopUp extends HookWidget {
         child: Column(
           spacing: 30,
           children: [
-            const Row(children: [_Name()]),
+            const _Name(),
             const Row(
               spacing: 5,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -52,7 +51,7 @@ class CreateAndEditAccountPopUp extends HookWidget {
                   title: context.t.common.labels.initial_balance_date,
                   selectedDateRx: createAndEditAccountBloc.selectedInitDate,
                 ),
-                const _Balance(),
+                const Expanded(child: _Balance()),
               ],
             ),
           ],
@@ -73,29 +72,22 @@ class _Type extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.type,
-      child: Obx(() {
-        final selectedType = createAndEditAccountBloc.selectedAccountType.value;
-        return DropdownButton<AccountType>(
-          value: selectedType,
-          onChanged: (AccountType? value) {
-            if (value != null) {
-              createAndEditAccountBloc.selectedAccountType.value = value;
-            }
-          },
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          items: AccountType.values.map((AccountType type) {
-            return DropdownMenuItem<AccountType>(
-              value: type,
-              child: Text(type.title(context)),
-            );
-          }).toList(),
-        );
-      }),
-    );
+    return Obx(() {
+      final selectedType = createAndEditAccountBloc.selectedAccountType.value;
+      return CWDropdownField<AccountType>(
+        title: context.t.common.labels.type,
+        value: selectedType,
+        items: AccountType.values,
+        onChanged: (AccountType? value) {
+          if (value != null) {
+            createAndEditAccountBloc.selectedAccountType.value = value;
+          }
+        },
+        itemBuilder: (AccountType type, BuildContext context) {
+          return Text(type.title(context));
+        },
+      );
+    });
   }
 }
 
@@ -104,41 +96,34 @@ class _Coin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.coin,
-      child: Obx(() {
-        final selectedCurrency =
-            createAndEditAccountBloc.selectedCurrencyType.value;
-        return DropdownButton<CurrencyType>(
-          value: selectedCurrency,
-          onChanged: (CurrencyType? value) {
-            if (value != null) {
-              createAndEditAccountBloc.selectedCurrencyType.value = value;
-            }
-          },
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          style: const TextStyle(fontSize: 18),
-          underline: const CWPopUpUnderLine(),
-          items: CurrencyType.values.map((CurrencyType currency) {
-            return DropdownMenuItem<CurrencyType>(
-              value: currency,
-              child: Row(
-                spacing: 7,
-                children: [
-                  Image.asset(
-                    currency.iconPath,
-                    width: 18,
-                    height: 18,
-                    fit: BoxFit.contain,
-                  ),
-                  Text(currency.title(context)),
-                ],
+    return Obx(() {
+      final selectedCurrency =
+          createAndEditAccountBloc.selectedCurrencyType.value;
+      return CWDropdownField<CurrencyType>(
+        title: context.t.common.labels.coin,
+        value: selectedCurrency,
+        items: CurrencyType.values,
+        onChanged: (CurrencyType? value) {
+          if (value != null) {
+            createAndEditAccountBloc.selectedCurrencyType.value = value;
+          }
+        },
+        itemBuilder: (CurrencyType currency, BuildContext context) {
+          return Row(
+            spacing: 7,
+            children: [
+              Image.asset(
+                currency.iconPath,
+                width: 18,
+                height: 18,
+                fit: BoxFit.contain,
               ),
-            );
-          }).toList(),
-        );
-      }),
-    );
+              Text(currency.title(context)),
+            ],
+          );
+        },
+      );
+    });
   }
 }
 
@@ -147,72 +132,27 @@ class _Icon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CWPopUpItemTitle(
-      title: context.t.common.labels.icon,
-      child: Obx(() {
-        final selectedIcon = createAndEditAccountBloc.selectedIconType.value;
-        return DropdownButton<AccountIconType>(
-          value: selectedIcon,
-          onChanged: (AccountIconType? value) {
-            if (value != null) {
-              createAndEditAccountBloc.selectedIconType.value = value;
-            }
-          },
-          dropdownColor: Theme.of(context).scaffoldBackgroundColor,
-          underline: const CWPopUpUnderLine(),
-          items: AccountIconType.values.map((AccountIconType icon) {
-            return DropdownMenuItem<AccountIconType>(
-              value: icon,
-              child: Image.asset(
-                icon.iconPath,
-                width: 20,
-                height: 20,
-                fit: BoxFit.contain,
-              ),
-            );
-          }).toList(),
-        );
-      }),
-    );
-  }
-}
-
-class _Balance extends HookWidget {
-  const _Balance();
-
-  @override
-  Widget build(BuildContext context) {
-    final balance = createAndEditAccountBloc.initialBalance.value;
-    final formattedBalance = CurrencyFormatter.formatAmount(balance, context);
-
-    final controller = useTextEditingController(text: formattedBalance);
-
-    return Expanded(
-      child: CWPopUpItemTitle(
-        title: context.t.common.labels.balance,
-        spacing: 12,
-        child: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: const [CurrencyInputFormatter()],
-          onChanged: (value) {
-            final parsedValue = CurrencyFormatter.parseAmount(value, context);
-            createAndEditAccountBloc.initialBalance.value = parsedValue;
-          },
-          cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-          cursorHeight: 22,
-          style: const TextStyle(fontSize: 18),
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.only(bottom: 10),
-            hintText: '0',
-            hintStyle: TextStyle(
-              color: Theme.of(context).customColors.secondaryTextColor,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
-    );
+    return Obx(() {
+      final selectedIcon = createAndEditAccountBloc.selectedIconType.value;
+      return CWDropdownField<AccountIconType>(
+        title: context.t.common.labels.icon,
+        value: selectedIcon,
+        items: AccountIconType.values,
+        onChanged: (AccountIconType? value) {
+          if (value != null) {
+            createAndEditAccountBloc.selectedIconType.value = value;
+          }
+        },
+        itemBuilder: (AccountIconType icon, BuildContext context) {
+          return Image.asset(
+            icon.iconPath,
+            width: 20,
+            height: 20,
+            fit: BoxFit.contain,
+          );
+        },
+      );
+    });
   }
 }
 
@@ -221,29 +161,38 @@ class _Name extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = useTextEditingController();
+    return Obx(() {
+      final name = createAndEditAccountBloc.name.value;
 
-    useEffect(() {
-      controller.text = createAndEditAccountBloc.name.value;
-      return null;
-    }, [createAndEditAccountBloc.name.value]);
-
-    return Expanded(
-      child: TextField(
-        controller: controller,
+      return CWTextField(
+        hintText: '${context.t.common.labels.name}*',
+        initialValue: name,
         onChanged: (value) => createAndEditAccountBloc.name.value = value,
-        cursorColor: Theme.of(context).textTheme.titleMedium?.color,
-        cursorHeight: 22,
-        style: const TextStyle(fontSize: 18),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.only(bottom: 10),
-          hintText: '${context.t.common.labels.name}*',
-          hintStyle: TextStyle(
-            color: Theme.of(context).customColors.secondaryTextColor,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
+      );
+    });
+  }
+}
+
+class _Balance extends HookWidget {
+  const _Balance();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final balance = createAndEditAccountBloc.initialBalance.value;
+      final formattedBalance = CurrencyFormatter.formatAmount(balance, context);
+
+      return CWTextField(
+        title: context.t.common.labels.balance,
+        hintText: '0',
+        initialValue: formattedBalance,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: const [CurrencyInputFormatter()],
+        onChanged: (value) {
+          final parsedValue = CurrencyFormatter.parseAmount(value, context);
+          createAndEditAccountBloc.initialBalance.value = parsedValue;
+        },
+      );
+    });
   }
 }

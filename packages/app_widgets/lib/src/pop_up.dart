@@ -149,13 +149,13 @@ class CWPopupMenuButton<T, A extends PopupMenuAction<T>>
 class CWPopUpItemTitle extends StatelessWidget {
   const CWPopUpItemTitle({
     required this.child,
-    required this.title,
+    this.title,
     this.spacing = 0,
     super.key,
   });
 
   final Widget child;
-  final String title;
+  final String? title;
   final double spacing;
 
   @override
@@ -165,7 +165,7 @@ class CWPopUpItemTitle extends StatelessWidget {
       spacing: spacing,
       children: [
         Text(
-          title,
+          title ?? '',
           style: TextStyle(
             fontSize: 14,
             color: Theme.of(context).customColors.secondaryTextColor,

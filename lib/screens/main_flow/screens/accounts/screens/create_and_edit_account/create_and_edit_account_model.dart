@@ -54,7 +54,7 @@ class CreateAndEditAccountModel {
       id: originalAccount.id,
       name: createAndEditAccountBloc.name.value.trim(),
       accountType: createAndEditAccountBloc.selectedAccountType.value,
-      balance: createAndEditAccountBloc.initialBalance.value,
+      initialBalance: createAndEditAccountBloc.initialBalance.value,
       currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
       isActive: originalAccount.isActive,
       iconType: createAndEditAccountBloc.selectedIconType.value,

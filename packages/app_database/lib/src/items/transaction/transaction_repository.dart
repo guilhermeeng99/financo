@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../core/either.dart';
 import '../../core/failures.dart';
+import '../../core/financial_type.dart';
 import '../../database/database_manager.dart';
 import 'transaction_domain.dart';
 
@@ -47,7 +48,7 @@ abstract class ITransactionRepository {
 
   Future<Either<Failure, bool>> deleteTransaction(int id);
 
-  Future<Either<Failure, double>> getAccountBalance(int accountId);
+  Future<Either<Failure, double>> getAccountBalanceById(int accountId);
 
   Future<Either<Failure, double>> getCategoryTotal(
     int categoryId, {
@@ -265,19 +266,41 @@ class TransactionRepository implements ITransactionRepository {
   }
 
   @override
-  Future<Either<Failure, double>> getAccountBalance(int accountId) async {
+  Future<Either<Failure, double>> getAccountBalanceById(int accountId) async {
     try {
-      final paidTransactions = _database.selectOnly(_database.transactions)
+      final incomeQuery = _database.selectOnly(_database.transactions)
         ..addColumns([_database.transactions.amount.sum()])
         ..where(
           _database.transactions.accountId.equals(accountId) &
               _database.transactions.paymentStatus.equals(
                 TransactionPaymentStatus.paid.value,
+              ) &
+              _database.transactions.transactionType.equals(
+                FinancialType.income.value,
               ),
         );
 
-      final result = await paidTransactions.getSingle();
-      final balance = result.read(_database.transactions.amount.sum()) ?? 0.0;
+      final incomeResult = await incomeQuery.getSingle();
+      final totalIncome =
+          incomeResult.read(_database.transactions.amount.sum()) ?? 0.0;
+
+      final expenseQuery = _database.selectOnly(_database.transactions)
+        ..addColumns([_database.transactions.amount.sum()])
+        ..where(
+          _database.transactions.accountId.equals(accountId) &
+              _database.transactions.paymentStatus.equals(
+                TransactionPaymentStatus.paid.value,
+              ) &
+              _database.transactions.transactionType.equals(
+                FinancialType.expense.value,
+              ),
+        );
+
+      final expenseResult = await expenseQuery.getSingle();
+      final totalExpense =
+          expenseResult.read(_database.transactions.amount.sum()) ?? 0.0;
+
+      final balance = totalIncome - totalExpense;
       return Either.right(balance);
     } catch (e) {
       return Either.left(DatabaseFailure('Error getting account balance: $e'));

@@ -27,12 +27,18 @@ class CreateAndEditTransactionModel {
   }
 
   Future<void> _createTransaction() async {
+    final amount =
+        createAndEditTransactionBloc.selectedTransactionType.value ==
+            FinancialType.expense
+        ? -createAndEditTransactionBloc.amount.value.abs()
+        : createAndEditTransactionBloc.amount.value.abs();
+
     final result = await _transactionUsecase.createTransaction(
       actualDate: createAndEditTransactionBloc.actualDate.value,
       competenceDate: createAndEditTransactionBloc.competenceDate.value,
       transactionType:
           createAndEditTransactionBloc.selectedTransactionType.value,
-      amount: createAndEditTransactionBloc.amount.value,
+      amount: amount,
       description: createAndEditTransactionBloc.description.value.trim(),
       paymentStatus: createAndEditTransactionBloc.selectedPaymentStatus.value,
       recurrenceType: createAndEditTransactionBloc.selectedRecurrenceType.value,
@@ -58,18 +64,24 @@ class CreateAndEditTransactionModel {
           'Transaction created successfully: ${transaction.description}',
         );
 
-        releasesBloc.loadTransactions();
+        transactionsBloc.loadTransactions();
         PopUpManager.pop();
       },
     );
   }
 
   Future<void> _updateTransaction(TransactionData originalTransaction) async {
+    final amount =
+        createAndEditTransactionBloc.selectedTransactionType.value ==
+            FinancialType.expense
+        ? -createAndEditTransactionBloc.amount.value.abs()
+        : createAndEditTransactionBloc.amount.value.abs();
+
     final result = await _transactionUsecase.updateTransaction(
       id: originalTransaction.id,
       actualDate: createAndEditTransactionBloc.actualDate.value,
       competenceDate: createAndEditTransactionBloc.competenceDate.value,
-      amount: createAndEditTransactionBloc.amount.value,
+      amount: amount,
       description: createAndEditTransactionBloc.description.value.trim(),
       paymentStatus: createAndEditTransactionBloc.selectedPaymentStatus.value,
       recurrenceType: createAndEditTransactionBloc.selectedRecurrenceType.value,
@@ -78,8 +90,8 @@ class CreateAndEditTransactionModel {
               TransactionRecurrenceType.fixed
           ? createAndEditTransactionBloc.selectedRecurrenceFrequency.value
           : null,
-      accountId: createAndEditTransactionBloc.selectedAccountId.value!,
-      categoryId: createAndEditTransactionBloc.selectedCategoryId.value!,
+      accountId: createAndEditTransactionBloc.selectedAccountId.value,
+      categoryId: createAndEditTransactionBloc.selectedCategoryId.value,
     );
 
     result.fold(
@@ -95,7 +107,7 @@ class CreateAndEditTransactionModel {
           'Transaction updated successfully: ${transaction.description}',
         );
 
-        releasesBloc.loadTransactions();
+        transactionsBloc.loadTransactions();
         PopUpManager.pop();
       },
     );

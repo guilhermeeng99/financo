@@ -53,12 +53,12 @@ class $AccountsTable extends Accounts
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<AccountType>($AccountsTable.$converteraccountType);
-  static const VerificationMeta _balanceMeta = const VerificationMeta(
-    'balance',
+  static const VerificationMeta _initialBalanceMeta = const VerificationMeta(
+    'initialBalance',
   );
   @override
-  late final GeneratedColumn<double> balance = GeneratedColumn<double>(
-    'balance',
+  late final GeneratedColumn<double> initialBalance = GeneratedColumn<double>(
+    'initial_balance',
     aliasedName,
     false,
     type: DriftSqlType.double,
@@ -107,7 +107,7 @@ class $AccountsTable extends Accounts
     name,
     iconType,
     accountType,
-    balance,
+    initialBalance,
     currencyType,
     isActive,
     initDate,
@@ -135,10 +135,13 @@ class $AccountsTable extends Accounts
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('balance')) {
+    if (data.containsKey('initial_balance')) {
       context.handle(
-        _balanceMeta,
-        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+        _initialBalanceMeta,
+        initialBalance.isAcceptableOrUnknown(
+          data['initial_balance']!,
+          _initialBalanceMeta,
+        ),
       );
     }
     if (data.containsKey('is_active')) {
@@ -168,9 +171,9 @@ class $AccountsTable extends Accounts
           data['${effectivePrefix}account_type'],
         )!,
       ),
-      balance: attachedDatabase.typeMapping.read(
+      initialBalance: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
-        data['${effectivePrefix}balance'],
+        data['${effectivePrefix}initial_balance'],
       )!,
       currencyType: $AccountsTable.$convertercurrencyType.fromSql(
         attachedDatabase.typeMapping.read(
@@ -225,7 +228,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   final Value<String> name;
   final Value<AccountIconType> iconType;
   final Value<AccountType> accountType;
-  final Value<double> balance;
+  final Value<double> initialBalance;
   final Value<CurrencyType> currencyType;
   final Value<bool> isActive;
   final Value<DateTime> initDate;
@@ -234,7 +237,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     this.name = const Value.absent(),
     this.iconType = const Value.absent(),
     this.accountType = const Value.absent(),
-    this.balance = const Value.absent(),
+    this.initialBalance = const Value.absent(),
     this.currencyType = const Value.absent(),
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
@@ -244,7 +247,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     required String name,
     required AccountIconType iconType,
     required AccountType accountType,
-    this.balance = const Value.absent(),
+    this.initialBalance = const Value.absent(),
     required CurrencyType currencyType,
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
@@ -257,7 +260,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     Expression<String>? name,
     Expression<String>? iconType,
     Expression<String>? accountType,
-    Expression<double>? balance,
+    Expression<double>? initialBalance,
     Expression<String>? currencyType,
     Expression<bool>? isActive,
     Expression<DateTime>? initDate,
@@ -267,7 +270,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       if (name != null) 'name': name,
       if (iconType != null) 'icon_type': iconType,
       if (accountType != null) 'account_type': accountType,
-      if (balance != null) 'balance': balance,
+      if (initialBalance != null) 'initial_balance': initialBalance,
       if (currencyType != null) 'currency_type': currencyType,
       if (isActive != null) 'is_active': isActive,
       if (initDate != null) 'init_date': initDate,
@@ -279,7 +282,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     Value<String>? name,
     Value<AccountIconType>? iconType,
     Value<AccountType>? accountType,
-    Value<double>? balance,
+    Value<double>? initialBalance,
     Value<CurrencyType>? currencyType,
     Value<bool>? isActive,
     Value<DateTime>? initDate,
@@ -289,7 +292,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       name: name ?? this.name,
       iconType: iconType ?? this.iconType,
       accountType: accountType ?? this.accountType,
-      balance: balance ?? this.balance,
+      initialBalance: initialBalance ?? this.initialBalance,
       currencyType: currencyType ?? this.currencyType,
       isActive: isActive ?? this.isActive,
       initDate: initDate ?? this.initDate,
@@ -315,8 +318,8 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
         $AccountsTable.$converteraccountType.toSql(accountType.value),
       );
     }
-    if (balance.present) {
-      map['balance'] = Variable<double>(balance.value);
+    if (initialBalance.present) {
+      map['initial_balance'] = Variable<double>(initialBalance.value);
     }
     if (currencyType.present) {
       map['currency_type'] = Variable<String>(
@@ -339,7 +342,7 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
           ..write('name: $name, ')
           ..write('iconType: $iconType, ')
           ..write('accountType: $accountType, ')
-          ..write('balance: $balance, ')
+          ..write('initialBalance: $initialBalance, ')
           ..write('currencyType: $currencyType, ')
           ..write('isActive: $isActive, ')
           ..write('initDate: $initDate')
@@ -1181,7 +1184,7 @@ typedef $$AccountsTableCreateCompanionBuilder =
       required String name,
       required AccountIconType iconType,
       required AccountType accountType,
-      Value<double> balance,
+      Value<double> initialBalance,
       required CurrencyType currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
@@ -1192,7 +1195,7 @@ typedef $$AccountsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<AccountIconType> iconType,
       Value<AccountType> accountType,
-      Value<double> balance,
+      Value<double> initialBalance,
       Value<CurrencyType> currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
@@ -1252,8 +1255,8 @@ class $$AccountsTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
-  ColumnFilters<double> get balance => $composableBuilder(
-    column: $table.balance,
+  ColumnFilters<double> get initialBalance => $composableBuilder(
+    column: $table.initialBalance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1328,8 +1331,8 @@ class $$AccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get balance => $composableBuilder(
-    column: $table.balance,
+  ColumnOrderings<double> get initialBalance => $composableBuilder(
+    column: $table.initialBalance,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1373,8 +1376,10 @@ class $$AccountsTableAnnotationComposer
         builder: (column) => column,
       );
 
-  GeneratedColumn<double> get balance =>
-      $composableBuilder(column: $table.balance, builder: (column) => column);
+  GeneratedColumn<double> get initialBalance => $composableBuilder(
+    column: $table.initialBalance,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<CurrencyType, String> get currencyType =>
       $composableBuilder(
@@ -1446,7 +1451,7 @@ class $$AccountsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<AccountIconType> iconType = const Value.absent(),
                 Value<AccountType> accountType = const Value.absent(),
-                Value<double> balance = const Value.absent(),
+                Value<double> initialBalance = const Value.absent(),
                 Value<CurrencyType> currencyType = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
@@ -1455,7 +1460,7 @@ class $$AccountsTableTableManager
                 name: name,
                 iconType: iconType,
                 accountType: accountType,
-                balance: balance,
+                initialBalance: initialBalance,
                 currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,
@@ -1466,7 +1471,7 @@ class $$AccountsTableTableManager
                 required String name,
                 required AccountIconType iconType,
                 required AccountType accountType,
-                Value<double> balance = const Value.absent(),
+                Value<double> initialBalance = const Value.absent(),
                 required CurrencyType currencyType,
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
@@ -1475,7 +1480,7 @@ class $$AccountsTableTableManager
                 name: name,
                 iconType: iconType,
                 accountType: accountType,
-                balance: balance,
+                initialBalance: initialBalance,
                 currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,

@@ -12,6 +12,7 @@ class CWCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: Theme.of(context).customColors.third,
         borderRadius: BorderRadius.circular(8),
@@ -41,6 +42,34 @@ class CWSquareButton extends StatelessWidget {
           context.t.common.actions.save,
           style: const TextStyle(fontSize: 16),
         ),
+      ),
+    );
+  }
+}
+
+class CWAmoutValue extends StatelessWidget {
+  const CWAmoutValue({
+    required this.value,
+    this.fontWeight,
+    super.key,
+  });
+
+  final double value;
+  final FontWeight? fontWeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      CurrencyFormatter.formatAmount(
+        value,
+        context,
+      ),
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: fontWeight,
+        color: value < 0
+            ? Theme.of(context).customColors.expense
+            : Theme.of(context).customColors.income,
       ),
     );
   }

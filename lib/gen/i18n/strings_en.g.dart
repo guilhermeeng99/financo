@@ -73,6 +73,7 @@ class TranslationsCommonEn {
 	// Translations
 	late final TranslationsCommonActionsEn actions = TranslationsCommonActionsEn.internal(_root);
 	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn.internal(_root);
+	late final TranslationsCommonFrequencyEn frequency = TranslationsCommonFrequencyEn.internal(_root);
 }
 
 // Path: accounts
@@ -158,6 +159,7 @@ class TranslationsTransactionsEn {
 	String get edit_transaction => 'Edit Transaction';
 
 	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn.internal(_root);
+	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn.internal(_root);
 	late final TranslationsTransactionsStatusEn status = TranslationsTransactionsStatusEn.internal(_root);
 	late final TranslationsTransactionsCurrencyEn currency = TranslationsTransactionsCurrencyEn.internal(_root);
 }
@@ -271,6 +273,9 @@ class TranslationsCommonLabelsEn {
 	/// en: 'Initial Balance Date'
 	String get initial_balance_date => 'Initial Balance Date';
 
+	/// en: 'Total'
+	String get total => 'Total';
+
 	/// en: 'Icon'
 	String get icon => 'Icon';
 
@@ -282,6 +287,27 @@ class TranslationsCommonLabelsEn {
 
 	/// en: 'Frequency'
 	String get frequency => 'Frequency';
+}
+
+// Path: common.frequency
+class TranslationsCommonFrequencyEn {
+	TranslationsCommonFrequencyEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Daily'
+	String get daily => 'Daily';
+
+	/// en: 'Weekly'
+	String get weekly => 'Weekly';
+
+	/// en: 'Monthly'
+	String get monthly => 'Monthly';
+
+	/// en: 'Yearly'
+	String get yearly => 'Yearly';
 }
 
 // Path: accounts.types
@@ -318,6 +344,21 @@ class TranslationsTransactionsTypesEn {
 
 	/// en: 'Expense'
 	String get expense => 'Expense';
+}
+
+// Path: transactions.recurrence_type
+class TranslationsTransactionsRecurrenceTypeEn {
+	TranslationsTransactionsRecurrenceTypeEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Unique'
+	String get unique => 'Unique';
+
+	/// en: 'Fixed'
+	String get fixed => 'Fixed';
 }
 
 // Path: transactions.status

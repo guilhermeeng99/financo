@@ -32,10 +32,17 @@
       "balance": "Balance",
       "available_balance": "Available Balance",
       "initial_balance_date": "Initial Balance Date",
+      "total": "Total",
       "icon": "Icon",
       "coin": "Currency",
       "recurrence": "Recurrence",
       "frequency": "Frequency"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
     }
   },
   "accounts": {
@@ -70,6 +77,10 @@
     "types": {
       "income": "Income",
       "expense": "Expense"
+    },
+    "recurrence_type": {
+      "unique": "Unique",
+      "fixed": "Fixed"
     },
     "status": {
       "to_pay": "To Pay",

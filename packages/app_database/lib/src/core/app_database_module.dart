@@ -16,7 +16,7 @@ class AppDatabaseModule extends Module {
     i.addSingleton<ITransactionRepository>(() => TransactionRepository(i()));
 
     // Use Cases
-    i.addSingleton<AccountUsecase>(() => AccountUsecase(i()));
+    i.addSingleton<AccountUsecase>(() => AccountUsecase(i(), i()));
     i.addSingleton<CategoryUsecase>(() => CategoryUsecase(i()));
     i.addSingleton<TransactionUsecase>(() => TransactionUsecase(i()));
   }
