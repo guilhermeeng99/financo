@@ -158,6 +158,12 @@ class TranslationsTransactionsEn {
 	/// en: 'Edit Transaction'
 	String get edit_transaction => 'Edit Transaction';
 
+	/// en: 'Export Transactions'
+	String get export_transactions => 'Export Transactions';
+
+	/// en: 'Import Transactions'
+	String get import_transactions => 'Import Transactions';
+
 	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn.internal(_root);
 	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn.internal(_root);
 	late final TranslationsTransactionsStatusEn status = TranslationsTransactionsStatusEn.internal(_root);
@@ -206,6 +212,9 @@ class TranslationsCommonActionsEn {
 
 	/// en: 'Register'
 	String get register => 'Register';
+
+	/// en: 'Filter'
+	String get filter => 'Filter';
 
 	/// en: 'Pay'
 	String get pay => 'Pay';

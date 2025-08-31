@@ -20,10 +20,6 @@ class MainFlowScreenTopBar extends StatelessWidget {
           const CWDivider(),
           const Gap(12),
           _Item(mainFlowTopBarController.topBarItems[1]),
-          const Spacer(),
-          _Item(mainFlowTopBarController.topBarItems[2]),
-          const Gap(24),
-          _Item(mainFlowTopBarController.topBarItems[3]),
         ],
       ),
     );
@@ -39,7 +35,7 @@ class _Item extends StatelessWidget {
   Widget build(BuildContext context) {
     return CWAnimatedScaleButtonWidget(
       onTap: item.onTap,
-      child: SvgPicture.asset(item.icon, width: 24, height: 24),
+      child: Icon(item.icon, size: 24),
     );
   }
 }

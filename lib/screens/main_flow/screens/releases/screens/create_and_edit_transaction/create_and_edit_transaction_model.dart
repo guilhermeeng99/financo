@@ -1,6 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/releases/releases_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_bloc.dart';
 
 import 'create_and_edit_transaction_bloc.dart';
 
@@ -8,8 +9,8 @@ CreateAndEditTransactionModel get createAndEditTransactionModel =>
     Modular.get<CreateAndEditTransactionModel>();
 
 class CreateAndEditTransactionModel {
-  TransactionUsecase get _transactionUsecase =>
-      Modular.get<TransactionUsecase>();
+  ITransactionUsecase get _transactionUsecase =>
+      Modular.get<ITransactionUsecase>();
 
   Future<void> onTapSave(TransactionData? transaction) async {
     final canSave =
@@ -30,8 +31,8 @@ class CreateAndEditTransactionModel {
     final amount =
         createAndEditTransactionBloc.selectedTransactionType.value ==
             FinancialType.expense
-        ? -createAndEditTransactionBloc.amount.value.abs()
-        : createAndEditTransactionBloc.amount.value.abs();
+        ? -createAndEditTransactionBloc.amount.value
+        : createAndEditTransactionBloc.amount.value;
 
     final result = await _transactionUsecase.createTransaction(
       actualDate: createAndEditTransactionBloc.actualDate.value,
@@ -63,7 +64,7 @@ class CreateAndEditTransactionModel {
         logger.i(
           'Transaction created successfully: ${transaction.description}',
         );
-
+        accountsBloc.loadCheckingAccounts();
         transactionsBloc.loadTransactions();
         PopUpManager.pop();
       },
@@ -74,8 +75,8 @@ class CreateAndEditTransactionModel {
     final amount =
         createAndEditTransactionBloc.selectedTransactionType.value ==
             FinancialType.expense
-        ? -createAndEditTransactionBloc.amount.value.abs()
-        : createAndEditTransactionBloc.amount.value.abs();
+        ? -createAndEditTransactionBloc.amount.value
+        : createAndEditTransactionBloc.amount.value;
 
     final result = await _transactionUsecase.updateTransaction(
       id: originalTransaction.id,
@@ -106,7 +107,7 @@ class CreateAndEditTransactionModel {
         logger.i(
           'Transaction updated successfully: ${transaction.description}',
         );
-
+        accountsBloc.loadCheckingAccounts();
         transactionsBloc.loadTransactions();
         PopUpManager.pop();
       },

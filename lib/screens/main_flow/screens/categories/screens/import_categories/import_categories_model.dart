@@ -5,7 +5,6 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:excel/excel.dart';
 import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dart';
-import 'package:flutter/services.dart';
 
 ImportCategoriesModel get importCategoriesModel =>
     Modular.get<ImportCategoriesModel>();
@@ -14,51 +13,21 @@ class ImportCategoriesModel {
   CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
 
   Future<void> onTapDownloadDefaultExcelCategories(BuildContext context) async {
-    try {
-      final filePath =
-          Assets.lib.app.assets.excels.defaultCategoriesImportModel;
-
-      final byteData = await rootBundle.load(filePath);
-      final excelBytes = byteData.buffer.asUint8List();
-
-      const fileName = 'default_categories_import_model.xlsx';
-
-      await AppUtilsSystemFiles.fileSaver(
-        fileName: fileName,
-        excelBytes: excelBytes,
-      );
-      logger.i('Category default excel downloaded successfully!');
-
-      if (context.mounted) {
-        AppWidgetsUtils.snackBar(
-          title: context.t.messages.success.export_successfully,
-          type: SnackBarType.success,
-        );
-      }
-    } catch (e) {
-      logger.e('Error exporting default categories: $e');
-
-      if (context.mounted) {
-        AppWidgetsUtils.snackBar(
-          title: context.t.messages.errors.export_error,
-          type: SnackBarType.error,
-        );
-      }
-    }
+    await AppSystemFiles.onTapDownloadDefaultExcel(
+      context: context,
+      filePath: Assets.lib.app.assets.excels.defaultCategoriesImportModel,
+    );
   }
 
   Future<void> onTapUploadExcelCategories(BuildContext context) async {
     try {
-      final fileBytes = await AppUtilsSystemFiles.filePicker();
+      final fileBytes = await AppSystemFiles.filePicker();
       if (fileBytes == null) {
         logger.i('No file selected by user');
         return;
       }
 
-      final sheet = await AppUtilsSystemFiles.processExcelFile(
-        fileBytes,
-        context,
-      );
+      final sheet = await AppSystemFiles.processExcelFile(fileBytes, context);
       if (sheet == null) return;
 
       final categoriesToCreate = _parseExcelData(sheet);
@@ -148,7 +117,6 @@ class ImportCategoriesModel {
     final categoryType = categoryData['categoryType'] as FinancialType;
 
     if (subcategoryName == null || subcategoryName.isEmpty) {
-     
       categoriesToCreate.add({
         'name': categoryName,
         'type': categoryType,

@@ -1,3 +1,5 @@
+export 'package:app_database/src/items/transaction/domain/index.dart';
+
 export 'src/core/app_database_module.dart';
 export 'src/core/either.dart';
 export 'src/core/exceptions.dart';
@@ -11,5 +13,4 @@ export 'src/items/account/account_usecase.dart';
 export 'src/items/category/category_domain.dart';
 export 'src/items/category/category_usecase.dart';
 // Transaction
-export 'src/items/transaction/transaction_domain.dart';
-export 'src/items/transaction/transaction_usecase.dart';
+export 'src/items/transaction/index.dart';

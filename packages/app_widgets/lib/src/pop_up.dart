@@ -48,12 +48,11 @@ class CWPopUp extends StatelessWidget {
                                 Text(title),
                                 InkWell(
                                   onTap: PopUpManager.pop,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(20),
-                                    child: SvgPicture.asset(
-                                      svgs.x,
-                                      width: 20,
-                                      height: 20,
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(20),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 20,
                                     ),
                                   ),
                                 ),

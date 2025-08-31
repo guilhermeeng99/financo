@@ -1,6 +1,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/releases/releases_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
 
 class CWAReleasesScreenAccount extends StatelessWidget {
   const CWAReleasesScreenAccount({super.key});
@@ -45,7 +45,9 @@ class _Accounts extends StatelessWidget {
                     const Gap(12),
                     Text(account.a.name, style: const TextStyle(fontSize: 14)),
                     const Spacer(),
-                    CWAmoutValue(value: account.finalBalance),
+                    Obx(
+                      () => CWAmoutValue(value: account.filteredBalance.value),
+                    ),
                   ],
                 ),
               );
@@ -63,7 +65,7 @@ class _Accounts extends StatelessWidget {
                 ),
                 Obx(
                   () => CWAmoutValue(
-                    value: accountsBloc.totalEnabledAccountsBalance,
+                    value: accountsBloc.totalFilteredBalance.value,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -11,6 +11,7 @@
       "delete": "Delete",
       "save": "Save",
       "register": "Register",
+      "filter": "Filter",
       "pay": "Pay",
       "unpay": "Cancel Payment",
       "clone": "Clone",
@@ -74,6 +75,8 @@
   "transactions": {
     "new_transaction": "New Transaction",
     "edit_transaction": "Edit Transaction",
+    "export_transactions": "Export Transactions",
+    "import_transactions": "Import Transactions",
     "types": {
       "income": "Income",
       "expense": "Expense"

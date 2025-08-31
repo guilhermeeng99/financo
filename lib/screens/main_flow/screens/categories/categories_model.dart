@@ -224,7 +224,7 @@ class CategoriesModelExcel {
 
           const fileName = 'user_categories.xlsx';
 
-          await AppUtilsSystemFiles.fileSaver(
+          await AppSystemFiles.fileSaver(
             fileName: fileName,
             excelBytes: excelBytes,
           );

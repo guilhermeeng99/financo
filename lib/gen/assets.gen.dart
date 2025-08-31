@@ -1,3 +1,5 @@
+// dart format width=80
+
 /// GENERATED CODE - DO NOT MODIFY BY HAND
 /// *****************************************************
 ///  FlutterGen
@@ -5,7 +7,7 @@
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
+// ignore_for_file: deprecated_member_use,directives_ordering,implicit_dynamic_list_literal,unnecessary_import
 
 import 'package:flutter/widgets.dart';
 
@@ -37,9 +39,6 @@ class $LibAppAssetsGen {
 
   /// Directory path: lib/app/assets/images
   $LibAppAssetsImagesGen get images => const $LibAppAssetsImagesGen();
-
-  /// Directory path: lib/app/assets/svgs
-  $LibAppAssetsSvgsGen get svgs => const $LibAppAssetsSvgsGen();
 }
 
 class $LibAppAssetsExcelsGen {
@@ -49,8 +48,15 @@ class $LibAppAssetsExcelsGen {
   String get defaultCategoriesImportModel =>
       'lib/app/assets/excels/default_categories_import_model.xlsx';
 
+  /// File path: lib/app/assets/excels/default_transactions_import_model.xlsx
+  String get defaultTransactionsImportModel =>
+      'lib/app/assets/excels/default_transactions_import_model.xlsx';
+
   /// List of all assets
-  List<String> get values => [defaultCategoriesImportModel];
+  List<String> get values => [
+    defaultCategoriesImportModel,
+    defaultTransactionsImportModel,
+  ];
 }
 
 class $LibAppAssetsFontsGen {
@@ -87,70 +93,6 @@ class $LibAppAssetsImagesGen {
 
   /// Directory path: lib/app/assets/images/flags
   $LibAppAssetsImagesFlagsGen get flags => const $LibAppAssetsImagesFlagsGen();
-}
-
-class $LibAppAssetsSvgsGen {
-  const $LibAppAssetsSvgsGen();
-
-  /// File path: lib/app/assets/svgs/calc.svg
-  String get calc => 'lib/app/assets/svgs/calc.svg';
-
-  /// File path: lib/app/assets/svgs/calendar.svg
-  String get calendar => 'lib/app/assets/svgs/calendar.svg';
-
-  /// File path: lib/app/assets/svgs/chart_pie.svg
-  String get chartPie => 'lib/app/assets/svgs/chart_pie.svg';
-
-  /// File path: lib/app/assets/svgs/clip.svg
-  String get clip => 'lib/app/assets/svgs/clip.svg';
-
-  /// File path: lib/app/assets/svgs/credit_card.svg
-  String get creditCard => 'lib/app/assets/svgs/credit_card.svg';
-
-  /// File path: lib/app/assets/svgs/filter.svg
-  String get filter => 'lib/app/assets/svgs/filter.svg';
-
-  /// File path: lib/app/assets/svgs/question.svg
-  String get question => 'lib/app/assets/svgs/question.svg';
-
-  /// File path: lib/app/assets/svgs/search.svg
-  String get search => 'lib/app/assets/svgs/search.svg';
-
-  /// File path: lib/app/assets/svgs/settings.svg
-  String get settings => 'lib/app/assets/svgs/settings.svg';
-
-  /// File path: lib/app/assets/svgs/simple_arrow.svg
-  String get simpleArrow => 'lib/app/assets/svgs/simple_arrow.svg';
-
-  /// File path: lib/app/assets/svgs/tag.svg
-  String get tag => 'lib/app/assets/svgs/tag.svg';
-
-  /// File path: lib/app/assets/svgs/triangle.svg
-  String get triangle => 'lib/app/assets/svgs/triangle.svg';
-
-  /// File path: lib/app/assets/svgs/wallet.svg
-  String get wallet => 'lib/app/assets/svgs/wallet.svg';
-
-  /// File path: lib/app/assets/svgs/x.svg
-  String get x => 'lib/app/assets/svgs/x.svg';
-
-  /// List of all assets
-  List<String> get values => [
-    calc,
-    calendar,
-    chartPie,
-    clip,
-    creditCard,
-    filter,
-    question,
-    search,
-    settings,
-    simpleArrow,
-    tag,
-    triangle,
-    wallet,
-    x,
-  ];
 }
 
 class $LibAppAssetsImagesBanksGen {
@@ -194,12 +136,18 @@ class Assets {
 }
 
 class AssetGenImage {
-  const AssetGenImage(this._assetName, {this.size, this.flavors = const {}});
+  const AssetGenImage(
+    this._assetName, {
+    this.size,
+    this.flavors = const {},
+    this.animation,
+  });
 
   final String _assetName;
 
   final Size? size;
   final Set<String> flavors;
+  final AssetGenImageAnimation? animation;
 
   Image image({
     Key? key,
@@ -261,4 +209,16 @@ class AssetGenImage {
   String get path => _assetName;
 
   String get keyName => _assetName;
+}
+
+class AssetGenImageAnimation {
+  const AssetGenImageAnimation({
+    required this.isAnimation,
+    required this.duration,
+    required this.frames,
+  });
+
+  final bool isAnimation;
+  final Duration duration;
+  final int frames;
 }

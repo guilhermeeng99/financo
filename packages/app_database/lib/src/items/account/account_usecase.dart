@@ -1,6 +1,5 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_database/src/items/account/account_repository.dart';
-import 'package:app_database/src/items/transaction/transaction_repository.dart';
 import 'package:drift/drift.dart';
 
 class AccountUsecase {
@@ -94,7 +93,6 @@ class AccountUsecase {
         accountTypeValue = Value(accountType);
       }
 
-   
       if (initialBalance != null) {
         final accountInitialBalance = Balance.create(initialBalance);
         initialBalanceValue = Value(accountInitialBalance.value);

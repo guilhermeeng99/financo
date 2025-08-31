@@ -33,7 +33,7 @@ class MainFlowBloc extends GetxController {
 class TopBarItem {
   const TopBarItem({required this.onTap, required this.icon});
 
-  final String icon;
+  final IconData icon;
   final void Function() onTap;
 }
 
@@ -42,10 +42,8 @@ MainFlowTopBarController get mainFlowTopBarController =>
 
 class MainFlowTopBarController {
   final List<TopBarItem> topBarItems = [
-    TopBarItem(onTap: mainFlowTopBarModel.onTapSideBar, icon: svgs.filter),
-    TopBarItem(onTap: mainFlowTopBarModel.onTapOverview, icon: svgs.chartPie),
-    TopBarItem(onTap: mainFlowTopBarModel.onTapSearch, icon: svgs.search),
-    TopBarItem(onTap: mainFlowTopBarModel.onTapCalculator, icon: svgs.calc),
+    TopBarItem(onTap: mainFlowTopBarModel.onTapSideBar, icon: Icons.menu),
+    TopBarItem(onTap: mainFlowTopBarModel.onTapOverview, icon: Icons.pie_chart),
   ];
 }
 

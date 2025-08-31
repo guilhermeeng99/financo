@@ -1,9 +1,11 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/releases/releases_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/releases_model.dart';
 import 'package:financo/screens/main_flow/screens/releases/widgets/releases_item_menu_actions.dart.dart';
 import 'package:financo/screens/main_flow/screens/releases/widgets/releases_screen_account_area.dart';
+import 'package:financo/screens/main_flow/screens/releases/widgets/releases_screen_calendar_area.dart';
 
 class ReleasesScreen extends StatelessWidget {
   const ReleasesScreen({super.key});
@@ -29,7 +31,10 @@ class ReleasesScreen extends StatelessWidget {
                 width: MediaQuery.of(context).size.width * 0.3,
                 child: const Column(
                   spacing: 10,
-                  children: [_Calendar(), CWAReleasesScreenAccount()],
+                  children: [
+                    CWAReleasesScreenCalendar(),
+                    CWAReleasesScreenAccount(),
+                  ],
                 ),
               ),
               const _TransactionsList(),
@@ -38,15 +43,6 @@ class ReleasesScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _Calendar extends StatelessWidget {
-  const _Calendar();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(height: 100, child: CWCard(child: Container()));
   }
 }
 
@@ -62,17 +58,41 @@ class _TransactionsList extends StatelessWidget {
             accountsBloc.enabledAccountIds,
           );
 
-          return ListView.separated(
-            itemCount: transactions.length + 2,
-            separatorBuilder: (context, index) =>
-                const CWDivider(width: double.infinity, height: 1),
-            itemBuilder: (context, index) {
-              if (index == 0 || index == transactions.length + 1) {
-                return const SizedBox.shrink();
-              }
-              final transaction = transactions[index - 1];
-              return _TransactionItem(transaction: transaction);
-            },
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      context.t.common.actions.filter,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    InkWell(
+                      onTap: () => releasesModelExcel
+                          .onTapDownloadUserTransactions(context, transactions),
+                      child: const Icon(Icons.download),
+                    ),
+                  ],
+                ),
+              ),
+              const CWDivider(width: double.infinity, height: 1),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: transactions.length + 2,
+                  separatorBuilder: (context, index) =>
+                      const CWDivider(width: double.infinity, height: 1),
+                  itemBuilder: (context, index) {
+                    if (index == 0 || index == transactions.length + 1) {
+                      return const SizedBox.shrink();
+                    }
+                    final transaction = transactions[index - 1];
+                    return _TransactionItem(transaction: transaction);
+                  },
+                ),
+              ),
+            ],
           );
         }),
       ),
