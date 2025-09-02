@@ -9,7 +9,7 @@ import 'package:financo/screens/main_flow/screens/categories/screens/import_cate
 
 CategoriesModel get categoriesModel => Modular.get<CategoriesModel>();
 
-CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
 class CategoriesModel {
   void onTapFloatingActionButton() => _showCategoryPopUp(
@@ -103,7 +103,7 @@ CategoriesModelExcel get categoriesModelExcel =>
 class CategoriesModelExcel {
   Future<void> onTapDownloadUserCategories(BuildContext context) async {
     try {
-      final result = await _categoryUsecase.getCategoriesAndSubcategories();
+      final result = await _categoryUsecase.getCategoriesMapAsync();
 
       await result.fold(
         (failure) {

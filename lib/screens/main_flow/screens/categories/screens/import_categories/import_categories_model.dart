@@ -10,7 +10,7 @@ ImportCategoriesModel get importCategoriesModel =>
     Modular.get<ImportCategoriesModel>();
 
 class ImportCategoriesModel {
-  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+  ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   Future<void> onTapDownloadDefaultExcelCategories(BuildContext context) async {
     await AppSystemFiles.onTapDownloadDefaultExcel(
@@ -39,7 +39,7 @@ class ImportCategoriesModel {
       final importResult = await _importCategories(categoriesToCreate);
       await categoriesBloc.loadCategories();
 
-      await _showImportResult(context, importResult);
+      await AppSystemFiles.showImportResult(context, importResult);
     } catch (e, stackTrace) {
       logger
         ..e('Error importing categories from Excel: $e')
@@ -237,36 +237,10 @@ class ImportCategoriesModel {
     return result;
   }
 
-  Future<void> _showImportResult(
-    BuildContext context,
-    ImportResult result,
-  ) async {
-    if (!context.mounted) return;
-
-    if (result.errorCount == 0) {
-      AppWidgetsUtils.snackBar(
-        title: context.t.messages.success.excel_import_successfully,
-        type: SnackBarType.success,
-      );
-    } else {
-      AppWidgetsUtils.snackBar(
-        title: context.t.messages.errors.excel_not_valid,
-        type: SnackBarType.error,
-      );
-    }
-  }
-
   Future<void> _showError(BuildContext context, String message) async {
     logger.w('No valid categories found in Excel file');
     if (context.mounted) {
       AppWidgetsUtils.snackBar(title: message, type: SnackBarType.error);
     }
   }
-}
-
-class ImportResult {
-  const ImportResult(this.successCount, this.errorCount);
-
-  final int successCount;
-  final int errorCount;
 }

@@ -45,7 +45,7 @@ class CreateAndEditTransactionBloc extends GetxController {
   }
 
   Future<void> _loadAccounts() async {
-    final accountUsecase = Modular.get<AccountUsecase>();
+    final accountUsecase = Modular.get<IAccountUsecase>();
     final result = await accountUsecase.getAllAccounts();
 
     result.fold(
@@ -63,7 +63,7 @@ class CreateAndEditTransactionBloc extends GetxController {
   }
 
   Future<void> _loadCategories() async {
-    final categoryUsecase = Modular.get<CategoryUsecase>();
+    final categoryUsecase = Modular.get<ICategoryUsecase>();
     final result = await categoryUsecase.getCategoriesByType(
       selectedTransactionType.value,
     );

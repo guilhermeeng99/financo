@@ -8,7 +8,7 @@ CreateAndEditAccountModel get createAndEditAccountModel =>
     Modular.get<CreateAndEditAccountModel>();
 
 class CreateAndEditAccountModel {
-  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
+  IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
 
   Future<void> onTapSave(AccountData? account) async {
     final canSave = createAndEditAccountBloc.name.value.trim().isNotEmpty;

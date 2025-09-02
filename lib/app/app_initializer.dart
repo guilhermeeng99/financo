@@ -22,9 +22,8 @@ class AppIntializer {
 }
 
 Future<void> _showAllCategories() async {
-  final categoryUsecase = Modular.get<CategoryUsecase>();
-  final categoriesResult = await categoryUsecase
-      .getCategoriesAndSubcategories();
+  final categoryUsecase = Modular.get<ICategoryUsecase>();
+  final categoriesResult = await categoryUsecase.getCategoriesMapAsync();
 
   categoriesResult.fold(
     (Failure failure) =>
@@ -62,7 +61,7 @@ Future<void> _showAllCategories() async {
 }
 
 Future<void> _showAllAccounts() async {
-  final accountUsecase = Modular.get<AccountUsecase>();
+  final accountUsecase = Modular.get<IAccountUsecase>();
   final accountsResult = await accountUsecase.getGroupedAccounts();
 
   accountsResult.fold(

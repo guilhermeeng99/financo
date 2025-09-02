@@ -7,10 +7,8 @@ export 'src/core/failures.dart';
 export 'src/core/financial_type.dart';
 export 'src/database/database_manager.dart';
 // Account
-export 'src/items/account/account_domain.dart';
-export 'src/items/account/account_usecase.dart';
+export 'src/items/account/index.dart';
 // Category
-export 'src/items/category/category_domain.dart';
-export 'src/items/category/category_usecase.dart';
+export 'src/items/category/index.dart';
 // Transaction
 export 'src/items/transaction/index.dart';

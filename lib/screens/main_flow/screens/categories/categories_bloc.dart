@@ -7,7 +7,7 @@ class CategoriesBloc extends GetxController {
   CategoriesBloc() {
     loadCategories();
   }
-  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+  ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   final RxMap<FinancialType, Map<CategoryData, List<CategoryData>>>
   categoriesWithSubcategories =
@@ -17,7 +17,7 @@ class CategoriesBloc extends GetxController {
 
   Future<void> loadCategories() async {
     try {
-      final result = await _categoryUsecase.getCategoriesAndSubcategories(
+      final result = await _categoryUsecase.getCategoriesMapAsync(
         onlyActive: showOnlyActiveCategories.value,
       );
 

@@ -6,6 +6,8 @@ import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_blo
 import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/create_and_edit_transaction_module.dart';
 import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
+import 'package:financo/screens/main_flow/screens/releases/screens/import_transactions/import_transactions_module.dart';
+import 'package:financo/screens/main_flow/screens/releases/screens/import_transactions/import_transactions_screen.dart';
 
 ReleasesModel get releasesModel => Modular.get<ReleasesModel>();
 
@@ -116,6 +118,13 @@ class ReleasesModel {
       accountsBloc.checkingAccounts[accountIndex].isEnabled.toggle();
     }
   }
+
+  void onTapImportPopUp() => PopUpManager.showDialog(
+    builder: (c) => WidgetModuleProvider(
+      module: ImportTransactionsModule(),
+      child: ImportTransactionsPopUp.new,
+    ),
+  );
 }
 
 ReleasesModelExcel get releasesModelExcel => Modular.get<ReleasesModelExcel>();

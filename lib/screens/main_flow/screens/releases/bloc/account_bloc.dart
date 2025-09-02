@@ -26,7 +26,7 @@ class AccountsBloc extends GetxController {
   final RxDouble totalFilteredBalance = 0.0.obs;
 
   Future<void> loadCheckingAccounts() async {
-    final accountUsecase = Modular.get<AccountUsecase>();
+    final accountUsecase = Modular.get<IAccountUsecase>();
 
     try {
       final result = await accountUsecase.getCheckingAccounts();

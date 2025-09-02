@@ -186,8 +186,8 @@ class _Balance extends HookWidget {
         title: context.t.common.labels.balance,
         hintText: '0',
         initialValue: formattedBalance,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: const [CurrencyInputFormatter()],
+        inputFormatters: [CurrencyInputFormatter()],
+        keyboardType: TextInputType.number,
         onChanged: (value) {
           final parsedValue = CurrencyFormatter.parseAmount(value, context);
           createAndEditAccountBloc.initialBalance.value = parsedValue;

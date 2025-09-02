@@ -21,13 +21,13 @@ class ImportTransactionsPopUp extends StatelessWidget {
               title: context.t.common.actions.download_example,
               icon: Icons.download,
             ),
-            // _Button(
-            //   onTap: () =>
-            //       importTransactionsModel.onTapUploadExcelTransactions(context),
-            //   title: context.t.common.actions.choose_file,
-            //   icon: Icons.upload,
-            //   backgroundColor: Theme.of(context).customColors.button01,
-            // ),
+            _Button(
+              onTap: () =>
+                  importTransactionsModel.onTapUploadExcelTransactions(context),
+              title: context.t.common.actions.choose_file,
+              icon: Icons.upload,
+              backgroundColor: Theme.of(context).customColors.button01,
+            ),
           ],
         ),
       ),

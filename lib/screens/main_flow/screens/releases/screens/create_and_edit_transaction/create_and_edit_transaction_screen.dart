@@ -170,8 +170,8 @@ class _Amount extends HookWidget {
       title: context.t.common.labels.amount,
       hintText: '0',
       controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: const [CurrencyInputFormatter()],
+      inputFormatters: [CurrencyInputFormatter()],
+      keyboardType: TextInputType.number,
       onChanged: (value) {
         final parsedValue = CurrencyFormatter.parseAmount(value, context);
         createAndEditTransactionBloc.amount.value = parsedValue;

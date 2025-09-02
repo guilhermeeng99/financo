@@ -9,7 +9,7 @@ class AccountsBloc extends GetxController {
 
     ever(showOnlyActiveAccounts, (_) => loadGroupedAccounts());
   }
-  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
+  IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
 
   final RxMap<AccountType, List<AccountData>> groupedAccounts =
       <AccountType, List<AccountData>>{}.obs;

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:app_core/app_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,49 +69,58 @@ class CurrencyFormatter {
 
     return formatter.format(value).trim();
   }
-
-  static Locale getCurrentLocale() {
-    return PlatformDispatcher.instance.locale;
-  }
 }
 
 class CurrencyInputFormatter extends TextInputFormatter {
-  const CurrencyInputFormatter({this.locale});
-
-  final Locale? locale;
-
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = newValue.text;
-
-    if (text.isEmpty) return newValue;
-
-    final currentLocale = locale ?? CurrencyFormatter.getCurrentLocale();
-
-    final allowedPattern = _getAllowedPattern(currentLocale);
-
-    if (!RegExp(allowedPattern).hasMatch(text)) {
-      return oldValue;
+    if (newValue.text.isEmpty) {
+      return newValue;
     }
 
-    return newValue;
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+
+    if (digitsOnly.isEmpty) {
+      return const TextEditingValue(
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final totalCents = int.parse(digitsOnly);
+
+    final reais = totalCents ~/ 100;
+    final centavos = totalCents % 100;
+
+    final formattedReais = _formatWithThousands(reais);
+
+    final formattedCentavos = centavos.toString().padLeft(2, '0');
+
+    final formattedText = '$formattedReais,$formattedCentavos';
+
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
+    );
   }
 
-  String _getAllowedPattern(Locale locale) {
-    final formatter = NumberFormat.decimalPattern(locale.toString());
-    final testNumber = formatter.format(1234.56);
+  String _formatWithThousands(int number) {
+    if (number == 0) return '0';
 
-    final hasCommaAsDecimal = testNumber.contains(',') &&
-        testNumber.indexOf(',') > testNumber.lastIndexOf('.');
-    final hasSpaceAsGrouping = testNumber.contains(' ');
+    final numberStr = number.toString();
+    var result = '';
+    var count = 0;
 
-    if (hasCommaAsDecimal) {
-      return hasSpaceAsGrouping ? r'^[0-9., ]+$' : r'^[0-9.,]+$';
-    } else {
-      return hasSpaceAsGrouping ? r'^[0-9., ]+$' : r'^[0-9.,]+$';
+    for (var i = numberStr.length - 1; i >= 0; i--) {
+      if (count > 0 && count % 3 == 0) {
+        result = '.$result';
+      }
+      result = '${numberStr[i]}$result';
+      count++;
     }
+
+    return result;
   }
 }

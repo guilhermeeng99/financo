@@ -7,7 +7,7 @@ import 'package:financo/screens/main_flow/screens/accounts/screens/create_and_ed
 AccountsModel get accountsModel => Modular.get<AccountsModel>();
 
 class AccountsModel {
-  AccountUsecase get _accountUsecase => Modular.get<AccountUsecase>();
+  IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
 
   void onTapFloatingActionButton() => _showAccountPopUp(
     CreateAndEditAccountPopUpArgs(type: CreateAndEditAccountPopUpType.create),

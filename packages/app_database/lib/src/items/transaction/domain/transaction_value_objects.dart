@@ -26,12 +26,6 @@ class TransactionDescription {
   factory TransactionDescription.create(String value) {
     final trimmedValue = value.trim();
 
-    if (trimmedValue.isEmpty) {
-      throw const ValidationException(
-        'Transaction description cannot be empty',
-      );
-    }
-
     if (trimmedValue.length > 255) {
       throw const ValidationException(
         'Transaction description must be at most 255 characters long',

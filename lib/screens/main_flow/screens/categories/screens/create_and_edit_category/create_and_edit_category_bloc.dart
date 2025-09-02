@@ -9,7 +9,7 @@ class CreateAndEditCategoryBloc extends GetxController {
     loadAvailableParentCategories();
   }
 
-  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+  ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   final RxString name = ''.obs;
 

@@ -10,7 +10,7 @@ CreateAndEditCategoryModel get createAndEditCategoryModel =>
     Modular.get<CreateAndEditCategoryModel>();
 
 class CreateAndEditCategoryModel {
-  CategoryUsecase get _categoryUsecase => Modular.get<CategoryUsecase>();
+  ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   Future<void> onTapSave(CategoryData? category) async {
     final canSave = createAndEditCategoryBloc.name.value.trim().isNotEmpty;

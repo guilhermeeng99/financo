@@ -40,6 +40,25 @@ class AppSystemFiles {
     }
   }
 
+  static Future<void> showImportResult(
+    BuildContext context,
+    ImportResult result,
+  ) async {
+    if (!context.mounted) return;
+
+    if (result.errorCount == 0) {
+      AppWidgetsUtils.snackBar(
+        title: context.t.messages.success.excel_import_successfully,
+        type: SnackBarType.success,
+      );
+    } else {
+      AppWidgetsUtils.snackBar(
+        title: context.t.messages.errors.excel_not_valid,
+        type: SnackBarType.error,
+      );
+    }
+  }
+
   static Future<void> fileSaver({
     required String fileName,
     required List<int> excelBytes,
@@ -151,4 +170,11 @@ if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     logger.i('Excel sheet found with ${sheet.maxRows} rows');
     return sheet;
   }
+}
+
+class ImportResult {
+  const ImportResult(this.successCount, this.errorCount);
+
+  final int successCount;
+  final int errorCount;
 }
