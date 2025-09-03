@@ -672,10 +672,10 @@ class $TransactionsTable extends Transactions
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
     'description',
     aliasedName,
-    false,
+    true,
     additionalChecks: GeneratedColumn.checkTextLength(maxTextLength: 255),
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   @override
   late final GeneratedColumnWithTypeConverter<TransactionPaymentStatus, String>
@@ -834,8 +834,6 @@ class $TransactionsTable extends Transactions
           _descriptionMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
     }
     if (data.containsKey('account_id')) {
       context.handle(
@@ -896,10 +894,6 @@ class $TransactionsTable extends Transactions
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
       paymentStatus: $TransactionsTable.$converterpaymentStatus.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -928,6 +922,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
       recurrenceFrequency: $TransactionsTable.$converterrecurrenceFrequencyn
           .fromSql(
             attachedDatabase.typeMapping.read(
@@ -972,7 +970,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
   final Value<DateTime> actualDate;
   final Value<DateTime> competenceDate;
   final Value<double> amount;
-  final Value<String> description;
+  final Value<String?> description;
   final Value<TransactionPaymentStatus> paymentStatus;
   final Value<TransactionRecurrenceType> recurrenceType;
   final Value<TransactionRecurrenceFrequency?> recurrenceFrequency;
@@ -1001,7 +999,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     required DateTime actualDate,
     required DateTime competenceDate,
     required double amount,
-    required String description,
+    this.description = const Value.absent(),
     required TransactionPaymentStatus paymentStatus,
     required TransactionRecurrenceType recurrenceType,
     this.recurrenceFrequency = const Value.absent(),
@@ -1013,7 +1011,6 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
        actualDate = Value(actualDate),
        competenceDate = Value(competenceDate),
        amount = Value(amount),
-       description = Value(description),
        paymentStatus = Value(paymentStatus),
        recurrenceType = Value(recurrenceType),
        accountId = Value(accountId),
@@ -1057,7 +1054,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     Value<DateTime>? actualDate,
     Value<DateTime>? competenceDate,
     Value<double>? amount,
-    Value<String>? description,
+    Value<String?>? description,
     Value<TransactionPaymentStatus>? paymentStatus,
     Value<TransactionRecurrenceType>? recurrenceType,
     Value<TransactionRecurrenceFrequency?>? recurrenceFrequency,
@@ -1961,7 +1958,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required DateTime actualDate,
       required DateTime competenceDate,
       required double amount,
-      required String description,
+      Value<String?> description,
       required TransactionPaymentStatus paymentStatus,
       required TransactionRecurrenceType recurrenceType,
       Value<TransactionRecurrenceFrequency?> recurrenceFrequency,
@@ -1977,7 +1974,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<DateTime> actualDate,
       Value<DateTime> competenceDate,
       Value<double> amount,
-      Value<String> description,
+      Value<String?> description,
       Value<TransactionPaymentStatus> paymentStatus,
       Value<TransactionRecurrenceType> recurrenceType,
       Value<TransactionRecurrenceFrequency?> recurrenceFrequency,
@@ -2411,7 +2408,7 @@ class $$TransactionsTableTableManager
                 Value<DateTime> actualDate = const Value.absent(),
                 Value<DateTime> competenceDate = const Value.absent(),
                 Value<double> amount = const Value.absent(),
-                Value<String> description = const Value.absent(),
+                Value<String?> description = const Value.absent(),
                 Value<TransactionPaymentStatus> paymentStatus =
                     const Value.absent(),
                 Value<TransactionRecurrenceType> recurrenceType =
@@ -2444,7 +2441,7 @@ class $$TransactionsTableTableManager
                 required DateTime actualDate,
                 required DateTime competenceDate,
                 required double amount,
-                required String description,
+                Value<String?> description = const Value.absent(),
                 required TransactionPaymentStatus paymentStatus,
                 required TransactionRecurrenceType recurrenceType,
                 Value<TransactionRecurrenceFrequency?> recurrenceFrequency =

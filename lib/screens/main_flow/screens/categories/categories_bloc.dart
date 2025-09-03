@@ -24,10 +24,7 @@ class CategoriesBloc extends GetxController {
       result.fold(
         (failure) {
           logger.e('❌ Error loading categories: ${failure.message}');
-          AppWidgetsUtils.snackBar(
-            title: failure.message,
-            type: SnackBarType.error,
-          );
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
         (withSubcategories) {
           categoriesWithSubcategories.value = withSubcategories;

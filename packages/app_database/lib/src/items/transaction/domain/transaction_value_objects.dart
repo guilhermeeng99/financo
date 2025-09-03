@@ -23,8 +23,16 @@ class TransactionAmount {
 }
 
 class TransactionDescription {
-  factory TransactionDescription.create(String value) {
+  factory TransactionDescription.create(String? value) {
+    if (value == null) {
+      return TransactionDescription._(null);
+    }
+
     final trimmedValue = value.trim();
+
+    if (trimmedValue.isEmpty) {
+      return TransactionDescription._(null);
+    }
 
     if (trimmedValue.length > 255) {
       throw const ValidationException(
@@ -37,11 +45,15 @@ class TransactionDescription {
 
   TransactionDescription._(this.value);
 
-  final String value;
+  final String? value;
 }
 
 class TransactionAccountId {
-  factory TransactionAccountId.create(int value) {
+  factory TransactionAccountId.create(int? value) {
+    if (value == null) {
+      throw const ValidationException('Account must be selected');
+    }
+
     if (value <= 0) {
       throw const ValidationException('Account ID must be a positive number');
     }
@@ -55,7 +67,11 @@ class TransactionAccountId {
 }
 
 class TransactionCategoryId {
-  factory TransactionCategoryId.create(int value) {
+  factory TransactionCategoryId.create(int? value) {
+    if (value == null) {
+      throw const ValidationException('Category must be selected');
+    }
+
     if (value <= 0) {
       throw const ValidationException('Category ID must be a positive number');
     }

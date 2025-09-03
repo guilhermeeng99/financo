@@ -24,10 +24,7 @@ class TransactionsBloc extends GetxController {
       result.fold(
         (Failure failure) {
           logger.e('Error loading transactions: ${failure.message}');
-          AppWidgetsUtils.snackBar(
-            title: failure.message,
-            type: SnackBarType.error,
-          );
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
         (List<TransactionI> transactionsList) {
           transactions.value = transactionsList;

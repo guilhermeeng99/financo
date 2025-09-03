@@ -49,7 +49,7 @@ mixin TransactionValidationHelpers {
           ? Value(TransactionAmount.create(amount).value)
           : const Value.absent(),
       description: description != null
-          ? Value(TransactionDescription.create(description).value)
+          ? Value.absentIfNull(TransactionDescription.create(description).value)
           : const Value.absent(),
       paymentStatus: paymentStatus != null
           ? Value(paymentStatus)
@@ -76,11 +76,11 @@ mixin TransactionValidationHelpers {
     required DateTime competenceDate,
     required FinancialType transactionType,
     required double amount,
-    required String description,
     required TransactionPaymentStatus paymentStatus,
     required TransactionRecurrenceType recurrenceType,
-    required int accountId,
-    required int categoryId,
+    required int? accountId,
+    required int? categoryId,
+    String? description,
     TransactionRecurrenceFrequency? recurrenceFrequency,
   }) {
     // Validate inputs using domain objects
@@ -96,7 +96,7 @@ mixin TransactionValidationHelpers {
       competenceDate: Value(validatedCompetenceDate.value),
       transactionType: Value(transactionType),
       amount: Value(validatedAmount.value),
-      description: Value(validatedDescription.value),
+      description: Value.absentIfNull(validatedDescription.value),
       paymentStatus: Value(paymentStatus),
       recurrenceType: Value(recurrenceType),
       recurrenceFrequency: Value(recurrenceFrequency),

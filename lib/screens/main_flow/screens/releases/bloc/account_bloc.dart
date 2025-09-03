@@ -34,10 +34,7 @@ class AccountsBloc extends GetxController {
       await result.fold(
         (failure) {
           logger.e('Error loading checking accounts: ${failure.message}');
-          AppWidgetsUtils.snackBar(
-            title: failure.message,
-            type: SnackBarType.error,
-          );
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
         (checkingAccountsList) async {
           final accountsI = <AccountI>[];

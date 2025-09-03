@@ -23,7 +23,7 @@ class AppSystemFiles {
       logger.i('Default excel downloaded successfully!');
 
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.success.export_successfully,
           type: SnackBarType.success,
         );
@@ -32,7 +32,7 @@ class AppSystemFiles {
       logger.e('Error exporting default excel: $e');
 
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.errors.export_error,
           type: SnackBarType.error,
         );
@@ -47,12 +47,12 @@ class AppSystemFiles {
     if (!context.mounted) return;
 
     if (result.errorCount == 0) {
-      AppWidgetsUtils.snackBar(
+      CWSnackBar.snackBar(
         title: context.t.messages.success.excel_import_successfully,
         type: SnackBarType.success,
       );
     } else {
-      AppWidgetsUtils.snackBar(
+      CWSnackBar.snackBar(
         title: context.t.messages.errors.excel_not_valid,
         type: SnackBarType.error,
       );
@@ -159,7 +159,7 @@ if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     if (sheet == null) {
       logger.e('Excel sheet not found');
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.errors.excel_not_found,
           type: SnackBarType.error,
         );

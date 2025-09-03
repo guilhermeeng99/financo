@@ -25,10 +25,7 @@ class AccountsBloc extends GetxController {
       result.fold(
         (failure) {
           logger.e('❌ Error loading accounts: ${failure.message}');
-          AppWidgetsUtils.snackBar(
-            title: failure.message,
-            type: SnackBarType.error,
-          );
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
         (grouped) {
           groupedAccounts.value = grouped;

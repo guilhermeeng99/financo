@@ -7,11 +7,11 @@ abstract class ITransactionUsecase {
     required DateTime competenceDate,
     required FinancialType transactionType,
     required double amount,
-    required String description,
     required TransactionPaymentStatus paymentStatus,
     required TransactionRecurrenceType recurrenceType,
-    required int accountId,
-    required int categoryId,
+    required int? accountId,
+    required int? categoryId,
+    String description,
     TransactionRecurrenceFrequency? recurrenceFrequency,
   });
 

@@ -11,14 +11,10 @@ class CreateAndEditAccountModel {
   IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
 
   Future<void> onTapSave(AccountData? account) async {
-    final canSave = createAndEditAccountBloc.name.value.trim().isNotEmpty;
-
-    if (canSave) {
-      if (account != null) {
-        await _updateAccount(account);
-      } else {
-        await _createAccount();
-      }
+    if (account != null) {
+      await _updateAccount(account);
+    } else {
+      await _createAccount();
     }
   }
 
@@ -35,10 +31,7 @@ class CreateAndEditAccountModel {
     result.fold(
       (failure) {
         logger.e('Error creating account: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (account) {
         logger.i('Account created successfully: ${account.name}');
@@ -64,10 +57,7 @@ class CreateAndEditAccountModel {
     result.fold(
       (failure) {
         logger.e('Error updating account: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (account) {
         logger.i('Account updated successfully: ${account.name}');

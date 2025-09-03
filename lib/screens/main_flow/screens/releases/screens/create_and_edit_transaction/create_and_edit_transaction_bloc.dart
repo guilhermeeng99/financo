@@ -30,7 +30,7 @@ class CreateAndEditTransactionBloc extends GetxController {
   final RxList<CategoryData> categories = <CategoryData>[].obs;
 
   void initializeWithTransactionData(TransactionData transaction) {
-    description.value = transaction.description;
+    description.value = transaction.description ?? '';
     amount.value = transaction.amount;
     actualDate.value = transaction.actualDate;
     competenceDate.value = transaction.competenceDate;
@@ -51,10 +51,7 @@ class CreateAndEditTransactionBloc extends GetxController {
     result.fold(
       (Failure failure) {
         logger.e('Error loading accounts: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (List<AccountData> accountsList) {
         accounts.value = accountsList;
@@ -71,10 +68,7 @@ class CreateAndEditTransactionBloc extends GetxController {
     result.fold(
       (Failure failure) {
         logger.e('Error loading categories: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (List<CategoryData> categoriesList) {
         final flatCategories = <CategoryData>[];

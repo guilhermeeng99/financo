@@ -98,9 +98,10 @@ class _TransactionItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 10,
                   children: [
-                    if (transaction.t.description.isNotEmpty)
+                    if (transaction.t.description != null &&
+                        transaction.t.description!.isNotEmpty)
                       Text(
-                        transaction.t.description,
+                        transaction.t.description!,
                         style: const TextStyle(fontSize: 14),
                       ),
                     Row(

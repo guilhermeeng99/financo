@@ -13,16 +13,11 @@ class CreateAndEditCategoryModel {
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   Future<void> onTapSave(CategoryData? category) async {
-    final canSave = createAndEditCategoryBloc.name.value.trim().isNotEmpty;
-
-    if (canSave) {
-      if (category != null) {
-        await _updateCategory(category);
-      } else {
-        await _createCategory();
-      }
+    if (category != null) {
+      await _updateCategory(category);
+    } else {
+      await _createCategory();
     }
-    await PopUpManager.pop();
   }
 
   Future<void> _createCategory() async {
@@ -35,14 +30,12 @@ class CreateAndEditCategoryModel {
     result.fold(
       (failure) {
         logger.e('Error creating category: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (category) {
         logger.i('Category created successfully: ${category.name}');
         categoriesBloc.loadCategories();
+        PopUpManager.pop();
       },
     );
   }
@@ -55,7 +48,11 @@ class CreateAndEditCategoryModel {
     final parentChanged = newParentId != originalCategory.parentCategoryId;
 
     if (!nameChanged && !parentChanged) {
-      logger.i('No changes detected, closing popup');
+      CWSnackBar.snackBar(
+        title: 'No changes detected',
+        type: SnackBarType.info,
+      );
+      await PopUpManager.pop();
       return;
     }
 
@@ -69,14 +66,12 @@ class CreateAndEditCategoryModel {
     result.fold(
       (failure) {
         logger.e('Error creating category: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (category) {
         logger.i('Category updated successfully: ${category.name}');
         categoriesBloc.loadCategories();
+        PopUpManager.pop();
       },
     );
   }

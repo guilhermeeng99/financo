@@ -46,7 +46,7 @@ class ImportCategoriesModel {
         ..e('Stack trace: $stackTrace');
 
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.errors.excel_not_valid,
           type: SnackBarType.error,
         );
@@ -240,7 +240,7 @@ class ImportCategoriesModel {
   Future<void> _showError(BuildContext context, String message) async {
     logger.w('No valid categories found in Excel file');
     if (context.mounted) {
-      AppWidgetsUtils.snackBar(title: message, type: SnackBarType.error);
+      CWSnackBar.snackBar(title: message, type: SnackBarType.error);
     }
   }
 }

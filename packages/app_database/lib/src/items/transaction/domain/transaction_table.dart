@@ -12,7 +12,7 @@ class Transactions extends Table {
   DateTimeColumn get actualDate => dateTime()();
   DateTimeColumn get competenceDate => dateTime()();
   RealColumn get amount => real()();
-  TextColumn get description => text().withLength(max: 255)();
+  TextColumn get description => text().withLength(max: 255).nullable()();
   TextColumn get paymentStatus => textEnum<TransactionPaymentStatus>()();
   TextColumn get recurrenceType => textEnum<TransactionRecurrenceType>()();
   TextColumn get recurrenceFrequency =>
@@ -30,13 +30,13 @@ class TransactionData {
     required this.transactionType,
     required this.competenceDate,
     required this.amount,
-    required this.description,
     required this.paymentStatus,
     required this.recurrenceType,
     required this.accountId,
     required this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.description,
     this.recurrenceFrequency,
   });
 
@@ -45,7 +45,7 @@ class TransactionData {
   final DateTime competenceDate;
   final FinancialType transactionType;
   final double amount;
-  final String description;
+  final String? description;
   final TransactionPaymentStatus paymentStatus;
   final TransactionRecurrenceType recurrenceType;
   final TransactionRecurrenceFrequency? recurrenceFrequency;

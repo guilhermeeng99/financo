@@ -49,10 +49,7 @@ class CategoriesModel {
     result.fold(
       (failure) {
         logger.e('Error updating category status: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (updatedCategory) {
         logger.i('Category status updated successfully');
@@ -76,10 +73,7 @@ class CategoriesModel {
     result.fold(
       (failure) {
         logger.e('Error deleting category: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (success) {
         logger.i('Category deleted successfully');
@@ -108,7 +102,7 @@ class CategoriesModelExcel {
       await result.fold(
         (failure) {
           logger.e('Error loading categories for export: ${failure.message}');
-          AppWidgetsUtils.snackBar(
+          CWSnackBar.snackBar(
             title: context.t.messages.errors.export_error,
             type: SnackBarType.error,
           );
@@ -214,7 +208,7 @@ class CategoriesModelExcel {
           if (excelBytes == null) {
             logger.e('Error generating Excel file');
 
-            AppWidgetsUtils.snackBar(
+            CWSnackBar.snackBar(
               title: context.t.messages.errors.export_error,
               type: SnackBarType.error,
             );
@@ -231,7 +225,7 @@ class CategoriesModelExcel {
           logger.i('Category archive saved successfully!');
 
           if (context.mounted) {
-            AppWidgetsUtils.snackBar(
+            CWSnackBar.snackBar(
               title: context.t.messages.success.export_successfully,
               type: SnackBarType.success,
             );
@@ -241,7 +235,7 @@ class CategoriesModelExcel {
     } catch (e) {
       logger.e('Error exporting categories: $e');
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.errors.export_error,
           type: SnackBarType.error,
         );

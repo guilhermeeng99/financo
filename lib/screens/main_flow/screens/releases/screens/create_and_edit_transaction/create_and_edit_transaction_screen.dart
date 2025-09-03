@@ -65,11 +65,17 @@ class CreateAndEditTransactionPopUp extends HookWidget {
           ],
         ),
       ),
-      bottomContent: Align(
-        alignment: const Alignment(0.9, 0),
-        child: CWSquareButton(
-          onTap: () =>
-              createAndEditTransactionModel.onTapSave(args.transaction),
+      bottomContent: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 25),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const _PaymentStatusToggle(),
+            CWSquareButton(
+              onTap: () =>
+                  createAndEditTransactionModel.onTapSave(args.transaction),
+            ),
+          ],
         ),
       ),
     );
@@ -309,6 +315,41 @@ class _Category extends StatelessWidget {
             ),
           );
         },
+      );
+    });
+  }
+}
+
+class _PaymentStatusToggle extends StatelessWidget {
+  const _PaymentStatusToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final paymentStatus =
+          createAndEditTransactionBloc.selectedPaymentStatus.value;
+      final isPaid = paymentStatus == TransactionPaymentStatus.paid;
+
+      return InkWell(
+        onTap: () {
+          createAndEditTransactionBloc.selectedPaymentStatus.value = isPaid
+              ? TransactionPaymentStatus.unpaid
+              : TransactionPaymentStatus.paid;
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: isPaid
+                ? Theme.of(context).customColors.button01
+                : Theme.of(context).customColors.fourth,
+          ),
+          child: Icon(
+            Icons.done_all,
+            size: 24,
+            color: isPaid ? Theme.of(context).customColors.fourth : null,
+          ),
+        ),
       );
     });
   }

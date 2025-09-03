@@ -13,7 +13,7 @@ class CategoryName {
         'Category name must be at least 2 characters long',
       );
     }
-    if (trimmedValue.length > 50) {
+    if (trimmedValue.length > 15) {
       throw const ValidationException(
         'Category name must be at most 50 characters long',
       );

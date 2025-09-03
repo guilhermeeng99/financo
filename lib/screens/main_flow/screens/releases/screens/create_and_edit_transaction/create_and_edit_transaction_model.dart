@@ -13,17 +13,10 @@ class CreateAndEditTransactionModel {
       Modular.get<ITransactionUsecase>();
 
   Future<void> onTapSave(TransactionData? transaction) async {
-    final canSave =
-        createAndEditTransactionBloc.amount.value != 0 &&
-        createAndEditTransactionBloc.selectedAccountId.value != null &&
-        createAndEditTransactionBloc.selectedCategoryId.value != null;
-
-    if (canSave) {
-      if (transaction != null) {
-        await _updateTransaction(transaction);
-      } else {
-        await _createTransaction();
-      }
+    if (transaction != null) {
+      await _updateTransaction(transaction);
+    } else {
+      await _createTransaction();
     }
   }
 
@@ -48,17 +41,14 @@ class CreateAndEditTransactionModel {
               TransactionRecurrenceType.fixed
           ? createAndEditTransactionBloc.selectedRecurrenceFrequency.value
           : null,
-      accountId: createAndEditTransactionBloc.selectedAccountId.value!,
-      categoryId: createAndEditTransactionBloc.selectedCategoryId.value!,
+      accountId: createAndEditTransactionBloc.selectedAccountId.value,
+      categoryId: createAndEditTransactionBloc.selectedCategoryId.value,
     );
 
     result.fold(
       (failure) {
         logger.e('Error creating transaction: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (transaction) {
         logger.i(
@@ -98,10 +88,7 @@ class CreateAndEditTransactionModel {
     result.fold(
       (failure) {
         logger.e('Error updating transaction: ${failure.message}');
-        AppWidgetsUtils.snackBar(
-          title: failure.message,
-          type: SnackBarType.error,
-        );
+        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
       (transaction) {
         logger.i(

@@ -47,14 +47,14 @@ class ReleasesModel {
     result.fold(
       (failure) {
         logger.e('Error deleting transaction: ${failure.message}');
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: 'Error deleting transaction: ${failure.message}',
           type: SnackBarType.error,
         );
       },
       (success) {
         logger.i(
-          'Transaction deleted successfully: ${transaction.description}',
+          'Transaction deleted successfully: ${transaction.description ?? 'No description'}',
         );
         accountsBloc.loadCheckingAccounts();
         transactionsBloc.loadTransactions();
@@ -95,7 +95,7 @@ class ReleasesModel {
     result.fold(
       (failure) {
         logger.e('Error updating payment status: ${failure.message}');
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: 'Error updating payment status:  ${failure.message}',
           type: SnackBarType.error,
         );
@@ -177,7 +177,7 @@ class ReleasesModelExcel {
               ),
             )
             .value = TextCellValue(
-          transaction.t.description,
+          transaction.t.description ?? '',
         );
 
         sheet
@@ -243,7 +243,7 @@ class ReleasesModelExcel {
         logger.e('Error generating Excel file');
 
         if (context.mounted) {
-          AppWidgetsUtils.snackBar(
+          CWSnackBar.snackBar(
             title: context.t.messages.errors.export_error,
             type: SnackBarType.error,
           );
@@ -261,7 +261,7 @@ class ReleasesModelExcel {
       logger.i('Transactions archive saved successfully!');
 
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.success.export_successfully,
           type: SnackBarType.success,
         );
@@ -269,7 +269,7 @@ class ReleasesModelExcel {
     } catch (e) {
       logger.e('Error exporting transactions: $e');
       if (context.mounted) {
-        AppWidgetsUtils.snackBar(
+        CWSnackBar.snackBar(
           title: context.t.messages.errors.export_error,
           type: SnackBarType.error,
         );
