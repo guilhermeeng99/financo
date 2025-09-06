@@ -1,12 +1,13 @@
 import '../../../core/either.dart';
 import '../../../core/failures.dart';
 import '../domain/index.dart';
+import '../presentation/index.dart';
 
 abstract class IAccountUsecase {
   Future<Either<Failure, AccountData>> createAccount({
-    required String name,
+    required AccountName name,
     required AccountType accountType,
-    required double initialBalance,
+    required Balance initialBalance,
     AccountIconType iconType = AccountIconType.none,
     CurrencyType currencyType = CurrencyType.brl,
     DateTime? initDate,
@@ -24,9 +25,9 @@ abstract class IAccountUsecase {
 
   Future<Either<Failure, AccountData>> updateAccount({
     required int id,
-    String? name,
+    AccountName? name,
     AccountType? accountType,
-    double? initialBalance,
+    Balance? initialBalance,
     CurrencyType? currencyType,
     bool? isActive,
     AccountIconType? iconType,

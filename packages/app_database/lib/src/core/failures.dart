@@ -7,6 +7,10 @@ class ValidationFailure extends Failure {
   const ValidationFailure(super.message);
 }
 
+class NoChangesFailure extends ValidationFailure {
+  const NoChangesFailure(super.message);
+}
+
 class DatabaseFailure extends Failure {
   const DatabaseFailure(super.message);
 }

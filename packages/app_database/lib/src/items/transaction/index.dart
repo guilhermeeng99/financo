@@ -1,8 +1,4 @@
-// Domain layer
 export 'domain/index.dart';
-
-// Repository layer
+export 'presentation/index.dart';
 export 'repository/index.dart';
-
-// UseCase layer
 export 'usecase/index.dart';

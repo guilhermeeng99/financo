@@ -2,10 +2,10 @@ import 'package:app_database/app_database.dart';
 
 /// Mixin containing balance operations for transaction usecase
 mixin TransactionBalanceUsecaseOperations {
-  ITransactionRepository get repository;
+  ITransactionRepository get transactionRepository;
 
   Future<Either<Failure, double>> getAccountBalance(int accountId) async {
-    return repository.getAccountBalanceById(accountId);
+    return transactionRepository.getAccountBalanceById(accountId);
   }
 
   Future<Either<Failure, double>> getAccountBalanceForPeriod(
@@ -13,7 +13,11 @@ mixin TransactionBalanceUsecaseOperations {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    return repository.getAccountBalanceForPeriod(accountId, startDate, endDate);
+    return transactionRepository.getAccountBalanceForPeriod(
+      accountId,
+      startDate,
+      endDate,
+    );
   }
 
   Future<Either<Failure, Map<int, double>>> getMultipleAccountsBalanceForPeriod(
@@ -21,7 +25,7 @@ mixin TransactionBalanceUsecaseOperations {
     DateTime startDate,
     DateTime endDate,
   ) async {
-    return repository.getMultipleAccountsBalanceForPeriod(
+    return transactionRepository.getMultipleAccountsBalanceForPeriod(
       accountIds,
       startDate,
       endDate,

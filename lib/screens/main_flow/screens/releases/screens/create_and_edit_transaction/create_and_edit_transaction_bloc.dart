@@ -9,13 +9,16 @@ class CreateAndEditTransactionBloc extends GetxController {
     _loadAccounts();
     _loadCategories();
 
-    // Listener para recarregar categorias quando o tipo de transação mudar
     ever(selectedTransactionType, (FinancialType transactionType) {
       _loadCategories();
     });
   }
   final RxString description = ''.obs;
+  final RxString descriptionError = ''.obs;
+
   final RxDouble amount = 0.0.obs;
+  final RxString amountError = ''.obs;
+
   final Rx<DateTime> actualDate = DateTime.now().obs;
   final Rx<DateTime> competenceDate = DateTime.now().obs;
   final selectedTransactionType = FinancialType.expense.obs;
@@ -24,7 +27,10 @@ class CreateAndEditTransactionBloc extends GetxController {
   final selectedRecurrenceFrequency =
       TransactionRecurrenceFrequency.monthly.obs;
   final Rx<int?> selectedAccountId = Rx<int?>(null);
+  final RxString accountError = ''.obs;
+
   final Rx<int?> selectedCategoryId = Rx<int?>(null);
+  final RxString categoryError = ''.obs;
 
   final RxList<AccountData> accounts = <AccountData>[].obs;
   final RxList<CategoryData> categories = <CategoryData>[].obs;
@@ -91,7 +97,9 @@ class CreateAndEditTransactionBloc extends GetxController {
   @override
   void onClose() {
     description.close();
+    descriptionError.close();
     amount.close();
+    amountError.close();
     actualDate.close();
     competenceDate.close();
     selectedTransactionType.close();
@@ -99,7 +107,9 @@ class CreateAndEditTransactionBloc extends GetxController {
     selectedRecurrenceType.close();
     selectedRecurrenceFrequency.close();
     selectedAccountId.close();
+    accountError.close();
     selectedCategoryId.close();
+    categoryError.close();
     super.onClose();
   }
 }

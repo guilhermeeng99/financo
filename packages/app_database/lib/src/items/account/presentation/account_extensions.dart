@@ -2,8 +2,8 @@ import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart' as flutter;
 
-import 'account_enums.dart';
-import 'account_table.dart';
+import '../domain/account_enums.dart';
+import '../domain/account_table.dart';
 
 $LibAppAssetsImagesGen get _images => Assets.lib.app.assets.images;
 

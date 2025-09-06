@@ -12,6 +12,7 @@ class CWTextField extends HookWidget {
     this.keyboardType,
     this.inputFormatters,
     this.title,
+    this.error = '',
   });
 
   final String hintText;
@@ -21,6 +22,7 @@ class CWTextField extends HookWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final String? title;
+  final String error;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +60,11 @@ class CWTextField extends HookWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
+      padding: const EdgeInsets.only(bottom: 8),
       child: CWPopUpItemTitle(
         title: title,
         spacing: 21,
+        error: error,
         child: textField,
       ),
     );

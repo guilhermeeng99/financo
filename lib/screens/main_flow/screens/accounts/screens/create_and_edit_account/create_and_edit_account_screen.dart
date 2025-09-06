@@ -30,11 +30,10 @@ class CreateAndEditAccountPopUp extends HookWidget {
       title: args.type == CreateAndEditAccountPopUpType.edit
           ? context.t.accounts.edit_account
           : context.t.accounts.new_account,
-      centerContent: Container(
+      centerContent: SizedBox(
         width: 400,
-        padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
-          spacing: 30,
+          spacing: 20,
           children: [
             const _Name(),
             const Row(
@@ -60,7 +59,8 @@ class CreateAndEditAccountPopUp extends HookWidget {
       bottomContent: Align(
         alignment: const Alignment(0.9, 0),
         child: CWSquareButton(
-          onTap: () => createAndEditAccountModel.onTapSave(args.account),
+          onTap: () =>
+              createAndEditAccountModel.onTapSave(args.account, context),
         ),
       ),
     );
@@ -163,11 +163,14 @@ class _Name extends HookWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final name = createAndEditAccountBloc.name.value;
+      final nameError = createAndEditAccountBloc.nameError.value;
 
       return CWTextField(
         hintText: '${context.t.common.labels.name}*',
         initialValue: name,
-        onChanged: (value) => createAndEditAccountBloc.name.value = value,
+        onChanged: (value) =>
+            createAndEditAccountBloc.name.value = value,
+        error: nameError,
       );
     });
   }
@@ -180,6 +183,7 @@ class _Balance extends HookWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final balance = createAndEditAccountBloc.initialBalance.value;
+      final balanceError = createAndEditAccountBloc.balanceError.value;
       final formattedBalance = CurrencyFormatter.formatAmount(balance, context);
 
       return CWTextField(
@@ -192,6 +196,7 @@ class _Balance extends HookWidget {
           final parsedValue = CurrencyFormatter.parseAmount(value, context);
           createAndEditAccountBloc.initialBalance.value = parsedValue;
         },
+        error: balanceError,
       );
     });
   }

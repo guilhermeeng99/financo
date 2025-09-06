@@ -36,7 +36,7 @@ class ImportCategoriesModel {
         return;
       }
 
-      final importResult = await _importCategories(categoriesToCreate);
+      final importResult = await _importCategories(categoriesToCreate, context);
       await categoriesBloc.loadCategories();
 
       await AppSystemFiles.showImportResult(context, importResult);
@@ -147,6 +147,7 @@ class ImportCategoriesModel {
 
   Future<ImportResult> _importCategories(
     List<Map<String, dynamic>> categoriesToCreate,
+    BuildContext context,
   ) async {
     var successCount = 0;
     var errorCount = 0;
@@ -159,7 +160,7 @@ class ImportCategoriesModel {
     logger.i('Creating ${parentCategories.length} parent categories...');
 
     for (final categoryData in parentCategories) {
-      final result = await _createParentCategory(categoryData);
+      final result = await _createParentCategory(categoryData, context);
       result.fold((failure) => errorCount++, (createdCategory) {
         successCount++;
         final parentKey = categoryData['parentKey'] as String?;
@@ -179,6 +180,7 @@ class ImportCategoriesModel {
       final result = await _createSubcategory(
         subcategoryData,
         parentCategoryIds,
+        context,
       );
       result.fold((failure) => errorCount++, (success) => successCount++);
     }
@@ -189,26 +191,41 @@ class ImportCategoriesModel {
 
   Future<Either<Failure, CategoryData>> _createParentCategory(
     Map<String, dynamic> categoryData,
+    BuildContext context,
   ) async {
-    final result = await _categoryUsecase.createCategory(
-      name: categoryData['name'] as String,
-      categoryType: categoryData['type'] as FinancialType,
-    );
+    try {
+      final categoryName = CategoryName.create(
+        categoryData['name'] as String,
+        context,
+      );
 
-    result.fold(
-      (failure) => logger.e(
-        'Error creating parent category ${categoryData['name']}: ${failure.message}',
-      ),
-      (createdCategory) =>
-          logger.i('Parent category created: ${createdCategory.name}'),
-    );
+      final result = await _categoryUsecase.createCategory(
+        name: categoryName,
+        categoryType: categoryData['type'] as FinancialType,
+      );
 
-    return result;
+      result.fold(
+        (failure) => logger.e(
+          'Error creating parent category ${categoryData['name']}: ${failure.message}',
+        ),
+        (createdCategory) =>
+            logger.i('Parent category created: ${createdCategory.name}'),
+      );
+
+      return result;
+    } on ValidationException catch (e) {
+      logger.e('Validation error creating parent category: ${e.message}');
+      return Either.left(ValidationFailure(e.message));
+    } catch (e) {
+      logger.e('Unexpected error creating parent category: $e');
+      return Either.left(DatabaseFailure('Unexpected error: $e'));
+    }
   }
 
   Future<Either<Failure, CategoryData>> _createSubcategory(
     Map<String, dynamic> subcategoryData,
     Map<String, int> parentCategoryIds,
+    BuildContext context,
   ) async {
     final parentKey = subcategoryData['parentKey'] as String;
     final parentId = parentCategoryIds[parentKey];
@@ -220,21 +237,36 @@ class ImportCategoriesModel {
       return Either.left(const DatabaseFailure('Parent category not found'));
     }
 
-    final result = await _categoryUsecase.createCategory(
-      name: subcategoryData['name'] as String,
-      categoryType: subcategoryData['type'] as FinancialType,
-      parentCategoryId: parentId,
-    );
+    try {
+      final categoryName = CategoryName.create(
+        subcategoryData['name'] as String,
+        context,
+      );
 
-    result.fold(
-      (failure) => logger.e(
-        'Error creating subcategory ${subcategoryData['name']}: ${failure.message}',
-      ),
-      (createdCategory) =>
-          logger.i('Subcategory created: ${createdCategory.name}'),
-    );
+      final parentCategoryId = ParentCategoryId.create(parentId, context);
 
-    return result;
+      final result = await _categoryUsecase.createCategory(
+        name: categoryName,
+        categoryType: subcategoryData['type'] as FinancialType,
+        parentCategoryId: parentCategoryId,
+      );
+
+      result.fold(
+        (failure) => logger.e(
+          'Error creating subcategory ${subcategoryData['name']}: ${failure.message}',
+        ),
+        (createdCategory) =>
+            logger.i('Subcategory created: ${createdCategory.name}'),
+      );
+
+      return result;
+    } on ValidationException catch (e) {
+      logger.e('Validation error creating subcategory: ${e.message}');
+      return Either.left(ValidationFailure(e.message));
+    } catch (e) {
+      logger.e('Unexpected error creating subcategory: $e');
+      return Either.left(DatabaseFailure('Unexpected error: $e'));
+    }
   }
 
   Future<void> _showError(BuildContext context, String message) async {

@@ -100,6 +100,7 @@ class TranslationsAccountsEn {
 	String get show_only_active => 'Show Only Active Accounts';
 
 	late final TranslationsAccountsTypesEn types = TranslationsAccountsTypesEn.internal(_root);
+	late final TranslationsAccountsValidationEn validation = TranslationsAccountsValidationEn.internal(_root);
 }
 
 // Path: categories
@@ -142,6 +143,8 @@ class TranslationsCategoriesEn {
 
 	/// en: 'A category with this name already exists'
 	String get category_name_already_exists => 'A category with this name already exists';
+
+	late final TranslationsCategoriesValidationEn validation = TranslationsCategoriesValidationEn.internal(_root);
 }
 
 // Path: transactions
@@ -168,6 +171,7 @@ class TranslationsTransactionsEn {
 	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn.internal(_root);
 	late final TranslationsTransactionsStatusEn status = TranslationsTransactionsStatusEn.internal(_root);
 	late final TranslationsTransactionsCurrencyEn currency = TranslationsTransactionsCurrencyEn.internal(_root);
+	late final TranslationsTransactionsValidationEn validation = TranslationsTransactionsValidationEn.internal(_root);
 }
 
 // Path: settings
@@ -190,6 +194,7 @@ class TranslationsMessagesEn {
 
 	// Translations
 	late final TranslationsMessagesSuccessEn success = TranslationsMessagesSuccessEn.internal(_root);
+	late final TranslationsMessagesWarningsEn warnings = TranslationsMessagesWarningsEn.internal(_root);
 	late final TranslationsMessagesErrorsEn errors = TranslationsMessagesErrorsEn.internal(_root);
 }
 
@@ -340,6 +345,60 @@ class TranslationsAccountsTypesEn {
 	String get others => 'Others';
 }
 
+// Path: accounts.validation
+class TranslationsAccountsValidationEn {
+	TranslationsAccountsValidationEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Account name cannot be empty'
+	String get name_cannot_be_empty => 'Account name cannot be empty';
+
+	/// en: 'Account name must be at least $number characters long'
+	String name_min_length_number({required Object number}) => 'Account name must be at least ${number} characters long';
+
+	/// en: 'Account name must be at most $number characters long'
+	String name_max_length_number({required Object number}) => 'Account name must be at most ${number} characters long';
+
+	/// en: 'Currency code must be exactly $number characters long'
+	String currency_code_length_number({required Object number}) => 'Currency code must be exactly ${number} characters long';
+
+	/// en: 'Currency code must contain only capital letters'
+	String get currency_code_format => 'Currency code must contain only capital letters';
+
+	/// en: 'Balance must be a valid number'
+	String get balance_invalid_number => 'Balance must be a valid number';
+
+	/// en: 'Balance cannot be less than $number'
+	String balance_min_value_number({required Object number}) => 'Balance cannot be less than ${number}';
+
+	/// en: 'Balance cannot be greater than $number'
+	String balance_max_value_number({required Object number}) => 'Balance cannot be greater than ${number}';
+}
+
+// Path: categories.validation
+class TranslationsCategoriesValidationEn {
+	TranslationsCategoriesValidationEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Category name cannot be empty'
+	String get name_cannot_be_empty => 'Category name cannot be empty';
+
+	/// en: 'Category name must be at least $number characters long'
+	String name_min_length_number({required Object number}) => 'Category name must be at least ${number} characters long';
+
+	/// en: 'Category name must be at most $number characters long'
+	String name_max_length_number({required Object number}) => 'Category name must be at most ${number} characters long';
+
+	/// en: 'Parent category ID must be a positive number'
+	String get parent_id_must_be_positive => 'Parent category ID must be a positive number';
+}
+
 // Path: transactions.types
 class TranslationsTransactionsTypesEn {
 	TranslationsTransactionsTypesEn.internal(this._root);
@@ -395,6 +454,42 @@ class TranslationsTransactionsCurrencyEn {
 	late final TranslationsTransactionsCurrencyTypesEn types = TranslationsTransactionsCurrencyTypesEn.internal(_root);
 }
 
+// Path: transactions.validation
+class TranslationsTransactionsValidationEn {
+	TranslationsTransactionsValidationEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Transaction amount must be a valid number'
+	String get amount_invalid_number => 'Transaction amount must be a valid number';
+
+	/// en: 'Transaction amount must be different than zero'
+	String get amount_cannot_be_zero => 'Transaction amount must be different than zero';
+
+	/// en: 'Transaction description must be at most $number characters long'
+	String description_max_length_number({required Object number}) => 'Transaction description must be at most ${number} characters long';
+
+	/// en: 'Account must be selected'
+	String get account_must_be_selected => 'Account must be selected';
+
+	/// en: 'Account ID must be a positive number'
+	String get account_id_must_be_positive => 'Account ID must be a positive number';
+
+	/// en: 'Category must be selected'
+	String get category_must_be_selected => 'Category must be selected';
+
+	/// en: 'Category ID must be a positive number'
+	String get category_id_must_be_positive => 'Category ID must be a positive number';
+
+	/// en: 'Transaction date cannot be more than 100 years in the past'
+	String get date_too_far_past => 'Transaction date cannot be more than 100 years in the past';
+
+	/// en: 'Transaction date cannot be more than 10 years in the future'
+	String get date_too_far_future => 'Transaction date cannot be more than 10 years in the future';
+}
+
 // Path: messages.success
 class TranslationsMessagesSuccessEn {
 	TranslationsMessagesSuccessEn.internal(this._root);
@@ -408,6 +503,18 @@ class TranslationsMessagesSuccessEn {
 
 	/// en: 'Excel file imported successfully'
 	String get excel_import_successfully => 'Excel file imported successfully';
+}
+
+// Path: messages.warnings
+class TranslationsMessagesWarningsEn {
+	TranslationsMessagesWarningsEn.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'No changes were provided'
+	String get no_changes_provided => 'No changes were provided';
 }
 
 // Path: messages.errors

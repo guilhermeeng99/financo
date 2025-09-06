@@ -44,9 +44,8 @@ class CreateAndEditCategoryPopUp extends HookWidget {
           : context.t.categories.new_category,
       centerContent: Container(
         width: 400,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.only(top: 20, bottom: 10),
         child: Column(
-          spacing: 30,
           children: [
             if (args.type != CreateAndEditCategoryPopUpType.edit &&
                 args.parentCategoryId == null)
@@ -59,7 +58,8 @@ class CreateAndEditCategoryPopUp extends HookWidget {
       bottomContent: Align(
         alignment: const Alignment(0.9, 0),
         child: CWSquareButton(
-          onTap: () => createAndEditCategoryModel.onTapSave(args.category),
+          onTap: () =>
+              createAndEditCategoryModel.onTapSave(args.category, context),
         ),
       ),
     );
@@ -73,11 +73,13 @@ class _Name extends HookWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final name = createAndEditCategoryBloc.name.value;
+      final nameError = createAndEditCategoryBloc.nameError.value;
 
       return CWTextField(
         hintText: '${context.t.common.labels.name}*',
         initialValue: name,
         onChanged: (value) => createAndEditCategoryBloc.name.value = value,
+        error: nameError,
       );
     });
   }

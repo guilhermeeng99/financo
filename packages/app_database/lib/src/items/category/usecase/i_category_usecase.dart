@@ -2,18 +2,19 @@ import '../../../core/either.dart';
 import '../../../core/failures.dart';
 import '../../../core/financial_type.dart';
 import '../domain/index.dart';
+import '../presentation/index.dart';
 
 abstract class ICategoryUsecase {
   Future<Either<Failure, CategoryData>> createCategory({
-    required String name,
+    required CategoryName name,
     required FinancialType categoryType,
-    int? parentCategoryId,
+    ParentCategoryId? parentCategoryId,
   });
 
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,
-    String? name,
-    int? parentCategoryId,
+    CategoryName? name,
+    ParentCategoryId? parentCategoryId,
     bool? isActive,
     bool updateParentId = false,
   });

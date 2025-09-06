@@ -1,56 +1,28 @@
+import 'package:app_database/src/items/account/presentation/index.dart';
 import 'package:drift/drift.dart';
 
 import '../../../core/either.dart';
-import '../../../core/exceptions.dart';
 import '../../../core/failures.dart';
 import '../../../database/database_manager.dart';
 import '../domain/index.dart';
 import '../repository/i_account_repository.dart';
-import 'account_validation_helpers.dart';
 
 mixin AccountCrudUsecaseOperations {
   IAccountRepository get accountRepository;
 
   Future<Either<Failure, AccountData>> createAccount({
-    required String name,
+    required AccountName name,
     required AccountType accountType,
-    required double initialBalance,
+    required Balance initialBalance,
     AccountIconType iconType = AccountIconType.none,
     CurrencyType currencyType = CurrencyType.brl,
     DateTime? initDate,
   }) async {
     try {
-      final nameResult = AccountValidationHelpers.validateAccountName(name);
-      if (nameResult.isLeft) {
-        return nameResult.fold(
-          Either.left,
-          (_) => throw StateError('This should never happen'),
-        );
-      }
-
-      final balanceResult = AccountValidationHelpers.validateBalance(
-        initialBalance,
-      );
-      if (balanceResult.isLeft) {
-        return balanceResult.fold(
-          Either.left,
-          (_) => throw StateError('This should never happen'),
-        );
-      }
-
-      final accountName = nameResult.fold(
-        (_) => throw StateError('This should never happen'),
-        (r) => r,
-      );
-      final initBalance = balanceResult.fold(
-        (_) => throw StateError('This should never happen'),
-        (r) => r,
-      );
-
       final accountCompanion = AccountsCompanion(
-        name: Value(accountName.value),
+        name: Value(name.value),
         accountType: Value(accountType),
-        initialBalance: Value(initBalance.value),
+        initialBalance: Value(initialBalance.value),
         currencyType: Value(currencyType),
         isActive: const Value(true),
         iconType: Value(iconType),
@@ -58,8 +30,6 @@ mixin AccountCrudUsecaseOperations {
       );
 
       return await accountRepository.createAccount(accountCompanion);
-    } on ValidationException catch (e) {
-      return Either.left(ValidationFailure(e.message));
     } catch (e) {
       return Either.left(
         DatabaseFailure('Unexpected error creating account: $e'),
@@ -69,100 +39,57 @@ mixin AccountCrudUsecaseOperations {
 
   Future<Either<Failure, AccountData>> updateAccount({
     required int id,
-    String? name,
+    AccountName? name,
     AccountType? accountType,
-    double? initialBalance,
+    Balance? initialBalance,
     CurrencyType? currencyType,
     bool? isActive,
     AccountIconType? iconType,
     DateTime? initDate,
   }) async {
     try {
-      if (!AccountValidationHelpers.hasAnyChanges(
-        name: name,
-        accountType: accountType,
-        initialBalance: initialBalance,
-        currencyType: currencyType,
-        isActive: isActive,
-        iconType: iconType,
-        initDate: initDate,
-      )) {
-        return Either.left(const ValidationFailure('No changes were provided'));
-      }
+      final currentAccountResult = await accountRepository.getAccountById(id);
 
-      Value<String>? nameValue;
-      Value<AccountType>? accountTypeValue;
-      Value<double>? initialBalanceValue;
-      Value<CurrencyType>? currencyTypeValue;
-      Value<bool>? isActiveValue;
-      Value<AccountIconType>? iconTypeValue;
-      Value<DateTime>? initDateValue;
+      return await currentAccountResult.fold(Either.left, (
+        currentAccount,
+      ) async {
+        if (currentAccount == null) {
+          return Either.left(const ValidationFailure('Account not found'));
+        }
 
-      if (name != null) {
-        final nameResult = AccountValidationHelpers.validateAccountName(name);
-        if (nameResult.isLeft) {
-          return nameResult.fold(
-            Either.left,
-            (_) => throw StateError('This should never happen'),
+        if (_hasNoChanges(
+          currentAccount: currentAccount,
+          name: name,
+          accountType: accountType,
+          initialBalance: initialBalance,
+          currencyType: currencyType,
+          isActive: isActive,
+          iconType: iconType,
+          initDate: initDate,
+        )) {
+          return Either.left(
+            const NoChangesFailure('No changes were provided'),
           );
         }
-        final accountName = nameResult.fold(
-          (_) => throw StateError('This should never happen'),
-          (r) => r,
+
+        final accountCompanion = AccountsCompanion(
+          name: name != null ? Value(name.value) : const Value.absent(),
+          accountType: accountType != null
+              ? Value(accountType)
+              : const Value.absent(),
+          initialBalance: initialBalance != null
+              ? Value(initialBalance.value)
+              : const Value.absent(),
+          currencyType: currencyType != null
+              ? Value(currencyType)
+              : const Value.absent(),
+          isActive: isActive != null ? Value(isActive) : const Value.absent(),
+          iconType: iconType != null ? Value(iconType) : const Value.absent(),
+          initDate: initDate != null ? Value(initDate) : const Value.absent(),
         );
-        nameValue = Value(accountName.value);
-      }
 
-      if (accountType != null) {
-        accountTypeValue = Value(accountType);
-      }
-
-      if (initialBalance != null) {
-        final balanceResult = AccountValidationHelpers.validateBalance(
-          initialBalance,
-        );
-        if (balanceResult.isLeft) {
-          return balanceResult.fold(
-            Either.left,
-            (_) => throw StateError('This should never happen'),
-          );
-        }
-        final accountInitialBalance = balanceResult.fold(
-          (_) => throw StateError('This should never happen'),
-          (r) => r,
-        );
-        initialBalanceValue = Value(accountInitialBalance.value);
-      }
-
-      if (currencyType != null) {
-        currencyTypeValue = Value(currencyType);
-      }
-
-      if (isActive != null) {
-        isActiveValue = Value(isActive);
-      }
-
-      if (iconType != null) {
-        iconTypeValue = Value(iconType);
-      }
-
-      if (initDate != null) {
-        initDateValue = Value(initDate);
-      }
-
-      final accountCompanion = AccountsCompanion(
-        name: nameValue ?? const Value.absent(),
-        accountType: accountTypeValue ?? const Value.absent(),
-        initialBalance: initialBalanceValue ?? const Value.absent(),
-        currencyType: currencyTypeValue ?? const Value.absent(),
-        isActive: isActiveValue ?? const Value.absent(),
-        iconType: iconTypeValue ?? const Value.absent(),
-        initDate: initDateValue ?? const Value.absent(),
-      );
-
-      return await accountRepository.updateAccount(id, accountCompanion);
-    } on ValidationException catch (e) {
-      return Either.left(ValidationFailure(e.message));
+        return accountRepository.updateAccount(id, accountCompanion);
+      });
     } catch (e) {
       return Either.left(
         DatabaseFailure('Unexpected error editing account: $e'),
@@ -178,5 +105,35 @@ mixin AccountCrudUsecaseOperations {
         DatabaseFailure('Unexpected error deleting account: $e'),
       );
     }
+  }
+
+  bool _hasNoChanges({
+    required AccountData currentAccount,
+    AccountName? name,
+    AccountType? accountType,
+    Balance? initialBalance,
+    CurrencyType? currencyType,
+    bool? isActive,
+    AccountIconType? iconType,
+    DateTime? initDate,
+  }) {
+    return (name == null || name.value == currentAccount.name) &&
+        (accountType == null || accountType == currentAccount.accountType) &&
+        (initialBalance == null ||
+            initialBalance.value == currentAccount.initialBalance) &&
+        (currencyType == null || currencyType == currentAccount.currencyType) &&
+        (isActive == null || isActive == currentAccount.isActive) &&
+        (iconType == null || iconType == currentAccount.iconType) &&
+        (initDate == null || _datesAreEqual(initDate, currentAccount.initDate));
+  }
+
+  bool _datesAreEqual(DateTime? date1, DateTime date2) {
+    if (date1 == null) return false;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day &&
+        date1.hour == date2.hour &&
+        date1.minute == date2.minute &&
+        date1.second == date2.second;
   }
 }

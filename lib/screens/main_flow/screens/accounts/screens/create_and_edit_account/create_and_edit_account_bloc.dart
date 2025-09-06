@@ -6,8 +6,10 @@ CreateAndEditAccountBloc get createAndEditAccountBloc =>
 
 class CreateAndEditAccountBloc extends GetxController {
   final RxString name = ''.obs;
+  final RxString nameError = ''.obs;
 
   final RxDouble initialBalance = 0.0.obs;
+  final RxString balanceError = ''.obs;
 
   final selectedAccountType = AccountType.checking.obs;
 
@@ -26,10 +28,17 @@ class CreateAndEditAccountBloc extends GetxController {
     selectedInitDate.value = account.initDate;
   }
 
+  void clearErrors() {
+    nameError.value = '';
+    balanceError.value = '';
+  }
+
   @override
   void onClose() {
     name.close();
+    nameError.close();
     initialBalance.close();
+    balanceError.close();
     selectedAccountType.close();
     selectedCurrencyType.close();
     selectedIconType.close();

@@ -12,28 +12,44 @@ class CreateAndEditTransactionModel {
   ITransactionUsecase get _transactionUsecase =>
       Modular.get<ITransactionUsecase>();
 
-  Future<void> onTapSave(TransactionData? transaction) async {
+  Future<void> onTapSave(
+    TransactionData? transaction,
+    BuildContext context,
+  ) async {
     if (transaction != null) {
-      await _updateTransaction(transaction);
+      await _updateTransaction(transaction, context);
     } else {
-      await _createTransaction();
+      await _createTransaction(context);
     }
   }
 
-  Future<void> _createTransaction() async {
-    final amount =
-        createAndEditTransactionBloc.selectedTransactionType.value ==
-            FinancialType.expense
-        ? -createAndEditTransactionBloc.amount.value
-        : createAndEditTransactionBloc.amount.value;
+  Future<void> _createTransaction(BuildContext context) async {
+    final (
+      amount,
+      accountId,
+      categoryId,
+      actualDate,
+      competenceDate,
+      description,
+    ) = _validateInputs(
+      context,
+    );
+
+    if (amount == null ||
+        accountId == null ||
+        categoryId == null ||
+        actualDate == null ||
+        competenceDate == null) {
+      return;
+    }
 
     final result = await _transactionUsecase.createTransaction(
-      actualDate: createAndEditTransactionBloc.actualDate.value,
-      competenceDate: createAndEditTransactionBloc.competenceDate.value,
+      actualDate: actualDate,
+      competenceDate: competenceDate,
       transactionType:
           createAndEditTransactionBloc.selectedTransactionType.value,
       amount: amount,
-      description: createAndEditTransactionBloc.description.value.trim(),
+      description: description,
       paymentStatus: createAndEditTransactionBloc.selectedPaymentStatus.value,
       recurrenceType: createAndEditTransactionBloc.selectedRecurrenceType.value,
       recurrenceFrequency:
@@ -41,8 +57,8 @@ class CreateAndEditTransactionModel {
               TransactionRecurrenceType.fixed
           ? createAndEditTransactionBloc.selectedRecurrenceFrequency.value
           : null,
-      accountId: createAndEditTransactionBloc.selectedAccountId.value,
-      categoryId: createAndEditTransactionBloc.selectedCategoryId.value,
+      accountId: accountId,
+      categoryId: categoryId,
     );
 
     result.fold(
@@ -61,19 +77,35 @@ class CreateAndEditTransactionModel {
     );
   }
 
-  Future<void> _updateTransaction(TransactionData originalTransaction) async {
-    final amount =
-        createAndEditTransactionBloc.selectedTransactionType.value ==
-            FinancialType.expense
-        ? -createAndEditTransactionBloc.amount.value
-        : createAndEditTransactionBloc.amount.value;
+  Future<void> _updateTransaction(
+    TransactionData originalTransaction,
+    BuildContext context,
+  ) async {
+    final (
+      amount,
+      accountId,
+      categoryId,
+      actualDate,
+      competenceDate,
+      description,
+    ) = _validateInputs(
+      context,
+    );
+
+    if (amount == null ||
+        accountId == null ||
+        categoryId == null ||
+        actualDate == null ||
+        competenceDate == null) {
+      return;
+    }
 
     final result = await _transactionUsecase.updateTransaction(
       id: originalTransaction.id,
-      actualDate: createAndEditTransactionBloc.actualDate.value,
-      competenceDate: createAndEditTransactionBloc.competenceDate.value,
+      actualDate: actualDate,
+      competenceDate: competenceDate,
       amount: amount,
-      description: createAndEditTransactionBloc.description.value.trim(),
+      description: description,
       paymentStatus: createAndEditTransactionBloc.selectedPaymentStatus.value,
       recurrenceType: createAndEditTransactionBloc.selectedRecurrenceType.value,
       recurrenceFrequency:
@@ -81,14 +113,23 @@ class CreateAndEditTransactionModel {
               TransactionRecurrenceType.fixed
           ? createAndEditTransactionBloc.selectedRecurrenceFrequency.value
           : null,
-      accountId: createAndEditTransactionBloc.selectedAccountId.value,
-      categoryId: createAndEditTransactionBloc.selectedCategoryId.value,
+      accountId: accountId,
+      categoryId: categoryId,
     );
 
     result.fold(
       (failure) {
-        logger.e('Error updating transaction: ${failure.message}');
-        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        if (failure is NoChangesFailure) {
+          logger.i(context.t.messages.warnings.no_changes_provided);
+          CWSnackBar.snackBar(
+            title: context.t.messages.warnings.no_changes_provided,
+            type: SnackBarType.info,
+          );
+          PopUpManager.pop();
+        } else {
+          logger.e('Error updating transaction: ${failure.message}');
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        }
       },
       (transaction) {
         logger.i(
@@ -98,6 +139,89 @@ class CreateAndEditTransactionModel {
         transactionsBloc.loadTransactions();
         PopUpManager.pop();
       },
+    );
+  }
+
+  (
+    TransactionAmount?,
+    TransactionAccountId?,
+    TransactionCategoryId?,
+    TransactionDate?,
+    TransactionDate?,
+    TransactionDescription?,
+  )
+  _validateInputs(BuildContext context) {
+    TransactionAmount? amount;
+    TransactionAccountId? accountId;
+    TransactionCategoryId? categoryId;
+    TransactionDate? actualDate;
+    TransactionDate? competenceDate;
+    TransactionDescription? description;
+
+    try {
+      final rawAmount =
+          createAndEditTransactionBloc.selectedTransactionType.value ==
+              FinancialType.expense
+          ? -createAndEditTransactionBloc.amount.value
+          : createAndEditTransactionBloc.amount.value;
+
+      amount = TransactionAmount.create(rawAmount, context);
+    } on ValidationException catch (e) {
+      createAndEditTransactionBloc.amountError.value = e.message;
+    }
+
+    try {
+      accountId = TransactionAccountId.create(
+        createAndEditTransactionBloc.selectedAccountId.value,
+        context,
+      );
+    } on ValidationException catch (e) {
+      createAndEditTransactionBloc.accountError.value = e.message;
+    }
+
+    try {
+      categoryId = TransactionCategoryId.create(
+        createAndEditTransactionBloc.selectedCategoryId.value,
+        context,
+      );
+    } on ValidationException catch (e) {
+      createAndEditTransactionBloc.categoryError.value = e.message;
+    }
+
+    try {
+      actualDate = TransactionDate.create(
+        createAndEditTransactionBloc.actualDate.value,
+        context,
+      );
+    } on ValidationException catch (e) {
+      CWSnackBar.snackBar(title: e.message, type: SnackBarType.error);
+    }
+
+    try {
+      competenceDate = TransactionDate.create(
+        createAndEditTransactionBloc.competenceDate.value,
+        context,
+      );
+    } on ValidationException catch (e) {
+      CWSnackBar.snackBar(title: e.message, type: SnackBarType.error);
+    }
+
+    try {
+      description = TransactionDescription.create(
+        createAndEditTransactionBloc.description.value.trim(),
+        context,
+      );
+    } on ValidationException catch (e) {
+      createAndEditTransactionBloc.descriptionError.value = e.message;
+    }
+
+    return (
+      amount,
+      accountId,
+      categoryId,
+      actualDate,
+      competenceDate,
+      description,
     );
   }
 }

@@ -150,18 +150,19 @@ class CWPopUpItemTitle extends StatelessWidget {
     required this.child,
     this.title,
     this.spacing = 0,
+    this.error = '',
     super.key,
   });
 
   final Widget child;
   final String? title;
+  final String error;
   final double spacing;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: spacing,
       children: [
         Text(
           title ?? '',
@@ -170,7 +171,18 @@ class CWPopUpItemTitle extends StatelessWidget {
             color: Theme.of(context).customColors.secondaryTextColor,
           ),
         ),
+        Gap(spacing),
         child,
+        Transform.translate(
+          offset: const Offset(0, 10),
+          child: Text(
+            error,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ],
     );
   }

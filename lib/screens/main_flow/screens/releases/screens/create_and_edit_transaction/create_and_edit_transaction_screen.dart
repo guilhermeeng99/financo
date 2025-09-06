@@ -35,7 +35,7 @@ class CreateAndEditTransactionPopUp extends HookWidget {
           : context.t.transactions.new_transaction,
       centerContent: Container(
         width: 500,
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.only(top: 20),
         child: Column(
           spacing: 30,
           children: [
@@ -72,8 +72,10 @@ class CreateAndEditTransactionPopUp extends HookWidget {
           children: [
             const _PaymentStatusToggle(),
             CWSquareButton(
-              onTap: () =>
-                  createAndEditTransactionModel.onTapSave(args.transaction),
+              onTap: () => createAndEditTransactionModel.onTapSave(
+                args.transaction,
+                context,
+              ),
             ),
           ],
         ),
@@ -91,30 +93,50 @@ class _Account extends StatelessWidget {
       final accounts = createAndEditTransactionBloc.accounts;
       final selectedAccountId =
           createAndEditTransactionBloc.selectedAccountId.value;
+      final accountError = createAndEditTransactionBloc.accountError.value;
 
       final items = <AccountData?>[null, ...accounts];
 
-      return CWDropdownField<AccountData?>(
-        title: context.t.common.labels.account,
-        value: selectedAccountId != null
-            ? accounts.firstWhereOrNull((acc) => acc.id == selectedAccountId)
-            : null,
-        items: items,
-        onChanged: (AccountData? account) {
-          createAndEditTransactionBloc.selectedAccountId.value = account?.id;
-        },
-        itemBuilder: (AccountData? account, BuildContext context) {
-          if (account == null) {
-            return Text(
-              context.t.accounts.select_account,
-              style: TextStyle(
-                color: Theme.of(context).customColors.secondaryTextColor,
-                fontStyle: FontStyle.italic,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CWDropdownField<AccountData?>(
+            title: context.t.common.labels.account,
+            value: selectedAccountId != null
+                ? accounts.firstWhereOrNull(
+                    (acc) => acc.id == selectedAccountId,
+                  )
+                : null,
+            items: items,
+            onChanged: (AccountData? account) {
+              createAndEditTransactionBloc.selectedAccountId.value =
+                  account?.id;
+            },
+            itemBuilder: (AccountData? account, BuildContext context) {
+              if (account == null) {
+                return Text(
+                  context.t.accounts.select_account,
+                  style: TextStyle(
+                    color: Theme.of(context).customColors.secondaryTextColor,
+                    fontStyle: FontStyle.italic,
+                  ),
+                );
+              }
+              return Text(account.name);
+            },
+          ),
+          if (accountError.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                accountError,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
               ),
-            );
-          }
-          return Text(account.name);
-        },
+            ),
+        ],
       );
     });
   }
@@ -172,17 +194,22 @@ class _Amount extends HookWidget {
       return amount;
     }, [amount]);
 
-    return CWTextField(
-      title: context.t.common.labels.amount,
-      hintText: '0',
-      controller: controller,
-      inputFormatters: [CurrencyInputFormatter()],
-      keyboardType: TextInputType.number,
-      onChanged: (value) {
-        final parsedValue = CurrencyFormatter.parseAmount(value, context);
-        createAndEditTransactionBloc.amount.value = parsedValue;
-      },
-    );
+    return Obx(() {
+      final currentAmountError = createAndEditTransactionBloc.amountError.value;
+
+      return CWTextField(
+        title: context.t.common.labels.amount,
+        hintText: '0',
+        controller: controller,
+        inputFormatters: [CurrencyInputFormatter()],
+        keyboardType: TextInputType.number,
+        onChanged: (value) {
+          final parsedValue = CurrencyFormatter.parseAmount(value, context);
+          createAndEditTransactionBloc.amount.value = parsedValue;
+        },
+        error: currentAmountError,
+      );
+    });
   }
 }
 
@@ -251,12 +278,16 @@ class _Description extends HookWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final description = createAndEditTransactionBloc.description.value;
+      final descriptionError =
+          createAndEditTransactionBloc.descriptionError.value;
 
       return CWTextField(
         hintText: context.t.common.labels.description,
         initialValue: description,
-        onChanged: (value) =>
-            createAndEditTransactionBloc.description.value = value,
+        onChanged: (value) {
+          createAndEditTransactionBloc.description.value = value;
+        },
+        error: descriptionError,
       );
     });
   }
@@ -271,50 +302,70 @@ class _Category extends StatelessWidget {
       final categories = createAndEditTransactionBloc.categories;
       final selectedCategoryId =
           createAndEditTransactionBloc.selectedCategoryId.value;
+      final categoryError = createAndEditTransactionBloc.categoryError.value;
 
       final items = <CategoryData?>[null, ...categories];
 
-      return CWDropdownField<CategoryData?>(
-        title: context.t.common.labels.category,
-        value: selectedCategoryId != null
-            ? categories.firstWhereOrNull((cat) => cat.id == selectedCategoryId)
-            : null,
-        items: items,
-        isExpanded: true,
-        onChanged: (CategoryData? category) {
-          createAndEditTransactionBloc.selectedCategoryId.value = category?.id;
-        },
-        itemBuilder: (CategoryData? category, BuildContext context) {
-          if (category == null) {
-            return Text(
-              context.t.categories.select_category,
-              style: TextStyle(
-                color: Theme.of(context).customColors.secondaryTextColor,
-                fontStyle: FontStyle.italic,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CWDropdownField<CategoryData?>(
+            title: context.t.common.labels.category,
+            value: selectedCategoryId != null
+                ? categories.firstWhereOrNull(
+                    (cat) => cat.id == selectedCategoryId,
+                  )
+                : null,
+            items: items,
+            isExpanded: true,
+            onChanged: (CategoryData? category) {
+              createAndEditTransactionBloc.selectedCategoryId.value =
+                  category?.id;
+            },
+            itemBuilder: (CategoryData? category, BuildContext context) {
+              if (category == null) {
+                return Text(
+                  context.t.categories.select_category,
+                  style: TextStyle(
+                    color: Theme.of(context).customColors.secondaryTextColor,
+                    fontStyle: FontStyle.italic,
+                  ),
+                );
+              }
+
+              var displayName = category.name;
+
+              if (category.parentCategoryId != null) {
+                final parentCategory = categories.firstWhereOrNull(
+                  (cat) => cat.id == category.parentCategoryId,
+                );
+                if (parentCategory != null) {
+                  displayName = '  ${parentCategory.name} / ${category.name}';
+                }
+              }
+
+              return Text(
+                displayName,
+                style: TextStyle(
+                  fontWeight: category.parentCategoryId == null
+                      ? FontWeight.w500
+                      : FontWeight.normal,
+                ),
+              );
+            },
+          ),
+          if (categoryError.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                categoryError,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
               ),
-            );
-          }
-
-          var displayName = category.name;
-
-          if (category.parentCategoryId != null) {
-            final parentCategory = categories.firstWhereOrNull(
-              (cat) => cat.id == category.parentCategoryId,
-            );
-            if (parentCategory != null) {
-              displayName = '  ${parentCategory.name} / ${category.name}';
-            }
-          }
-
-          return Text(
-            displayName,
-            style: TextStyle(
-              fontWeight: category.parentCategoryId == null
-                  ? FontWeight.w500
-                  : FontWeight.normal,
             ),
-          );
-        },
+        ],
       );
     });
   }

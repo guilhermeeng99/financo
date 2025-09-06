@@ -10,7 +10,8 @@
       "edit": "Editar",
       "delete": "Excluir",
       "save": "Salvar",
-      "register": "Registrar",
+      "register": "Cadastrar",
+      "filter": "Filtrar",
       "pay": "Pagar",
       "unpay": "Cancelar Pagamento",
       "clone": "Clonar",
@@ -28,14 +29,21 @@
       "date": "Data",
       "description": "Descrição",
       "account": "Conta",
-      "category": "Category",
+      "category": "Categoria",
       "balance": "Saldo",
-      "available_balance": "Saldo disponível",
-      "initial_balance_date": "Data do saldo inicial",
+      "available_balance": "Saldo Disponível",
+      "initial_balance_date": "Data do Saldo Inicial",
+      "total": "Total",
       "icon": "Ícone",
       "coin": "Moeda",
       "recurrence": "Recorrência",
       "frequency": "Frequência"
+    },
+    "frequency": {
+      "daily": "Diária",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "yearly": "Anual"
     }
   },
   "accounts": {
@@ -43,12 +51,22 @@
     "new_account": "Nova Conta",
     "edit_account": "Editar Conta",
     "select_account": "Selecionar Conta",
-    "show_only_active": "Mostrar apenas contas ativas",
+    "show_only_active": "Mostrar Apenas Contas Ativas",
     "types": {
       "checking_account": "Conta Corrente",
       "credit_card": "Cartão de Crédito",
       "money": "Dinheiro",
       "others": "Outros"
+    },
+    "validation": {
+      "name_cannot_be_empty": "O nome da conta não pode estar vazio",
+      "name_min_length_number": "O nome da conta deve ter pelo menos $number caracteres",
+      "name_max_length_number": "O nome da conta deve ter no máximo $number caracteres",
+      "currency_code_length_number": "O código da moeda deve ter exatamente $number caracteres",
+      "currency_code_format": "O código da moeda deve conter apenas letras maiúsculas",
+      "balance_invalid_number": "O saldo deve ser um número válido",
+      "balance_min_value_number": "O saldo não pode ser menor que $number",
+      "balance_max_value_number": "O saldo não pode ser maior que $number"
     }
   },
   "categories": {
@@ -56,20 +74,32 @@
     "new_category": "Nova Categoria",
     "edit_category": "Editar Categoria",
     "create_sub_category": "Criar Subcategoria",
-    "show_only_active": "Mostrar apenas categorias ativas",
+    "show_only_active": "Mostrar Apenas Categorias Ativas",
     "export_categories": "Exportar Categorias",
     "import_categories": "Importar Categorias",
     "select_category": "Selecionar Categoria",
     "subcategory_of": "Subcategoria de",
-    "uncategorized_parent": "Categoria pai não definida",
-    "category_name_already_exists": "Já existe uma categoria com este nome"
+    "uncategorized_parent": "Categoria Pai Não Definida",
+    "category_name_already_exists": "Já existe uma categoria com este nome",
+    "validation": {
+      "name_cannot_be_empty": "Category name cannot be empty",
+      "name_min_length_number": "Category name must be at least $number characters long",
+      "name_max_length_number": "Category name must be at most $number characters long",
+      "parent_id_must_be_positive": "Parent category ID must be a positive number"
+    }
   },
   "transactions": {
     "new_transaction": "Nova Transação",
     "edit_transaction": "Editar Transação",
+    "export_transactions": "Exportar Transações",
+    "import_transactions": "Importar Transações",
     "types": {
       "income": "Receita",
       "expense": "Despesa"
+    },
+    "recurrence_type": {
+      "unique": "Única",
+      "fixed": "Fixa"
     },
     "status": {
       "to_pay": "A Pagar",
@@ -81,6 +111,17 @@
         "usd": "Dólar",
         "eur": "Euro"
       }
+    },
+    "validation": {
+      "amount_invalid_number": "O valor da transação deve ser um número válido",
+      "amount_cannot_be_zero": "O valor da transação deve ser diferente de zero",
+      "description_max_length_number": "A descrição da transação deve ter no máximo $number caracteres",
+      "account_must_be_selected": "Uma conta deve ser selecionada",
+      "account_id_must_be_positive": "O ID da conta deve ser um número positivo",
+      "category_must_be_selected": "Uma categoria deve ser selecionada",
+      "category_id_must_be_positive": "O ID da categoria deve ser um número positivo",
+      "date_too_far_past": "A data da transação não pode ser mais de 100 anos no passado",
+      "date_too_far_future": "A data da transação não pode ser mais de 10 anos no futuro"
     }
   },
   "settings": {
@@ -90,6 +131,9 @@
     "success": {
       "export_successfully": "Exportado com sucesso!",
       "excel_import_successfully": "Arquivo Excel importado com sucesso"
+    },
+    "warnings": {
+      "no_changes_provided": "No changes were provided"
     },
     "errors": {
       "export_error": "Erro ao exportar",

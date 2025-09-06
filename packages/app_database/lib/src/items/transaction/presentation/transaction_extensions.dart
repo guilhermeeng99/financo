@@ -1,8 +1,7 @@
+import 'package:app_database/src/items/transaction/domain/index.dart';
 import 'package:financo/app/app_theme.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart' as flutter;
-
-import 'transaction_enums.dart';
 
 extension TransactionPaymentStatusExtension on TransactionPaymentStatus {
   flutter.Color getColor(flutter.BuildContext context) {
@@ -13,7 +12,6 @@ extension TransactionPaymentStatusExtension on TransactionPaymentStatus {
         return flutter.Theme.of(context).customColors.button02;
     }
   }
-
 }
 
 extension TransactionRecurrenceTypeExtension on TransactionRecurrenceType {

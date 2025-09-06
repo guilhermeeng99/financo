@@ -2,7 +2,7 @@ import 'package:app_database/app_database.dart';
 
 /// Mixin containing query operations for transaction usecase
 mixin TransactionQueryUsecaseOperations {
-  ITransactionRepository get repository;
+  ITransactionRepository get transactionRepository;
 
   Future<Either<Failure, List<TransactionI>>> getTransactionsWithDetails({
     Set<int>? accountIds,
@@ -11,7 +11,7 @@ mixin TransactionQueryUsecaseOperations {
     int? limit,
     int? offset,
   }) async {
-    return repository.getTransactionsWithDetails(
+    return transactionRepository.getTransactionsWithDetails(
       accountIds: accountIds,
       startDate: startDate,
       endDate: endDate,

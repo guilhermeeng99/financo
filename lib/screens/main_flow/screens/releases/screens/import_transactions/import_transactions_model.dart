@@ -41,7 +41,10 @@ class ImportTransactionsModel {
         return;
       }
 
-      final importResult = await _importTransactions(transactionsToCreate);
+      final importResult = await _importTransactions(
+        transactionsToCreate,
+        context,
+      );
       await transactionsBloc.loadTransactions();
 
       await AppSystemFiles.showImportResult(context, importResult);
@@ -134,6 +137,14 @@ class ImportTransactionsModel {
           'type=$typeStr, actualDate=${actualDateCell.value}, '
           'competenceDate=${competenceDateCell.value}, amount=${amountCell.value}, '
           'account=$accountName, category=$categoryName',
+        );
+        return null;
+      }
+
+      // Validate amount is not zero
+      if (amount == 0.0) {
+        logger.w(
+          'Skipping transaction with zero amount in row ${row.hashCode}',
         );
         return null;
       }
@@ -250,6 +261,7 @@ class ImportTransactionsModel {
 
   Future<ImportResult> _importTransactions(
     List<Map<String, dynamic>> transactionsToCreate,
+    BuildContext context,
   ) async {
     var successCount = 0;
     var errorCount = 0;
@@ -257,7 +269,7 @@ class ImportTransactionsModel {
     logger.i('Creating ${transactionsToCreate.length} transactions...');
 
     for (final transactionData in transactionsToCreate) {
-      final result = await _createTransaction(transactionData);
+      final result = await _createTransaction(transactionData, context);
       result.fold(
         (failure) {
           errorCount++;
@@ -276,19 +288,54 @@ class ImportTransactionsModel {
 
   Future<Either<Failure, TransactionData>> _createTransaction(
     Map<String, dynamic> transactionData,
+    BuildContext context,
   ) async {
-    return _transactionUsecase.createTransaction(
-      transactionType: transactionData['transactionType'] as FinancialType,
-      actualDate: transactionData['actualDate'] as DateTime,
-      competenceDate: transactionData['competenceDate'] as DateTime,
-      amount: transactionData['amount'] as double,
-      description: transactionData['description'] as String,
-      paymentStatus:
-          transactionData['paymentStatus'] as TransactionPaymentStatus,
-      recurrenceType: TransactionRecurrenceType.unique,
-      accountId: transactionData['accountId'] as int,
-      categoryId: transactionData['categoryId'] as int,
-    );
+    try {
+      final amount = TransactionAmount.create(
+        transactionData['amount'] as double,
+        context,
+      );
+
+      final accountId = TransactionAccountId.create(
+        transactionData['accountId'] as int,
+        context,
+      );
+
+      final categoryId = TransactionCategoryId.create(
+        transactionData['categoryId'] as int,
+        context,
+      );
+
+      final actualDate = TransactionDate.create(
+        transactionData['actualDate'] as DateTime,
+        context,
+      );
+
+      final competenceDate = TransactionDate.create(
+        transactionData['competenceDate'] as DateTime,
+        context,
+      );
+
+      final description = TransactionDescription.create(
+        transactionData['description'] as String,
+        context,
+      );
+
+      return _transactionUsecase.createTransaction(
+        transactionType: transactionData['transactionType'] as FinancialType,
+        actualDate: actualDate,
+        competenceDate: competenceDate,
+        amount: amount,
+        description: description,
+        paymentStatus:
+            transactionData['paymentStatus'] as TransactionPaymentStatus,
+        recurrenceType: TransactionRecurrenceType.unique,
+        accountId: accountId,
+        categoryId: categoryId,
+      );
+    } on ValidationException catch (e) {
+      return Either.left(ValidationFailure(e.message));
+    }
   }
 
   Future<void> _showError(BuildContext context, String message) async {

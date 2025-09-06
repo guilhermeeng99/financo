@@ -12,6 +12,7 @@ class CreateAndEditCategoryBloc extends GetxController {
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   final RxString name = ''.obs;
+  final RxString nameError = ''.obs;
 
   final RxnInt parentCategoryId = RxnInt();
 
@@ -91,5 +92,16 @@ class CreateAndEditCategoryBloc extends GetxController {
       logger.e('Error loading parent categories: $e');
       availableParentCategories.clear();
     }
+  }
+
+  @override
+  void onClose() {
+    name.close();
+    nameError.close();
+    parentCategoryId.close();
+    selectedCategoryType.close();
+    availableParentCategories.close();
+    currentCategoryId.close();
+    super.onClose();
   }
 }

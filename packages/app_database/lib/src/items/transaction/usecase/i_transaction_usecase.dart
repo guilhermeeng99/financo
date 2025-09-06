@@ -3,28 +3,28 @@ import 'package:app_database/app_database.dart';
 abstract class ITransactionUsecase {
   // Core CRUD operations
   Future<Either<Failure, TransactionData>> createTransaction({
-    required DateTime actualDate,
-    required DateTime competenceDate,
+    required TransactionDate actualDate,
+    required TransactionDate competenceDate,
     required FinancialType transactionType,
-    required double amount,
+    required TransactionAmount amount,
     required TransactionPaymentStatus paymentStatus,
     required TransactionRecurrenceType recurrenceType,
-    required int? accountId,
-    required int? categoryId,
-    String description,
+    required TransactionAccountId accountId,
+    required TransactionCategoryId categoryId,
+    TransactionDescription? description,
     TransactionRecurrenceFrequency? recurrenceFrequency,
   });
 
   Future<Either<Failure, TransactionData>> updateTransaction({
     required int id,
-    DateTime? actualDate,
-    DateTime? competenceDate,
-    double? amount,
-    String? description,
+    TransactionDate? actualDate,
+    TransactionDate? competenceDate,
+    TransactionAmount? amount,
+    TransactionDescription? description,
     TransactionPaymentStatus? paymentStatus,
     TransactionRecurrenceType? recurrenceType,
-    int? accountId,
-    int? categoryId,
+    TransactionAccountId? accountId,
+    TransactionCategoryId? categoryId,
     TransactionRecurrenceFrequency? recurrenceFrequency,
   });
 

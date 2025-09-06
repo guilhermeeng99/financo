@@ -1,59 +1,31 @@
+import 'package:app_database/src/items/category/presentation/index.dart';
 import 'package:drift/drift.dart';
 
 import '../../../core/either.dart';
-import '../../../core/exceptions.dart';
 import '../../../core/failures.dart';
 import '../../../core/financial_type.dart';
 import '../../../database/database_manager.dart';
 import '../domain/index.dart';
 import '../repository/i_category_repository.dart';
-import 'category_validation_helpers.dart';
 
 mixin CategoryCrudUsecaseOperations {
   ICategoryRepository get categoryRepository;
 
   Future<Either<Failure, CategoryData>> createCategory({
-    required String name,
+    required CategoryName name,
     required FinancialType categoryType,
-    int? parentCategoryId,
+    ParentCategoryId? parentCategoryId,
   }) async {
     try {
-      final nameResult = CategoryValidationHelpers.validateCategoryName(name);
-      if (nameResult.isLeft) {
-        return nameResult.fold(
-          Either.left,
-          (_) => throw StateError('This should never happen'),
-        );
-      }
-
-      final parentIdResult = CategoryValidationHelpers.validateParentCategoryId(
-        parentCategoryId,
-      );
-      if (parentIdResult.isLeft) {
-        return parentIdResult.fold(
-          Either.left,
-          (_) => throw StateError('This should never happen'),
-        );
-      }
-
-      final categoryName = nameResult.fold(
-        (_) => throw StateError('This should never happen'),
-        (r) => r,
-      );
-      final parentId = parentIdResult.fold(
-        (_) => throw StateError('This should never happen'),
-        (r) => r,
-      );
-
       final categoryCompanion = CategoriesCompanion(
-        name: Value(categoryName.value),
+        name: Value(name.value),
         categoryType: Value(categoryType),
-        parentCategoryId: Value.absentIfNull(parentId.value),
+        parentCategoryId: parentCategoryId != null
+            ? Value.absentIfNull(parentCategoryId.value)
+            : const Value.absent(),
       );
 
       return await categoryRepository.createCategory(categoryCompanion);
-    } on ValidationException catch (e) {
-      return Either.left(ValidationFailure(e.message));
     } catch (e) {
       return Either.left(
         DatabaseFailure('Unexpected error creating category: $e'),
@@ -63,76 +35,45 @@ mixin CategoryCrudUsecaseOperations {
 
   Future<Either<Failure, CategoryData>> updateCategory({
     required int id,
-    String? name,
-    int? parentCategoryId,
+    CategoryName? name,
+    ParentCategoryId? parentCategoryId,
     bool? isActive,
     bool updateParentId = false,
   }) async {
     try {
-      if (!CategoryValidationHelpers.hasAnyChanges(
-        name: name,
-        parentCategoryId: parentCategoryId,
-        isActive: isActive,
-        updateParentId: updateParentId,
-      )) {
-        return Either.left(
-          const ValidationFailure(
-            'At least one field must be provided for update',
-          ),
-        );
-      }
-
-      Value<String>? nameValue;
-      Value<int?>? parentIdValue;
-      Value<bool>? isActiveValue;
-
-      if (name != null) {
-        final nameResult = CategoryValidationHelpers.validateCategoryName(name);
-        if (nameResult.isLeft) {
-          return nameResult.fold(
-            Either.left,
-            (_) => throw StateError('This should never happen'),
-          );
-        }
-        final categoryName = nameResult.fold(
-          (_) => throw StateError('This should never happen'),
-          (r) => r,
-        );
-        nameValue = Value(categoryName.value);
-      }
-
-      if (updateParentId) {
-        final parentIdResult =
-            CategoryValidationHelpers.validateParentCategoryId(
-              parentCategoryId,
-            );
-        if (parentIdResult.isLeft) {
-          return parentIdResult.fold(
-            Either.left,
-            (_) => throw StateError('This should never happen'),
-          );
-        }
-        final parentId = parentIdResult.fold(
-          (_) => throw StateError('This should never happen'),
-          (r) => r,
-        );
-        parentIdValue = Value(parentId.value);
-      }
-
-      if (isActive != null) {
-        isActiveValue = Value(isActive);
-      }
-
-      final categoryCompanion = CategoriesCompanion(
-        id: Value(id),
-        name: nameValue ?? const Value.absent(),
-        parentCategoryId: parentIdValue ?? const Value.absent(),
-        isActive: isActiveValue ?? const Value.absent(),
+      final currentCategoryResult = await categoryRepository.getCategoryById(
+        id,
       );
 
-      return await categoryRepository.updateCategory(id, categoryCompanion);
-    } on ValidationException catch (e) {
-      return Either.left(ValidationFailure(e.message));
+      return await currentCategoryResult.fold(Either.left, (
+        currentCategory,
+      ) async {
+        if (currentCategory == null) {
+          return Either.left(const ValidationFailure('Category not found'));
+        }
+
+        if (_hasNoChanges(
+          currentCategory: currentCategory,
+          updateParentId: updateParentId,
+          name: name,
+          parentCategoryId: parentCategoryId,
+          isActive: isActive,
+        )) {
+          return Either.left(
+            const NoChangesFailure('No changes were provided'),
+          );
+        }
+
+        final categoryCompanion = CategoriesCompanion(
+          name: name != null ? Value(name.value) : const Value.absent(),
+          parentCategoryId: updateParentId
+              ? Value.absentIfNull(parentCategoryId?.value)
+              : const Value.absent(),
+          isActive: isActive != null ? Value(isActive) : const Value.absent(),
+        );
+
+        return categoryRepository.updateCategory(id, categoryCompanion);
+      });
     } catch (e) {
       return Either.left(
         DatabaseFailure('Unexpected error updating category: $e'),
@@ -141,6 +82,29 @@ mixin CategoryCrudUsecaseOperations {
   }
 
   Future<Either<Failure, bool>> deleteCategory(int id) async {
-    return categoryRepository.deleteCategory(id);
+    try {
+      return await categoryRepository.deleteCategory(id);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error deleting category: $e'),
+      );
+    }
+  }
+
+  bool _hasNoChanges({
+    required CategoryData currentCategory,
+    required bool updateParentId,
+    CategoryName? name,
+    ParentCategoryId? parentCategoryId,
+    bool? isActive,
+  }) {
+    final nameChanged = name != null && name.value != currentCategory.name;
+    final parentIdChanged =
+        updateParentId &&
+        parentCategoryId?.value != currentCategory.parentCategoryId;
+    final isActiveChanged =
+        isActive != null && isActive != currentCategory.isActive;
+
+    return !nameChanged && !parentIdChanged && !isActiveChanged;
   }
 }

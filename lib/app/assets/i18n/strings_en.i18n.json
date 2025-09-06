@@ -57,6 +57,16 @@
       "credit_card": "Credit Card",
       "money": "Cash",
       "others": "Others"
+    },
+    "validation": {
+      "name_cannot_be_empty": "Account name cannot be empty",
+      "name_min_length_number": "Account name must be at least $number characters long",
+      "name_max_length_number": "Account name must be at most $number characters long",
+      "currency_code_length_number": "Currency code must be exactly $number characters long",
+      "currency_code_format": "Currency code must contain only capital letters",
+      "balance_invalid_number": "Balance must be a valid number",
+      "balance_min_value_number": "Balance cannot be less than $number",
+      "balance_max_value_number": "Balance cannot be greater than $number"
     }
   },
   "categories": {
@@ -70,7 +80,13 @@
     "select_category": "Select Category",
     "subcategory_of": "Subcategory of",
     "uncategorized_parent": "Parent Category Not Defined",
-    "category_name_already_exists": "A category with this name already exists"
+    "category_name_already_exists": "A category with this name already exists",
+    "validation": {
+      "name_cannot_be_empty": "Category name cannot be empty",
+      "name_min_length_number": "Category name must be at least $number characters long",
+      "name_max_length_number": "Category name must be at most $number characters long",
+      "parent_id_must_be_positive": "Parent category ID must be a positive number"
+    }
   },
   "transactions": {
     "new_transaction": "New Transaction",
@@ -95,6 +111,17 @@
         "usd": "Dollar",
         "eur": "Euro"
       }
+    },
+    "validation": {
+      "amount_invalid_number": "Transaction amount must be a valid number",
+      "amount_cannot_be_zero": "Transaction amount must be different than zero",
+      "description_max_length_number": "Transaction description must be at most $number characters long",
+      "account_must_be_selected": "Account must be selected",
+      "account_id_must_be_positive": "Account ID must be a positive number",
+      "category_must_be_selected": "Category must be selected",
+      "category_id_must_be_positive": "Category ID must be a positive number",
+      "date_too_far_past": "Transaction date cannot be more than 100 years in the past",
+      "date_too_far_future": "Transaction date cannot be more than 10 years in the future"
     }
   },
   "settings": {
@@ -104,6 +131,9 @@
     "success": {
       "export_successfully": "Exported successfully!",
       "excel_import_successfully": "Excel file imported successfully"
+    },
+    "warnings": {
+      "no_changes_provided": "No changes were provided"
     },
     "errors": {
       "export_error": "Error while exporting",

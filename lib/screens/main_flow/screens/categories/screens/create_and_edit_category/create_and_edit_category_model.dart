@@ -12,19 +12,25 @@ CreateAndEditCategoryModel get createAndEditCategoryModel =>
 class CreateAndEditCategoryModel {
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
-  Future<void> onTapSave(CategoryData? category) async {
+  Future<void> onTapSave(CategoryData? category, BuildContext context) async {
     if (category != null) {
-      await _updateCategory(category);
+      await _updateCategory(category, context);
     } else {
-      await _createCategory();
+      await _createCategory(context);
     }
   }
 
-  Future<void> _createCategory() async {
+  Future<void> _createCategory(BuildContext context) async {
+    final (name, parentCategoryId) = _validateInputs(context);
+
+    if (name == null) {
+      return;
+    }
+
     final result = await _categoryUsecase.createCategory(
-      name: createAndEditCategoryBloc.name.value.trim(),
+      name: name,
       categoryType: createAndEditCategoryBloc.selectedCategoryType.value,
-      parentCategoryId: createAndEditCategoryBloc.parentCategoryId.value,
+      parentCategoryId: parentCategoryId,
     );
 
     result.fold(
@@ -40,33 +46,38 @@ class CreateAndEditCategoryModel {
     );
   }
 
-  Future<void> _updateCategory(CategoryData originalCategory) async {
-    final newName = createAndEditCategoryBloc.name.value.trim();
-    final newParentId = createAndEditCategoryBloc.parentCategoryId.value;
+  Future<void> _updateCategory(
+    CategoryData originalCategory,
+    BuildContext context,
+  ) async {
+    final (name, parentCategoryId) = _validateInputs(context);
 
-    final nameChanged = newName != originalCategory.name;
-    final parentChanged = newParentId != originalCategory.parentCategoryId;
-
-    if (!nameChanged && !parentChanged) {
-      CWSnackBar.snackBar(
-        title: 'No changes detected',
-        type: SnackBarType.info,
-      );
-      await PopUpManager.pop();
+    if (name == null) {
       return;
     }
 
     final result = await _categoryUsecase.updateCategory(
       id: originalCategory.id,
-      name: nameChanged ? newName : null,
-      parentCategoryId: newParentId,
-      updateParentId: parentChanged,
+      name: name,
+      parentCategoryId: parentCategoryId,
+      updateParentId:
+          createAndEditCategoryBloc.parentCategoryId.value !=
+          originalCategory.parentCategoryId,
     );
 
     result.fold(
       (failure) {
-        logger.e('Error creating category: ${failure.message}');
-        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        if (failure is NoChangesFailure) {
+          logger.i(context.t.messages.warnings.no_changes_provided);
+          CWSnackBar.snackBar(
+            title: context.t.messages.warnings.no_changes_provided,
+            type: SnackBarType.info,
+          );
+          PopUpManager.pop();
+        } else {
+          logger.e('Error updating category: ${failure.message}');
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        }
       },
       (category) {
         logger.i('Category updated successfully: ${category.name}');
@@ -74,5 +85,30 @@ class CreateAndEditCategoryModel {
         PopUpManager.pop();
       },
     );
+  }
+
+  (CategoryName?, ParentCategoryId?) _validateInputs(BuildContext context) {
+    CategoryName? name;
+    ParentCategoryId? parentCategoryId;
+
+    try {
+      name = CategoryName.create(
+        createAndEditCategoryBloc.name.value.trim(),
+        context,
+      );
+    } on ValidationException catch (e) {
+      createAndEditCategoryBloc.nameError.value = e.message;
+    }
+
+    try {
+      final parentId = createAndEditCategoryBloc.parentCategoryId.value;
+      parentCategoryId = parentId != null
+          ? ParentCategoryId.create(parentId, context)
+          : ParentCategoryId.none();
+    } on ValidationException catch (e) {
+      logger.e('Error validating parent category: ${e.message}');
+    }
+
+    return (name, parentCategoryId);
   }
 }
