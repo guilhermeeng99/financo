@@ -21,6 +21,8 @@ abstract class ITransactionRepository {
     int? offset,
   });
 
+  Future<Either<Failure, TransactionData?>> getTransactionById(int id);
+
   Future<Either<Failure, TransactionData>> updateTransaction(
     int id,
     TransactionsCompanion transaction,

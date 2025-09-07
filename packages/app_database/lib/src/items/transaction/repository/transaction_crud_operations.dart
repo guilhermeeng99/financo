@@ -78,6 +78,19 @@ mixin TransactionCrudOperations {
     }
   }
 
+  Future<Either<Failure, TransactionData?>> getTransactionById(int id) async {
+    try {
+      final result = await (database.select(
+        database.transactions,
+      )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error getting transaction by id: $e'),
+      );
+    }
+  }
+
   Future<Either<Failure, TransactionData>> updateTransaction(
     int id,
     TransactionsCompanion transaction,

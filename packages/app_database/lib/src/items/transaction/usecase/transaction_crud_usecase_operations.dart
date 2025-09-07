@@ -60,49 +60,66 @@ mixin TransactionCrudUsecaseOperations {
     TransactionRecurrenceFrequency? recurrenceFrequency,
   }) async {
     try {
-      if (_hasNoChanges(
-        actualDate: actualDate,
-        competenceDate: competenceDate,
-        amount: amount,
-        description: description,
-        paymentStatus: paymentStatus,
-        recurrenceType: recurrenceType,
-        accountId: accountId,
-        categoryId: categoryId,
-        recurrenceFrequency: recurrenceFrequency,
-      )) {
-        return Either.left(const NoChangesFailure('No changes were provided'));
-      }
+      final currentTransactionResult = await transactionRepository
+          .getTransactionById(id);
 
-      final transactionCompanion = TransactionsCompanion(
-        actualDate: actualDate != null
-            ? Value(actualDate.value)
-            : const Value.absent(),
-        competenceDate: competenceDate != null
-            ? Value(competenceDate.value)
-            : const Value.absent(),
-        amount: amount != null ? Value(amount.value) : const Value.absent(),
-        description: description != null
-            ? Value(description.value)
-            : const Value.absent(),
-        paymentStatus: paymentStatus != null
-            ? Value(paymentStatus)
-            : const Value.absent(),
-        recurrenceType: recurrenceType != null
-            ? Value(recurrenceType)
-            : const Value.absent(),
-        accountId: accountId != null
-            ? Value(accountId.value)
-            : const Value.absent(),
-        categoryId: categoryId != null
-            ? Value(categoryId.value)
-            : const Value.absent(),
-        recurrenceFrequency: recurrenceFrequency != null
-            ? Value(recurrenceFrequency)
-            : const Value.absent(),
-      );
+      return await currentTransactionResult.fold(Either.left, (
+        currentTransaction,
+      ) async {
+        if (currentTransaction == null) {
+          return Either.left(const ValidationFailure('Transaction not found'));
+        }
 
-      return transactionRepository.updateTransaction(id, transactionCompanion);
+        if (_hasNoChanges(
+          currentTransaction: currentTransaction,
+          actualDate: actualDate,
+          competenceDate: competenceDate,
+          amount: amount,
+          description: description,
+          paymentStatus: paymentStatus,
+          recurrenceType: recurrenceType,
+          accountId: accountId,
+          categoryId: categoryId,
+          recurrenceFrequency: recurrenceFrequency,
+        )) {
+          return Either.left(
+            const NoChangesFailure('No changes were provided'),
+          );
+        }
+
+        final transactionCompanion = TransactionsCompanion(
+          actualDate: actualDate != null
+              ? Value(actualDate.value)
+              : const Value.absent(),
+          competenceDate: competenceDate != null
+              ? Value(competenceDate.value)
+              : const Value.absent(),
+          amount: amount != null ? Value(amount.value) : const Value.absent(),
+          description: description != null
+              ? Value(description.value)
+              : const Value.absent(),
+          paymentStatus: paymentStatus != null
+              ? Value(paymentStatus)
+              : const Value.absent(),
+          recurrenceType: recurrenceType != null
+              ? Value(recurrenceType)
+              : const Value.absent(),
+          accountId: accountId != null
+              ? Value(accountId.value)
+              : const Value.absent(),
+          categoryId: categoryId != null
+              ? Value(categoryId.value)
+              : const Value.absent(),
+          recurrenceFrequency: recurrenceFrequency != null
+              ? Value(recurrenceFrequency)
+              : const Value.absent(),
+        );
+
+        return transactionRepository.updateTransaction(
+          id,
+          transactionCompanion,
+        );
+      });
     } catch (e) {
       return Either.left(
         DatabaseFailure('Unexpected error editing transaction: $e'),
@@ -121,6 +138,7 @@ mixin TransactionCrudUsecaseOperations {
   }
 
   bool _hasNoChanges({
+    required TransactionData currentTransaction,
     TransactionDate? actualDate,
     TransactionDate? competenceDate,
     TransactionAmount? amount,
@@ -131,15 +149,36 @@ mixin TransactionCrudUsecaseOperations {
     TransactionCategoryId? categoryId,
     TransactionRecurrenceFrequency? recurrenceFrequency,
   }) {
-    return actualDate == null &&
-        competenceDate == null &&
-        amount == null &&
-        description == null &&
-        paymentStatus == null &&
-        recurrenceType == null &&
-        accountId == null &&
-        categoryId == null &&
-        recurrenceFrequency == null;
+    return (actualDate == null ||
+            _datesAreEqual(actualDate.value, currentTransaction.actualDate)) &&
+        (competenceDate == null ||
+            _datesAreEqual(
+              competenceDate.value,
+              currentTransaction.competenceDate,
+            )) &&
+        (amount == null || amount.value == currentTransaction.amount) &&
+        (description == null ||
+            description.value == currentTransaction.description) &&
+        (paymentStatus == null ||
+            paymentStatus == currentTransaction.paymentStatus) &&
+        (recurrenceType == null ||
+            recurrenceType == currentTransaction.recurrenceType) &&
+        (accountId == null ||
+            accountId.value == currentTransaction.accountId) &&
+        (categoryId == null ||
+            categoryId.value == currentTransaction.categoryId) &&
+        (recurrenceFrequency == null ||
+            recurrenceFrequency == currentTransaction.recurrenceFrequency);
+  }
+
+  bool _datesAreEqual(DateTime? date1, DateTime date2) {
+    if (date1 == null) return false;
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day &&
+        date1.hour == date2.hour &&
+        date1.minute == date2.minute &&
+        date1.second == date2.second;
   }
 
   Future<Either<Failure, List<TransactionData>>> getAllTransactions({

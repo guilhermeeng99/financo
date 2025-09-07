@@ -19,85 +19,88 @@ class CreateAndEditAccountModel {
   }
 
   Future<void> _createAccount(BuildContext context) async {
-    final (name, balance) = _validateInputs(context);
+    await _executeValidation(context, (name, balance) async {
+      final result = await _accountUsecase.createAccount(
+        name: name,
+        accountType: createAndEditAccountBloc.selectedAccountType.value,
+        initialBalance: balance,
+        currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
+        iconType: createAndEditAccountBloc.selectedIconType.value,
+        initDate: createAndEditAccountBloc.selectedInitDate.value,
+      );
 
-    if (name == null || balance == null) {
-      return;
-    }
+      result.fold(
+        (failure) {
+          logger.e('Error creating account: ${failure.message}');
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        },
+        (account) {
+          logger.i('Account created successfully: ${account.name}');
 
-    final result = await _accountUsecase.createAccount(
-      name: name,
-      accountType: createAndEditAccountBloc.selectedAccountType.value,
-      initialBalance: balance,
-      currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
-      iconType: createAndEditAccountBloc.selectedIconType.value,
-      initDate: createAndEditAccountBloc.selectedInitDate.value,
-    );
-
-    result.fold(
-      (failure) {
-        logger.e('Error creating account: ${failure.message}');
-        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
-      },
-      (account) {
-        logger.i('Account created successfully: ${account.name}');
-
-        accountsBloc.loadGroupedAccounts();
-        PopUpManager.pop();
-      },
-    );
+          accountsBloc.loadGroupedAccounts();
+          PopUpManager.pop();
+        },
+      );
+    });
   }
 
   Future<void> _updateAccount(
     AccountData originalAccount,
     BuildContext context,
   ) async {
-    final (name, balance) = _validateInputs(context);
+    await _executeValidation(context, (name, balance) async {
+      final result = await _accountUsecase.updateAccount(
+        id: originalAccount.id,
+        name: name,
+        accountType: createAndEditAccountBloc.selectedAccountType.value,
+        initialBalance: balance,
+        currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
+        isActive: originalAccount.isActive,
+        iconType: createAndEditAccountBloc.selectedIconType.value,
+        initDate: createAndEditAccountBloc.selectedInitDate.value,
+      );
 
-    if (name == null || balance == null) {
-      return;
-    }
+      result.fold(
+        (failure) {
+          if (failure is NoChangesFailure) {
+            logger.i(context.t.messages.warnings.no_changes_provided);
+            CWSnackBar.snackBar(
+              title: context.t.messages.warnings.no_changes_provided,
+              type: SnackBarType.info,
+            );
+            PopUpManager.pop();
+          } else {
+            logger.e('Error creating account: ${failure.message}');
+            CWSnackBar.snackBar(
+              title: failure.message,
+              type: SnackBarType.error,
+            );
+          }
+        },
+        (account) {
+          logger.i('Account updated successfully: ${account.name}');
 
-    final result = await _accountUsecase.updateAccount(
-      id: originalAccount.id,
-      name: name,
-      accountType: createAndEditAccountBloc.selectedAccountType.value,
-      initialBalance: balance,
-      currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
-      isActive: originalAccount.isActive,
-      iconType: createAndEditAccountBloc.selectedIconType.value,
-      initDate: createAndEditAccountBloc.selectedInitDate.value,
-    );
-
-    result.fold(
-      (failure) {
-        if (failure is NoChangesFailure) {
-          logger.i(context.t.messages.warnings.no_changes_provided);
-          CWSnackBar.snackBar(
-            title: context.t.messages.warnings.no_changes_provided,
-            type: SnackBarType.info,
-          );
+          accountsBloc.loadGroupedAccounts();
           PopUpManager.pop();
-        } else {
-          logger.e('Error creating account: ${failure.message}');
-          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
-        }
-      },
-      (account) {
-        logger.i('Account updated successfully: ${account.name}');
-
-        accountsBloc.loadGroupedAccounts();
-        PopUpManager.pop();
-      },
-    );
+        },
+      );
+    });
   }
 
-  (AccountName?, Balance?) _validateInputs(BuildContext context) {
+  Future<void> _executeValidation(
+    BuildContext context,
+    Future<void> Function(AccountName name, Balance balance) execute,
+  ) async {
+    final validatedInputs = _validateInputs(context);
+    if (validatedInputs == null) return;
+
+    final (name, balance) = validatedInputs;
+    await execute(name, balance);
+  }
+
+  (AccountName, Balance)? _validateInputs(BuildContext context) {
     AccountName? name;
     Balance? balance;
-
-    // Clear previous errors
-    createAndEditAccountBloc.clearErrors();
 
     try {
       name = AccountName.create(
@@ -115,6 +118,10 @@ class CreateAndEditAccountModel {
       );
     } on ValidationException catch (e) {
       createAndEditAccountBloc.balanceError.value = e.message;
+    }
+
+    if (name == null || balance == null) {
+      return null;
     }
 
     return (name, balance);

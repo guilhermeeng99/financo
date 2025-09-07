@@ -21,73 +21,80 @@ class CreateAndEditCategoryModel {
   }
 
   Future<void> _createCategory(BuildContext context) async {
-    final (name, parentCategoryId) = _validateInputs(context);
+    await _executeValidation(context, (name, parentCategoryId) async {
+      final result = await _categoryUsecase.createCategory(
+        name: name,
+        categoryType: createAndEditCategoryBloc.selectedCategoryType.value,
+        parentCategoryId: parentCategoryId,
+      );
 
-    if (name == null) {
-      return;
-    }
-
-    final result = await _categoryUsecase.createCategory(
-      name: name,
-      categoryType: createAndEditCategoryBloc.selectedCategoryType.value,
-      parentCategoryId: parentCategoryId,
-    );
-
-    result.fold(
-      (failure) {
-        logger.e('Error creating category: ${failure.message}');
-        CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
-      },
-      (category) {
-        logger.i('Category created successfully: ${category.name}');
-        categoriesBloc.loadCategories();
-        PopUpManager.pop();
-      },
-    );
+      result.fold(
+        (failure) {
+          logger.e('Error creating category: ${failure.message}');
+          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+        },
+        (category) {
+          logger.i('Category created successfully: ${category.name}');
+          categoriesBloc.loadCategories();
+          PopUpManager.pop();
+        },
+      );
+    });
   }
 
   Future<void> _updateCategory(
     CategoryData originalCategory,
     BuildContext context,
   ) async {
-    final (name, parentCategoryId) = _validateInputs(context);
+    await _executeValidation(context, (name, parentCategoryId) async {
+      final result = await _categoryUsecase.updateCategory(
+        id: originalCategory.id,
+        name: name,
+        parentCategoryId: parentCategoryId,
+        updateParentId:
+            createAndEditCategoryBloc.parentCategoryId.value !=
+            originalCategory.parentCategoryId,
+      );
 
-    if (name == null) {
-      return;
-    }
-
-    final result = await _categoryUsecase.updateCategory(
-      id: originalCategory.id,
-      name: name,
-      parentCategoryId: parentCategoryId,
-      updateParentId:
-          createAndEditCategoryBloc.parentCategoryId.value !=
-          originalCategory.parentCategoryId,
-    );
-
-    result.fold(
-      (failure) {
-        if (failure is NoChangesFailure) {
-          logger.i(context.t.messages.warnings.no_changes_provided);
-          CWSnackBar.snackBar(
-            title: context.t.messages.warnings.no_changes_provided,
-            type: SnackBarType.info,
-          );
+      result.fold(
+        (failure) {
+          if (failure is NoChangesFailure) {
+            logger.i(context.t.messages.warnings.no_changes_provided);
+            CWSnackBar.snackBar(
+              title: context.t.messages.warnings.no_changes_provided,
+              type: SnackBarType.info,
+            );
+            PopUpManager.pop();
+          } else {
+            logger.e('Error updating category: ${failure.message}');
+            CWSnackBar.snackBar(
+              title: failure.message,
+              type: SnackBarType.error,
+            );
+          }
+        },
+        (category) {
+          logger.i('Category updated successfully: ${category.name}');
+          categoriesBloc.loadCategories();
           PopUpManager.pop();
-        } else {
-          logger.e('Error updating category: ${failure.message}');
-          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
-        }
-      },
-      (category) {
-        logger.i('Category updated successfully: ${category.name}');
-        categoriesBloc.loadCategories();
-        PopUpManager.pop();
-      },
-    );
+        },
+      );
+    });
   }
 
-  (CategoryName?, ParentCategoryId?) _validateInputs(BuildContext context) {
+  Future<void> _executeValidation(
+    BuildContext context,
+    Future<void> Function(CategoryName name, ParentCategoryId? parentCategoryId)
+    execute,
+  ) async {
+    final validatedInputs = _validateInputs(context);
+    if (validatedInputs == null) return;
+
+    final (name, parentCategoryId) = validatedInputs;
+    await execute(name, parentCategoryId);
+  }
+
+  (CategoryName, ParentCategoryId?)? _validateInputs(BuildContext context) {
     CategoryName? name;
     ParentCategoryId? parentCategoryId;
 
@@ -107,6 +114,10 @@ class CreateAndEditCategoryModel {
           : ParentCategoryId.none();
     } on ValidationException catch (e) {
       logger.e('Error validating parent category: ${e.message}');
+    }
+
+    if (name == null) {
+      return null;
     }
 
     return (name, parentCategoryId);

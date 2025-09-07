@@ -28,11 +28,6 @@ class CreateAndEditAccountBloc extends GetxController {
     selectedInitDate.value = account.initDate;
   }
 
-  void clearErrors() {
-    nameError.value = '';
-    balanceError.value = '';
-  }
-
   @override
   void onClose() {
     name.close();
