@@ -101,7 +101,7 @@ class _Account extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CWDropdownField<AccountData?>(
-            title: context.t.common.labels.account,
+            title: context.t.common.labels.account(n: 1),
             value: selectedAccountId != null
                 ? accounts.firstWhereOrNull(
                     (acc) => acc.id == selectedAccountId,
@@ -310,7 +310,7 @@ class _Category extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CWDropdownField<CategoryData?>(
-            title: context.t.common.labels.category,
+            title: context.t.common.labels.category(n: 1),
             value: selectedCategoryId != null
                 ? categories.firstWhereOrNull(
                     (cat) => cat.id == selectedCategoryId,

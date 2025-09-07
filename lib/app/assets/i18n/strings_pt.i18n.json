@@ -28,14 +28,23 @@
       "amount": "Valor",
       "date": "Data",
       "description": "Descrição",
-      "account": "Conta",
-      "category": "Categoria",
+      "account": {
+        "one": "Conta",
+        "other": "Contas"
+      },
+      "category": {
+        "one": "Categoria",
+        "other": "Categorias"
+      },
+      "subcategory": "Subcategoria",
+      "transactions": "Transações",
       "balance": "Saldo",
       "available_balance": "Saldo Disponível",
       "initial_balance_date": "Data do Saldo Inicial",
       "total": "Total",
       "icon": "Ícone",
       "coin": "Moeda",
+      "status": "Status",
       "recurrence": "Recorrência",
       "frequency": "Frequência"
     },
@@ -47,7 +56,6 @@
     }
   },
   "accounts": {
-    "title": "Contas",
     "new_account": "Nova Conta",
     "edit_account": "Editar Conta",
     "select_account": "Selecionar Conta",
@@ -62,6 +70,7 @@
       "name_cannot_be_empty": "O nome da conta não pode estar vazio",
       "name_min_length_number": "O nome da conta deve ter pelo menos $number caracteres",
       "name_max_length_number": "O nome da conta deve ter no máximo $number caracteres",
+      "name_already_exists": "Já existe uma conta com este nome",
       "currency_code_length_number": "O código da moeda deve ter exatamente $number caracteres",
       "currency_code_format": "O código da moeda deve conter apenas letras maiúsculas",
       "balance_invalid_number": "O saldo deve ser um número válido",
@@ -70,7 +79,6 @@
     }
   },
   "categories": {
-    "title": "Categorias",
     "new_category": "Nova Categoria",
     "edit_category": "Editar Categoria",
     "create_sub_category": "Criar Subcategoria",
@@ -79,13 +87,13 @@
     "import_categories": "Importar Categorias",
     "select_category": "Selecionar Categoria",
     "subcategory_of": "Subcategoria de",
-    "uncategorized_parent": "Categoria Pai Não Definida",
-    "category_name_already_exists": "Já existe uma categoria com este nome",
     "validation": {
-      "name_cannot_be_empty": "Category name cannot be empty",
-      "name_min_length_number": "Category name must be at least $number characters long",
-      "name_max_length_number": "Category name must be at most $number characters long",
-      "parent_id_must_be_positive": "Parent category ID must be a positive number"
+      "name_cannot_be_empty": "O nome da categoria não pode estar vazio",
+      "name_min_length_number": "O nome da categoria deve ter pelo menos $number caracteres",
+      "name_max_length_number": "O nome da categoria deve ter no máximo $number caracteres",
+      "parent_id_must_be_positive": "O ID da categoria pai deve ser um número positivo",
+      "uncategorized_parent": "Categoria Pai Não Definida",
+      "category_name_already_exists": "Já existe uma categoria com este nome"
     }
   },
   "transactions": {
@@ -103,7 +111,7 @@
     },
     "status": {
       "to_pay": "A Pagar",
-      "paid": "Pago"
+      "paid": "Paga"
     },
     "currency": {
       "types": {
@@ -112,16 +120,20 @@
         "eur": "Euro"
       }
     },
+    "status_type": {
+      "unpaid": "Não Pago",
+      "paid": "Pago"
+    },
     "validation": {
       "amount_invalid_number": "O valor da transação deve ser um número válido",
       "amount_cannot_be_zero": "O valor da transação deve ser diferente de zero",
       "description_max_length_number": "A descrição da transação deve ter no máximo $number caracteres",
-      "account_must_be_selected": "Uma conta deve ser selecionada",
+      "account_must_be_selected": "É necessário selecionar uma conta",
       "account_id_must_be_positive": "O ID da conta deve ser um número positivo",
-      "category_must_be_selected": "Uma categoria deve ser selecionada",
+      "category_must_be_selected": "É necessário selecionar uma categoria",
       "category_id_must_be_positive": "O ID da categoria deve ser um número positivo",
-      "date_too_far_past": "A data da transação não pode ser mais de 100 anos no passado",
-      "date_too_far_future": "A data da transação não pode ser mais de 10 anos no futuro"
+      "date_too_far_past_number": "A data da transação não pode ser superior a $number anos no passado",
+      "date_too_far_future_number": "A data da transação não pode ser superior a $number anos no futuro"
     }
   },
   "settings": {
@@ -133,7 +145,7 @@
       "excel_import_successfully": "Arquivo Excel importado com sucesso"
     },
     "warnings": {
-      "no_changes_provided": "No changes were provided"
+      "no_changes_provided": "Nenhuma alteração foi fornecida"
     },
     "errors": {
       "export_error": "Erro ao exportar",

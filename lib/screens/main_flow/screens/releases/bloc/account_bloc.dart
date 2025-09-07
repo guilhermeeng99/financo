@@ -2,10 +2,13 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/date_bloc.dart';
 
-class AccountI {
-  AccountI({required this.a, required this.finalBalance, bool isEnabled = true})
-    : isEnabled = isEnabled.obs,
-      filteredBalance = finalBalance.obs;
+class TransactionsAccountsI {
+  TransactionsAccountsI({
+    required this.a,
+    required this.finalBalance,
+    bool isEnabled = true,
+  }) : isEnabled = isEnabled.obs,
+       filteredBalance = finalBalance.obs;
 
   final AccountData a;
   final double finalBalance;
@@ -13,16 +16,18 @@ class AccountI {
   final RxDouble filteredBalance;
 }
 
-AccountsBloc get accountsBloc => Modular.get<AccountsBloc>();
+TransactionsAccountsBloc get transactionsAccountsBloc =>
+    Modular.get<TransactionsAccountsBloc>();
 
-class AccountsBloc extends GetxController {
-  AccountsBloc() {
+class TransactionsAccountsBloc extends GetxController {
+  TransactionsAccountsBloc() {
     loadCheckingAccounts();
     ever(dateFilterBloc.selectedDate, (_) => updateFilteredBalances());
     ever(checkingAccounts, (_) => _updateTotalFromFilteredBalances());
   }
 
-  final RxList<AccountI> checkingAccounts = <AccountI>[].obs;
+  final RxList<TransactionsAccountsI> checkingAccounts =
+      <TransactionsAccountsI>[].obs;
   final RxDouble totalFilteredBalance = 0.0.obs;
 
   Future<void> loadCheckingAccounts() async {
@@ -37,7 +42,7 @@ class AccountsBloc extends GetxController {
           CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
         (checkingAccountsList) async {
-          final accountsI = <AccountI>[];
+          final accountsI = <TransactionsAccountsI>[];
 
           final accountIds = checkingAccountsList.map((a) => a.id).toSet();
           final transactionUsecase = Modular.get<ITransactionUsecase>();
@@ -57,7 +62,10 @@ class AccountsBloc extends GetxController {
           for (final account in checkingAccountsList) {
             final finalBalance =
                 finalBalances[account.id] ?? account.initialBalance;
-            final accountI = AccountI(a: account, finalBalance: finalBalance);
+            final accountI = TransactionsAccountsI(
+              a: account,
+              finalBalance: finalBalance,
+            );
             accountsI.add(accountI);
           }
 

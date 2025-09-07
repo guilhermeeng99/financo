@@ -9,6 +9,8 @@ abstract class IAccountRepository {
 
   Future<Either<Failure, AccountData?>> getAccountById(int id);
 
+  Future<Either<Failure, AccountData?>> getAccountByName(String name);
+
   Future<Either<Failure, List<AccountData>>> getAllAccounts({
     bool onlyActive = true,
   });

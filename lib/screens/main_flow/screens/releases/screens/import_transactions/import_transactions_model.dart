@@ -35,7 +35,7 @@ class ImportTransactionsModel {
       final sheet = await AppSystemFiles.processExcelFile(fileBytes, context);
       if (sheet == null) return;
 
-      final transactionsToCreate = await _parseExcelData(sheet);
+      final transactionsToCreate = await _parseExcelData(sheet, context);
       if (transactionsToCreate.isEmpty) {
         await _showError(context, context.t.messages.errors.excel_not_valid);
         return;
@@ -62,7 +62,10 @@ class ImportTransactionsModel {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _parseExcelData(Sheet sheet) async {
+  Future<List<Map<String, dynamic>>> _parseExcelData(
+    Sheet sheet,
+    BuildContext context,
+  ) async {
     final transactionsToCreate = <Map<String, dynamic>>[];
     final accounts = await _getAccountsMap();
     final categories = await _getCategoriesMap();
@@ -71,7 +74,12 @@ class ImportTransactionsModel {
       final row = sheet.rows[rowIndex];
       if (row.length < 7) continue;
 
-      final transactionData = _parseExcelRow(row, accounts, categories);
+      final transactionData = _parseExcelRow(
+        row,
+        accounts,
+        categories,
+        context,
+      );
       if (transactionData != null) {
         transactionsToCreate.add(transactionData);
       }
@@ -85,6 +93,7 @@ class ImportTransactionsModel {
     List<Data?> row,
     Map<String, int> accounts,
     Map<String, int> categories,
+    BuildContext context,
   ) {
     try {
       // Expected columns: Type, ActualDate, CompetenceDate, Amount, Description, Account, Category, PaymentStatus
@@ -122,7 +131,7 @@ class ImportTransactionsModel {
       final actualDate = _parseDate(actualDateCell!.value);
       final competenceDate = _parseDate(competenceDateCell!.value);
       final amount = _parseAmount(amountCell!.value);
-      final paymentStatus = _parsePaymentStatus(paymentStatusStr);
+      final paymentStatus = _parsePaymentStatus(paymentStatusStr, context);
       final accountId = accounts[accountName];
       final categoryId = categories[categoryName];
 
@@ -131,7 +140,8 @@ class ImportTransactionsModel {
           competenceDate == null ||
           amount == null ||
           accountId == null ||
-          categoryId == null) {
+          categoryId == null ||
+          paymentStatus == null) {
         logger.w(
           'Invalid transaction data in row ${row.hashCode}: '
           'type=$typeStr, actualDate=${actualDateCell.value}, '
@@ -202,11 +212,18 @@ class ImportTransactionsModel {
     }
   }
 
-  TransactionPaymentStatus _parsePaymentStatus(String statusStr) {
-    if (statusStr.contains('unpaid') || statusStr.contains('não pago')) {
+  TransactionPaymentStatus? _parsePaymentStatus(
+    String statusStr,
+    BuildContext context,
+  ) {
+    final unpaidText = context.t.transactions.status_type.unpaid.toLowerCase();
+    final paidText = context.t.transactions.status_type.paid.toLowerCase();
+    if (statusStr.contains(unpaidText)) {
       return TransactionPaymentStatus.unpaid;
+    } else if (statusStr.contains(paidText)) {
+      return TransactionPaymentStatus.paid;
     }
-    return TransactionPaymentStatus.paid;
+    return null;
   }
 
   Future<Map<String, int>> _getAccountsMap() async {

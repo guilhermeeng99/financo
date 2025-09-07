@@ -108,18 +108,19 @@ class CategoriesModelExcel {
           );
         },
         (categoriesMap) async {
-          final excel = Excel.createExcel()..rename('Sheet1', 'Categories');
+          final sheetName = context.t.common.labels.category(n: 2);
+          final excel = Excel.createExcel()..rename('Sheet1', sheetName);
 
-          final sheet = excel['Categories'];
+          final sheet = excel[sheetName];
 
           sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(
-            'Type',
+            context.t.common.labels.type,
           );
           sheet.cell(CellIndex.indexByString('B1')).value = TextCellValue(
-            'Category',
+            context.t.common.labels.category(n: 1),
           );
           sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(
-            'Subcategory',
+            context.t.common.labels.subcategory,
           );
 
           var currentRow = 2;

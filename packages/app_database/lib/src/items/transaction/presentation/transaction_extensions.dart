@@ -12,6 +12,15 @@ extension TransactionPaymentStatusExtension on TransactionPaymentStatus {
         return flutter.Theme.of(context).customColors.button02;
     }
   }
+
+  String title(flutter.BuildContext context) {
+    switch (this) {
+      case TransactionPaymentStatus.paid:
+        return context.t.transactions.status_type.paid;
+      case TransactionPaymentStatus.unpaid:
+        return context.t.transactions.status_type.unpaid;
+    }
+  }
 }
 
 extension TransactionRecurrenceTypeExtension on TransactionRecurrenceType {

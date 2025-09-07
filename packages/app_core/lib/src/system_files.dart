@@ -46,14 +46,23 @@ class AppSystemFiles {
   ) async {
     if (!context.mounted) return;
 
+    final totalProcessed = result.successCount + result.errorCount;
+    final totalFound = result.validRowsFound ?? totalProcessed;
+
+    logger.i(
+      'Import result - successCount: ${result.successCount}, totalProcessed: $totalProcessed, validRowsFound: ${result.validRowsFound}',
+    );
+
     if (result.errorCount == 0) {
       CWSnackBar.snackBar(
-        title: context.t.messages.success.excel_import_successfully,
+        title:
+            '${result.successCount}/$totalFound ${context.t.messages.success.excel_import_successfully}',
         type: SnackBarType.success,
       );
     } else {
       CWSnackBar.snackBar(
-        title: context.t.messages.errors.excel_not_valid,
+        title:
+            '${result.successCount}/$totalFound ${context.t.messages.errors.excel_not_valid}',
         type: SnackBarType.error,
       );
     }
@@ -167,14 +176,42 @@ if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
       return null;
     }
 
-    logger.i('Excel sheet found with ${sheet.maxRows} rows');
+    var validRowsCount = 0;
+
+    for (var rowIndex = 0; rowIndex < sheet.maxRows; rowIndex++) {
+      final row = sheet.rows[rowIndex];
+      final rowData = <String>[];
+
+      for (var colIndex = 0; colIndex < row.length; colIndex++) {
+        final cellValue = row[colIndex]?.value?.toString() ?? 'NULL';
+        rowData.add(cellValue);
+      }
+
+      final isEmpty =
+          rowData.every((cell) => cell == 'NULL' || cell.trim().isEmpty);
+
+      if (!isEmpty) {
+        validRowsCount++;
+        logger.i(
+          'Valid Row $validRowsCount (index $rowIndex): [${rowData.join(', ')}]',
+        );
+      }
+    }
+
+    logger.i(
+      'Excel sheet found with $validRowsCount valid rows out of ${sheet.maxRows} total rows and ${sheet.maxColumns} columns',
+    );
+
     return sheet;
   }
 }
 
 class ImportResult {
-  const ImportResult(this.successCount, this.errorCount);
+  const ImportResult(this.successCount, this.errorCount, [this.validRowsFound]);
 
   final int successCount;
   final int errorCount;
+  final int? validRowsFound;
+
+  int get totalProcessed => successCount + errorCount;
 }

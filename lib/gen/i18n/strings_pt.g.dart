@@ -10,7 +10,7 @@ import 'package:slang/generated.dart';
 import 'strings.g.dart';
 
 // Path: <root>
-class TranslationsPt extends Translations {
+class TranslationsPt implements Translations {
 	/// You can call this constructor and build your own translation instance of this locale.
 	/// Constructing via the enum [AppLocale.build] is preferred.
 	TranslationsPt({Map<String, Node>? overrides, PluralResolver? cardinalResolver, PluralResolver? ordinalResolver, TranslationMetadata<AppLocale, Translations>? meta})
@@ -20,11 +20,15 @@ class TranslationsPt extends Translations {
 		    overrides: overrides ?? {},
 		    cardinalResolver: cardinalResolver,
 		    ordinalResolver: ordinalResolver,
-		  ),
-		  super(cardinalResolver: cardinalResolver, ordinalResolver: ordinalResolver);
+		  ) {
+		$meta.setFlatMapFunction(_flatMapFunction);
+	}
 
 	/// Metadata for the translations of <pt>.
 	@override final TranslationMetadata<AppLocale, Translations> $meta;
+
+	/// Access flat map
+	@override dynamic operator[](String key) => $meta.getTranslation(key);
 
 	late final TranslationsPt _root = this; // ignore: unused_field
 
@@ -42,8 +46,8 @@ class TranslationsPt extends Translations {
 }
 
 // Path: navigation
-class _TranslationsNavigationPt extends TranslationsNavigationEn {
-	_TranslationsNavigationPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsNavigationPt implements TranslationsNavigationEn {
+	_TranslationsNavigationPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -55,8 +59,8 @@ class _TranslationsNavigationPt extends TranslationsNavigationEn {
 }
 
 // Path: common
-class _TranslationsCommonPt extends TranslationsCommonEn {
-	_TranslationsCommonPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCommonPt implements TranslationsCommonEn {
+	_TranslationsCommonPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -67,13 +71,12 @@ class _TranslationsCommonPt extends TranslationsCommonEn {
 }
 
 // Path: accounts
-class _TranslationsAccountsPt extends TranslationsAccountsEn {
-	_TranslationsAccountsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsAccountsPt implements TranslationsAccountsEn {
+	_TranslationsAccountsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Contas';
 	@override String get new_account => 'Nova Conta';
 	@override String get edit_account => 'Editar Conta';
 	@override String get select_account => 'Selecionar Conta';
@@ -83,13 +86,12 @@ class _TranslationsAccountsPt extends TranslationsAccountsEn {
 }
 
 // Path: categories
-class _TranslationsCategoriesPt extends TranslationsCategoriesEn {
-	_TranslationsCategoriesPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCategoriesPt implements TranslationsCategoriesEn {
+	_TranslationsCategoriesPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Categorias';
 	@override String get new_category => 'Nova Categoria';
 	@override String get edit_category => 'Editar Categoria';
 	@override String get create_sub_category => 'Criar Subcategoria';
@@ -98,14 +100,12 @@ class _TranslationsCategoriesPt extends TranslationsCategoriesEn {
 	@override String get import_categories => 'Importar Categorias';
 	@override String get select_category => 'Selecionar Categoria';
 	@override String get subcategory_of => 'Subcategoria de';
-	@override String get uncategorized_parent => 'Categoria Pai Não Definida';
-	@override String get category_name_already_exists => 'Já existe uma categoria com este nome';
 	@override late final _TranslationsCategoriesValidationPt validation = _TranslationsCategoriesValidationPt._(_root);
 }
 
 // Path: transactions
-class _TranslationsTransactionsPt extends TranslationsTransactionsEn {
-	_TranslationsTransactionsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsPt implements TranslationsTransactionsEn {
+	_TranslationsTransactionsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -118,12 +118,13 @@ class _TranslationsTransactionsPt extends TranslationsTransactionsEn {
 	@override late final _TranslationsTransactionsRecurrenceTypePt recurrence_type = _TranslationsTransactionsRecurrenceTypePt._(_root);
 	@override late final _TranslationsTransactionsStatusPt status = _TranslationsTransactionsStatusPt._(_root);
 	@override late final _TranslationsTransactionsCurrencyPt currency = _TranslationsTransactionsCurrencyPt._(_root);
+	@override late final _TranslationsTransactionsStatusTypePt status_type = _TranslationsTransactionsStatusTypePt._(_root);
 	@override late final _TranslationsTransactionsValidationPt validation = _TranslationsTransactionsValidationPt._(_root);
 }
 
 // Path: settings
-class _TranslationsSettingsPt extends TranslationsSettingsEn {
-	_TranslationsSettingsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsSettingsPt implements TranslationsSettingsEn {
+	_TranslationsSettingsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -132,8 +133,8 @@ class _TranslationsSettingsPt extends TranslationsSettingsEn {
 }
 
 // Path: messages
-class _TranslationsMessagesPt extends TranslationsMessagesEn {
-	_TranslationsMessagesPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsMessagesPt implements TranslationsMessagesEn {
+	_TranslationsMessagesPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -144,8 +145,8 @@ class _TranslationsMessagesPt extends TranslationsMessagesEn {
 }
 
 // Path: common.actions
-class _TranslationsCommonActionsPt extends TranslationsCommonActionsEn {
-	_TranslationsCommonActionsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCommonActionsPt implements TranslationsCommonActionsEn {
+	_TranslationsCommonActionsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -167,8 +168,8 @@ class _TranslationsCommonActionsPt extends TranslationsCommonActionsEn {
 }
 
 // Path: common.labels
-class _TranslationsCommonLabelsPt extends TranslationsCommonLabelsEn {
-	_TranslationsCommonLabelsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
+	_TranslationsCommonLabelsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -178,21 +179,30 @@ class _TranslationsCommonLabelsPt extends TranslationsCommonLabelsEn {
 	@override String get amount => 'Valor';
 	@override String get date => 'Data';
 	@override String get description => 'Descrição';
-	@override String get account => 'Conta';
-	@override String get category => 'Categoria';
+	@override String account({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Conta',
+		other: 'Contas',
+	);
+	@override String category({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Categoria',
+		other: 'Categorias',
+	);
+	@override String get subcategory => 'Subcategoria';
+	@override String get transactions => 'Transações';
 	@override String get balance => 'Saldo';
 	@override String get available_balance => 'Saldo Disponível';
 	@override String get initial_balance_date => 'Data do Saldo Inicial';
 	@override String get total => 'Total';
 	@override String get icon => 'Ícone';
 	@override String get coin => 'Moeda';
+	@override String get status => 'Status';
 	@override String get recurrence => 'Recorrência';
 	@override String get frequency => 'Frequência';
 }
 
 // Path: common.frequency
-class _TranslationsCommonFrequencyPt extends TranslationsCommonFrequencyEn {
-	_TranslationsCommonFrequencyPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCommonFrequencyPt implements TranslationsCommonFrequencyEn {
+	_TranslationsCommonFrequencyPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -204,8 +214,8 @@ class _TranslationsCommonFrequencyPt extends TranslationsCommonFrequencyEn {
 }
 
 // Path: accounts.types
-class _TranslationsAccountsTypesPt extends TranslationsAccountsTypesEn {
-	_TranslationsAccountsTypesPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsAccountsTypesPt implements TranslationsAccountsTypesEn {
+	_TranslationsAccountsTypesPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -217,8 +227,8 @@ class _TranslationsAccountsTypesPt extends TranslationsAccountsTypesEn {
 }
 
 // Path: accounts.validation
-class _TranslationsAccountsValidationPt extends TranslationsAccountsValidationEn {
-	_TranslationsAccountsValidationPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsAccountsValidationPt implements TranslationsAccountsValidationEn {
+	_TranslationsAccountsValidationPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -226,6 +236,7 @@ class _TranslationsAccountsValidationPt extends TranslationsAccountsValidationEn
 	@override String get name_cannot_be_empty => 'O nome da conta não pode estar vazio';
 	@override String name_min_length_number({required Object number}) => 'O nome da conta deve ter pelo menos ${number} caracteres';
 	@override String name_max_length_number({required Object number}) => 'O nome da conta deve ter no máximo ${number} caracteres';
+	@override String get name_already_exists => 'Já existe uma conta com este nome';
 	@override String currency_code_length_number({required Object number}) => 'O código da moeda deve ter exatamente ${number} caracteres';
 	@override String get currency_code_format => 'O código da moeda deve conter apenas letras maiúsculas';
 	@override String get balance_invalid_number => 'O saldo deve ser um número válido';
@@ -234,21 +245,23 @@ class _TranslationsAccountsValidationPt extends TranslationsAccountsValidationEn
 }
 
 // Path: categories.validation
-class _TranslationsCategoriesValidationPt extends TranslationsCategoriesValidationEn {
-	_TranslationsCategoriesValidationPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsCategoriesValidationPt implements TranslationsCategoriesValidationEn {
+	_TranslationsCategoriesValidationPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get name_cannot_be_empty => 'Category name cannot be empty';
-	@override String name_min_length_number({required Object number}) => 'Category name must be at least ${number} characters long';
-	@override String name_max_length_number({required Object number}) => 'Category name must be at most ${number} characters long';
-	@override String get parent_id_must_be_positive => 'Parent category ID must be a positive number';
+	@override String get name_cannot_be_empty => 'O nome da categoria não pode estar vazio';
+	@override String name_min_length_number({required Object number}) => 'O nome da categoria deve ter pelo menos ${number} caracteres';
+	@override String name_max_length_number({required Object number}) => 'O nome da categoria deve ter no máximo ${number} caracteres';
+	@override String get parent_id_must_be_positive => 'O ID da categoria pai deve ser um número positivo';
+	@override String get uncategorized_parent => 'Categoria Pai Não Definida';
+	@override String get category_name_already_exists => 'Já existe uma categoria com este nome';
 }
 
 // Path: transactions.types
-class _TranslationsTransactionsTypesPt extends TranslationsTransactionsTypesEn {
-	_TranslationsTransactionsTypesPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsTypesPt implements TranslationsTransactionsTypesEn {
+	_TranslationsTransactionsTypesPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -258,8 +271,8 @@ class _TranslationsTransactionsTypesPt extends TranslationsTransactionsTypesEn {
 }
 
 // Path: transactions.recurrence_type
-class _TranslationsTransactionsRecurrenceTypePt extends TranslationsTransactionsRecurrenceTypeEn {
-	_TranslationsTransactionsRecurrenceTypePt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsRecurrenceTypePt implements TranslationsTransactionsRecurrenceTypeEn {
+	_TranslationsTransactionsRecurrenceTypePt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -269,19 +282,19 @@ class _TranslationsTransactionsRecurrenceTypePt extends TranslationsTransactions
 }
 
 // Path: transactions.status
-class _TranslationsTransactionsStatusPt extends TranslationsTransactionsStatusEn {
-	_TranslationsTransactionsStatusPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsStatusPt implements TranslationsTransactionsStatusEn {
+	_TranslationsTransactionsStatusPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
 	@override String get to_pay => 'A Pagar';
-	@override String get paid => 'Pago';
+	@override String get paid => 'Paga';
 }
 
 // Path: transactions.currency
-class _TranslationsTransactionsCurrencyPt extends TranslationsTransactionsCurrencyEn {
-	_TranslationsTransactionsCurrencyPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsCurrencyPt implements TranslationsTransactionsCurrencyEn {
+	_TranslationsTransactionsCurrencyPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -289,9 +302,20 @@ class _TranslationsTransactionsCurrencyPt extends TranslationsTransactionsCurren
 	@override late final _TranslationsTransactionsCurrencyTypesPt types = _TranslationsTransactionsCurrencyTypesPt._(_root);
 }
 
+// Path: transactions.status_type
+class _TranslationsTransactionsStatusTypePt implements TranslationsTransactionsStatusTypeEn {
+	_TranslationsTransactionsStatusTypePt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get unpaid => 'Não Pago';
+	@override String get paid => 'Pago';
+}
+
 // Path: transactions.validation
-class _TranslationsTransactionsValidationPt extends TranslationsTransactionsValidationEn {
-	_TranslationsTransactionsValidationPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsValidationPt implements TranslationsTransactionsValidationEn {
+	_TranslationsTransactionsValidationPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -299,17 +323,17 @@ class _TranslationsTransactionsValidationPt extends TranslationsTransactionsVali
 	@override String get amount_invalid_number => 'O valor da transação deve ser um número válido';
 	@override String get amount_cannot_be_zero => 'O valor da transação deve ser diferente de zero';
 	@override String description_max_length_number({required Object number}) => 'A descrição da transação deve ter no máximo ${number} caracteres';
-	@override String get account_must_be_selected => 'Uma conta deve ser selecionada';
+	@override String get account_must_be_selected => 'É necessário selecionar uma conta';
 	@override String get account_id_must_be_positive => 'O ID da conta deve ser um número positivo';
-	@override String get category_must_be_selected => 'Uma categoria deve ser selecionada';
+	@override String get category_must_be_selected => 'É necessário selecionar uma categoria';
 	@override String get category_id_must_be_positive => 'O ID da categoria deve ser um número positivo';
-	@override String get date_too_far_past => 'A data da transação não pode ser mais de 100 anos no passado';
-	@override String get date_too_far_future => 'A data da transação não pode ser mais de 10 anos no futuro';
+	@override String date_too_far_past_number({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no passado';
+	@override String date_too_far_future_number({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no futuro';
 }
 
 // Path: messages.success
-class _TranslationsMessagesSuccessPt extends TranslationsMessagesSuccessEn {
-	_TranslationsMessagesSuccessPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsMessagesSuccessPt implements TranslationsMessagesSuccessEn {
+	_TranslationsMessagesSuccessPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -319,18 +343,18 @@ class _TranslationsMessagesSuccessPt extends TranslationsMessagesSuccessEn {
 }
 
 // Path: messages.warnings
-class _TranslationsMessagesWarningsPt extends TranslationsMessagesWarningsEn {
-	_TranslationsMessagesWarningsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsMessagesWarningsPt implements TranslationsMessagesWarningsEn {
+	_TranslationsMessagesWarningsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
 	// Translations
-	@override String get no_changes_provided => 'No changes were provided';
+	@override String get no_changes_provided => 'Nenhuma alteração foi fornecida';
 }
 
 // Path: messages.errors
-class _TranslationsMessagesErrorsPt extends TranslationsMessagesErrorsEn {
-	_TranslationsMessagesErrorsPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsMessagesErrorsPt implements TranslationsMessagesErrorsEn {
+	_TranslationsMessagesErrorsPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -341,8 +365,8 @@ class _TranslationsMessagesErrorsPt extends TranslationsMessagesErrorsEn {
 }
 
 // Path: transactions.currency.types
-class _TranslationsTransactionsCurrencyTypesPt extends TranslationsTransactionsCurrencyTypesEn {
-	_TranslationsTransactionsCurrencyTypesPt._(TranslationsPt root) : this._root = root, super.internal(root);
+class _TranslationsTransactionsCurrencyTypesPt implements TranslationsTransactionsCurrencyTypesEn {
+	_TranslationsTransactionsCurrencyTypesPt._(this._root);
 
 	final TranslationsPt _root; // ignore: unused_field
 
@@ -351,3 +375,122 @@ class _TranslationsTransactionsCurrencyTypesPt extends TranslationsTransactionsC
 	@override String get usd => 'Dólar';
 	@override String get eur => 'Euro';
 }
+
+/// Flat map(s) containing all translations.
+/// Only for edge cases! For simple maps, use the map function of this library.
+extension on TranslationsPt {
+	dynamic _flatMapFunction(String path) {
+		switch (path) {
+			case 'navigation.overview': return 'Visão Geral';
+			case 'navigation.releases': return 'Lançamentos';
+			case 'navigation.categories': return 'Categorias';
+			case 'navigation.accounts': return 'Contas';
+			case 'common.actions.edit': return 'Editar';
+			case 'common.actions.delete': return 'Excluir';
+			case 'common.actions.save': return 'Salvar';
+			case 'common.actions.register': return 'Cadastrar';
+			case 'common.actions.filter': return 'Filtrar';
+			case 'common.actions.pay': return 'Pagar';
+			case 'common.actions.unpay': return 'Cancelar Pagamento';
+			case 'common.actions.clone': return 'Clonar';
+			case 'common.actions.freeze': return 'Congelar';
+			case 'common.actions.unfreeze': return 'Descongelar';
+			case 'common.actions.export': return 'Exportar';
+			case 'common.actions.import': return 'Importar';
+			case 'common.actions.choose_file': return 'Escolher Arquivo';
+			case 'common.actions.download_example': return 'Baixar Exemplo';
+			case 'common.labels.name': return 'Nome';
+			case 'common.labels.type': return 'Tipo';
+			case 'common.labels.amount': return 'Valor';
+			case 'common.labels.date': return 'Data';
+			case 'common.labels.description': return 'Descrição';
+			case 'common.labels.account': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Conta',
+				other: 'Contas',
+			);
+			case 'common.labels.category': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Categoria',
+				other: 'Categorias',
+			);
+			case 'common.labels.subcategory': return 'Subcategoria';
+			case 'common.labels.transactions': return 'Transações';
+			case 'common.labels.balance': return 'Saldo';
+			case 'common.labels.available_balance': return 'Saldo Disponível';
+			case 'common.labels.initial_balance_date': return 'Data do Saldo Inicial';
+			case 'common.labels.total': return 'Total';
+			case 'common.labels.icon': return 'Ícone';
+			case 'common.labels.coin': return 'Moeda';
+			case 'common.labels.status': return 'Status';
+			case 'common.labels.recurrence': return 'Recorrência';
+			case 'common.labels.frequency': return 'Frequência';
+			case 'common.frequency.daily': return 'Diária';
+			case 'common.frequency.weekly': return 'Semanal';
+			case 'common.frequency.monthly': return 'Mensal';
+			case 'common.frequency.yearly': return 'Anual';
+			case 'accounts.new_account': return 'Nova Conta';
+			case 'accounts.edit_account': return 'Editar Conta';
+			case 'accounts.select_account': return 'Selecionar Conta';
+			case 'accounts.show_only_active': return 'Mostrar Apenas Contas Ativas';
+			case 'accounts.types.checking_account': return 'Conta Corrente';
+			case 'accounts.types.credit_card': return 'Cartão de Crédito';
+			case 'accounts.types.money': return 'Dinheiro';
+			case 'accounts.types.others': return 'Outros';
+			case 'accounts.validation.name_cannot_be_empty': return 'O nome da conta não pode estar vazio';
+			case 'accounts.validation.name_min_length_number': return ({required Object number}) => 'O nome da conta deve ter pelo menos ${number} caracteres';
+			case 'accounts.validation.name_max_length_number': return ({required Object number}) => 'O nome da conta deve ter no máximo ${number} caracteres';
+			case 'accounts.validation.name_already_exists': return 'Já existe uma conta com este nome';
+			case 'accounts.validation.currency_code_length_number': return ({required Object number}) => 'O código da moeda deve ter exatamente ${number} caracteres';
+			case 'accounts.validation.currency_code_format': return 'O código da moeda deve conter apenas letras maiúsculas';
+			case 'accounts.validation.balance_invalid_number': return 'O saldo deve ser um número válido';
+			case 'accounts.validation.balance_min_value_number': return ({required Object number}) => 'O saldo não pode ser menor que ${number}';
+			case 'accounts.validation.balance_max_value_number': return ({required Object number}) => 'O saldo não pode ser maior que ${number}';
+			case 'categories.new_category': return 'Nova Categoria';
+			case 'categories.edit_category': return 'Editar Categoria';
+			case 'categories.create_sub_category': return 'Criar Subcategoria';
+			case 'categories.show_only_active': return 'Mostrar Apenas Categorias Ativas';
+			case 'categories.export_categories': return 'Exportar Categorias';
+			case 'categories.import_categories': return 'Importar Categorias';
+			case 'categories.select_category': return 'Selecionar Categoria';
+			case 'categories.subcategory_of': return 'Subcategoria de';
+			case 'categories.validation.name_cannot_be_empty': return 'O nome da categoria não pode estar vazio';
+			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'O nome da categoria deve ter pelo menos ${number} caracteres';
+			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'O nome da categoria deve ter no máximo ${number} caracteres';
+			case 'categories.validation.parent_id_must_be_positive': return 'O ID da categoria pai deve ser um número positivo';
+			case 'categories.validation.uncategorized_parent': return 'Categoria Pai Não Definida';
+			case 'categories.validation.category_name_already_exists': return 'Já existe uma categoria com este nome';
+			case 'transactions.new_transaction': return 'Nova Transação';
+			case 'transactions.edit_transaction': return 'Editar Transação';
+			case 'transactions.export_transactions': return 'Exportar Transações';
+			case 'transactions.import_transactions': return 'Importar Transações';
+			case 'transactions.types.income': return 'Receita';
+			case 'transactions.types.expense': return 'Despesa';
+			case 'transactions.recurrence_type.unique': return 'Única';
+			case 'transactions.recurrence_type.fixed': return 'Fixa';
+			case 'transactions.status.to_pay': return 'A Pagar';
+			case 'transactions.status.paid': return 'Paga';
+			case 'transactions.currency.types.brl': return 'Real';
+			case 'transactions.currency.types.usd': return 'Dólar';
+			case 'transactions.currency.types.eur': return 'Euro';
+			case 'transactions.status_type.unpaid': return 'Não Pago';
+			case 'transactions.status_type.paid': return 'Pago';
+			case 'transactions.validation.amount_invalid_number': return 'O valor da transação deve ser um número válido';
+			case 'transactions.validation.amount_cannot_be_zero': return 'O valor da transação deve ser diferente de zero';
+			case 'transactions.validation.description_max_length_number': return ({required Object number}) => 'A descrição da transação deve ter no máximo ${number} caracteres';
+			case 'transactions.validation.account_must_be_selected': return 'É necessário selecionar uma conta';
+			case 'transactions.validation.account_id_must_be_positive': return 'O ID da conta deve ser um número positivo';
+			case 'transactions.validation.category_must_be_selected': return 'É necessário selecionar uma categoria';
+			case 'transactions.validation.category_id_must_be_positive': return 'O ID da categoria deve ser um número positivo';
+			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no passado';
+			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no futuro';
+			case 'settings.additional_settings': return 'Configurações Adicionais';
+			case 'messages.success.export_successfully': return 'Exportado com sucesso!';
+			case 'messages.success.excel_import_successfully': return 'Arquivo Excel importado com sucesso';
+			case 'messages.warnings.no_changes_provided': return 'Nenhuma alteração foi fornecida';
+			case 'messages.errors.export_error': return 'Erro ao exportar';
+			case 'messages.errors.excel_not_found': return 'Arquivo Excel não encontrado';
+			case 'messages.errors.excel_not_valid': return 'Arquivo Excel inválido';
+			default: return null;
+		}
+	}
+}
+

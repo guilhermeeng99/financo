@@ -4,7 +4,7 @@ import 'account_query_operations.dart';
 import 'i_account_repository.dart';
 
 class AccountRepositoryImpl extends IAccountRepository
-    with AccountCrudOperations, AccountQueryOperations {
+    with AccountQueryOperations, AccountCrudOperations {
   AccountRepositoryImpl(this._database);
 
   final DatabaseManager _database;

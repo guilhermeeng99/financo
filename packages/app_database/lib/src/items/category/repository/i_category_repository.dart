@@ -35,4 +35,11 @@ abstract class ICategoryRepository {
   );
 
   Future<Either<Failure, String>> getCategoryDisplayName(int id);
+
+  Future<Either<Failure, bool>> checkNameConflict(
+    String name,
+    FinancialType type,
+    int? parentCategoryId,
+    int? excludeId,
+  );
 }

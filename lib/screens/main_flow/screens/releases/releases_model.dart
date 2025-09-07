@@ -56,7 +56,7 @@ class ReleasesModel {
         logger.i(
           'Transaction deleted successfully: ${transaction.description ?? 'No description'}',
         );
-        accountsBloc.loadCheckingAccounts();
+        transactionsAccountsBloc.loadCheckingAccounts();
         transactionsBloc.loadTransactions();
       },
     );
@@ -104,18 +104,19 @@ class ReleasesModel {
         logger.i('Payment status updated successfully');
 
         transactionsBloc.loadTransactions();
-        accountsBloc.loadCheckingAccounts();
+        transactionsAccountsBloc.loadCheckingAccounts();
       },
     );
   }
 
   void toggleAccountEnabled(int accountId) {
-    final accountIndex = accountsBloc.checkingAccounts.indexWhere(
+    final accountIndex = transactionsAccountsBloc.checkingAccounts.indexWhere(
       (account) => account.a.id == accountId,
     );
 
     if (accountIndex != -1) {
-      accountsBloc.checkingAccounts[accountIndex].isEnabled.toggle();
+      transactionsAccountsBloc.checkingAccounts[accountIndex].isEnabled
+          .toggle();
     }
   }
 
@@ -135,23 +136,27 @@ class ReleasesModelExcel {
     List<TransactionI> transactions,
   ) async {
     try {
-      final excel = Excel.createExcel()..rename('Sheet1', 'Transactions');
+      final sheetName = context.t.common.labels.transactions;
 
-      final sheet = excel['Transactions'];
+      final excel = Excel.createExcel()..rename('Sheet1', sheetName);
 
-      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue('Date');
+      final sheet = excel[sheetName];
+
+      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(context.t.common.labels.date);
       sheet.cell(CellIndex.indexByString('B1')).value = TextCellValue(
-        'Description',
+        context.t.common.labels.description,
       );
-      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue('Type');
-      sheet.cell(CellIndex.indexByString('D1')).value = TextCellValue('Amount');
+      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(context.t.common.labels.type);
+      sheet.cell(CellIndex.indexByString('D1')).value = TextCellValue(context.t.common.labels.amount);
       sheet.cell(CellIndex.indexByString('E1')).value = TextCellValue(
-        'Account',
+        context.t.common.labels.account(n: 1),
       );
       sheet.cell(CellIndex.indexByString('F1')).value = TextCellValue(
-        'Category',
+        context.t.common.labels.category(n: 1),
       );
-      sheet.cell(CellIndex.indexByString('G1')).value = TextCellValue('Status');
+      sheet.cell(CellIndex.indexByString('G1')).value = TextCellValue(
+        context.t.common.labels.status,
+      );
 
       var currentRow = 2;
 

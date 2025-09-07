@@ -19,7 +19,7 @@ class _Accounts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final checkingAccounts = accountsBloc.checkingAccounts;
+      final checkingAccounts = transactionsAccountsBloc.checkingAccounts;
 
       return Column(
         children: [
@@ -65,7 +65,7 @@ class _Accounts extends StatelessWidget {
                 ),
                 Obx(
                   () => CWAmoutValue(
-                    value: accountsBloc.totalFilteredBalance.value,
+                    value: transactionsAccountsBloc.totalFilteredBalance.value,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -141,4 +141,30 @@ mixin CategoryQueryOperations {
       );
     }
   }
+
+  Future<Either<Failure, bool>> checkNameConflict(
+    String name,
+    FinancialType type,
+    int? parentCategoryId,
+    int? excludeId,
+  ) async {
+    try {
+      // Check for any category with the same name in the same financial type
+      final existingCategoriesQuery = database.select(database.categories)
+        ..where(
+          (tbl) => tbl.name.equals(name) & tbl.categoryType.equals(type.value),
+        );
+
+      if (excludeId != null) {
+        existingCategoriesQuery.where((tbl) => tbl.id.equals(excludeId).not());
+      }
+
+      final existingCategories = await existingCategoriesQuery.get();
+
+      // If any category with the same name exists, it's a conflict
+      return Either.right(existingCategories.isNotEmpty);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error checking name conflict: $e'));
+    }
+  }
 }

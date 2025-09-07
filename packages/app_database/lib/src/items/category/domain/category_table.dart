@@ -13,7 +13,7 @@ class Categories extends Table {
 
   @override
   List<Set<Column>>? get uniqueKeys => [
-    {name, categoryType, parentCategoryId},
+    {name, categoryType},
   ];
 }
 

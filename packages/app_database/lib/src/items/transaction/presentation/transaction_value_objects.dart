@@ -103,14 +103,18 @@ class TransactionDate {
     final minimumDate = DateTime.now().subtract(const Duration(days: 36500));
     if (value.isBefore(minimumDate)) {
       throw ValidationException(
-        context.t.transactions.validation.date_too_far_past,
+        context.t.transactions.validation.date_too_far_past_number(
+          number: minimumDate.year,
+        ),
       );
     }
 
     final maximumDate = DateTime.now().add(const Duration(days: 3650));
     if (value.isAfter(maximumDate)) {
       throw ValidationException(
-        context.t.transactions.validation.date_too_far_future,
+        context.t.transactions.validation.date_too_far_future_number(
+          number: maximumDate.year,
+        ),
       );
     }
 

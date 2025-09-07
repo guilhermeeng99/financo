@@ -4,42 +4,49 @@ import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dar
 import 'package:financo/screens/main_flow/screens/categories/categories_model.dart';
 import 'package:financo/screens/main_flow/screens/categories/widgets/categories_item_menu_actions.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends HookWidget {
   const CategoriesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final scrollController = useScrollController();
+
     return Scaffold(
       floatingActionButton: const _FloatingActionButton(),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
-        child: Column(
-          children: [
-            const _TopButtons(),
-            Expanded(
-              child: Obx(() {
-                final categoriesWithSubcategories =
-                    categoriesBloc.categoriesWithSubcategories;
+      body: Scrollbar(
+        controller: scrollController,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
+          child: Column(
+            children: [
+              const _TopButtons(),
+              Expanded(
+                child: Obx(() {
+                  final categoriesWithSubcategories =
+                      categoriesBloc.categoriesWithSubcategories;
 
-                return SingleChildScrollView(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 35,
-                    children: [
-                      ...categoriesWithSubcategories.entries.map(
-                        (entry) => Expanded(
-                          child: _CategoriesTypeArea(
-                            categoryType: entry.key,
-                            categoriesWithSubcategories: entry.value,
+                  return SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 35,
+                      children: [
+                        ...categoriesWithSubcategories.entries.map(
+                          (entry) => Expanded(
+                            child: _CategoriesTypeArea(
+                              categoryType: entry.key,
+                              categoriesWithSubcategories: entry.value,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ],
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -145,22 +152,30 @@ class _CategoriesTypeArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = categoryType.title(context);
+    final categoriesEntries = categoriesWithSubcategories.entries.toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 15,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
-        Column(
-          spacing: 15,
-          children: [
-            ...categoriesWithSubcategories.entries.map(
-              (entry) => _CategoryAndSubcategories(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 15),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: categoriesEntries.length,
+          itemBuilder: (context, index) {
+            final entry = categoriesEntries[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 15),
+              child: _CategoryAndSubcategories(
                 mainCategory: entry.key,
                 subcategories: entry.value,
               ),
-            ),
-          ],
+            );
+          },
         ),
       ],
     );

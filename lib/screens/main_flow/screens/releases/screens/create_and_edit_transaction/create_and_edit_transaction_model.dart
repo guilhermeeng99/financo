@@ -60,7 +60,7 @@ class CreateAndEditTransactionModel {
           logger.i(
             'Transaction created successfully: ${transaction.description}',
           );
-          accountsBloc.loadCheckingAccounts();
+          transactionsAccountsBloc.loadCheckingAccounts();
           transactionsBloc.loadTransactions();
           PopUpManager.pop();
         },
@@ -119,7 +119,7 @@ class CreateAndEditTransactionModel {
           logger.i(
             'Transaction updated successfully: ${transaction.description}',
           );
-          accountsBloc.loadCheckingAccounts();
+          transactionsAccountsBloc.loadCheckingAccounts();
           transactionsBloc.loadTransactions();
           PopUpManager.pop();
         },

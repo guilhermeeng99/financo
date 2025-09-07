@@ -64,17 +64,38 @@ mixin TransactionQueryOperations {
 
       final result = await query.get();
 
-      final transactionsWithDetails = result.map((row) {
+      final transactionsWithDetails = <TransactionI>[];
+
+      for (final row in result) {
         final transaction = row.readTable(database.transactions);
         final account = row.readTableOrNull(database.accounts);
         final category = row.readTableOrNull(database.categories);
 
-        return TransactionI(
-          t: transaction,
-          accountName: account?.name ?? 'Unknown Account',
-          categoryName: category?.name ?? 'Unknown Category',
+        var categoryName = 'Unknown Category';
+        if (category != null) {
+          if (category.parentCategoryId != null) {
+            final parentQuery = database.select(database.categories)
+              ..where((tbl) => tbl.id.equals(category.parentCategoryId!));
+            final parentCategory = await parentQuery.getSingleOrNull();
+
+            if (parentCategory != null) {
+              categoryName = '${parentCategory.name}/${category.name}';
+            } else {
+              categoryName = category.name;
+            }
+          } else {
+            categoryName = category.name;
+          }
+        }
+
+        transactionsWithDetails.add(
+          TransactionI(
+            t: transaction,
+            accountName: account?.name ?? 'Unknown Account',
+            categoryName: categoryName,
+          ),
         );
-      }).toList();
+      }
 
       return Either.right(transactionsWithDetails);
     } catch (e) {

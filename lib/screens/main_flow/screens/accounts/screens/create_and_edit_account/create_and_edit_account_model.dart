@@ -31,8 +31,16 @@ class CreateAndEditAccountModel {
 
       result.fold(
         (failure) {
-          logger.e('Error creating account: ${failure.message}');
-          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+          if (failure is DuplicateEntryFailure) {
+            createAndEditAccountBloc.nameError.value =
+                context.t.accounts.validation.name_already_exists;
+          } else {
+            CWSnackBar.snackBar(
+              title: failure.message,
+              type: SnackBarType.error,
+            );
+            logger.e('Error updating account: ${failure.message}');
+          }
         },
         (account) {
           logger.i('Account created successfully: ${account.name}');
@@ -62,7 +70,10 @@ class CreateAndEditAccountModel {
 
       result.fold(
         (failure) {
-          if (failure is NoChangesFailure) {
+          if (failure is DuplicateEntryFailure) {
+            createAndEditAccountBloc.nameError.value =
+                context.t.accounts.validation.name_already_exists;
+          } else if (failure is NoChangesFailure) {
             logger.i(context.t.messages.warnings.no_changes_provided);
             CWSnackBar.snackBar(
               title: context.t.messages.warnings.no_changes_provided,
@@ -70,11 +81,11 @@ class CreateAndEditAccountModel {
             );
             PopUpManager.pop();
           } else {
-            logger.e('Error creating account: ${failure.message}');
             CWSnackBar.snackBar(
               title: failure.message,
               type: SnackBarType.error,
             );
+            logger.e('Error updating account: ${failure.message}');
           }
         },
         (account) {

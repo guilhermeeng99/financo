@@ -51,7 +51,7 @@ class CreateAndEditCategoryPopUp extends HookWidget {
                 args.parentCategoryId == null)
               const _Type(),
             const _Name(),
-            const _SubCategory(),
+            const _ParentCategory(),
           ],
         ),
       ),
@@ -100,6 +100,8 @@ class _Type extends StatelessWidget {
         onChanged: (FinancialType? value) {
           if (value != null) {
             createAndEditCategoryBloc.selectedCategoryType.value = value;
+            createAndEditCategoryBloc.parentCategoryId.value = null;
+            createAndEditCategoryBloc.loadAvailableParentCategories();
           }
         },
         itemBuilder: (FinancialType type, BuildContext context) {
@@ -110,8 +112,8 @@ class _Type extends StatelessWidget {
   }
 }
 
-class _SubCategory extends StatelessWidget {
-  const _SubCategory();
+class _ParentCategory extends StatelessWidget {
+  const _ParentCategory();
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +140,7 @@ class _SubCategory extends StatelessWidget {
         itemBuilder: (CategoryData? category, BuildContext context) {
           if (category == null) {
             return Text(
-              context.t.categories.uncategorized_parent,
+              context.t.categories.validation.uncategorized_parent,
               style: TextStyle(
                 color: Theme.of(context).customColors.secondaryTextColor,
                 fontStyle: FontStyle.italic,

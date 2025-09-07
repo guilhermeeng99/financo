@@ -29,6 +29,13 @@ class AppTheme {
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         foregroundColor: Color(0xffFFFFFF),
       ),
+      scrollbarTheme: const ScrollbarThemeData(
+        thumbColor: WidgetStatePropertyAll(Color(0xffFFFFFF)),
+        thumbVisibility: WidgetStatePropertyAll(true),
+        trackVisibility: WidgetStatePropertyAll(true),
+        thickness: WidgetStatePropertyAll(12),
+        radius: Radius.circular(6),
+      ),
       canvasColor: Colors.transparent,
       textTheme: TextTheme(
         titleLarge: defaultTextStyle,

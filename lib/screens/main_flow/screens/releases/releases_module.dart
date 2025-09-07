@@ -12,7 +12,7 @@ class ReleasesModule extends Module {
     i
       ..addSingleton<DateFilterBloc>(DateFilterBloc.new)
       ..addSingleton<TransactionsBloc>(TransactionsBloc.new)
-      ..addSingleton<AccountsBloc>(AccountsBloc.new)
+      ..addSingleton<TransactionsAccountsBloc>(TransactionsAccountsBloc.new)
       ..addSingleton<ReleasesModelExcel>(ReleasesModelExcel.new)
       ..addSingleton<ReleasesModel>(ReleasesModel.new);
   }

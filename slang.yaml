@@ -1,15 +1,5 @@
 base_locale: en
-fallback_strategy: base_locale
 input_directory: lib/app/assets/i18n
 input_file_pattern: .i18n.json
 output_directory: lib/gen/i18n
-output_file_name: strings.g.dart
-locale_handling: true
-flutter_integration: true
-namespaces: false
-translate_var_names: false
-output_format: single_file
-string_interpolation: dart
-flat_map: false
-timestamp: true
-statistics: true
+output_file_name: strings.g.dart 

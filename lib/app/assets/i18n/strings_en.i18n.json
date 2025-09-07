@@ -28,14 +28,23 @@
       "amount": "Amount",
       "date": "Date",
       "description": "Description",
-      "account": "Account",
-      "category": "Category",
+      "account": {
+        "one": "Account",
+        "other": "Accounts"
+      },
+      "category": {
+        "one": "Category",
+        "other": "Categories"
+      },
+      "subcategory": "Subcategory",
+      "transactions": "Transactions",
       "balance": "Balance",
       "available_balance": "Available Balance",
       "initial_balance_date": "Initial Balance Date",
       "total": "Total",
       "icon": "Icon",
       "coin": "Currency",
+      "status": "Status",
       "recurrence": "Recurrence",
       "frequency": "Frequency"
     },
@@ -47,7 +56,6 @@
     }
   },
   "accounts": {
-    "title": "Accounts",
     "new_account": "New Account",
     "edit_account": "Edit Account",
     "select_account": "Select Account",
@@ -62,6 +70,7 @@
       "name_cannot_be_empty": "Account name cannot be empty",
       "name_min_length_number": "Account name must be at least $number characters long",
       "name_max_length_number": "Account name must be at most $number characters long",
+      "name_already_exists": "An account with this name already exists",
       "currency_code_length_number": "Currency code must be exactly $number characters long",
       "currency_code_format": "Currency code must contain only capital letters",
       "balance_invalid_number": "Balance must be a valid number",
@@ -70,7 +79,6 @@
     }
   },
   "categories": {
-    "title": "Categories",
     "new_category": "New Category",
     "edit_category": "Edit Category",
     "create_sub_category": "Create Subcategory",
@@ -79,13 +87,13 @@
     "import_categories": "Import Categories",
     "select_category": "Select Category",
     "subcategory_of": "Subcategory of",
-    "uncategorized_parent": "Parent Category Not Defined",
-    "category_name_already_exists": "A category with this name already exists",
     "validation": {
       "name_cannot_be_empty": "Category name cannot be empty",
       "name_min_length_number": "Category name must be at least $number characters long",
       "name_max_length_number": "Category name must be at most $number characters long",
-      "parent_id_must_be_positive": "Parent category ID must be a positive number"
+      "parent_id_must_be_positive": "Parent category ID must be a positive number",
+      "uncategorized_parent": "Parent Category Not Defined",
+      "category_name_already_exists": "A category with this name already exists"
     }
   },
   "transactions": {
@@ -100,6 +108,10 @@
     "recurrence_type": {
       "unique": "Unique",
       "fixed": "Fixed"
+    },
+    "status_type": {
+      "unpaid": "Unpaid",
+      "paid": "Paid"
     },
     "status": {
       "to_pay": "To Pay",
@@ -120,8 +132,8 @@
       "account_id_must_be_positive": "Account ID must be a positive number",
       "category_must_be_selected": "Category must be selected",
       "category_id_must_be_positive": "Category ID must be a positive number",
-      "date_too_far_past": "Transaction date cannot be more than 100 years in the past",
-      "date_too_far_future": "Transaction date cannot be more than 10 years in the future"
+      "date_too_far_past_number": "Transaction date cannot be more than $number years in the past",
+      "date_too_far_future_number": "Transaction date cannot be more than $number years in the future"
     }
   },
   "settings": {

@@ -62,4 +62,16 @@ mixin AccountQueryOperations {
       );
     }
   }
+
+  Future<Either<Failure, AccountData?>> getAccountByName(String name) async {
+    try {
+      final query = database.select(database.accounts)
+        ..where((tbl) => tbl.name.equals(name.trim()));
+
+      final result = await query.getSingleOrNull();
+      return Either.right(result);
+    } catch (e) {
+      return Either.left(DatabaseFailure('Error fetching account by name: $e'));
+    }
+  }
 }

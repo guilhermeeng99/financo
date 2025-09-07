@@ -30,13 +30,21 @@ class ImportCategoriesModel {
       final sheet = await AppSystemFiles.processExcelFile(fileBytes, context);
       if (sheet == null) return;
 
-      final categoriesToCreate = _parseExcelData(sheet);
-      if (categoriesToCreate.isEmpty) {
+      final parseResult = _parseExcelData(sheet, context);
+      final categories =
+          parseResult['categories'] as List<Map<String, dynamic>>;
+      final validRows = parseResult['validRows'] as int;
+
+      if (categories.isEmpty) {
         await _showError(context, context.t.messages.errors.excel_not_valid);
         return;
       }
 
-      final importResult = await _importCategories(categoriesToCreate, context);
+      final importResult = await _importCategories(
+        categories,
+        validRows,
+        context,
+      );
       await categoriesBloc.loadCategories();
 
       await AppSystemFiles.showImportResult(context, importResult);
@@ -54,28 +62,62 @@ class ImportCategoriesModel {
     }
   }
 
-  List<Map<String, dynamic>> _parseExcelData(Sheet sheet) {
+  Map<String, dynamic> _parseExcelData(Sheet sheet, BuildContext context) {
     final categoriesToCreate = <Map<String, dynamic>>[];
-    final parentCategoryIds = <String, int>{};
+    var processedRows = 0;
+
+    // Use fixed column order: 0=Type, 1=Category, 2=Subcategory
+    final columnIndexes = {'type': 0, 'category': 1, 'subcategory': 2};
+
+    logger.i(
+      'Using fixed column order: Column 0=Type, Column 1=Category, Column 2=Subcategory (optional)',
+    );
 
     for (var rowIndex = 1; rowIndex < sheet.maxRows; rowIndex++) {
       final row = sheet.rows[rowIndex];
-      if (row.length < 2) continue;
+      if (row.isEmpty) continue;
 
-      final categoryData = _parseExcelRow(row);
+      // Check if the row is empty
+      final rowData = <String>[];
+      for (var colIndex = 0; colIndex < row.length; colIndex++) {
+        final cellValue = row[colIndex]?.value?.toString() ?? 'NULL';
+        rowData.add(cellValue);
+      }
+
+      final isEmpty = rowData.every(
+        (cell) => cell == 'NULL' || cell.trim().isEmpty,
+      );
+      if (isEmpty) continue;
+
+      processedRows++;
+
+      final categoryData = _parseExcelRow(row, columnIndexes, context);
       if (categoryData == null) continue;
 
-      _addCategoryToList(categoryData, categoriesToCreate, parentCategoryIds);
+      _addCategoryToList(categoryData, categoriesToCreate);
     }
 
-    logger.i('Found ${categoriesToCreate.length} categories to create');
-    return categoriesToCreate;
+    logger.i(
+      'Found ${categoriesToCreate.length} categories to create from $processedRows valid data rows',
+    );
+
+    return {'categories': categoriesToCreate, 'validRows': processedRows};
   }
 
-  Map<String, dynamic>? _parseExcelRow(List<Data?> row) {
-    final typeCell = row[0];
-    final categoryCell = row[1];
-    final subcategoryCell = row.length > 2 ? row[2] : null;
+  Map<String, dynamic>? _parseExcelRow(
+    List<Data?> row,
+    Map<String, dynamic> columnIndexes,
+    BuildContext context,
+  ) {
+    const typeIndex = 0;
+    const categoryIndex = 1;
+    const subcategoryIndex = 2;
+
+    final typeCell = typeIndex < row.length ? row[typeIndex] : null;
+    final categoryCell = categoryIndex < row.length ? row[categoryIndex] : null;
+    final subcategoryCell = subcategoryIndex < row.length
+        ? row[subcategoryIndex]
+        : null;
 
     if (typeCell?.value == null || categoryCell?.value == null) return null;
 
@@ -85,7 +127,7 @@ class ImportCategoriesModel {
 
     if (categoryName.isEmpty) return null;
 
-    final categoryType = _parseCategoryType(typeStr);
+    final categoryType = _parseCategoryType(typeStr, context);
     if (categoryType == null) {
       logger.w('Invalid category type: $typeStr');
       return null;
@@ -98,48 +140,44 @@ class ImportCategoriesModel {
     };
   }
 
-  FinancialType? _parseCategoryType(String typeStr) {
-    if (typeStr.contains('expense') || typeStr.contains('despesa')) {
+  FinancialType? _parseCategoryType(String typeStr, BuildContext context) {
+    final normalizedType = typeStr.toLowerCase().trim();
+
+    final expenseText = context.t.transactions.types.expense.toLowerCase();
+    final incomeText = context.t.transactions.types.income.toLowerCase();
+
+    if (normalizedType.contains(expenseText)) {
       return FinancialType.expense;
-    } else if (typeStr.contains('income') || typeStr.contains('receita')) {
+    } else if (normalizedType.contains(incomeText)) {
       return FinancialType.income;
     }
+
     return null;
   }
 
   void _addCategoryToList(
     Map<String, dynamic> categoryData,
     List<Map<String, dynamic>> categoriesToCreate,
-    Map<String, int> parentCategoryIds,
   ) {
     final categoryName = categoryData['categoryName'] as String;
     final subcategoryName = categoryData['subcategoryName'] as String?;
     final categoryType = categoryData['categoryType'] as FinancialType;
 
     if (subcategoryName == null || subcategoryName.isEmpty) {
+      // This is a parent category
       categoriesToCreate.add({
         'name': categoryName,
         'type': categoryType,
         'parentId': null,
         'isParent': true,
+        'parentName': categoryName,
       });
     } else {
-      final parentKey = '${categoryType.name}_$categoryName';
-
-      if (!parentCategoryIds.containsKey(parentKey)) {
-        categoriesToCreate.add({
-          'name': categoryName,
-          'type': categoryType,
-          'parentId': null,
-          'isParent': true,
-          'parentKey': parentKey,
-        });
-      }
-
+      // This is a subcategory
       categoriesToCreate.add({
         'name': subcategoryName,
         'type': categoryType,
-        'parentKey': parentKey,
+        'parentName': categoryName,
         'isParent': false,
       });
     }
@@ -147,29 +185,76 @@ class ImportCategoriesModel {
 
   Future<ImportResult> _importCategories(
     List<Map<String, dynamic>> categoriesToCreate,
+    int validRowsCount,
     BuildContext context,
   ) async {
     var successCount = 0;
     var errorCount = 0;
-    final parentCategoryIds = <String, int>{};
+    final createdParentCategories = <String, Map<String, dynamic>>{};
 
-    final parentCategories = categoriesToCreate
-        .where((cat) => cat['isParent'] == true)
-        .toList();
+    // First pass: collect unique parent categories and check if they already exist
+    final uniqueParentCategories = <String, Map<String, dynamic>>{};
 
-    logger.i('Creating ${parentCategories.length} parent categories...');
+    for (final categoryData in categoriesToCreate) {
+      if (categoryData['isParent'] == true) {
+        final key = '${categoryData['type']}_${categoryData['name']}';
+        uniqueParentCategories[key] = categoryData;
+      } else {
+        // For subcategories, ensure parent category exists
+        final parentName = categoryData['parentName'] as String;
+        final categoryType = categoryData['type'] as FinancialType;
+        final parentKey = '${categoryType}_$parentName';
 
-    for (final categoryData in parentCategories) {
-      final result = await _createParentCategory(categoryData, context);
-      result.fold((failure) => errorCount++, (createdCategory) {
-        successCount++;
-        final parentKey = categoryData['parentKey'] as String?;
-        if (parentKey != null) {
-          parentCategoryIds[parentKey] = createdCategory.id;
+        if (!uniqueParentCategories.containsKey(parentKey)) {
+          uniqueParentCategories[parentKey] = {
+            'name': parentName,
+            'type': categoryType,
+            'parentId': null,
+            'isParent': true,
+            'parentName': parentName,
+          };
         }
-      });
+      }
     }
 
+    logger.i(
+      'Creating ${uniqueParentCategories.length} unique parent categories...',
+    );
+
+    // Create parent categories or find existing ones
+    for (final entry in uniqueParentCategories.entries) {
+      final parentKey = entry.key;
+      final categoryData = entry.value;
+
+      // First check if parent category already exists
+      final existingCategory = await _findExistingParentCategory(
+        categoryData['name'] as String,
+        categoryData['type'] as FinancialType,
+      );
+
+      if (existingCategory != null) {
+        // Parent category already exists, use it
+        createdParentCategories[parentKey] = {
+          'id': existingCategory.id,
+          'name': existingCategory.name,
+          'categoryType': existingCategory.categoryType,
+        };
+        logger.i('Using existing parent category: ${existingCategory.name}');
+      } else {
+        // Create new parent category
+        final result = await _createParentCategory(categoryData, context);
+        result.fold((failure) => errorCount++, (createdCategory) {
+          successCount++;
+          createdParentCategories[parentKey] = {
+            'id': createdCategory.id,
+            'name': createdCategory.name,
+            'categoryType': createdCategory.categoryType,
+          };
+        });
+      }
+    }
+
+    // Second pass: create subcategories
     final subcategories = categoriesToCreate
         .where((cat) => cat['isParent'] == false)
         .toList();
@@ -177,16 +262,52 @@ class ImportCategoriesModel {
     logger.i('Creating ${subcategories.length} subcategories...');
 
     for (final subcategoryData in subcategories) {
+      final parentName = subcategoryData['parentName'] as String;
+      final categoryType = subcategoryData['type'] as FinancialType;
+      final parentKey = '${categoryType}_$parentName';
+
+      final parentCategory = createdParentCategories[parentKey];
+
+      if (parentCategory == null) {
+        logger.e(
+          'Parent category not found for subcategory: ${subcategoryData['name']}',
+        );
+        errorCount++;
+        continue;
+      }
+
       final result = await _createSubcategory(
         subcategoryData,
-        parentCategoryIds,
+        parentCategory['id'] as int,
         context,
       );
       result.fold((failure) => errorCount++, (success) => successCount++);
     }
 
     logger.i('Import completed: $successCount success, $errorCount errors');
-    return ImportResult(successCount, errorCount);
+    return ImportResult(successCount, errorCount, validRowsCount);
+  }
+
+  Future<CategoryData?> _findExistingParentCategory(
+    String categoryName,
+    FinancialType categoryType,
+  ) async {
+    try {
+      final result = await _categoryUsecase.getCategoriesByType(categoryType);
+      return result.fold((failure) => null, (categories) {
+        // Find parent category (one without parentCategoryId)
+        return categories
+            .where(
+              (cat) =>
+                  cat.parentCategoryId == null &&
+                  cat.name.toLowerCase() == categoryName.toLowerCase(),
+            )
+            .firstOrNull;
+      });
+    } catch (e) {
+      logger.e('Error finding existing parent category: $e');
+      return null;
+    }
   }
 
   Future<Either<Failure, CategoryData>> _createParentCategory(
@@ -224,19 +345,9 @@ class ImportCategoriesModel {
 
   Future<Either<Failure, CategoryData>> _createSubcategory(
     Map<String, dynamic> subcategoryData,
-    Map<String, int> parentCategoryIds,
+    int parentId,
     BuildContext context,
   ) async {
-    final parentKey = subcategoryData['parentKey'] as String;
-    final parentId = parentCategoryIds[parentKey];
-
-    if (parentId == null) {
-      logger.e(
-        'Parent category not found for subcategory: ${subcategoryData['name']}',
-      );
-      return Either.left(const DatabaseFailure('Parent category not found'));
-    }
-
     try {
       final categoryName = CategoryName.create(
         subcategoryData['name'] as String,

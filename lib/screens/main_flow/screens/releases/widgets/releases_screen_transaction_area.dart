@@ -14,7 +14,7 @@ class CWAReleasesScreenTransactions extends StatelessWidget {
       child: CWCard(
         child: Obx(() {
           final transactions = transactionsBloc.getFilteredTransactions(
-            accountsBloc.enabledAccountIds,
+            transactionsAccountsBloc.enabledAccountIds,
           );
 
           return Column(

@@ -30,8 +30,16 @@ class CreateAndEditCategoryModel {
 
       result.fold(
         (failure) {
-          logger.e('Error creating category: ${failure.message}');
-          CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+          if (failure is DuplicateEntryFailure) {
+            createAndEditCategoryBloc.nameError.value =
+                context.t.categories.validation.category_name_already_exists;
+          } else {
+            logger.e('Error creating category: ${failure.message}');
+            CWSnackBar.snackBar(
+              title: failure.message,
+              type: SnackBarType.error,
+            );
+          }
         },
         (category) {
           logger.i('Category created successfully: ${category.name}');
@@ -58,7 +66,10 @@ class CreateAndEditCategoryModel {
 
       result.fold(
         (failure) {
-          if (failure is NoChangesFailure) {
+          if (failure is DuplicateEntryFailure) {
+            createAndEditCategoryBloc.nameError.value =
+                context.t.categories.validation.category_name_already_exists;
+          } else if (failure is NoChangesFailure) {
             logger.i(context.t.messages.warnings.no_changes_provided);
             CWSnackBar.snackBar(
               title: context.t.messages.warnings.no_changes_provided,
