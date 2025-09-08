@@ -18,7 +18,8 @@ class CWCalendarDropDown extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 9),
       child: CWPopUpItemTitle(
         title: title,
-        spacing: 18,
+        titleSpacing: 18,
+        errorOffset: const Offset(0, 2),
         child: Obx(() {
           return GestureDetector(
             onTap: () => _selectDate(context),

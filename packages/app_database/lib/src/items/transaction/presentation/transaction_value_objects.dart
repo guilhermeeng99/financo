@@ -2,9 +2,14 @@ import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/exceptions.dart';
+import '../../../core/financial_type.dart';
 
 class TransactionAmount {
-  factory TransactionAmount.create(double value, BuildContext context) {
+  factory TransactionAmount.create(
+    double value,
+    BuildContext context, {
+    FinancialType? transactionType,
+  }) {
     if (value.isNaN || value.isInfinite) {
       throw ValidationException(
         context.t.transactions.validation.amount_invalid_number,
@@ -17,7 +22,13 @@ class TransactionAmount {
       );
     }
 
-    return TransactionAmount._(value);
+    final signedValue = switch (transactionType) {
+      FinancialType.income => value.abs(),
+      FinancialType.expense => -value.abs(),
+      null => value,
+    };
+
+    return TransactionAmount._(signedValue);
   }
 
   TransactionAmount._(this.value);

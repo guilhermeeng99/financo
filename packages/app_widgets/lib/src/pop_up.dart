@@ -149,15 +149,17 @@ class CWPopUpItemTitle extends StatelessWidget {
   const CWPopUpItemTitle({
     required this.child,
     this.title,
-    this.spacing = 0,
+    this.titleSpacing = 0,
     this.error = '',
+    this.errorOffset = const Offset(0, 10),
     super.key,
   });
 
   final Widget child;
   final String? title;
   final String error;
-  final double spacing;
+  final double titleSpacing;
+  final Offset errorOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -171,10 +173,10 @@ class CWPopUpItemTitle extends StatelessWidget {
             color: Theme.of(context).customColors.secondaryTextColor,
           ),
         ),
-        Gap(spacing),
+        Gap(titleSpacing),
         child,
         Transform.translate(
-          offset: const Offset(0, 10),
+          offset: errorOffset,
           child: Text(
             error,
             style: TextStyle(

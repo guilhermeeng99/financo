@@ -46,7 +46,16 @@
       "coin": "Currency",
       "status": "Status",
       "recurrence": "Recurrence",
-      "frequency": "Frequency"
+      "frequency": "Frequency",
+      "entries": "Entries",
+      "transfers": "Transfers",
+      "exits": "Exits",
+      "confirmed": "Confirmed",
+      "projected": "Projected",
+      "result": {
+        "one": "Result",
+        "other": "Results"
+      }
     },
     "frequency": {
       "daily": "Daily",

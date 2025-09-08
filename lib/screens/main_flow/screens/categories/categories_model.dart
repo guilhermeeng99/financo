@@ -142,7 +142,7 @@ class CategoriesModelExcel {
                       ),
                     )
                     .value = TextCellValue(
-                  categoryType.name,
+                  categoryType.title(context),
                 );
                 sheet
                     .cell(
@@ -176,7 +176,7 @@ class CategoriesModelExcel {
                         ),
                       )
                       .value = TextCellValue(
-                    categoryType.name,
+                    categoryType.title(context),
                   );
                   sheet
                       .cell(

@@ -11,24 +11,28 @@ mixin TransactionBalanceUsecaseOperations {
   Future<Either<Failure, double>> getAccountBalanceForPeriod(
     int accountId,
     DateTime startDate,
-    DateTime endDate,
-  ) async {
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  }) async {
     return transactionRepository.getAccountBalanceForPeriod(
       accountId,
       startDate,
       endDate,
+      onlyPaidTransactions: onlyPaidTransactions,
     );
   }
 
   Future<Either<Failure, Map<int, double>>> getMultipleAccountsBalanceForPeriod(
     Set<int> accountIds,
     DateTime startDate,
-    DateTime endDate,
-  ) async {
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  }) async {
     return transactionRepository.getMultipleAccountsBalanceForPeriod(
       accountIds,
       startDate,
       endDate,
+      onlyPaidTransactions: onlyPaidTransactions,
     );
   }
 }

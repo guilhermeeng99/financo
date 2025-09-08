@@ -3,7 +3,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:excel/excel.dart';
-import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dart';
 
 ImportCategoriesModel get importCategoriesModel =>
@@ -13,10 +12,114 @@ class ImportCategoriesModel {
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
   Future<void> onTapDownloadDefaultExcelCategories(BuildContext context) async {
-    await AppSystemFiles.onTapDownloadDefaultExcel(
-      context: context,
-      filePath: Assets.lib.app.assets.excels.defaultCategoriesImportModel,
-    );
+    try {
+      final sheetName = context.t.common.labels.category(n: 2);
+      final excel = Excel.createExcel()..rename('Sheet1', sheetName);
+
+      final sheet = excel[sheetName];
+
+      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(
+        context.t.common.labels.type,
+      );
+      sheet.cell(CellIndex.indexByString('B1')).value = TextCellValue(
+        context.t.common.labels.category(n: 1),
+      );
+      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(
+        context.t.common.labels.subcategory,
+      );
+
+      final sampleData = _sampleDataForDownload(context);
+
+      for (var i = 0; i < sampleData.length; i++) {
+        final row = sampleData[i];
+        sheet.cell(CellIndex.indexByString('A${i + 2}')).value = TextCellValue(
+          row[0],
+        );
+        sheet.cell(CellIndex.indexByString('B${i + 2}')).value = TextCellValue(
+          row[1],
+        );
+        sheet.cell(CellIndex.indexByString('C${i + 2}')).value = TextCellValue(
+          row[2],
+        );
+      }
+
+      final excelBytes = excel.encode();
+      if (excelBytes != null) {
+        final sheetName = context.t.common.labels.category(n: 2).toLowerCase();
+        await AppSystemFiles.fileSaver(
+          fileName: '${sheetName}_import_template.xlsx',
+          excelBytes: excelBytes,
+        );
+
+        if (context.mounted) {
+          CWSnackBar.snackBar(
+            title: context.t.messages.success.export_successfully,
+            type: SnackBarType.success,
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      logger
+        ..e('Error generating Excel template: $e')
+        ..e('Stack trace: $stackTrace');
+
+      if (context.mounted) {
+        CWSnackBar.snackBar(
+          title: context.t.messages.errors.excel_not_valid,
+          type: SnackBarType.error,
+        );
+      }
+    }
+  }
+
+  List<List<String>> _sampleDataForDownload(BuildContext context) {
+    return [
+      [
+        context.t.transactions.types.expense,
+        '${context.t.common.labels.category(n: 1)} 1',
+        '',
+      ],
+      [
+        context.t.transactions.types.income,
+        '${context.t.common.labels.category(n: 1)} 2',
+        '',
+      ],
+      [
+        context.t.transactions.types.expense,
+        '${context.t.common.labels.category(n: 1)} 3',
+        '',
+      ],
+      [
+        context.t.transactions.types.expense,
+        '${context.t.common.labels.category(n: 1)} 3',
+        '${context.t.common.labels.subcategory} 1',
+      ],
+      [
+        context.t.transactions.types.income,
+        '${context.t.common.labels.category(n: 1)} 4',
+        '',
+      ],
+      [
+        context.t.transactions.types.income,
+        '${context.t.common.labels.category(n: 1)} 4',
+        '${context.t.common.labels.subcategory} 2',
+      ],
+      [
+        context.t.transactions.types.expense,
+        '${context.t.common.labels.category(n: 1)} 5',
+        '',
+      ],
+      [
+        context.t.transactions.types.expense,
+        '${context.t.common.labels.category(n: 1)} 5',
+        '${context.t.common.labels.subcategory} 3',
+      ],
+      [
+        context.t.transactions.types.income,
+        '${context.t.common.labels.category(n: 1)} 6',
+        '',
+      ],
+    ];
   }
 
   Future<void> onTapUploadExcelCategories(BuildContext context) async {

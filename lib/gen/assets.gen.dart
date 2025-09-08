@@ -28,9 +28,6 @@ class $LibAppGen {
 class $LibAppAssetsGen {
   const $LibAppAssetsGen();
 
-  /// Directory path: lib/app/assets/excels
-  $LibAppAssetsExcelsGen get excels => const $LibAppAssetsExcelsGen();
-
   /// Directory path: lib/app/assets/fonts
   $LibAppAssetsFontsGen get fonts => const $LibAppAssetsFontsGen();
 
@@ -39,24 +36,6 @@ class $LibAppAssetsGen {
 
   /// Directory path: lib/app/assets/images
   $LibAppAssetsImagesGen get images => const $LibAppAssetsImagesGen();
-}
-
-class $LibAppAssetsExcelsGen {
-  const $LibAppAssetsExcelsGen();
-
-  /// File path: lib/app/assets/excels/default_categories_import_model.xlsx
-  String get defaultCategoriesImportModel =>
-      'lib/app/assets/excels/default_categories_import_model.xlsx';
-
-  /// File path: lib/app/assets/excels/default_transactions_import_model.xlsx
-  String get defaultTransactionsImportModel =>
-      'lib/app/assets/excels/default_transactions_import_model.xlsx';
-
-  /// List of all assets
-  List<String> get values => [
-    defaultCategoriesImportModel,
-    defaultTransactionsImportModel,
-  ];
 }
 
 class $LibAppAssetsFontsGen {

@@ -10,7 +10,7 @@
       "edit": "Editar",
       "delete": "Excluir",
       "save": "Salvar",
-      "register": "Cadastrar",
+      "register": "Registrar",
       "filter": "Filtrar",
       "pay": "Pagar",
       "unpay": "Cancelar Pagamento",
@@ -46,7 +46,16 @@
       "coin": "Moeda",
       "status": "Status",
       "recurrence": "Recorrência",
-      "frequency": "Frequência"
+      "frequency": "Frequência",
+      "entries": "Entradas",
+      "transfers": "Transferências",
+      "exits": "Saídas",
+      "confirmed": "Confirmado",
+      "projected": "Projetado",
+      "result": {
+        "one": "Resultado",
+        "other": "Resultados"
+      }
     },
     "frequency": {
       "daily": "Diária",
@@ -109,9 +118,13 @@
       "unique": "Única",
       "fixed": "Fixa"
     },
+    "status_type": {
+      "unpaid": "Não Pago",
+      "paid": "Pago"
+    },
     "status": {
       "to_pay": "A Pagar",
-      "paid": "Paga"
+      "paid": "Pago"
     },
     "currency": {
       "types": {
@@ -120,20 +133,16 @@
         "eur": "Euro"
       }
     },
-    "status_type": {
-      "unpaid": "Não Pago",
-      "paid": "Pago"
-    },
     "validation": {
       "amount_invalid_number": "O valor da transação deve ser um número válido",
       "amount_cannot_be_zero": "O valor da transação deve ser diferente de zero",
       "description_max_length_number": "A descrição da transação deve ter no máximo $number caracteres",
-      "account_must_be_selected": "É necessário selecionar uma conta",
+      "account_must_be_selected": "Uma conta deve ser selecionada",
       "account_id_must_be_positive": "O ID da conta deve ser um número positivo",
-      "category_must_be_selected": "É necessário selecionar uma categoria",
+      "category_must_be_selected": "Uma categoria deve ser selecionada",
       "category_id_must_be_positive": "O ID da categoria deve ser um número positivo",
-      "date_too_far_past_number": "A data da transação não pode ser superior a $number anos no passado",
-      "date_too_far_future_number": "A data da transação não pode ser superior a $number anos no futuro"
+      "date_too_far_past_number": "A data da transação não pode ser de mais de $number anos no passado",
+      "date_too_far_future_number": "A data da transação não pode ser de mais de $number anos no futuro"
     }
   },
   "settings": {

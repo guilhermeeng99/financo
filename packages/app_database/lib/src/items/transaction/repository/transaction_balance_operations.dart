@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 
 import '../../../core/either.dart';
 import '../../../core/failures.dart';
-import '../../../core/financial_type.dart';
 import '../../../database/database_manager.dart';
 
 /// Mixin containing balance calculation operations for transactions
@@ -12,41 +11,20 @@ mixin TransactionBalanceOperations {
 
   Future<Either<Failure, double>> getAccountBalanceById(int accountId) async {
     try {
-      // Get income total
-      final incomeQuery = database.selectOnly(database.transactions)
+      final totalQuery = database.selectOnly(database.transactions)
         ..addColumns([database.transactions.amount.sum()])
         ..where(
           database.transactions.accountId.equals(accountId) &
               database.transactions.paymentStatus.equals(
                 TransactionPaymentStatus.paid.value,
-              ) &
-              database.transactions.transactionType.equals(
-                FinancialType.income.value,
               ),
         );
 
-      final incomeResult = await incomeQuery.getSingle();
-      final totalIncome =
-          incomeResult.read(database.transactions.amount.sum()) ?? 0.0;
+      final totalResult = await totalQuery.getSingle();
+      final totalAmount =
+          totalResult.read(database.transactions.amount.sum()) ?? 0.0;
 
-      // Get expense total
-      final expenseQuery = database.selectOnly(database.transactions)
-        ..addColumns([database.transactions.amount.sum()])
-        ..where(
-          database.transactions.accountId.equals(accountId) &
-              database.transactions.paymentStatus.equals(
-                TransactionPaymentStatus.paid.value,
-              ) &
-              database.transactions.transactionType.equals(
-                FinancialType.expense.value,
-              ),
-        );
-
-      final expenseResult = await expenseQuery.getSingle();
-      final totalExpense =
-          expenseResult.read(database.transactions.amount.sum()) ?? 0.0;
-
-      return Either.right(totalIncome - totalExpense);
+      return Either.right(totalAmount);
     } catch (e) {
       return Either.left(DatabaseFailure('Error getting account balance: $e'));
     }
@@ -55,10 +33,10 @@ mixin TransactionBalanceOperations {
   Future<Either<Failure, double>> getAccountBalanceForPeriod(
     int accountId,
     DateTime startDate,
-    DateTime endDate,
-  ) async {
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  }) async {
     try {
-      // Get initial balance
       final accountQuery = database.select(database.accounts)
         ..where((tbl) => tbl.id.equals(accountId));
 
@@ -68,14 +46,22 @@ mixin TransactionBalanceOperations {
         return Either.left(const DatabaseFailure('Account not found'));
       }
 
-      // Get only PAID transactions for the period
-      final transactionsQuery = database.select(database.transactions)
+      var transactionsQuery = database.select(database.transactions)
         ..where(
           (tbl) =>
               tbl.accountId.equals(accountId) &
-              tbl.actualDate.isBetweenValues(startDate, endDate) &
-              tbl.paymentStatus.equals(TransactionPaymentStatus.paid.value),
+              tbl.actualDate.isBetweenValues(startDate, endDate),
         );
+
+      if (onlyPaidTransactions) {
+        transactionsQuery = database.select(database.transactions)
+          ..where(
+            (tbl) =>
+                tbl.accountId.equals(accountId) &
+                tbl.actualDate.isBetweenValues(startDate, endDate) &
+                tbl.paymentStatus.equals(TransactionPaymentStatus.paid.value),
+          );
+      }
 
       final transactions = await transactionsQuery.get();
 
@@ -95,8 +81,9 @@ mixin TransactionBalanceOperations {
   Future<Either<Failure, Map<int, double>>> getMultipleAccountsBalanceForPeriod(
     Set<int> accountIds,
     DateTime startDate,
-    DateTime endDate,
-  ) async {
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  }) async {
     try {
       final balances = <int, double>{};
 
@@ -109,14 +96,24 @@ mixin TransactionBalanceOperations {
         balances[account.id] = account.initialBalance;
       }
 
-      // Get only PAID transactions for the period
-      final transactionsQuery = database.select(database.transactions)
+      // Build query based on whether to include only paid transactions or all
+      var transactionsQuery = database.select(database.transactions)
         ..where(
           (tbl) =>
               tbl.accountId.isIn(accountIds) &
-              tbl.actualDate.isBetweenValues(startDate, endDate) &
-              tbl.paymentStatus.equals(TransactionPaymentStatus.paid.value),
+              tbl.actualDate.isBetweenValues(startDate, endDate),
         );
+
+      // Add payment status filter if only paid transactions should be included
+      if (onlyPaidTransactions) {
+        transactionsQuery = database.select(database.transactions)
+          ..where(
+            (tbl) =>
+                tbl.accountId.isIn(accountIds) &
+                tbl.actualDate.isBetweenValues(startDate, endDate) &
+                tbl.paymentStatus.equals(TransactionPaymentStatus.paid.value),
+          );
+      }
 
       final transactions = await transactionsQuery.get();
 

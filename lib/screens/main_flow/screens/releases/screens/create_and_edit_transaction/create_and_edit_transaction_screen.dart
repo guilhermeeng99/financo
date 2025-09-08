@@ -97,46 +97,28 @@ class _Account extends StatelessWidget {
 
       final items = <AccountData?>[null, ...accounts];
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CWDropdownField<AccountData?>(
-            title: context.t.common.labels.account(n: 1),
-            value: selectedAccountId != null
-                ? accounts.firstWhereOrNull(
-                    (acc) => acc.id == selectedAccountId,
-                  )
-                : null,
-            items: items,
-            onChanged: (AccountData? account) {
-              createAndEditTransactionBloc.selectedAccountId.value =
-                  account?.id;
-            },
-            itemBuilder: (AccountData? account, BuildContext context) {
-              if (account == null) {
-                return Text(
-                  context.t.accounts.select_account,
-                  style: TextStyle(
-                    color: Theme.of(context).customColors.secondaryTextColor,
-                    fontStyle: FontStyle.italic,
-                  ),
-                );
-              }
-              return Text(account.name);
-            },
-          ),
-          if (accountError.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                accountError,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontSize: 12,
-                ),
+      return CWDropdownField<AccountData?>(
+        title: context.t.common.labels.account(n: 1),
+        error: accountError,
+        value: selectedAccountId != null
+            ? accounts.firstWhereOrNull((acc) => acc.id == selectedAccountId)
+            : null,
+        items: items,
+        onChanged: (AccountData? account) {
+          createAndEditTransactionBloc.selectedAccountId.value = account?.id;
+        },
+        itemBuilder: (AccountData? account, BuildContext context) {
+          if (account == null) {
+            return Text(
+              context.t.accounts.select_account,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
               ),
-            ),
-        ],
+            );
+          }
+          return Text(account.name);
+        },
       );
     });
   }
@@ -306,66 +288,48 @@ class _Category extends StatelessWidget {
 
       final items = <CategoryData?>[null, ...categories];
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CWDropdownField<CategoryData?>(
-            title: context.t.common.labels.category(n: 1),
-            value: selectedCategoryId != null
-                ? categories.firstWhereOrNull(
-                    (cat) => cat.id == selectedCategoryId,
-                  )
-                : null,
-            items: items,
-            isExpanded: true,
-            onChanged: (CategoryData? category) {
-              createAndEditTransactionBloc.selectedCategoryId.value =
-                  category?.id;
-            },
-            itemBuilder: (CategoryData? category, BuildContext context) {
-              if (category == null) {
-                return Text(
-                  context.t.categories.select_category,
-                  style: TextStyle(
-                    color: Theme.of(context).customColors.secondaryTextColor,
-                    fontStyle: FontStyle.italic,
-                  ),
-                );
-              }
-
-              var displayName = category.name;
-
-              if (category.parentCategoryId != null) {
-                final parentCategory = categories.firstWhereOrNull(
-                  (cat) => cat.id == category.parentCategoryId,
-                );
-                if (parentCategory != null) {
-                  displayName = '  ${parentCategory.name} / ${category.name}';
-                }
-              }
-
-              return Text(
-                displayName,
-                style: TextStyle(
-                  fontWeight: category.parentCategoryId == null
-                      ? FontWeight.w500
-                      : FontWeight.normal,
-                ),
-              );
-            },
-          ),
-          if (categoryError.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                categoryError,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontSize: 12,
-                ),
+      return CWDropdownField<CategoryData?>(
+        title: context.t.common.labels.category(n: 1),
+        value: selectedCategoryId != null
+            ? categories.firstWhereOrNull((cat) => cat.id == selectedCategoryId)
+            : null,
+        items: items,
+        error: categoryError,
+        isExpanded: true,
+        onChanged: (CategoryData? category) {
+          createAndEditTransactionBloc.selectedCategoryId.value = category?.id;
+        },
+        itemBuilder: (CategoryData? category, BuildContext context) {
+          if (category == null) {
+            return Text(
+              context.t.categories.select_category,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
               ),
+            );
+          }
+
+          var displayName = category.name;
+
+          if (category.parentCategoryId != null) {
+            final parentCategory = categories.firstWhereOrNull(
+              (cat) => cat.id == category.parentCategoryId,
+            );
+            if (parentCategory != null) {
+              displayName = '  ${parentCategory.name} / ${category.name}';
+            }
+          }
+
+          return Text(
+            displayName,
+            style: TextStyle(
+              fontWeight: category.parentCategoryId == null
+                  ? FontWeight.w500
+                  : FontWeight.normal,
             ),
-        ],
+          );
+        },
       );
     });
   }

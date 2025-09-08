@@ -37,7 +37,7 @@ class CreateAndEditTransactionBloc extends GetxController {
 
   void initializeWithTransactionData(TransactionData transaction) {
     description.value = transaction.description ?? '';
-    amount.value = transaction.amount;
+    amount.value = transaction.amount.abs();
     actualDate.value = transaction.actualDate;
     competenceDate.value = transaction.competenceDate;
     selectedTransactionType.value = transaction.transactionType;

@@ -142,12 +142,18 @@ class ReleasesModelExcel {
 
       final sheet = excel[sheetName];
 
-      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(context.t.common.labels.date);
+      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(
+        context.t.common.labels.date,
+      );
       sheet.cell(CellIndex.indexByString('B1')).value = TextCellValue(
         context.t.common.labels.description,
       );
-      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(context.t.common.labels.type);
-      sheet.cell(CellIndex.indexByString('D1')).value = TextCellValue(context.t.common.labels.amount);
+      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(
+        context.t.common.labels.type,
+      );
+      sheet.cell(CellIndex.indexByString('D1')).value = TextCellValue(
+        context.t.common.labels.amount,
+      );
       sheet.cell(CellIndex.indexByString('E1')).value = TextCellValue(
         context.t.common.labels.account(n: 1),
       );
@@ -193,7 +199,7 @@ class ReleasesModelExcel {
               ),
             )
             .value = TextCellValue(
-          transaction.t.transactionType.name,
+          transaction.t.transactionType.title(context),
         );
 
         sheet
@@ -237,7 +243,7 @@ class ReleasesModelExcel {
               ),
             )
             .value = TextCellValue(
-          transaction.t.paymentStatus.name,
+          transaction.t.paymentStatus.title(context),
         );
 
         currentRow++;

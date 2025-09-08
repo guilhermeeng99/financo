@@ -180,6 +180,8 @@ class CreateAndEditTransactionModel {
       amount = TransactionAmount.create(
         createAndEditTransactionBloc.amount.value,
         context,
+        transactionType:
+            createAndEditTransactionBloc.selectedTransactionType.value,
       );
     } on ValidationException catch (e) {
       createAndEditTransactionBloc.amountError.value = e.message;

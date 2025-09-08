@@ -9,6 +9,7 @@ class CWDropdownField<T> extends StatelessWidget {
     this.title,
     super.key,
     this.textStyle,
+    this.error = '',
     this.isExpanded = false,
   });
 
@@ -19,11 +20,14 @@ class CWDropdownField<T> extends StatelessWidget {
   final Widget Function(T item, BuildContext context) itemBuilder;
   final TextStyle? textStyle;
   final bool isExpanded;
+  final String error;
 
   @override
   Widget build(BuildContext context) {
     return CWPopUpItemTitle(
       title: title,
+      error: error,
+      errorOffset: const Offset(0, 2),
       child: DropdownButton<T>(
         value: value,
         onChanged: onChanged,

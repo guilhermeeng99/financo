@@ -310,6 +310,27 @@ class TranslationsCommonLabelsEn {
 
 	/// en: 'Frequency'
 	String get frequency => 'Frequency';
+
+	/// en: 'Entries'
+	String get entries => 'Entries';
+
+	/// en: 'Transfers'
+	String get transfers => 'Transfers';
+
+	/// en: 'Exits'
+	String get exits => 'Exits';
+
+	/// en: 'Confirmed'
+	String get confirmed => 'Confirmed';
+
+	/// en: 'Projected'
+	String get projected => 'Projected';
+
+	/// en: '(one) {Result} (other) {Results}'
+	String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+		one: 'Result',
+		other: 'Results',
+	);
 }
 
 // Path: common.frequency
@@ -633,6 +654,15 @@ extension on Translations {
 			case 'common.labels.status': return 'Status';
 			case 'common.labels.recurrence': return 'Recurrence';
 			case 'common.labels.frequency': return 'Frequency';
+			case 'common.labels.entries': return 'Entries';
+			case 'common.labels.transfers': return 'Transfers';
+			case 'common.labels.exits': return 'Exits';
+			case 'common.labels.confirmed': return 'Confirmed';
+			case 'common.labels.projected': return 'Projected';
+			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+				one: 'Result',
+				other: 'Results',
+			);
 			case 'common.frequency.daily': return 'Daily';
 			case 'common.frequency.weekly': return 'Weekly';
 			case 'common.frequency.monthly': return 'Monthly';

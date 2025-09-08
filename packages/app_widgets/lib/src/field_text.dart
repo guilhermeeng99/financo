@@ -63,7 +63,7 @@ class CWTextField extends HookWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: CWPopUpItemTitle(
         title: title,
-        spacing: 21,
+        titleSpacing: 21,
         error: error,
         child: textField,
       ),

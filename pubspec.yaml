@@ -42,7 +42,6 @@ flutter:
 
 
   assets:
-    - lib/app/assets/excels/
     - lib/app/assets/fonts/
     - lib/app/assets/i18n/
     - lib/app/assets/images/

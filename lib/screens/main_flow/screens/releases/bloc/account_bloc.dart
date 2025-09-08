@@ -6,14 +6,18 @@ class TransactionsAccountsI {
   TransactionsAccountsI({
     required this.a,
     required this.finalBalance,
+    required this.finalProjectedBalance,
     bool isEnabled = true,
   }) : isEnabled = isEnabled.obs,
-       filteredBalance = finalBalance.obs;
+       filteredBalance = finalBalance.obs,
+       filteredProjectedBalance = finalProjectedBalance.obs;
 
   final AccountData a;
   final double finalBalance;
+  final double finalProjectedBalance;
   final RxBool isEnabled;
   final RxDouble filteredBalance;
+  final RxDouble filteredProjectedBalance;
 }
 
 TransactionsAccountsBloc get transactionsAccountsBloc =>
@@ -29,6 +33,7 @@ class TransactionsAccountsBloc extends GetxController {
   final RxList<TransactionsAccountsI> checkingAccounts =
       <TransactionsAccountsI>[].obs;
   final RxDouble totalFilteredBalance = 0.0.obs;
+  final RxDouble totalFilteredProjectedBalance = 0.0.obs;
 
   Future<void> loadCheckingAccounts() async {
     final accountUsecase = Modular.get<IAccountUsecase>();
@@ -59,12 +64,28 @@ class TransactionsAccountsBloc extends GetxController {
             (Map<int, double> balances) => balances,
           );
 
+          final finalProjectedBalancesResult = await transactionUsecase
+              .getMultipleAccountsBalanceForPeriod(
+                accountIds,
+                DateTime(1900),
+                DateTime.now(),
+                onlyPaidTransactions: false,
+              );
+
+          final finalProjectedBalances = finalProjectedBalancesResult.fold(
+            (Failure failure) => <int, double>{},
+            (Map<int, double> balances) => balances,
+          );
+
           for (final account in checkingAccountsList) {
             final finalBalance =
                 finalBalances[account.id] ?? account.initialBalance;
+            final finalProjectedBalance =
+                finalProjectedBalances[account.id] ?? account.initialBalance;
             final accountI = TransactionsAccountsI(
               a: account,
               finalBalance: finalBalance,
+              finalProjectedBalance: finalProjectedBalance,
             );
             accountsI.add(accountI);
           }
@@ -86,7 +107,6 @@ class TransactionsAccountsBloc extends GetxController {
 
   Future<void> updateFilteredBalances() async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final startOfMonth = dateFilterBloc.startOfMonth;
     final endOfMonth = dateFilterBloc.endOfMonth;
 
     try {
@@ -97,7 +117,7 @@ class TransactionsAccountsBloc extends GetxController {
       final balancesResult = await transactionUsecase
           .getMultipleAccountsBalanceForPeriod(
             accountIds,
-            startOfMonth,
+            DateTime(1900),
             endOfMonth,
           );
 
@@ -106,18 +126,39 @@ class TransactionsAccountsBloc extends GetxController {
         return <int, double>{};
       }, (Map<int, double> balances) => balances);
 
+      final projectedBalancesResult = await transactionUsecase
+          .getMultipleAccountsBalanceForPeriod(
+            accountIds,
+            DateTime(1900),
+            endOfMonth,
+            onlyPaidTransactions: false,
+          );
+
+      final projectedBalances = projectedBalancesResult.fold((Failure failure) {
+        logger.e('Error updating projected balances: ${failure.message}');
+        return <int, double>{};
+      }, (Map<int, double> balances) => balances);
+
       double total = 0;
+      double totalProjected = 0;
+
       for (final account in checkingAccounts) {
         final filteredBalance =
             balances[account.a.id] ?? account.a.initialBalance;
+        final filteredProjectedBalance =
+            projectedBalances[account.a.id] ?? account.a.initialBalance;
+
         account.filteredBalance.value = filteredBalance;
+        account.filteredProjectedBalance.value = filteredProjectedBalance;
 
         if (account.isEnabled.value) {
           total += filteredBalance;
+          totalProjected += filteredProjectedBalance;
         }
       }
 
       totalFilteredBalance.value = total;
+      totalFilteredProjectedBalance.value = totalProjected;
     } catch (e) {
       logger.e('❌ Error updating filtered balances: $e');
     }
@@ -125,12 +166,15 @@ class TransactionsAccountsBloc extends GetxController {
 
   void _updateTotalFromFilteredBalances() {
     double total = 0;
+    double totalProjected = 0;
     for (final account in checkingAccounts) {
       if (account.isEnabled.value) {
         total += account.filteredBalance.value;
+        totalProjected += account.filteredProjectedBalance.value;
       }
     }
     totalFilteredBalance.value = total;
+    totalFilteredProjectedBalance.value = totalProjected;
   }
 
   double get totalEnabledAccountsBalance {
@@ -150,7 +194,6 @@ class TransactionsAccountsBloc extends GetxController {
         .toSet();
 
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final startOfMonth = DateTime(selectedDate.year, selectedDate.month);
     final endOfMonth = DateTime(
       selectedDate.year,
       selectedDate.month + 1,
@@ -163,7 +206,7 @@ class TransactionsAccountsBloc extends GetxController {
     final balancesResult = await transactionUsecase
         .getMultipleAccountsBalanceForPeriod(
           enabledAccountIds,
-          startOfMonth,
+          DateTime(1900),
           endOfMonth,
         );
 
@@ -181,7 +224,6 @@ class TransactionsAccountsBloc extends GetxController {
     DateTime selectedDate,
   ) async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final startOfMonth = DateTime(selectedDate.year, selectedDate.month);
     final endOfMonth = DateTime(
       selectedDate.year,
       selectedDate.month + 1,
@@ -193,7 +235,7 @@ class TransactionsAccountsBloc extends GetxController {
 
     final balanceResult = await transactionUsecase.getAccountBalanceForPeriod(
       accountId,
-      startOfMonth,
+      DateTime(1900),
       endOfMonth,
     );
 

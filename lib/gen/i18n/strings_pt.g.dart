@@ -116,9 +116,9 @@ class _TranslationsTransactionsPt implements TranslationsTransactionsEn {
 	@override String get import_transactions => 'Importar Transações';
 	@override late final _TranslationsTransactionsTypesPt types = _TranslationsTransactionsTypesPt._(_root);
 	@override late final _TranslationsTransactionsRecurrenceTypePt recurrence_type = _TranslationsTransactionsRecurrenceTypePt._(_root);
+	@override late final _TranslationsTransactionsStatusTypePt status_type = _TranslationsTransactionsStatusTypePt._(_root);
 	@override late final _TranslationsTransactionsStatusPt status = _TranslationsTransactionsStatusPt._(_root);
 	@override late final _TranslationsTransactionsCurrencyPt currency = _TranslationsTransactionsCurrencyPt._(_root);
-	@override late final _TranslationsTransactionsStatusTypePt status_type = _TranslationsTransactionsStatusTypePt._(_root);
 	@override late final _TranslationsTransactionsValidationPt validation = _TranslationsTransactionsValidationPt._(_root);
 }
 
@@ -154,7 +154,7 @@ class _TranslationsCommonActionsPt implements TranslationsCommonActionsEn {
 	@override String get edit => 'Editar';
 	@override String get delete => 'Excluir';
 	@override String get save => 'Salvar';
-	@override String get register => 'Cadastrar';
+	@override String get register => 'Registrar';
 	@override String get filter => 'Filtrar';
 	@override String get pay => 'Pagar';
 	@override String get unpay => 'Cancelar Pagamento';
@@ -198,6 +198,15 @@ class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
 	@override String get status => 'Status';
 	@override String get recurrence => 'Recorrência';
 	@override String get frequency => 'Frequência';
+	@override String get entries => 'Entradas';
+	@override String get transfers => 'Transferências';
+	@override String get exits => 'Saídas';
+	@override String get confirmed => 'Confirmado';
+	@override String get projected => 'Projetado';
+	@override String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Resultado',
+		other: 'Resultados',
+	);
 }
 
 // Path: common.frequency
@@ -281,6 +290,17 @@ class _TranslationsTransactionsRecurrenceTypePt implements TranslationsTransacti
 	@override String get fixed => 'Fixa';
 }
 
+// Path: transactions.status_type
+class _TranslationsTransactionsStatusTypePt implements TranslationsTransactionsStatusTypeEn {
+	_TranslationsTransactionsStatusTypePt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get unpaid => 'Não Pago';
+	@override String get paid => 'Pago';
+}
+
 // Path: transactions.status
 class _TranslationsTransactionsStatusPt implements TranslationsTransactionsStatusEn {
 	_TranslationsTransactionsStatusPt._(this._root);
@@ -289,7 +309,7 @@ class _TranslationsTransactionsStatusPt implements TranslationsTransactionsStatu
 
 	// Translations
 	@override String get to_pay => 'A Pagar';
-	@override String get paid => 'Paga';
+	@override String get paid => 'Pago';
 }
 
 // Path: transactions.currency
@@ -302,17 +322,6 @@ class _TranslationsTransactionsCurrencyPt implements TranslationsTransactionsCur
 	@override late final _TranslationsTransactionsCurrencyTypesPt types = _TranslationsTransactionsCurrencyTypesPt._(_root);
 }
 
-// Path: transactions.status_type
-class _TranslationsTransactionsStatusTypePt implements TranslationsTransactionsStatusTypeEn {
-	_TranslationsTransactionsStatusTypePt._(this._root);
-
-	final TranslationsPt _root; // ignore: unused_field
-
-	// Translations
-	@override String get unpaid => 'Não Pago';
-	@override String get paid => 'Pago';
-}
-
 // Path: transactions.validation
 class _TranslationsTransactionsValidationPt implements TranslationsTransactionsValidationEn {
 	_TranslationsTransactionsValidationPt._(this._root);
@@ -323,12 +332,12 @@ class _TranslationsTransactionsValidationPt implements TranslationsTransactionsV
 	@override String get amount_invalid_number => 'O valor da transação deve ser um número válido';
 	@override String get amount_cannot_be_zero => 'O valor da transação deve ser diferente de zero';
 	@override String description_max_length_number({required Object number}) => 'A descrição da transação deve ter no máximo ${number} caracteres';
-	@override String get account_must_be_selected => 'É necessário selecionar uma conta';
+	@override String get account_must_be_selected => 'Uma conta deve ser selecionada';
 	@override String get account_id_must_be_positive => 'O ID da conta deve ser um número positivo';
-	@override String get category_must_be_selected => 'É necessário selecionar uma categoria';
+	@override String get category_must_be_selected => 'Uma categoria deve ser selecionada';
 	@override String get category_id_must_be_positive => 'O ID da categoria deve ser um número positivo';
-	@override String date_too_far_past_number({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no passado';
-	@override String date_too_far_future_number({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no futuro';
+	@override String date_too_far_past_number({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no passado';
+	@override String date_too_far_future_number({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no futuro';
 }
 
 // Path: messages.success
@@ -388,7 +397,7 @@ extension on TranslationsPt {
 			case 'common.actions.edit': return 'Editar';
 			case 'common.actions.delete': return 'Excluir';
 			case 'common.actions.save': return 'Salvar';
-			case 'common.actions.register': return 'Cadastrar';
+			case 'common.actions.register': return 'Registrar';
 			case 'common.actions.filter': return 'Filtrar';
 			case 'common.actions.pay': return 'Pagar';
 			case 'common.actions.unpay': return 'Cancelar Pagamento';
@@ -423,6 +432,15 @@ extension on TranslationsPt {
 			case 'common.labels.status': return 'Status';
 			case 'common.labels.recurrence': return 'Recorrência';
 			case 'common.labels.frequency': return 'Frequência';
+			case 'common.labels.entries': return 'Entradas';
+			case 'common.labels.transfers': return 'Transferências';
+			case 'common.labels.exits': return 'Saídas';
+			case 'common.labels.confirmed': return 'Confirmado';
+			case 'common.labels.projected': return 'Projetado';
+			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Resultado',
+				other: 'Resultados',
+			);
 			case 'common.frequency.daily': return 'Diária';
 			case 'common.frequency.weekly': return 'Semanal';
 			case 'common.frequency.monthly': return 'Mensal';
@@ -466,22 +484,22 @@ extension on TranslationsPt {
 			case 'transactions.types.expense': return 'Despesa';
 			case 'transactions.recurrence_type.unique': return 'Única';
 			case 'transactions.recurrence_type.fixed': return 'Fixa';
+			case 'transactions.status_type.unpaid': return 'Não Pago';
+			case 'transactions.status_type.paid': return 'Pago';
 			case 'transactions.status.to_pay': return 'A Pagar';
-			case 'transactions.status.paid': return 'Paga';
+			case 'transactions.status.paid': return 'Pago';
 			case 'transactions.currency.types.brl': return 'Real';
 			case 'transactions.currency.types.usd': return 'Dólar';
 			case 'transactions.currency.types.eur': return 'Euro';
-			case 'transactions.status_type.unpaid': return 'Não Pago';
-			case 'transactions.status_type.paid': return 'Pago';
 			case 'transactions.validation.amount_invalid_number': return 'O valor da transação deve ser um número válido';
 			case 'transactions.validation.amount_cannot_be_zero': return 'O valor da transação deve ser diferente de zero';
 			case 'transactions.validation.description_max_length_number': return ({required Object number}) => 'A descrição da transação deve ter no máximo ${number} caracteres';
-			case 'transactions.validation.account_must_be_selected': return 'É necessário selecionar uma conta';
+			case 'transactions.validation.account_must_be_selected': return 'Uma conta deve ser selecionada';
 			case 'transactions.validation.account_id_must_be_positive': return 'O ID da conta deve ser um número positivo';
-			case 'transactions.validation.category_must_be_selected': return 'É necessário selecionar uma categoria';
+			case 'transactions.validation.category_must_be_selected': return 'Uma categoria deve ser selecionada';
 			case 'transactions.validation.category_id_must_be_positive': return 'O ID da categoria deve ser um número positivo';
-			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no passado';
-			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'A data da transação não pode ser superior a ${number} anos no futuro';
+			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no passado';
+			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no futuro';
 			case 'settings.additional_settings': return 'Configurações Adicionais';
 			case 'messages.success.export_successfully': return 'Exportado com sucesso!';
 			case 'messages.success.excel_import_successfully': return 'Arquivo Excel importado com sucesso';

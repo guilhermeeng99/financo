@@ -3,7 +3,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:excel/excel.dart';
-import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_bloc.dart';
 
 ImportTransactionsModel get importTransactionsModel =>
@@ -18,10 +17,183 @@ class ImportTransactionsModel {
   Future<void> onTapDownloadDefaultExcelTransactions(
     BuildContext context,
   ) async {
-    await AppSystemFiles.onTapDownloadDefaultExcel(
-      context: context,
-      filePath: Assets.lib.app.assets.excels.defaultTransactionsImportModel,
-    );
+    try {
+      final sheetName = context.t.common.labels.transactions;
+      final excel = Excel.createExcel()..rename('Sheet1', sheetName);
+
+      final sheet = excel[sheetName];
+
+      sheet.cell(CellIndex.indexByString('A1')).value = TextCellValue(
+        context.t.common.labels.date,
+      );
+      sheet.cell(CellIndex.indexByString('B1')).value = TextCellValue(
+        context.t.common.labels.description,
+      );
+      sheet.cell(CellIndex.indexByString('C1')).value = TextCellValue(
+        context.t.common.labels.type,
+      );
+      sheet.cell(CellIndex.indexByString('D1')).value = TextCellValue(
+        context.t.common.labels.amount,
+      );
+      sheet.cell(CellIndex.indexByString('E1')).value = TextCellValue(
+        context.t.common.labels.account(n: 1),
+      );
+      sheet.cell(CellIndex.indexByString('F1')).value = TextCellValue(
+        context.t.common.labels.category(n: 1),
+      );
+      sheet.cell(CellIndex.indexByString('G1')).value = TextCellValue(
+        context.t.common.labels.status,
+      );
+
+      final sampleData = _sampleDataForTransactionsDownload(context);
+
+      for (var i = 0; i < sampleData.length; i++) {
+        final row = sampleData[i];
+        sheet.cell(CellIndex.indexByString('A${i + 2}')).value = TextCellValue(
+          row[0],
+        );
+        sheet.cell(CellIndex.indexByString('B${i + 2}')).value = TextCellValue(
+          row[1],
+        );
+        sheet.cell(CellIndex.indexByString('C${i + 2}')).value = TextCellValue(
+          row[2],
+        );
+        sheet.cell(CellIndex.indexByString('D${i + 2}')).value = TextCellValue(
+          row[3],
+        );
+        sheet.cell(CellIndex.indexByString('E${i + 2}')).value = TextCellValue(
+          row[4],
+        );
+        sheet.cell(CellIndex.indexByString('F${i + 2}')).value = TextCellValue(
+          row[5],
+        );
+        sheet.cell(CellIndex.indexByString('G${i + 2}')).value = TextCellValue(
+          row[6],
+        );
+      }
+
+      final excelBytes = excel.encode();
+      if (excelBytes != null) {
+        final sheetName = context.t.common.labels.transactions.toLowerCase();
+        await AppSystemFiles.fileSaver(
+          fileName: '${sheetName}_import_template.xlsx',
+          excelBytes: excelBytes,
+        );
+
+        if (context.mounted) {
+          CWSnackBar.snackBar(
+            title: context.t.messages.success.export_successfully,
+            type: SnackBarType.success,
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      logger
+        ..e('Error generating Excel template: $e')
+        ..e('Stack trace: $stackTrace');
+
+      if (context.mounted) {
+        CWSnackBar.snackBar(
+          title: context.t.messages.errors.excel_not_valid,
+          type: SnackBarType.error,
+        );
+      }
+    }
+  }
+
+  List<List<String>> _sampleDataForTransactionsDownload(BuildContext context) {
+    return [
+      [
+        '31/08/2025',
+        '',
+        context.t.transactions.types.income,
+        '100,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 2',
+        context.t.transactions.status_type.unpaid,
+      ],
+      [
+        '31/08/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-100,00',
+        '${context.t.common.labels.account(n: 1)} 2',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.unpaid,
+      ],
+      [
+        '31/08/2025',
+        '',
+        context.t.transactions.types.income,
+        '200,00',
+        '${context.t.common.labels.account(n: 1)} 2',
+        '${context.t.common.labels.category(n: 1)} 2',
+        context.t.transactions.status_type.unpaid,
+      ],
+      [
+        '31/08/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-50,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.unpaid,
+      ],
+      [
+        '31/08/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-50,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.unpaid,
+      ],
+      [
+        '31/07/2025',
+        '',
+        context.t.transactions.types.income,
+        '100,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 2',
+        context.t.transactions.status_type.paid,
+      ],
+      [
+        '31/07/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-100,00',
+        '${context.t.common.labels.account(n: 1)} 2',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.paid,
+      ],
+      [
+        '31/07/2025',
+        '',
+        context.t.transactions.types.income,
+        '200,00',
+        '${context.t.common.labels.account(n: 1)} 2',
+        '${context.t.common.labels.category(n: 1)} 2',
+        context.t.transactions.status_type.paid,
+      ],
+      [
+        '31/07/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-50,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.paid,
+      ],
+      [
+        '31/07/2025',
+        '',
+        context.t.transactions.types.expense,
+        '-50,00',
+        '${context.t.common.labels.account(n: 1)} 1',
+        '${context.t.common.labels.category(n: 1)} 1',
+        context.t.transactions.status_type.paid,
+      ],
+    ];
   }
 
   Future<void> onTapUploadExcelTransactions(BuildContext context) async {
@@ -68,12 +240,17 @@ class ImportTransactionsModel {
   ) async {
     final transactionsToCreate = <Map<String, dynamic>>[];
     final accounts = await _getAccountsMap();
+    logger.i('Available accounts: ${accounts.keys.toList()}');
     final categories = await _getCategoriesMap();
+    logger.i('Available categories: ${categories.keys.toList()}');
 
     for (var rowIndex = 1; rowIndex < sheet.maxRows; rowIndex++) {
       final row = sheet.rows[rowIndex];
       if (row.length < 7) continue;
 
+      logger.d(
+        'Processing row ${rowIndex + 1}: ${row.map((cell) => cell?.value).toList()}',
+      );
       final transactionData = _parseExcelRow(
         row,
         accounts,
@@ -96,47 +273,78 @@ class ImportTransactionsModel {
     BuildContext context,
   ) {
     try {
-      // Expected columns: Type, ActualDate, CompetenceDate, Amount, Description, Account, Category, PaymentStatus
-      final typeCell = row[0];
-      final actualDateCell = row[1];
-      final competenceDateCell = row[2];
+      // Expected columns: Date, Description, Type, Amount, Account, Category, Status
+      // Note: Type column is ignored, transaction type is determined by amount sign
+      final dateCell = row[0];
+      final descriptionCell = row[1];
       final amountCell = row[3];
-      final descriptionCell = row[4];
-      final accountCell = row[5];
-      final categoryCell = row[6];
-      final paymentStatusCell = row.length > 7 ? row[7] : null;
+      final accountCell = row[4];
+      final categoryCell = row[5];
+      final paymentStatusCell = row.length > 6 ? row[6] : null;
 
-      if (typeCell?.value == null ||
-          actualDateCell?.value == null ||
-          competenceDateCell?.value == null ||
+      if (dateCell?.value == null ||
           amountCell?.value == null ||
-          descriptionCell?.value == null ||
           accountCell?.value == null ||
           categoryCell?.value == null) {
+        logger.w(
+          'Skipping row due to null values: '
+          'date=${dateCell?.value}, amount=${amountCell?.value}, '
+          'account=${accountCell?.value}, '
+          'category=${categoryCell?.value}',
+        );
         return null;
       }
 
-      final typeStr = typeCell!.value.toString().toLowerCase();
-      final description = descriptionCell!.value.toString().trim();
+      final description = descriptionCell?.value?.toString().trim() ?? '';
       final accountName = accountCell!.value.toString().trim();
       final categoryName = categoryCell!.value.toString().trim();
       final paymentStatusStr =
           paymentStatusCell?.value?.toString().toLowerCase() ?? 'paid';
 
-      if (description.isEmpty || accountName.isEmpty || categoryName.isEmpty) {
-        return null;
-      }
+      logger.d(
+        'Raw extracted values: description="$description", accountName="$accountName", categoryName="$categoryName", paymentStatusStr="$paymentStatusStr"',
+      );
 
-      final transactionType = _parseTransactionType(typeStr);
-      final actualDate = _parseDate(actualDateCell!.value);
-      final competenceDate = _parseDate(competenceDateCell!.value);
-      final amount = _parseAmount(amountCell!.value);
+      final date = _parseDate(dateCell!.value);
+      logger.d('Date parsing: input=${dateCell.value}, output=$date');
+
+      final actualDate = date;
+      final competenceDate = date;
+      final rawAmount = _parseAmount(amountCell!.value);
+      logger.d('Amount parsing: input=${amountCell.value}, output=$rawAmount');
+
+      // Determine transaction type based on amount sign (positive = income, negative = expense)
+      final transactionType = rawAmount != null && rawAmount >= 0
+          ? FinancialType.income
+          : FinancialType.expense;
+
+      // Pass the original amount with sign to TransactionAmount.create
+      final amount = rawAmount;
       final paymentStatus = _parsePaymentStatus(paymentStatusStr, context);
+      logger.d(
+        'Payment status parsing: input="$paymentStatusStr", output=$paymentStatus',
+      );
+
       final accountId = accounts[accountName];
       final categoryId = categories[categoryName];
 
-      if (transactionType == null ||
-          actualDate == null ||
+      if (accountName.isEmpty || categoryName.isEmpty) {
+        logger.w(
+          'Skipping row due to empty strings: '
+          'accountName.isEmpty=${accountName.isEmpty}, '
+          'categoryName.isEmpty=${categoryName.isEmpty}',
+        );
+        return null;
+      }
+
+      logger.d(
+        'Parsed values: transactionType=$transactionType (determined by amount sign), date=$date, rawAmount=$rawAmount, amount=$amount, '
+        'accountName="$accountName" -> accountId=$accountId, '
+        'categoryName="$categoryName" -> categoryId=$categoryId, '
+        'paymentStatus=$paymentStatus',
+      );
+
+      if (actualDate == null ||
           competenceDate == null ||
           amount == null ||
           accountId == null ||
@@ -144,9 +352,12 @@ class ImportTransactionsModel {
           paymentStatus == null) {
         logger.w(
           'Invalid transaction data in row ${row.hashCode}: '
-          'type=$typeStr, actualDate=${actualDateCell.value}, '
-          'competenceDate=${competenceDateCell.value}, amount=${amountCell.value}, '
-          'account=$accountName, category=$categoryName',
+          'date=${dateCell.value}, description=$description, '
+          'rawAmount=${amountCell.value}, parsedAmount=$rawAmount, finalAmount=$amount, '
+          'account=$accountName, category=$categoryName, status=$paymentStatusStr, '
+          'transactionType=$transactionType, actualDate=$actualDate, '
+          'competenceDate=$competenceDate, accountId=$accountId, '
+          'categoryId=$categoryId, paymentStatus=$paymentStatus',
         );
         return null;
       }
@@ -175,24 +386,45 @@ class ImportTransactionsModel {
     }
   }
 
-  FinancialType? _parseTransactionType(String typeStr) {
-    if (typeStr.contains('expense') || typeStr.contains('despesa')) {
-      return FinancialType.expense;
-    } else if (typeStr.contains('income') || typeStr.contains('receita')) {
-      return FinancialType.income;
-    }
-    return null;
-  }
-
   DateTime? _parseDate(dynamic value) {
     try {
+      logger.d('_parseDate: input=$value, type=${value.runtimeType}');
       if (value is DateTime) return value;
-      if (value is String) return DateTime.parse(value);
-      if (value is double) {
-        // Excel date as number of days since 1900-01-01
-        final days = value.toInt();
-        return DateTime(1900).add(Duration(days: days - 2));
+
+      // Handle DateCellValue from Excel package
+      if (value.runtimeType.toString() == 'DateCellValue') {
+        try {
+          // Use toString() which gives us the ISO date string
+          final stringValue = value.toString();
+          logger.d('_parseDate: DateCellValue.toString() = $stringValue');
+
+          if (stringValue.contains('T') && stringValue.contains('Z')) {
+            final parsed = DateTime.parse(stringValue).toLocal();
+            logger.d('_parseDate: DateCellValue parsed to $parsed');
+            return parsed;
+          }
+        } catch (e) {
+          logger.w('Error parsing DateCellValue toString: $e');
+        }
       }
+
+      if (value is String) {
+        if (value.contains('T') && value.contains('Z')) {
+          final parsed = DateTime.parse(value).toLocal();
+          logger.d('_parseDate: ISO string parsed to $parsed');
+          return parsed;
+        }
+        final parsed = DateTime.parse(value);
+        logger.d('_parseDate: string parsed to $parsed');
+        return parsed;
+      }
+      if (value is double) {
+        final days = value.toInt();
+        final parsed = DateTime(1900).add(Duration(days: days - 2));
+        logger.d('_parseDate: double parsed to $parsed');
+        return parsed;
+      }
+      logger.w('_parseDate: unhandled type ${value.runtimeType}');
       return null;
     } catch (e) {
       logger.w('Error parsing date: $value, error: $e');
@@ -204,10 +436,18 @@ class ImportTransactionsModel {
     try {
       if (value is double) return value;
       if (value is int) return value.toDouble();
-      if (value is String) return double.parse(value);
-      return null;
+      if (value is String) {
+        // Replace comma with dot for Portuguese number format
+        final cleanValue = value.trim().replaceAll(',', '.');
+        return double.parse(cleanValue);
+      }
+      // Handle numeric values that come as other types
+      final numValue = double.tryParse(value.toString());
+      return numValue;
     } catch (e) {
-      logger.w('Error parsing amount: $value, error: $e');
+      logger.w(
+        'Error parsing amount: $value (type: ${value.runtimeType}), error: $e',
+      );
       return null;
     }
   }
@@ -216,14 +456,22 @@ class ImportTransactionsModel {
     String statusStr,
     BuildContext context,
   ) {
+    final lowercaseStatus = statusStr.toLowerCase().trim();
     final unpaidText = context.t.transactions.status_type.unpaid.toLowerCase();
     final paidText = context.t.transactions.status_type.paid.toLowerCase();
-    if (statusStr.contains(unpaidText)) {
+
+    logger.d(
+      'Payment status comparison: input="$lowercaseStatus", unpaid="$unpaidText", paid="$paidText"',
+    );
+
+    if (lowercaseStatus.contains(unpaidText)) {
       return TransactionPaymentStatus.unpaid;
-    } else if (statusStr.contains(paidText)) {
+    } else if (lowercaseStatus.contains(paidText)) {
       return TransactionPaymentStatus.paid;
     }
-    return null;
+
+    logger.w('Unknown payment status: "$statusStr", defaulting to paid');
+    return TransactionPaymentStatus.paid;
   }
 
   Future<Map<String, int>> _getAccountsMap() async {
@@ -308,9 +556,13 @@ class ImportTransactionsModel {
     BuildContext context,
   ) async {
     try {
+      logger.d(
+        'Creating transaction: amount=${transactionData['amount']}, type=${transactionData['transactionType']}',
+      );
       final amount = TransactionAmount.create(
         transactionData['amount'] as double,
         context,
+        transactionType: transactionData['transactionType'] as FinancialType,
       );
 
       final accountId = TransactionAccountId.create(

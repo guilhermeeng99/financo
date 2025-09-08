@@ -46,12 +46,14 @@ abstract class ITransactionRepository {
   Future<Either<Failure, double>> getAccountBalanceForPeriod(
     int accountId,
     DateTime startDate,
-    DateTime endDate,
-  );
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  });
 
   Future<Either<Failure, Map<int, double>>> getMultipleAccountsBalanceForPeriod(
     Set<int> accountIds,
     DateTime startDate,
-    DateTime endDate,
-  );
+    DateTime endDate, {
+    bool onlyPaidTransactions = true,
+  });
 }
