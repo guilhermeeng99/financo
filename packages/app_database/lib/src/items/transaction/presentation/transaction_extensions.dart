@@ -3,6 +3,10 @@ import 'package:financo/app/app_theme.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart' as flutter;
 
+extension DataTransactionExtension on DataTransaction {
+  bool get isTransfer => transferId != null && targetAccountId != null;
+}
+
 extension TransactionPaymentStatusExtension on TransactionPaymentStatus {
   flutter.Color getColor(flutter.BuildContext context) {
     switch (this) {

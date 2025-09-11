@@ -11,7 +11,7 @@ import '../repository/i_transaction_repository.dart';
 mixin TransactionCrudUsecaseOperations {
   ITransactionRepository get transactionRepository;
 
-  Future<Either<Failure, TransactionData>> createTransaction({
+  Future<Either<Failure, StandardTransaction>> createStandardTransaction({
     required TransactionDate actualDate,
     required TransactionDate competenceDate,
     required FinancialType transactionType,
@@ -37,7 +37,7 @@ mixin TransactionCrudUsecaseOperations {
         recurrenceFrequency: Value(recurrenceFrequency),
       );
 
-      return await transactionRepository.createTransaction(
+      return await transactionRepository.createStandardTransaction(
         transactionCompanion,
       );
     } catch (e) {
@@ -47,7 +47,7 @@ mixin TransactionCrudUsecaseOperations {
     }
   }
 
-  Future<Either<Failure, TransactionData>> updateTransaction({
+  Future<Either<Failure, StandardTransaction>> updateStandardTransaction({
     required int id,
     TransactionDate? actualDate,
     TransactionDate? competenceDate,
@@ -115,30 +115,100 @@ mixin TransactionCrudUsecaseOperations {
               : const Value.absent(),
         );
 
-        return transactionRepository.updateTransaction(
+        final result = await transactionRepository.updateStandardTransaction(
           id,
           transactionCompanion,
         );
+
+        return result;
       });
     } catch (e) {
       return Either.left(
-        DatabaseFailure('Unexpected error editing transaction: $e'),
+        DatabaseFailure('Unexpected error editing standard transaction: $e'),
       );
     }
   }
 
-  Future<Either<Failure, bool>> deleteTransaction(int id) async {
+  Future<Either<Failure, List<TransferTransaction>>> updateTransferTransaction({
+    required String transferId,
+    TransactionDate? actualDate,
+    TransactionDate? competenceDate,
+    TransactionAmount? amount,
+    TransactionDescription? description,
+    TransactionPaymentStatus? paymentStatus,
+    TransactionRecurrenceType? recurrenceType,
+    TransactionRecurrenceFrequency? recurrenceFrequency,
+  }) async {
     try {
-      return await transactionRepository.deleteTransaction(id);
+      return await transactionRepository.updateTransferTransaction(
+        transferId: transferId,
+        actualDate: actualDate?.value,
+        competenceDate: competenceDate?.value,
+        amount: amount?.value,
+        description: description?.value,
+        paymentStatus: paymentStatus,
+        recurrenceType: recurrenceType,
+        recurrenceFrequency: recurrenceFrequency,
+      );
     } catch (e) {
       return Either.left(
-        DatabaseFailure('Unexpected error deleting transaction: $e'),
+        DatabaseFailure('Unexpected error updating transfer transaction: $e'),
+      );
+    }
+  }
+
+  Future<Either<Failure, bool>> deleteStandardTransaction(int id) async {
+    try {
+      return await transactionRepository.deleteStandardTransaction(id);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error deleting standard transaction: $e'),
+      );
+    }
+  }
+
+  Future<Either<Failure, bool>> deleteTransferTransaction(
+    String transferId,
+  ) async {
+    try {
+      return await transactionRepository.deleteTransferTransaction(transferId);
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error deleting transfer transaction: $e'),
+      );
+    }
+  }
+
+  Future<Either<Failure, List<TransferTransaction>>>
+  createTransferBetweenAccounts({
+    required TransactionAccountId sourceAccountId,
+    required TransactionAccountId targetAccountId,
+    required TransactionAmount amount,
+    required TransactionDate date,
+    TransactionDescription? description,
+  }) async {
+    try {
+      if (sourceAccountId.value == targetAccountId.value) {
+        return Either.left(
+          const ValidationFailure('Source and target accounts must differ'),
+        );
+      }
+      return transactionRepository.createTransferBetweenAccounts(
+        sourceAccountId: sourceAccountId.value,
+        targetAccountId: targetAccountId.value,
+        amount: amount.value.abs(),
+        date: date.value,
+        description: description?.value,
+      );
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Unexpected error transferring between accounts: $e'),
       );
     }
   }
 
   bool _hasNoChanges({
-    required TransactionData currentTransaction,
+    required DataTransaction currentTransaction,
     TransactionDate? actualDate,
     TransactionDate? competenceDate,
     TransactionAmount? amount,
@@ -179,39 +249,5 @@ mixin TransactionCrudUsecaseOperations {
         date1.hour == date2.hour &&
         date1.minute == date2.minute &&
         date1.second == date2.second;
-  }
-
-  Future<Either<Failure, List<TransactionData>>> getAllTransactions({
-    int? limit,
-    int? offset,
-  }) async {
-    try {
-      return await transactionRepository.getAllTransactions(
-        limit: limit,
-        offset: offset,
-      );
-    } catch (e) {
-      return Either.left(
-        DatabaseFailure('Unexpected error getting transactions: $e'),
-      );
-    }
-  }
-
-  Future<Either<Failure, List<TransactionData>>> getTransactionsByAccount(
-    int accountId, {
-    int? limit,
-    int? offset,
-  }) async {
-    try {
-      return await transactionRepository.getTransactionsByAccount(
-        accountId,
-        limit: limit,
-        offset: offset,
-      );
-    } catch (e) {
-      return Either.left(
-        DatabaseFailure('Unexpected error getting transactions by account: $e'),
-      );
-    }
   }
 }

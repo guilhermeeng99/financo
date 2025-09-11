@@ -1,53 +1,162 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
+import 'models/transaction_form_types.dart';
+import 'models/transaction_form_validator.dart';
+
 CreateAndEditTransactionBloc get createAndEditTransactionBloc =>
     Modular.get<CreateAndEditTransactionBloc>();
 
 class CreateAndEditTransactionBloc extends GetxController {
   CreateAndEditTransactionBloc() {
+    // Initialize reactive date
+    actualDateRx = formData.value.actualDate.obs;
+
     _loadAccounts();
     _loadCategories();
 
-    ever(selectedTransactionType, (FinancialType transactionType) {
-      _loadCategories();
+    // Listen to form data changes
+    ever(formData, (TransactionFormData data) {
+      // Sync reactive date
+      actualDateRx.value = data.actualDate;
+
+      if (!data.transactionScreenType.isTransfer) {
+        _loadCategories();
+      }
+    });
+
+    // Listen to reactive date changes from calendar widget
+    ever(actualDateRx, (DateTime date) {
+      // Only update if the date is different to avoid infinite loop
+      if (formData.value.actualDate != date) {
+        formData.value = formData.value.copyWith(actualDate: date);
+      }
     });
   }
-  final RxString description = ''.obs;
-  final RxString descriptionError = ''.obs;
 
-  final RxDouble amount = 0.0.obs;
-  final RxString amountError = ''.obs;
-
-  final Rx<DateTime> actualDate = DateTime.now().obs;
-  final Rx<DateTime> competenceDate = DateTime.now().obs;
-  final selectedTransactionType = FinancialType.expense.obs;
-  final selectedPaymentStatus = TransactionPaymentStatus.unpaid.obs;
-  final selectedRecurrenceType = TransactionRecurrenceType.unique.obs;
-  final selectedRecurrenceFrequency =
-      TransactionRecurrenceFrequency.monthly.obs;
-  final Rx<int?> selectedAccountId = Rx<int?>(null);
-  final RxString accountError = ''.obs;
-
-  final Rx<int?> selectedCategoryId = Rx<int?>(null);
-  final RxString categoryError = ''.obs;
-
+  final Rx<TransactionFormData> formData = TransactionFormData().obs;
+  final Rx<TransactionFormErrors> formErrors =
+      const TransactionFormErrors().obs;
   final RxList<AccountData> accounts = <AccountData>[].obs;
   final RxList<CategoryData> categories = <CategoryData>[].obs;
 
-  void initializeWithTransactionData(TransactionData transaction) {
-    description.value = transaction.description ?? '';
-    amount.value = transaction.amount.abs();
-    actualDate.value = transaction.actualDate;
-    competenceDate.value = transaction.competenceDate;
-    selectedTransactionType.value = transaction.transactionType;
-    selectedPaymentStatus.value = transaction.paymentStatus;
-    selectedRecurrenceType.value = transaction.recurrenceType;
-    selectedRecurrenceFrequency.value =
-        transaction.recurrenceFrequency ??
-        TransactionRecurrenceFrequency.monthly;
-    selectedAccountId.value = transaction.accountId;
-    selectedCategoryId.value = transaction.categoryId;
+  // Reactive date for calendar widgets
+  late final Rx<DateTime> actualDateRx;
+
+  // Convenience getters
+  String get description => formData.value.description;
+  double get amount => formData.value.amount;
+  DateTime get actualDate => formData.value.actualDate;
+  DateTime get competenceDate => formData.value.competenceDate;
+  TransactionScreenType get selectedTransactionScreenType =>
+      formData.value.transactionScreenType;
+  int? get selectedTargetAccountId => formData.value.selectedTargetAccountId;
+  TransactionPaymentStatus get selectedPaymentStatus =>
+      formData.value.paymentStatus;
+  TransactionRecurrenceType get selectedRecurrenceType =>
+      formData.value.recurrenceType;
+  TransactionRecurrenceFrequency get selectedRecurrenceFrequency =>
+      formData.value.recurrenceFrequency;
+  int? get selectedAccountId => formData.value.selectedAccountId;
+  int? get selectedCategoryId => formData.value.selectedCategoryId;
+
+  // Form error getters
+  String get descriptionError => formErrors.value.description;
+  String get amountError => formErrors.value.amount;
+  String get accountError => formErrors.value.account;
+  String get categoryError => formErrors.value.category;
+
+  bool get isTransfer => formData.value.isTransfer;
+  FinancialType? get selectedTransactionType =>
+      formData.value.selectedTransactionType;
+
+  TransactionFormErrors get formErrorsValue => formErrors.value;
+
+  // Update methods
+  void updateDescription(String value) {
+    formData.value = formData.value.copyWith(description: value);
+    _clearFormError('description');
+  }
+
+  void updateAmount(double value) {
+    formData.value = formData.value.copyWith(amount: value);
+    _clearFormError('amount');
+  }
+
+  void updateActualDate(DateTime value) {
+    formData.value = formData.value.copyWith(actualDate: value);
+  }
+
+  void updateCompetenceDate(DateTime value) {
+    formData.value = formData.value.copyWith(competenceDate: value);
+  }
+
+  void updateTransactionScreenType(TransactionScreenType type) {
+    formData.value = formData.value.copyWith(
+      transactionScreenType: type,
+      selectedTargetAccountId: type.isTransfer
+          ? null
+          : formData.value.selectedTargetAccountId,
+    );
+  }
+
+  void updateSelectedTargetAccountId(int? value) {
+    formData.value = formData.value.copyWith(selectedTargetAccountId: value);
+    _clearFormError('account');
+  }
+
+  void updatePaymentStatus(TransactionPaymentStatus value) {
+    formData.value = formData.value.copyWith(paymentStatus: value);
+  }
+
+  void updateRecurrenceType(TransactionRecurrenceType value) {
+    formData.value = formData.value.copyWith(recurrenceType: value);
+  }
+
+  void updateRecurrenceFrequency(TransactionRecurrenceFrequency value) {
+    formData.value = formData.value.copyWith(recurrenceFrequency: value);
+  }
+
+  void updateSelectedAccountId(int? value) {
+    formData.value = formData.value.copyWith(selectedAccountId: value);
+    _clearFormError('account');
+  }
+
+  void updateSelectedCategoryId(int? value) {
+    formData.value = formData.value.copyWith(selectedCategoryId: value);
+    _clearFormError('category');
+  }
+
+  void _clearFormError(String field) {
+    switch (field) {
+      case 'description':
+        formErrors.value = formErrors.value.copyWith(description: '');
+
+      case 'amount':
+        formErrors.value = formErrors.value.copyWith(amount: '');
+
+      case 'account':
+        formErrors.value = formErrors.value.copyWith(account: '');
+
+      case 'category':
+        formErrors.value = formErrors.value.copyWith(category: '');
+    }
+  }
+
+  set formErrorsValue(TransactionFormErrors errors) {
+    formErrors.value = errors;
+  }
+
+  void clearAllErrors() {
+    formErrors.value = const TransactionFormErrors();
+  }
+
+  void setTransactionScreenType(TransactionScreenType type) {
+    updateTransactionScreenType(type);
+  }
+
+  void initializeWithTransactionData(DataTransaction transaction) {
+    formData.value = TransactionFormData.fromTransaction(transaction);
   }
 
   Future<void> _loadAccounts() async {
@@ -66,9 +175,12 @@ class CreateAndEditTransactionBloc extends GetxController {
   }
 
   Future<void> _loadCategories() async {
+    final screenType = formData.value.transactionScreenType;
+    if (screenType.isTransfer) return;
+
     final categoryUsecase = Modular.get<ICategoryUsecase>();
     final result = await categoryUsecase.getCategoriesByType(
-      selectedTransactionType.value,
+      screenType.financialType!,
     );
 
     result.fold(
@@ -96,20 +208,10 @@ class CreateAndEditTransactionBloc extends GetxController {
 
   @override
   void onClose() {
-    description.close();
-    descriptionError.close();
-    amount.close();
-    amountError.close();
-    actualDate.close();
-    competenceDate.close();
-    selectedTransactionType.close();
-    selectedPaymentStatus.close();
-    selectedRecurrenceType.close();
-    selectedRecurrenceFrequency.close();
-    selectedAccountId.close();
-    accountError.close();
-    selectedCategoryId.close();
-    categoryError.close();
+    formData.close();
+    formErrors.close();
+    accounts.close();
+    categories.close();
     super.onClose();
   }
 }

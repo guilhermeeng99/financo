@@ -48,7 +48,10 @@
       "recurrence": "Recurrence",
       "frequency": "Frequency",
       "entries": "Entries",
-      "transfers": "Transfers",
+      "transfers": {
+        "one": "Transfer",
+        "other": "Transfers"
+      },
       "exits": "Exits",
       "confirmed": "Confirmed",
       "projected": "Projected",
@@ -68,6 +71,8 @@
     "new_account": "New Account",
     "edit_account": "Edit Account",
     "select_account": "Select Account",
+    "origin_account": "Origin Account",
+    "destination_account": "Destination Account",
     "show_only_active": "Show Only Active Accounts",
     "types": {
       "checking_account": "Checking Account",
@@ -96,6 +101,7 @@
     "import_categories": "Import Categories",
     "select_category": "Select Category",
     "subcategory_of": "Subcategory of",
+    "no_category": "No Category",
     "validation": {
       "name_cannot_be_empty": "Category name cannot be empty",
       "name_min_length_number": "Category name must be at least $number characters long",
@@ -110,6 +116,7 @@
     "edit_transaction": "Edit Transaction",
     "export_transactions": "Export Transactions",
     "import_transactions": "Import Transactions",
+    "unknown_transfer": "Unknown Transfer",
     "types": {
       "income": "Income",
       "expense": "Expense"

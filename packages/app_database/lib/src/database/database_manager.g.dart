@@ -474,7 +474,7 @@ class $CategoriesTable extends Categories
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {name, categoryType, parentCategoryId},
+    {name, categoryType},
   ];
   @override
   CategoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
@@ -606,7 +606,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryData> {
 }
 
 class $TransactionsTable extends Transactions
-    with TableInfo<$TransactionsTable, TransactionData> {
+    with TableInfo<$TransactionsTable, DataTransaction> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -737,12 +737,37 @@ class $TransactionsTable extends Transactions
   late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
     'category_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES categories (id)',
     ),
+  );
+  static const VerificationMeta _targetAccountIdMeta = const VerificationMeta(
+    'targetAccountId',
+  );
+  @override
+  late final GeneratedColumn<int> targetAccountId = GeneratedColumn<int>(
+    'target_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (id)',
+    ),
+  );
+  static const VerificationMeta _transferIdMeta = const VerificationMeta(
+    'transferId',
+  );
+  @override
+  late final GeneratedColumn<String> transferId = GeneratedColumn<String>(
+    'transfer_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -781,6 +806,8 @@ class $TransactionsTable extends Transactions
     recurrenceFrequency,
     accountId,
     categoryId,
+    targetAccountId,
+    transferId,
     createdAt,
     updatedAt,
   ];
@@ -791,7 +818,7 @@ class $TransactionsTable extends Transactions
   static const String $name = 'transactions';
   @override
   VerificationContext validateIntegrity(
-    Insertable<TransactionData> instance, {
+    Insertable<DataTransaction> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -848,8 +875,21 @@ class $TransactionsTable extends Transactions
         _categoryIdMeta,
         categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('target_account_id')) {
+      context.handle(
+        _targetAccountIdMeta,
+        targetAccountId.isAcceptableOrUnknown(
+          data['target_account_id']!,
+          _targetAccountIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('transfer_id')) {
+      context.handle(
+        _transferIdMeta,
+        transferId.isAcceptableOrUnknown(data['transfer_id']!, _transferIdMeta),
+      );
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -869,16 +909,12 @@ class $TransactionsTable extends Transactions
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TransactionData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  DataTransaction map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TransactionData(
+    return DataTransaction(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
-      )!,
-      actualDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}actual_date'],
       )!,
       transactionType: $TransactionsTable.$convertertransactionType.fromSql(
         attachedDatabase.typeMapping.read(
@@ -886,6 +922,10 @@ class $TransactionsTable extends Transactions
           data['${effectivePrefix}transaction_type'],
         )!,
       ),
+      actualDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}actual_date'],
+      )!,
       competenceDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}competence_date'],
@@ -910,10 +950,6 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}account_id'],
       )!,
-      categoryId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}category_id'],
-      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -922,10 +958,6 @@ class $TransactionsTable extends Transactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      ),
       recurrenceFrequency: $TransactionsTable.$converterrecurrenceFrequencyn
           .fromSql(
             attachedDatabase.typeMapping.read(
@@ -933,6 +965,22 @@ class $TransactionsTable extends Transactions
               data['${effectivePrefix}recurrence_frequency'],
             ),
           ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}category_id'],
+      ),
+      targetAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_account_id'],
+      ),
+      transferId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transfer_id'],
+      ),
     );
   }
 
@@ -964,7 +1012,7 @@ class $TransactionsTable extends Transactions
   );
 }
 
-class TransactionsCompanion extends UpdateCompanion<TransactionData> {
+class TransactionsCompanion extends UpdateCompanion<DataTransaction> {
   final Value<int> id;
   final Value<FinancialType> transactionType;
   final Value<DateTime> actualDate;
@@ -975,7 +1023,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
   final Value<TransactionRecurrenceType> recurrenceType;
   final Value<TransactionRecurrenceFrequency?> recurrenceFrequency;
   final Value<int> accountId;
-  final Value<int> categoryId;
+  final Value<int?> categoryId;
+  final Value<int?> targetAccountId;
+  final Value<String?> transferId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const TransactionsCompanion({
@@ -990,6 +1040,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     this.recurrenceFrequency = const Value.absent(),
     this.accountId = const Value.absent(),
     this.categoryId = const Value.absent(),
+    this.targetAccountId = const Value.absent(),
+    this.transferId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -1004,7 +1056,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     required TransactionRecurrenceType recurrenceType,
     this.recurrenceFrequency = const Value.absent(),
     required int accountId,
-    required int categoryId,
+    this.categoryId = const Value.absent(),
+    this.targetAccountId = const Value.absent(),
+    this.transferId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   }) : transactionType = Value(transactionType),
@@ -1013,9 +1067,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
        amount = Value(amount),
        paymentStatus = Value(paymentStatus),
        recurrenceType = Value(recurrenceType),
-       accountId = Value(accountId),
-       categoryId = Value(categoryId);
-  static Insertable<TransactionData> custom({
+       accountId = Value(accountId);
+  static Insertable<DataTransaction> custom({
     Expression<int>? id,
     Expression<String>? transactionType,
     Expression<DateTime>? actualDate,
@@ -1027,6 +1080,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     Expression<String>? recurrenceFrequency,
     Expression<int>? accountId,
     Expression<int>? categoryId,
+    Expression<int>? targetAccountId,
+    Expression<String>? transferId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -1043,6 +1098,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
         'recurrence_frequency': recurrenceFrequency,
       if (accountId != null) 'account_id': accountId,
       if (categoryId != null) 'category_id': categoryId,
+      if (targetAccountId != null) 'target_account_id': targetAccountId,
+      if (transferId != null) 'transfer_id': transferId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -1059,7 +1116,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     Value<TransactionRecurrenceType>? recurrenceType,
     Value<TransactionRecurrenceFrequency?>? recurrenceFrequency,
     Value<int>? accountId,
-    Value<int>? categoryId,
+    Value<int?>? categoryId,
+    Value<int?>? targetAccountId,
+    Value<String?>? transferId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
   }) {
@@ -1075,6 +1134,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
       recurrenceFrequency: recurrenceFrequency ?? this.recurrenceFrequency,
       accountId: accountId ?? this.accountId,
       categoryId: categoryId ?? this.categoryId,
+      targetAccountId: targetAccountId ?? this.targetAccountId,
+      transferId: transferId ?? this.transferId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -1128,6 +1189,12 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
     if (categoryId.present) {
       map['category_id'] = Variable<int>(categoryId.value);
     }
+    if (targetAccountId.present) {
+      map['target_account_id'] = Variable<int>(targetAccountId.value);
+    }
+    if (transferId.present) {
+      map['transfer_id'] = Variable<String>(transferId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1151,6 +1218,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionData> {
           ..write('recurrenceFrequency: $recurrenceFrequency, ')
           ..write('accountId: $accountId, ')
           ..write('categoryId: $categoryId, ')
+          ..write('targetAccountId: $targetAccountId, ')
+          ..write('transferId: $transferId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1197,29 +1266,6 @@ typedef $$AccountsTableUpdateCompanionBuilder =
       Value<bool> isActive,
       Value<DateTime> initDate,
     });
-
-final class $$AccountsTableReferences
-    extends BaseReferences<_$DatabaseManager, $AccountsTable, AccountData> {
-  $$AccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<$TransactionsTable, List<TransactionData>>
-  _transactionsRefsTable(_$DatabaseManager db) => MultiTypedResultKey.fromTable(
-    db.transactions,
-    aliasName: $_aliasNameGenerator(db.accounts.id, db.transactions.accountId),
-  );
-
-  $$TransactionsTableProcessedTableManager get transactionsRefs {
-    final manager = $$TransactionsTableTableManager(
-      $_db,
-      $_db.transactions,
-    ).filter((f) => f.accountId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
 
 class $$AccountsTableFilterComposer
     extends Composer<_$DatabaseManager, $AccountsTable> {
@@ -1272,31 +1318,6 @@ class $$AccountsTableFilterComposer
     column: $table.initDate,
     builder: (column) => ColumnFilters(column),
   );
-
-  Expression<bool> transactionsRefs(
-    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
-  ) {
-    final $$TransactionsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
-      getReferencedColumn: (t) => t.accountId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableFilterComposer(
-            $db: $db,
-            $table: $db.transactions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$AccountsTableOrderingComposer
@@ -1389,31 +1410,6 @@ class $$AccountsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get initDate =>
       $composableBuilder(column: $table.initDate, builder: (column) => column);
-
-  Expression<T> transactionsRefs<T extends Object>(
-    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
-  ) {
-    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.transactions,
-      getReferencedColumn: (t) => t.accountId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$TransactionsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.transactions,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
 }
 
 class $$AccountsTableTableManager
@@ -1427,9 +1423,12 @@ class $$AccountsTableTableManager
           $$AccountsTableAnnotationComposer,
           $$AccountsTableCreateCompanionBuilder,
           $$AccountsTableUpdateCompanionBuilder,
-          (AccountData, $$AccountsTableReferences),
+          (
+            AccountData,
+            BaseReferences<_$DatabaseManager, $AccountsTable, AccountData>,
+          ),
           AccountData,
-          PrefetchHooks Function({bool transactionsRefs})
+          PrefetchHooks Function()
         > {
   $$AccountsTableTableManager(_$DatabaseManager db, $AccountsTable table)
     : super(
@@ -1483,42 +1482,9 @@ class $$AccountsTableTableManager
                 initDate: initDate,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$AccountsTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({transactionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (transactionsRefs)
-                    await $_getPrefetchedData<
-                      AccountData,
-                      $AccountsTable,
-                      TransactionData
-                    >(
-                      currentTable: table,
-                      referencedTable: $$AccountsTableReferences
-                          ._transactionsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$AccountsTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).transactionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.accountId == item.id),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -1533,9 +1499,12 @@ typedef $$AccountsTableProcessedTableManager =
       $$AccountsTableAnnotationComposer,
       $$AccountsTableCreateCompanionBuilder,
       $$AccountsTableUpdateCompanionBuilder,
-      (AccountData, $$AccountsTableReferences),
+      (
+        AccountData,
+        BaseReferences<_$DatabaseManager, $AccountsTable, AccountData>,
+      ),
       AccountData,
-      PrefetchHooks Function({bool transactionsRefs})
+      PrefetchHooks Function()
     >;
 typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({
@@ -1577,7 +1546,7 @@ final class $$CategoriesTableReferences
     );
   }
 
-  static MultiTypedResultKey<$TransactionsTable, List<TransactionData>>
+  static MultiTypedResultKey<$TransactionsTable, List<DataTransaction>>
   _transactionsRefsTable(_$DatabaseManager db) => MultiTypedResultKey.fromTable(
     db.transactions,
     aliasName: $_aliasNameGenerator(
@@ -1912,7 +1881,7 @@ class $$CategoriesTableTableManager
                         await $_getPrefetchedData<
                           CategoryData,
                           $CategoriesTable,
-                          TransactionData
+                          DataTransaction
                         >(
                           currentTable: table,
                           referencedTable: $$CategoriesTableReferences
@@ -1963,7 +1932,9 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required TransactionRecurrenceType recurrenceType,
       Value<TransactionRecurrenceFrequency?> recurrenceFrequency,
       required int accountId,
-      required int categoryId,
+      Value<int?> categoryId,
+      Value<int?> targetAccountId,
+      Value<String?> transferId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
@@ -1979,14 +1950,16 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<TransactionRecurrenceType> recurrenceType,
       Value<TransactionRecurrenceFrequency?> recurrenceFrequency,
       Value<int> accountId,
-      Value<int> categoryId,
+      Value<int?> categoryId,
+      Value<int?> targetAccountId,
+      Value<String?> transferId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
     });
 
 final class $$TransactionsTableReferences
     extends
-        BaseReferences<_$DatabaseManager, $TransactionsTable, TransactionData> {
+        BaseReferences<_$DatabaseManager, $TransactionsTable, DataTransaction> {
   $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $AccountsTable _accountIdTable(_$DatabaseManager db) =>
@@ -2013,14 +1986,33 @@ final class $$TransactionsTableReferences
         $_aliasNameGenerator(db.transactions.categoryId, db.categories.id),
       );
 
-  $$CategoriesTableProcessedTableManager get categoryId {
-    final $_column = $_itemColumn<int>('category_id')!;
-
+  $$CategoriesTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<int>('category_id');
+    if ($_column == null) return null;
     final manager = $$CategoriesTableTableManager(
       $_db,
       $_db.categories,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $AccountsTable _targetAccountIdTable(_$DatabaseManager db) =>
+      db.accounts.createAlias(
+        $_aliasNameGenerator(db.transactions.targetAccountId, db.accounts.id),
+      );
+
+  $$AccountsTableProcessedTableManager? get targetAccountId {
+    final $_column = $_itemColumn<int>('target_account_id');
+    if ($_column == null) return null;
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_targetAccountIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -2098,6 +2090,11 @@ class $$TransactionsTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
+  ColumnFilters<String> get transferId => $composableBuilder(
+    column: $table.transferId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -2145,6 +2142,29 @@ class $$TransactionsTableFilterComposer
           }) => $$CategoriesTableFilterComposer(
             $db: $db,
             $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableFilterComposer get targetAccountId {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.targetAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2209,6 +2229,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get transferId => $composableBuilder(
+    column: $table.transferId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2256,6 +2281,29 @@ class $$TransactionsTableOrderingComposer
           }) => $$CategoriesTableOrderingComposer(
             $db: $db,
             $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableOrderingComposer get targetAccountId {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.targetAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2320,6 +2368,11 @@ class $$TransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get transferId => $composableBuilder(
+    column: $table.transferId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -2371,6 +2424,29 @@ class $$TransactionsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$AccountsTableAnnotationComposer get targetAccountId {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.targetAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -2378,15 +2454,19 @@ class $$TransactionsTableTableManager
         RootTableManager<
           _$DatabaseManager,
           $TransactionsTable,
-          TransactionData,
+          DataTransaction,
           $$TransactionsTableFilterComposer,
           $$TransactionsTableOrderingComposer,
           $$TransactionsTableAnnotationComposer,
           $$TransactionsTableCreateCompanionBuilder,
           $$TransactionsTableUpdateCompanionBuilder,
-          (TransactionData, $$TransactionsTableReferences),
-          TransactionData,
-          PrefetchHooks Function({bool accountId, bool categoryId})
+          (DataTransaction, $$TransactionsTableReferences),
+          DataTransaction,
+          PrefetchHooks Function({
+            bool accountId,
+            bool categoryId,
+            bool targetAccountId,
+          })
         > {
   $$TransactionsTableTableManager(
     _$DatabaseManager db,
@@ -2416,7 +2496,9 @@ class $$TransactionsTableTableManager
                 Value<TransactionRecurrenceFrequency?> recurrenceFrequency =
                     const Value.absent(),
                 Value<int> accountId = const Value.absent(),
-                Value<int> categoryId = const Value.absent(),
+                Value<int?> categoryId = const Value.absent(),
+                Value<int?> targetAccountId = const Value.absent(),
+                Value<String?> transferId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TransactionsCompanion(
@@ -2431,6 +2513,8 @@ class $$TransactionsTableTableManager
                 recurrenceFrequency: recurrenceFrequency,
                 accountId: accountId,
                 categoryId: categoryId,
+                targetAccountId: targetAccountId,
+                transferId: transferId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -2447,7 +2531,9 @@ class $$TransactionsTableTableManager
                 Value<TransactionRecurrenceFrequency?> recurrenceFrequency =
                     const Value.absent(),
                 required int accountId,
-                required int categoryId,
+                Value<int?> categoryId = const Value.absent(),
+                Value<int?> targetAccountId = const Value.absent(),
+                Value<String?> transferId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
               }) => TransactionsCompanion.insert(
@@ -2462,6 +2548,8 @@ class $$TransactionsTableTableManager
                 recurrenceFrequency: recurrenceFrequency,
                 accountId: accountId,
                 categoryId: categoryId,
+                targetAccountId: targetAccountId,
+                transferId: transferId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
               ),
@@ -2473,60 +2561,84 @@ class $$TransactionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({accountId = false, categoryId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (accountId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.accountId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._accountIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._accountIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-                    if (categoryId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.categoryId,
-                                referencedTable: $$TransactionsTableReferences
-                                    ._categoryIdTable(db),
-                                referencedColumn: $$TransactionsTableReferences
-                                    ._categoryIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                accountId = false,
+                categoryId = false,
+                targetAccountId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (accountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.accountId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._accountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._accountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (targetAccountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.targetAccountId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._targetAccountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._targetAccountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -2535,15 +2647,19 @@ typedef $$TransactionsTableProcessedTableManager =
     ProcessedTableManager<
       _$DatabaseManager,
       $TransactionsTable,
-      TransactionData,
+      DataTransaction,
       $$TransactionsTableFilterComposer,
       $$TransactionsTableOrderingComposer,
       $$TransactionsTableAnnotationComposer,
       $$TransactionsTableCreateCompanionBuilder,
       $$TransactionsTableUpdateCompanionBuilder,
-      (TransactionData, $$TransactionsTableReferences),
-      TransactionData,
-      PrefetchHooks Function({bool accountId, bool categoryId})
+      (DataTransaction, $$TransactionsTableReferences),
+      DataTransaction,
+      PrefetchHooks Function({
+        bool accountId,
+        bool categoryId,
+        bool targetAccountId,
+      })
     >;
 
 class $DatabaseManagerManager {

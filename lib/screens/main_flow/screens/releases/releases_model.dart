@@ -25,7 +25,7 @@ class ReleasesModel {
     );
   }
 
-  void onTapOpenTransaction(TransactionData transaction) {
+  void onTapOpenTransaction(DataTransaction transaction) {
     PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
@@ -39,10 +39,20 @@ class ReleasesModel {
     );
   }
 
-  Future<void> onTapDeleteTransaction(TransactionData transaction) async {
+  Future<void> onTapDeleteTransaction(DataTransaction transaction) async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
 
-    final result = await transactionUsecase.deleteTransaction(transaction.id);
+    final Either<Failure, bool> result;
+
+    if (transaction.isTransfer) {
+      result = await transactionUsecase.deleteTransferTransaction(
+        transaction.transferId!,
+      );
+    } else {
+      result = await transactionUsecase.deleteStandardTransaction(
+        transaction.id,
+      );
+    }
 
     result.fold(
       (failure) {
@@ -62,7 +72,7 @@ class ReleasesModel {
     );
   }
 
-  void onTapCloneTransaction(TransactionData transaction) {
+  void onTapCloneTransaction(DataTransaction transaction) {
     PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
@@ -82,15 +92,24 @@ class ReleasesModel {
   }
 
   Future<void> onTapPayOrUnpayTransaction({
-    required TransactionData transaction,
+    required DataTransaction transaction,
     required TransactionPaymentStatus paymentStatus,
   }) async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
 
-    final result = await transactionUsecase.updateTransaction(
-      id: transaction.id,
-      paymentStatus: paymentStatus,
-    );
+    final Either<Failure, dynamic> result;
+
+    if (transaction.isTransfer) {
+      result = await transactionUsecase.updateTransferTransaction(
+        transferId: transaction.transferId!,
+        paymentStatus: paymentStatus,
+      );
+    } else {
+      result = await transactionUsecase.updateStandardTransaction(
+        id: transaction.id,
+        paymentStatus: paymentStatus,
+      );
+    }
 
     result.fold(
       (failure) {
@@ -100,7 +119,7 @@ class ReleasesModel {
           type: SnackBarType.error,
         );
       },
-      (updatedTransaction) {
+      (updatedTransactionOrTransactions) {
         logger.i('Payment status updated successfully');
 
         transactionsBloc.loadTransactions();
@@ -232,7 +251,7 @@ class ReleasesModelExcel {
               ),
             )
             .value = TextCellValue(
-          transaction.categoryName,
+          transaction.categoryName ?? 'No Category',
         );
 
         sheet

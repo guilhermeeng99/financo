@@ -2,7 +2,7 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/releases_model.dart';
 
-enum TransactionMenuAction implements PopupMenuAction<TransactionData> {
+enum TransactionMenuAction implements PopupMenuAction<DataTransaction> {
   edit('edit'),
   pay('pay'),
   unPay('unPay'),
@@ -46,7 +46,7 @@ enum TransactionMenuAction implements PopupMenuAction<TransactionData> {
   }
 
   @override
-  void execute(TransactionData transaction) {
+  void execute(DataTransaction transaction) {
     switch (this) {
       case TransactionMenuAction.edit:
         releasesModel.onTapOpenTransaction(transaction);
@@ -68,7 +68,7 @@ enum TransactionMenuAction implements PopupMenuAction<TransactionData> {
   }
 
   @override
-  bool isVisible(TransactionData transaction) {
+  bool isVisible(DataTransaction transaction) {
     switch (this) {
       case TransactionMenuAction.pay:
         return transaction.paymentStatus == TransactionPaymentStatus.unpaid;

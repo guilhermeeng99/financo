@@ -98,6 +98,12 @@ class TranslationsAccountsEn {
 	/// en: 'Select Account'
 	String get select_account => 'Select Account';
 
+	/// en: 'Origin Account'
+	String get origin_account => 'Origin Account';
+
+	/// en: 'Destination Account'
+	String get destination_account => 'Destination Account';
+
 	/// en: 'Show Only Active Accounts'
 	String get show_only_active => 'Show Only Active Accounts';
 
@@ -137,6 +143,9 @@ class TranslationsCategoriesEn {
 	/// en: 'Subcategory of'
 	String get subcategory_of => 'Subcategory of';
 
+	/// en: 'No Category'
+	String get no_category => 'No Category';
+
 	late final TranslationsCategoriesValidationEn validation = TranslationsCategoriesValidationEn._(_root);
 }
 
@@ -159,6 +168,9 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Import Transactions'
 	String get import_transactions => 'Import Transactions';
+
+	/// en: 'Unknown Transfer'
+	String get unknown_transfer => 'Unknown Transfer';
 
 	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn._(_root);
 	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn._(_root);
@@ -314,8 +326,11 @@ class TranslationsCommonLabelsEn {
 	/// en: 'Entries'
 	String get entries => 'Entries';
 
-	/// en: 'Transfers'
-	String get transfers => 'Transfers';
+	/// en: '(one) {Transfer} (other) {Transfers}'
+	String transfers({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+		one: 'Transfer',
+		other: 'Transfers',
+	);
 
 	/// en: 'Exits'
 	String get exits => 'Exits';
@@ -655,7 +670,10 @@ extension on Translations {
 			case 'common.labels.recurrence': return 'Recurrence';
 			case 'common.labels.frequency': return 'Frequency';
 			case 'common.labels.entries': return 'Entries';
-			case 'common.labels.transfers': return 'Transfers';
+			case 'common.labels.transfers': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+				one: 'Transfer',
+				other: 'Transfers',
+			);
 			case 'common.labels.exits': return 'Exits';
 			case 'common.labels.confirmed': return 'Confirmed';
 			case 'common.labels.projected': return 'Projected';
@@ -670,6 +688,8 @@ extension on Translations {
 			case 'accounts.new_account': return 'New Account';
 			case 'accounts.edit_account': return 'Edit Account';
 			case 'accounts.select_account': return 'Select Account';
+			case 'accounts.origin_account': return 'Origin Account';
+			case 'accounts.destination_account': return 'Destination Account';
 			case 'accounts.show_only_active': return 'Show Only Active Accounts';
 			case 'accounts.types.checking_account': return 'Checking Account';
 			case 'accounts.types.credit_card': return 'Credit Card';
@@ -692,6 +712,7 @@ extension on Translations {
 			case 'categories.import_categories': return 'Import Categories';
 			case 'categories.select_category': return 'Select Category';
 			case 'categories.subcategory_of': return 'Subcategory of';
+			case 'categories.no_category': return 'No Category';
 			case 'categories.validation.name_cannot_be_empty': return 'Category name cannot be empty';
 			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'Category name must be at least ${number} characters long';
 			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'Category name must be at most ${number} characters long';
@@ -702,6 +723,7 @@ extension on Translations {
 			case 'transactions.edit_transaction': return 'Edit Transaction';
 			case 'transactions.export_transactions': return 'Export Transactions';
 			case 'transactions.import_transactions': return 'Import Transactions';
+			case 'transactions.unknown_transfer': return 'Unknown Transfer';
 			case 'transactions.types.income': return 'Income';
 			case 'transactions.types.expense': return 'Expense';
 			case 'transactions.recurrence_type.unique': return 'Unique';

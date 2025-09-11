@@ -108,7 +108,13 @@ class _TransactionItem extends StatelessWidget {
                       spacing: 10,
                       children: [
                         _TransactionItemContainer(transaction.accountName),
-                        _TransactionItemContainer(transaction.categoryName),
+                        _TransactionItemContainer(
+                          transaction.t.isTransfer
+                              ? (transaction.otherAccount ??
+                                    context.t.transactions.unknown_transfer)
+                              : (transaction.categoryName ??
+                                    context.t.categories.no_category),
+                        ),
                       ],
                     ),
                   ],
@@ -127,7 +133,7 @@ class _TransactionItem extends StatelessWidget {
                         const Icon(Icons.restart_alt, size: 20),
                       const Spacer(),
                       CWAmoutValue(value: transaction.t.amount),
-                      CWPopupMenuButton<TransactionData, TransactionMenuAction>(
+                      CWPopupMenuButton<DataTransaction, TransactionMenuAction>(
                         item: transaction.t,
                         actions: TransactionMenuAction.values,
                       ),

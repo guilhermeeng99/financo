@@ -80,6 +80,8 @@ class _TranslationsAccountsPt implements TranslationsAccountsEn {
 	@override String get new_account => 'Nova Conta';
 	@override String get edit_account => 'Editar Conta';
 	@override String get select_account => 'Selecionar Conta';
+	@override String get origin_account => 'Conta de Origem';
+	@override String get destination_account => 'Conta de Destino';
 	@override String get show_only_active => 'Mostrar Apenas Contas Ativas';
 	@override late final _TranslationsAccountsTypesPt types = _TranslationsAccountsTypesPt._(_root);
 	@override late final _TranslationsAccountsValidationPt validation = _TranslationsAccountsValidationPt._(_root);
@@ -100,6 +102,7 @@ class _TranslationsCategoriesPt implements TranslationsCategoriesEn {
 	@override String get import_categories => 'Importar Categorias';
 	@override String get select_category => 'Selecionar Categoria';
 	@override String get subcategory_of => 'Subcategoria de';
+	@override String get no_category => 'Sem Categoria';
 	@override late final _TranslationsCategoriesValidationPt validation = _TranslationsCategoriesValidationPt._(_root);
 }
 
@@ -114,6 +117,7 @@ class _TranslationsTransactionsPt implements TranslationsTransactionsEn {
 	@override String get edit_transaction => 'Editar Transação';
 	@override String get export_transactions => 'Exportar Transações';
 	@override String get import_transactions => 'Importar Transações';
+	@override String get unknown_transfer => 'Transferência Desconhecida';
 	@override late final _TranslationsTransactionsTypesPt types = _TranslationsTransactionsTypesPt._(_root);
 	@override late final _TranslationsTransactionsRecurrenceTypePt recurrence_type = _TranslationsTransactionsRecurrenceTypePt._(_root);
 	@override late final _TranslationsTransactionsStatusTypePt status_type = _TranslationsTransactionsStatusTypePt._(_root);
@@ -199,10 +203,13 @@ class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
 	@override String get recurrence => 'Recorrência';
 	@override String get frequency => 'Frequência';
 	@override String get entries => 'Entradas';
-	@override String get transfers => 'Transferências';
+	@override String transfers({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Transferência',
+		other: 'Transferências',
+	);
 	@override String get exits => 'Saídas';
 	@override String get confirmed => 'Confirmado';
-	@override String get projected => 'Projetado';
+	@override String get projected => 'Previsto';
 	@override String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 		one: 'Resultado',
 		other: 'Resultados',
@@ -433,10 +440,13 @@ extension on TranslationsPt {
 			case 'common.labels.recurrence': return 'Recorrência';
 			case 'common.labels.frequency': return 'Frequência';
 			case 'common.labels.entries': return 'Entradas';
-			case 'common.labels.transfers': return 'Transferências';
+			case 'common.labels.transfers': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Transferência',
+				other: 'Transferências',
+			);
 			case 'common.labels.exits': return 'Saídas';
 			case 'common.labels.confirmed': return 'Confirmado';
-			case 'common.labels.projected': return 'Projetado';
+			case 'common.labels.projected': return 'Previsto';
 			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 				one: 'Resultado',
 				other: 'Resultados',
@@ -448,6 +458,8 @@ extension on TranslationsPt {
 			case 'accounts.new_account': return 'Nova Conta';
 			case 'accounts.edit_account': return 'Editar Conta';
 			case 'accounts.select_account': return 'Selecionar Conta';
+			case 'accounts.origin_account': return 'Conta de Origem';
+			case 'accounts.destination_account': return 'Conta de Destino';
 			case 'accounts.show_only_active': return 'Mostrar Apenas Contas Ativas';
 			case 'accounts.types.checking_account': return 'Conta Corrente';
 			case 'accounts.types.credit_card': return 'Cartão de Crédito';
@@ -470,6 +482,7 @@ extension on TranslationsPt {
 			case 'categories.import_categories': return 'Importar Categorias';
 			case 'categories.select_category': return 'Selecionar Categoria';
 			case 'categories.subcategory_of': return 'Subcategoria de';
+			case 'categories.no_category': return 'Sem Categoria';
 			case 'categories.validation.name_cannot_be_empty': return 'O nome da categoria não pode estar vazio';
 			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'O nome da categoria deve ter pelo menos ${number} caracteres';
 			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'O nome da categoria deve ter no máximo ${number} caracteres';
@@ -480,6 +493,7 @@ extension on TranslationsPt {
 			case 'transactions.edit_transaction': return 'Editar Transação';
 			case 'transactions.export_transactions': return 'Exportar Transações';
 			case 'transactions.import_transactions': return 'Importar Transações';
+			case 'transactions.unknown_transfer': return 'Transferência Desconhecida';
 			case 'transactions.types.income': return 'Receita';
 			case 'transactions.types.expense': return 'Despesa';
 			case 'transactions.recurrence_type.unique': return 'Única';

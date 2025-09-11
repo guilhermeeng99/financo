@@ -534,7 +534,7 @@ class ImportTransactionsModel {
     logger.i('Creating ${transactionsToCreate.length} transactions...');
 
     for (final transactionData in transactionsToCreate) {
-      final result = await _createTransaction(transactionData, context);
+      final result = await _createStandardTransaction(transactionData, context);
       result.fold(
         (failure) {
           errorCount++;
@@ -551,7 +551,7 @@ class ImportTransactionsModel {
     return ImportResult(successCount, errorCount);
   }
 
-  Future<Either<Failure, TransactionData>> _createTransaction(
+  Future<Either<Failure, StandardTransaction>> _createStandardTransaction(
     Map<String, dynamic> transactionData,
     BuildContext context,
   ) async {
@@ -590,7 +590,7 @@ class ImportTransactionsModel {
         context,
       );
 
-      return _transactionUsecase.createTransaction(
+      return _transactionUsecase.createStandardTransaction(
         transactionType: transactionData['transactionType'] as FinancialType,
         actualDate: actualDate,
         competenceDate: competenceDate,

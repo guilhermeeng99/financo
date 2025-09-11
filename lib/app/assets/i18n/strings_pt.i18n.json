@@ -48,10 +48,13 @@
       "recurrence": "Recorrência",
       "frequency": "Frequência",
       "entries": "Entradas",
-      "transfers": "Transferências",
+      "transfers": {
+        "one": "Transferência",
+        "other": "Transferências"
+      },
       "exits": "Saídas",
       "confirmed": "Confirmado",
-      "projected": "Projetado",
+      "projected": "Previsto",
       "result": {
         "one": "Resultado",
         "other": "Resultados"
@@ -68,6 +71,8 @@
     "new_account": "Nova Conta",
     "edit_account": "Editar Conta",
     "select_account": "Selecionar Conta",
+    "origin_account": "Conta de Origem",
+    "destination_account": "Conta de Destino",
     "show_only_active": "Mostrar Apenas Contas Ativas",
     "types": {
       "checking_account": "Conta Corrente",
@@ -96,6 +101,7 @@
     "import_categories": "Importar Categorias",
     "select_category": "Selecionar Categoria",
     "subcategory_of": "Subcategoria de",
+    "no_category": "Sem Categoria",
     "validation": {
       "name_cannot_be_empty": "O nome da categoria não pode estar vazio",
       "name_min_length_number": "O nome da categoria deve ter pelo menos $number caracteres",
@@ -110,6 +116,7 @@
     "edit_transaction": "Editar Transação",
     "export_transactions": "Exportar Transações",
     "import_transactions": "Importar Transações",
+    "unknown_transfer": "Transferência Desconhecida",
     "types": {
       "income": "Receita",
       "expense": "Despesa"

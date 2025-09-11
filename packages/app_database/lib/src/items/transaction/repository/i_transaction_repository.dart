@@ -6,29 +6,29 @@ import '../../../database/database_manager.dart';
 
 abstract class ITransactionRepository {
   // Core CRUD operations
-  Future<Either<Failure, TransactionData>> createTransaction(
+  Future<Either<Failure, StandardTransaction>> createStandardTransaction(
     TransactionsCompanion transaction,
   );
 
-  Future<Either<Failure, List<TransactionData>>> getAllTransactions({
+  Future<Either<Failure, StandardTransaction>> updateStandardTransaction(
+    int id,
+    TransactionsCompanion transaction,
+  );
+
+  Future<Either<Failure, bool>> deleteStandardTransaction(int id);
+
+  Future<Either<Failure, List<DataTransaction>>> getAllTransactions({
     int? limit,
     int? offset,
   });
 
-  Future<Either<Failure, List<TransactionData>>> getTransactionsByAccount(
+  Future<Either<Failure, List<DataTransaction>>> getTransactionsByAccount(
     int accountId, {
     int? limit,
     int? offset,
   });
 
-  Future<Either<Failure, TransactionData?>> getTransactionById(int id);
-
-  Future<Either<Failure, TransactionData>> updateTransaction(
-    int id,
-    TransactionsCompanion transaction,
-  );
-
-  Future<Either<Failure, bool>> deleteTransaction(int id);
+  Future<Either<Failure, DataTransaction?>> getTransactionById(int id);
 
   // Balance operations
   Future<Either<Failure, double>> getAccountBalanceById(int accountId);
@@ -56,4 +56,27 @@ abstract class ITransactionRepository {
     DateTime endDate, {
     bool onlyPaidTransactions = true,
   });
+
+  // Transfer operations
+  Future<Either<Failure, List<TransferTransaction>>>
+  createTransferBetweenAccounts({
+    required int sourceAccountId,
+    required int targetAccountId,
+    required double amount,
+    required DateTime date,
+    String? description,
+  });
+
+  Future<Either<Failure, List<TransferTransaction>>> updateTransferTransaction({
+    required String transferId,
+    DateTime? actualDate,
+    DateTime? competenceDate,
+    double? amount,
+    String? description,
+    TransactionPaymentStatus? paymentStatus,
+    TransactionRecurrenceType? recurrenceType,
+    TransactionRecurrenceFrequency? recurrenceFrequency,
+  });
+
+  Future<Either<Failure, bool>> deleteTransferTransaction(String transferId);
 }

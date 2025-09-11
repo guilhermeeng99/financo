@@ -3,13 +3,14 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/create_and_edit_transaction_model.dart';
+import 'package:financo/screens/main_flow/screens/releases/screens/create_and_edit_transaction/models/transaction_form_types.dart';
 
 enum CreateAndEditTransactionPopUpType { create, edit }
 
 class CreateAndEditTransactionPopUpArgs {
   CreateAndEditTransactionPopUpArgs({required this.type, this.transaction});
 
-  final TransactionData? transaction;
+  final DataTransaction? transaction;
   final CreateAndEditTransactionPopUpType type;
 }
 
@@ -47,7 +48,7 @@ class CreateAndEditTransactionPopUp extends HookWidget {
                 const Expanded(child: _Amount()),
                 CWCalendarDropDown(
                   title: context.t.common.labels.date,
-                  selectedDateRx: createAndEditTransactionBloc.actualDate,
+                  selectedDateRx: createAndEditTransactionBloc.actualDateRx,
                 ),
                 const _Recurrence(),
                 const _RecurrenceFrequency(),
@@ -59,9 +60,14 @@ class CreateAndEditTransactionPopUp extends HookWidget {
               children: [
                 Expanded(child: _Description()),
                 _Account(),
+                _TargetAccount(),
               ],
             ),
-            const _Category(),
+            Obx(
+              () => createAndEditTransactionBloc.isTransfer
+                  ? const SizedBox.shrink()
+                  : const _Category(),
+            ),
           ],
         ),
       ),
@@ -91,9 +97,8 @@ class _Account extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final accounts = createAndEditTransactionBloc.accounts;
-      final selectedAccountId =
-          createAndEditTransactionBloc.selectedAccountId.value;
-      final accountError = createAndEditTransactionBloc.accountError.value;
+      final selectedAccountId = createAndEditTransactionBloc.selectedAccountId;
+      final accountError = createAndEditTransactionBloc.accountError;
 
       final items = <AccountData?>[null, ...accounts];
 
@@ -105,12 +110,12 @@ class _Account extends StatelessWidget {
             : null,
         items: items,
         onChanged: (AccountData? account) {
-          createAndEditTransactionBloc.selectedAccountId.value = account?.id;
+          createAndEditTransactionBloc.updateSelectedAccountId(account?.id);
         },
         itemBuilder: (AccountData? account, BuildContext context) {
           if (account == null) {
             return Text(
-              context.t.accounts.select_account,
+              context.t.accounts.origin_account,
               style: TextStyle(
                 color: Theme.of(context).customColors.secondaryTextColor,
                 fontStyle: FontStyle.italic,
@@ -124,6 +129,56 @@ class _Account extends StatelessWidget {
   }
 }
 
+class _TargetAccount extends StatelessWidget {
+  const _TargetAccount();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (!createAndEditTransactionBloc.isTransfer) {
+        return const SizedBox.shrink();
+      }
+      final accounts = createAndEditTransactionBloc.accounts;
+      final selectedTargetId =
+          createAndEditTransactionBloc.selectedTargetAccountId;
+
+      final sourceId = createAndEditTransactionBloc.selectedAccountId;
+      final filteredAccounts = accounts.where((a) => a.id != sourceId).toList();
+      final items = <AccountData?>[null, ...filteredAccounts];
+
+      return SizedBox(
+        width: 150,
+        child: CWDropdownField<AccountData?>(
+          title: context.t.accounts.destination_account,
+          value: selectedTargetId != null
+              ? filteredAccounts.firstWhereOrNull(
+                  (acc) => acc.id == selectedTargetId,
+                )
+              : null,
+          items: items,
+          onChanged: (AccountData? account) {
+            createAndEditTransactionBloc.updateSelectedTargetAccountId(
+              account?.id,
+            );
+          },
+          itemBuilder: (AccountData? account, BuildContext context) {
+            if (account == null) {
+              return Text(
+                context.t.accounts.select_account,
+                style: TextStyle(
+                  color: Theme.of(context).customColors.secondaryTextColor,
+                  fontStyle: FontStyle.italic,
+                ),
+              );
+            }
+            return Text(account.name);
+          },
+        ),
+      );
+    });
+  }
+}
+
 class _Type extends StatelessWidget {
   const _Type();
 
@@ -131,20 +186,20 @@ class _Type extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final selectedType =
-          createAndEditTransactionBloc.selectedTransactionType.value;
+          createAndEditTransactionBloc.selectedTransactionScreenType;
 
-      return CWDropdownField<FinancialType>(
+      return CWDropdownField<TransactionScreenType>(
         title: context.t.common.labels.type,
         value: selectedType,
-        items: FinancialType.values,
+        items: TransactionScreenType.values,
         isExpanded: true,
-        onChanged: (FinancialType? value) {
+        onChanged: (TransactionScreenType? value) {
           if (value != null) {
-            createAndEditTransactionBloc.selectedTransactionType.value = value;
+            createAndEditTransactionBloc.setTransactionScreenType(value);
           }
         },
-        itemBuilder: (FinancialType type, BuildContext context) {
-          return Text(type.title(context));
+        itemBuilder: (TransactionScreenType type, BuildContext context) {
+          return Text(type.displayName(context));
         },
       );
     });
@@ -159,7 +214,7 @@ class _Amount extends HookWidget {
     final controller = useTextEditingController();
     final lastKnownAmount = useRef<double?>(null);
 
-    final amount = createAndEditTransactionBloc.amount.value;
+    final amount = createAndEditTransactionBloc.amount;
 
     useMemoized(() {
       if (lastKnownAmount.value != amount) {
@@ -177,7 +232,7 @@ class _Amount extends HookWidget {
     }, [amount]);
 
     return Obx(() {
-      final currentAmountError = createAndEditTransactionBloc.amountError.value;
+      final currentAmountError = createAndEditTransactionBloc.amountError;
 
       return CWTextField(
         title: context.t.common.labels.amount,
@@ -187,7 +242,7 @@ class _Amount extends HookWidget {
         keyboardType: TextInputType.number,
         onChanged: (value) {
           final parsedValue = CurrencyFormatter.parseAmount(value, context);
-          createAndEditTransactionBloc.amount.value = parsedValue;
+          createAndEditTransactionBloc.updateAmount(parsedValue);
         },
         error: currentAmountError,
       );
@@ -202,14 +257,14 @@ class _Recurrence extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final selectedRecurrenceType =
-          createAndEditTransactionBloc.selectedRecurrenceType.value;
+          createAndEditTransactionBloc.selectedRecurrenceType;
       return CWDropdownField<TransactionRecurrenceType>(
         title: context.t.common.labels.type,
         value: selectedRecurrenceType,
         items: TransactionRecurrenceType.values,
         onChanged: (TransactionRecurrenceType? value) {
           if (value != null) {
-            createAndEditTransactionBloc.selectedRecurrenceType.value = value;
+            createAndEditTransactionBloc.updateRecurrenceType(value);
           }
         },
         itemBuilder: (TransactionRecurrenceType type, BuildContext context) {
@@ -227,9 +282,9 @@ class _RecurrenceFrequency extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final selectedRecurrenceType =
-          createAndEditTransactionBloc.selectedRecurrenceType.value;
+          createAndEditTransactionBloc.selectedRecurrenceType;
       final selectedRecurrenceFrequency =
-          createAndEditTransactionBloc.selectedRecurrenceFrequency.value;
+          createAndEditTransactionBloc.selectedRecurrenceFrequency;
 
       if (selectedRecurrenceType == TransactionRecurrenceType.fixed) {
         return CWDropdownField<TransactionRecurrenceFrequency>(
@@ -238,8 +293,7 @@ class _RecurrenceFrequency extends StatelessWidget {
           items: TransactionRecurrenceFrequency.values,
           onChanged: (TransactionRecurrenceFrequency? value) {
             if (value != null) {
-              createAndEditTransactionBloc.selectedRecurrenceFrequency.value =
-                  value;
+              createAndEditTransactionBloc.updateRecurrenceFrequency(value);
             }
           },
           itemBuilder:
@@ -259,15 +313,14 @@ class _Description extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final description = createAndEditTransactionBloc.description.value;
-      final descriptionError =
-          createAndEditTransactionBloc.descriptionError.value;
+      final description = createAndEditTransactionBloc.description;
+      final descriptionError = createAndEditTransactionBloc.descriptionError;
 
       return CWTextField(
         hintText: context.t.common.labels.description,
         initialValue: description,
         onChanged: (value) {
-          createAndEditTransactionBloc.description.value = value;
+          createAndEditTransactionBloc.updateDescription(value);
         },
         error: descriptionError,
       );
@@ -283,8 +336,8 @@ class _Category extends StatelessWidget {
     return Obx(() {
       final categories = createAndEditTransactionBloc.categories;
       final selectedCategoryId =
-          createAndEditTransactionBloc.selectedCategoryId.value;
-      final categoryError = createAndEditTransactionBloc.categoryError.value;
+          createAndEditTransactionBloc.selectedCategoryId;
+      final categoryError = createAndEditTransactionBloc.categoryError;
 
       final items = <CategoryData?>[null, ...categories];
 
@@ -297,7 +350,7 @@ class _Category extends StatelessWidget {
         error: categoryError,
         isExpanded: true,
         onChanged: (CategoryData? category) {
-          createAndEditTransactionBloc.selectedCategoryId.value = category?.id;
+          createAndEditTransactionBloc.updateSelectedCategoryId(category?.id);
         },
         itemBuilder: (CategoryData? category, BuildContext context) {
           if (category == null) {
@@ -341,15 +394,16 @@ class _PaymentStatusToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final paymentStatus =
-          createAndEditTransactionBloc.selectedPaymentStatus.value;
+      final paymentStatus = createAndEditTransactionBloc.selectedPaymentStatus;
       final isPaid = paymentStatus == TransactionPaymentStatus.paid;
 
       return InkWell(
         onTap: () {
-          createAndEditTransactionBloc.selectedPaymentStatus.value = isPaid
-              ? TransactionPaymentStatus.unpaid
-              : TransactionPaymentStatus.paid;
+          createAndEditTransactionBloc.updatePaymentStatus(
+            isPaid
+                ? TransactionPaymentStatus.unpaid
+                : TransactionPaymentStatus.paid,
+          );
         },
         child: Container(
           padding: const EdgeInsets.all(8),
