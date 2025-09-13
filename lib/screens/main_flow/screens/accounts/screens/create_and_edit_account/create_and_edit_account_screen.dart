@@ -46,9 +46,12 @@ class CreateAndEditAccountPopUp extends HookWidget {
               spacing: 15,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                CWCalendarDropDown(
-                  title: context.t.common.labels.initial_balance_date,
-                  selectedDateRx: createAndEditAccountBloc.selectedInitDate,
+                Obx(
+                  () => CWCalendarDropDown(
+                    title: context.t.common.labels.initial_balance_date,
+                    selectedDateRx:
+                        createAndEditAccountBloc.selectedInitDate.obs,
+                  ),
                 ),
                 const Expanded(child: _Balance()),
               ],
@@ -73,14 +76,14 @@ class _Type extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedType = createAndEditAccountBloc.selectedAccountType.value;
+      final selectedType = createAndEditAccountBloc.selectedAccountType;
       return CWDropdownField<AccountType>(
         title: context.t.common.labels.type,
         value: selectedType,
         items: AccountType.values,
         onChanged: (AccountType? value) {
           if (value != null) {
-            createAndEditAccountBloc.selectedAccountType.value = value;
+            createAndEditAccountBloc.updateAccountType(value);
           }
         },
         itemBuilder: (AccountType type, BuildContext context) {
@@ -97,15 +100,14 @@ class _Coin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedCurrency =
-          createAndEditAccountBloc.selectedCurrencyType.value;
+      final selectedCurrency = createAndEditAccountBloc.selectedCurrencyType;
       return CWDropdownField<CurrencyType>(
         title: context.t.common.labels.coin,
         value: selectedCurrency,
         items: CurrencyType.values,
         onChanged: (CurrencyType? value) {
           if (value != null) {
-            createAndEditAccountBloc.selectedCurrencyType.value = value;
+            createAndEditAccountBloc.updateCurrencyType(value);
           }
         },
         itemBuilder: (CurrencyType currency, BuildContext context) {
@@ -133,14 +135,14 @@ class _Icon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedIcon = createAndEditAccountBloc.selectedIconType.value;
+      final selectedIcon = createAndEditAccountBloc.selectedIconType;
       return CWDropdownField<AccountIconType>(
         title: context.t.common.labels.icon,
         value: selectedIcon,
         items: AccountIconType.values,
         onChanged: (AccountIconType? value) {
           if (value != null) {
-            createAndEditAccountBloc.selectedIconType.value = value;
+            createAndEditAccountBloc.updateIconType(value);
           }
         },
         itemBuilder: (AccountIconType icon, BuildContext context) {
@@ -162,14 +164,13 @@ class _Name extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final name = createAndEditAccountBloc.name.value;
-      final nameError = createAndEditAccountBloc.nameError.value;
+      final name = createAndEditAccountBloc.name;
+      final nameError = createAndEditAccountBloc.formErrors.value.name;
 
       return CWTextField(
         hintText: '${context.t.common.labels.name}*',
         initialValue: name,
-        onChanged: (value) =>
-            createAndEditAccountBloc.name.value = value,
+        onChanged: (value) => createAndEditAccountBloc.updateName(value),
         error: nameError,
       );
     });
@@ -182,8 +183,9 @@ class _Balance extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final balance = createAndEditAccountBloc.initialBalance.value;
-      final balanceError = createAndEditAccountBloc.balanceError.value;
+      final balance = createAndEditAccountBloc.initialBalance;
+      final balanceError =
+          createAndEditAccountBloc.formErrors.value.initialBalance;
       final formattedBalance = CurrencyFormatter.formatAmount(balance, context);
 
       return CWTextField(
@@ -193,8 +195,7 @@ class _Balance extends HookWidget {
         inputFormatters: [CurrencyInputFormatter()],
         keyboardType: TextInputType.number,
         onChanged: (value) {
-          final parsedValue = CurrencyFormatter.parseAmount(value, context);
-          createAndEditAccountBloc.initialBalance.value = parsedValue;
+          createAndEditAccountBloc.updateInitialBalance(value, context);
         },
         error: balanceError,
       );

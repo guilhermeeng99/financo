@@ -79,4 +79,23 @@ abstract class ITransactionRepository {
   });
 
   Future<Either<Failure, bool>> deleteTransferTransaction(String transferId);
+
+  // Summary calculations
+  Future<Either<Failure, TransactionSummaryData>> getTransactionSummary({
+    required Set<int> accountIds,
+    required DateTime startDate,
+    required DateTime endDate,
+  });
+}
+
+class TransactionSummaryData {
+  const TransactionSummaryData({
+    required this.projectedTotalIncome,
+    required this.projectedTotalExpense,
+    required this.projectedTotalTransfers,
+  });
+
+  final double projectedTotalIncome;
+  final double projectedTotalExpense;
+  final double projectedTotalTransfers;
 }

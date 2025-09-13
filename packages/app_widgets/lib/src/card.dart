@@ -51,11 +51,13 @@ class CWAmoutValue extends StatelessWidget {
   const CWAmoutValue({
     required this.value,
     this.fontWeight,
+    this.fontSize = 16,
     super.key,
   });
 
   final double value;
   final FontWeight? fontWeight;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +67,7 @@ class CWAmoutValue extends StatelessWidget {
         context,
       ),
       style: TextStyle(
-        fontSize: 16,
+        fontSize: fontSize,
         fontWeight: fontWeight,
         color: value < 0
             ? Theme.of(context).customColors.expense

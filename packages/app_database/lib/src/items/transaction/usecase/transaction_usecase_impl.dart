@@ -6,7 +6,8 @@ class TransactionUsecaseImpl
     with
         TransactionCrudUsecaseOperations,
         TransactionQueryUsecaseOperations,
-        TransactionBalanceUsecaseOperations
+        TransactionBalanceUsecaseOperations,
+        TransactionSummaryUsecaseOperations
     implements ITransactionUsecase {
   TransactionUsecaseImpl(this._repository);
 

@@ -1,6 +1,22 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
+enum TransactionFormField {
+  description,
+  amount,
+  account,
+  category,
+  actualDate;
+
+  String get fieldName => switch (this) {
+    TransactionFormField.description => 'description',
+    TransactionFormField.amount => 'amount',
+    TransactionFormField.account => 'account',
+    TransactionFormField.category => 'category',
+    TransactionFormField.actualDate => 'actualDate',
+  };
+}
+
 enum TransactionScreenType {
   income,
   expense,
@@ -114,4 +130,44 @@ class TransactionFormData {
       selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
     );
   }
+}
+
+class StandardTransactionParams extends BaseTransactionParams {
+  const StandardTransactionParams({
+    required super.amount,
+    required super.actualDate,
+    required this.accountId,
+    required this.categoryId,
+    required this.competenceDate,
+    super.description,
+  });
+
+  final TransactionAccountId accountId;
+  final TransactionCategoryId categoryId;
+  final TransactionDate competenceDate;
+}
+
+class TransferTransactionParams extends BaseTransactionParams {
+  const TransferTransactionParams({
+    required super.amount,
+    required super.actualDate,
+    required this.sourceAccountId,
+    required this.targetAccountId,
+    super.description,
+  });
+
+  final TransactionAccountId sourceAccountId;
+  final TransactionAccountId targetAccountId;
+}
+
+abstract class BaseTransactionParams {
+  const BaseTransactionParams({
+    required this.amount,
+    required this.actualDate,
+    this.description,
+  });
+
+  final TransactionAmount amount;
+  final TransactionDate actualDate;
+  final TransactionDescription? description;
 }

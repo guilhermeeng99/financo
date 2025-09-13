@@ -1,6 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_bloc.dart';
 
 class CWAReleasesScreenAccount extends StatelessWidget {
   const CWAReleasesScreenAccount({super.key});
@@ -168,8 +169,90 @@ class _Results extends StatelessWidget {
             const Expanded(child: CWDivider(height: 1)),
           ],
         ),
-        Container(),
+        const Gap(15),
+        Obx(() {
+          return Column(
+            spacing: 5,
+            children: [
+              _ResultsItem(
+                title: context.t.common.labels.entries,
+                value: transactionsBloc.projectedTotalIncome.value,
+                padding: const EdgeInsets.only(left: 10),
+              ),
+              _ResultsItem(
+                title: context.t.transactions.types.income,
+                value: transactionsBloc.projectedTotalIncome.value,
+              ),
+              _ResultsItem(
+                title: context.t.common.labels.transfers(n: 2),
+                value: transactionsBloc.projectedTotalTransfers.value,
+              ),
+              const Gap(5),
+              _ResultsItem(
+                title: context.t.common.labels.exits,
+                value: -transactionsBloc.projectedTotalExpense.value,
+                padding: const EdgeInsets.only(left: 10),
+              ),
+              _ResultsItem(
+                title: context.t.transactions.types.expense,
+                value: -transactionsBloc.projectedTotalExpense.value,
+              ),
+              _ResultsItem(
+                title: context.t.common.labels.transfers(n: 2),
+                value: -transactionsBloc.projectedTotalTransfers.value,
+              ),
+              const Gap(5),
+              _ResultsItem(
+                title: context.t.common.labels.result(n: 1),
+                value: transactionsBloc.projectedTotalResult,
+                padding: const EdgeInsets.only(left: 10),
+                isBold: true,
+              ),
+            ],
+          );
+        }),
       ],
+    );
+  }
+}
+
+class _ResultsItem extends StatelessWidget {
+  const _ResultsItem({
+    required this.title,
+    required this.value,
+    this.padding = const EdgeInsets.only(left: 30),
+    this.isBold = false,
+  });
+
+  final String title;
+  final double value;
+  final EdgeInsetsGeometry padding;
+
+  final bool isBold;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isBold ? FontWeight.bold : null,
+            ),
+          ),
+          _ContainerItem(
+            child: CWAmoutValue(
+              value: value,
+              fontSize: 14,
+              fontWeight: isBold ? FontWeight.bold : null,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

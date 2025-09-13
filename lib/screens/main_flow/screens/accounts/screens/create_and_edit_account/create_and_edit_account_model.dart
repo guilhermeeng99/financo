@@ -1,16 +1,20 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/accounts/accounts_bloc.dart';
 
 import 'create_and_edit_account_bloc.dart';
+import 'create_and_edit_account_service.dart';
+import 'validation/account_form_types.dart';
+import 'validation/account_form_validator.dart';
 
 CreateAndEditAccountModel get createAndEditAccountModel =>
     Modular.get<CreateAndEditAccountModel>();
 
 class CreateAndEditAccountModel {
-  IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
+  final AccountOperationService _operationService = AccountOperationService();
 
   Future<void> onTapSave(AccountData? account, BuildContext context) async {
+    createAndEditAccountBloc.clearAllErrors();
+
     if (account != null) {
       await _updateAccount(account, context);
     } else {
@@ -19,36 +23,29 @@ class CreateAndEditAccountModel {
   }
 
   Future<void> _createAccount(BuildContext context) async {
-    await _executeValidation(context, (name, balance) async {
-      final result = await _accountUsecase.createAccount(
-        name: name,
-        accountType: createAndEditAccountBloc.selectedAccountType.value,
-        initialBalance: balance,
-        currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
-        iconType: createAndEditAccountBloc.selectedIconType.value,
-        initDate: createAndEditAccountBloc.selectedInitDate.value,
-      );
+    final formData = createAndEditAccountBloc.formData.value;
 
-      result.fold(
-        (failure) {
-          if (failure is DuplicateEntryFailure) {
-            createAndEditAccountBloc.nameError.value =
-                context.t.accounts.validation.name_already_exists;
-          } else {
-            CWSnackBar.snackBar(
-              title: failure.message,
-              type: SnackBarType.error,
-            );
-            logger.e('Error updating account: ${failure.message}');
-          }
-        },
-        (account) {
-          logger.i('Account created successfully: ${account.name}');
+    // Validate form using the new validator pattern
+    final validationResult = AccountFormValidator.validateCreateAccount(
+      formData,
+      context,
+    );
 
-          accountsBloc.loadGroupedAccounts();
-          PopUpManager.pop();
-        },
-      );
+    if (validationResult.isFailure) {
+      createAndEditAccountBloc.formErrors.value = validationResult.errors!;
+      return;
+    }
+
+    final params = validationResult.data!;
+    final result = await _operationService.createAccount(
+      params,
+      formData,
+      context,
+    );
+
+    result.fold((failure) => _handleFailure(failure, context), (account) {
+      logger.i('Account created successfully');
+      PopUpManager.pop();
     });
   }
 
@@ -56,85 +53,48 @@ class CreateAndEditAccountModel {
     AccountData originalAccount,
     BuildContext context,
   ) async {
-    await _executeValidation(context, (name, balance) async {
-      final result = await _accountUsecase.updateAccount(
-        id: originalAccount.id,
-        name: name,
-        accountType: createAndEditAccountBloc.selectedAccountType.value,
-        initialBalance: balance,
-        currencyType: createAndEditAccountBloc.selectedCurrencyType.value,
-        isActive: originalAccount.isActive,
-        iconType: createAndEditAccountBloc.selectedIconType.value,
-        initDate: createAndEditAccountBloc.selectedInitDate.value,
-      );
+    final formData = createAndEditAccountBloc.formData.value;
 
-      result.fold(
-        (failure) {
-          if (failure is DuplicateEntryFailure) {
-            createAndEditAccountBloc.nameError.value =
-                context.t.accounts.validation.name_already_exists;
-          } else if (failure is NoChangesFailure) {
-            logger.i(context.t.messages.warnings.no_changes_provided);
-            CWSnackBar.snackBar(
-              title: context.t.messages.warnings.no_changes_provided,
-              type: SnackBarType.info,
-            );
-            PopUpManager.pop();
-          } else {
-            CWSnackBar.snackBar(
-              title: failure.message,
-              type: SnackBarType.error,
-            );
-            logger.e('Error updating account: ${failure.message}');
-          }
-        },
-        (account) {
-          logger.i('Account updated successfully: ${account.name}');
+    final validationResult = AccountFormValidator.validateUpdateAccount(
+      originalAccount.id,
+      formData,
+      context,
+    );
 
-          accountsBloc.loadGroupedAccounts();
-          PopUpManager.pop();
-        },
-      );
+    if (validationResult.isFailure) {
+      createAndEditAccountBloc.formErrors.value = validationResult.errors!;
+      return;
+    }
+
+    final params = validationResult.data!;
+    final result = await _operationService.updateAccount(
+      params,
+      formData,
+      context,
+    );
+
+    result.fold((failure) => _handleFailure(failure, context), (account) {
+      logger.i('Account updated successfully');
+      PopUpManager.pop();
     });
   }
 
-  Future<void> _executeValidation(
-    BuildContext context,
-    Future<void> Function(AccountName name, Balance balance) execute,
-  ) async {
-    final validatedInputs = _validateInputs(context);
-    if (validatedInputs == null) return;
-
-    final (name, balance) = validatedInputs;
-    await execute(name, balance);
-  }
-
-  (AccountName, Balance)? _validateInputs(BuildContext context) {
-    AccountName? name;
-    Balance? balance;
-
-    try {
-      name = AccountName.create(
-        createAndEditAccountBloc.name.value.trim(),
-        context,
+  void _handleFailure(Failure failure, BuildContext context) {
+    if (failure is DuplicateEntryFailure) {
+      createAndEditAccountBloc.setFieldError(
+        AccountFormField.name,
+        context.t.accounts.validation.name_already_exists,
       );
-    } on ValidationException catch (e) {
-      createAndEditAccountBloc.nameError.value = e.message;
-    }
-
-    try {
-      balance = Balance.create(
-        createAndEditAccountBloc.initialBalance.value,
-        context,
+    } else if (failure is NoChangesFailure) {
+      logger.i(context.t.messages.warnings.no_changes_provided);
+      CWSnackBar.snackBar(
+        title: context.t.messages.warnings.no_changes_provided,
+        type: SnackBarType.info,
       );
-    } on ValidationException catch (e) {
-      createAndEditAccountBloc.balanceError.value = e.message;
+      PopUpManager.pop();
+    } else {
+      CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+      logger.e('Error with account operation: ${failure.message}');
     }
-
-    if (name == null || balance == null) {
-      return null;
-    }
-
-    return (name, balance);
   }
 }

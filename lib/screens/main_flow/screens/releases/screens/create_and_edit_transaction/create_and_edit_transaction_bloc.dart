@@ -1,8 +1,8 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
-import 'models/transaction_form_types.dart';
-import 'models/transaction_form_validator.dart';
+import 'validation/transaction_form_types.dart';
+import 'validation/transaction_form_validator.dart';
 
 CreateAndEditTransactionBloc get createAndEditTransactionBloc =>
     Modular.get<CreateAndEditTransactionBloc>();

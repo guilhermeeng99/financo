@@ -3,8 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/transactions_bloc.dart';
 
-import '../models/transaction_form_types.dart';
-import '../models/transaction_form_validator.dart';
+import 'validation/transaction_form_types.dart';
 
 class TransactionOperationService {
   ITransactionUsecase get _transactionUsecase =>

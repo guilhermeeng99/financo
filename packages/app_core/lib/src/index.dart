@@ -5,4 +5,5 @@ export 'num_x.dart';
 export 'popup_manager.dart';
 export 'system_files.dart';
 export 'utils.dart';
+export 'validation_result.dart';
 export 'widget_module_provider.dart';

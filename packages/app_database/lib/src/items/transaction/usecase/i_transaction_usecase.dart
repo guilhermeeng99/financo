@@ -92,4 +92,25 @@ abstract class ITransactionUsecase {
   });
 
   Future<Either<Failure, bool>> deleteTransferTransaction(String transferId);
+
+  // Summary calculations
+  Future<Either<Failure, TransactionSummary>> getTransactionSummary({
+    required Set<int> accountIds,
+    required DateTime startDate,
+    required DateTime endDate,
+  });
+}
+
+class TransactionSummary {
+  const TransactionSummary({
+    required this.projectedTotalIncome,
+    required this.projectedTotalExpense,
+    required this.projectedTotalTransfers,
+  });
+  final double projectedTotalIncome;
+  final double projectedTotalExpense;
+  final double projectedTotalTransfers;
+
+  double get projectedTotalResult =>
+      projectedTotalIncome - projectedTotalExpense;
 }

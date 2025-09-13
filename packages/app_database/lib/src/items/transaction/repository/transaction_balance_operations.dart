@@ -3,7 +3,9 @@ import 'package:drift/drift.dart';
 
 import '../../../core/either.dart';
 import '../../../core/failures.dart';
+import '../../../core/financial_type.dart';
 import '../../../database/database_manager.dart';
+import 'i_transaction_repository.dart';
 
 /// Mixin containing balance calculation operations for transactions
 mixin TransactionBalanceOperations {
@@ -129,6 +131,59 @@ mixin TransactionBalanceOperations {
         DatabaseFailure(
           'Error getting multiple accounts balance for period: $e',
         ),
+      );
+    }
+  }
+
+  Future<Either<Failure, TransactionSummaryData>> getTransactionSummary({
+    required Set<int> accountIds,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final transactionsQuery = database.select(database.transactions)
+        ..where(
+          (tbl) =>
+              tbl.accountId.isIn(accountIds) &
+              tbl.actualDate.isBetweenValues(startDate, endDate),
+        );
+
+      final transactions = await transactionsQuery.get();
+
+      var projectedIncomeTotal = 0.0;
+      var projectedExpenseTotal = 0.0;
+      var projectedTransferTotal = 0.0;
+
+      final projectedTransferIds = <String>{};
+
+      for (final transaction in transactions) {
+        final amount = transaction.amount.abs();
+        final isTransfer = transaction.transferId != null;
+
+        if (isTransfer) {
+          final transferId = transaction.transferId!;
+
+          if (!projectedTransferIds.contains(transferId)) {
+            projectedTransferTotal += amount;
+            projectedTransferIds.add(transferId);
+          }
+        } else if (transaction.transactionType == FinancialType.income) {
+          projectedIncomeTotal += amount;
+        } else if (transaction.transactionType == FinancialType.expense) {
+          projectedExpenseTotal += amount;
+        }
+      }
+
+      return Either.right(
+        TransactionSummaryData(
+          projectedTotalIncome: projectedIncomeTotal,
+          projectedTotalExpense: projectedExpenseTotal,
+          projectedTotalTransfers: projectedTransferTotal,
+        ),
+      );
+    } catch (e) {
+      return Either.left(
+        DatabaseFailure('Error calculating transaction summary: $e'),
       );
     }
   }
