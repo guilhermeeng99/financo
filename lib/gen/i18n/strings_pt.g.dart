@@ -68,6 +68,7 @@ class _TranslationsCommonPt implements TranslationsCommonEn {
 	@override late final _TranslationsCommonActionsPt actions = _TranslationsCommonActionsPt._(_root);
 	@override late final _TranslationsCommonLabelsPt labels = _TranslationsCommonLabelsPt._(_root);
 	@override late final _TranslationsCommonFrequencyPt frequency = _TranslationsCommonFrequencyPt._(_root);
+	@override late final _TranslationsCommonPeriodTypesPt period_types = _TranslationsCommonPeriodTypesPt._(_root);
 }
 
 // Path: accounts
@@ -227,6 +228,20 @@ class _TranslationsCommonFrequencyPt implements TranslationsCommonFrequencyEn {
 	@override String get weekly => 'Semanal';
 	@override String get monthly => 'Mensal';
 	@override String get yearly => 'Anual';
+}
+
+// Path: common.period_types
+class _TranslationsCommonPeriodTypesPt implements TranslationsCommonPeriodTypesEn {
+	_TranslationsCommonPeriodTypesPt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get daily => 'Diário';
+	@override String get weekly => 'Semanal';
+	@override String get monthly => 'Mensal';
+	@override String get quarterly => 'Trimestral';
+	@override String get semester => 'Semestral';
 }
 
 // Path: accounts.types
@@ -455,6 +470,11 @@ extension on TranslationsPt {
 			case 'common.frequency.weekly': return 'Semanal';
 			case 'common.frequency.monthly': return 'Mensal';
 			case 'common.frequency.yearly': return 'Anual';
+			case 'common.period_types.daily': return 'Diário';
+			case 'common.period_types.weekly': return 'Semanal';
+			case 'common.period_types.monthly': return 'Mensal';
+			case 'common.period_types.quarterly': return 'Trimestral';
+			case 'common.period_types.semester': return 'Semestral';
 			case 'accounts.new_account': return 'Nova Conta';
 			case 'accounts.edit_account': return 'Editar Conta';
 			case 'accounts.select_account': return 'Selecionar Conta';

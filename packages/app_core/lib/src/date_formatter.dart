@@ -18,6 +18,13 @@ extension DateFormatterX on DateTime {
     );
   }
 
+  String formattedDateddMM({required BuildContext context}) {
+    return _formattedDate(
+      context: context,
+      format: 'dd/MM',
+    );
+  }
+
   String formattedMonthYear({required BuildContext context}) {
     return _formattedDate(
       context: context,

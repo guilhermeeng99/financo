@@ -1,18 +1,20 @@
-import 'dart:async';
-
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/categories/categories_bloc.dart';
 
 import 'create_and_edit_category_bloc.dart';
+import 'create_and_edit_category_service.dart';
+import 'validation/category_form_types.dart';
+import 'validation/category_form_validator.dart';
 
 CreateAndEditCategoryModel get createAndEditCategoryModel =>
     Modular.get<CreateAndEditCategoryModel>();
 
 class CreateAndEditCategoryModel {
-  ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
+  final CategoryOperationService _operationService = CategoryOperationService();
 
   Future<void> onTapSave(CategoryData? category, BuildContext context) async {
+    createAndEditCategoryBloc.clearAllErrors();
+
     if (category != null) {
       await _updateCategory(category, context);
     } else {
@@ -21,32 +23,28 @@ class CreateAndEditCategoryModel {
   }
 
   Future<void> _createCategory(BuildContext context) async {
-    await _executeValidation(context, (name, parentCategoryId) async {
-      final result = await _categoryUsecase.createCategory(
-        name: name,
-        categoryType: createAndEditCategoryBloc.selectedCategoryType.value,
-        parentCategoryId: parentCategoryId,
-      );
+    final formData = createAndEditCategoryBloc.formData.value;
 
-      result.fold(
-        (failure) {
-          if (failure is DuplicateEntryFailure) {
-            createAndEditCategoryBloc.nameError.value =
-                context.t.categories.validation.category_name_already_exists;
-          } else {
-            logger.e('Error creating category: ${failure.message}');
-            CWSnackBar.snackBar(
-              title: failure.message,
-              type: SnackBarType.error,
-            );
-          }
-        },
-        (category) {
-          logger.i('Category created successfully: ${category.name}');
-          categoriesBloc.loadCategories();
-          PopUpManager.pop();
-        },
-      );
+    final validationResult = CategoryFormValidator.validateCreateCategory(
+      formData,
+      context,
+    );
+
+    if (validationResult.isFailure) {
+      createAndEditCategoryBloc.formErrors.value = validationResult.errors!;
+      return;
+    }
+
+    final params = validationResult.data!;
+    final result = await _operationService.createCategory(
+      params,
+      formData,
+      context,
+    );
+
+    result.fold((failure) => _handleFailure(failure, context), (category) {
+      logger.i('Category created successfully');
+      PopUpManager.pop();
     });
   }
 
@@ -54,83 +52,48 @@ class CreateAndEditCategoryModel {
     CategoryData originalCategory,
     BuildContext context,
   ) async {
-    await _executeValidation(context, (name, parentCategoryId) async {
-      final result = await _categoryUsecase.updateCategory(
-        id: originalCategory.id,
-        name: name,
-        parentCategoryId: parentCategoryId,
-        updateParentId:
-            createAndEditCategoryBloc.parentCategoryId.value !=
-            originalCategory.parentCategoryId,
-      );
+    final formData = createAndEditCategoryBloc.formData.value;
 
-      result.fold(
-        (failure) {
-          if (failure is DuplicateEntryFailure) {
-            createAndEditCategoryBloc.nameError.value =
-                context.t.categories.validation.category_name_already_exists;
-          } else if (failure is NoChangesFailure) {
-            logger.i(context.t.messages.warnings.no_changes_provided);
-            CWSnackBar.snackBar(
-              title: context.t.messages.warnings.no_changes_provided,
-              type: SnackBarType.info,
-            );
-            PopUpManager.pop();
-          } else {
-            logger.e('Error updating category: ${failure.message}');
-            CWSnackBar.snackBar(
-              title: failure.message,
-              type: SnackBarType.error,
-            );
-          }
-        },
-        (category) {
-          logger.i('Category updated successfully: ${category.name}');
-          categoriesBloc.loadCategories();
-          PopUpManager.pop();
-        },
-      );
+    final validationResult = CategoryFormValidator.validateUpdateCategory(
+      originalCategory.id,
+      formData,
+      originalCategory.parentCategoryId,
+      context,
+    );
+
+    if (validationResult.isFailure) {
+      createAndEditCategoryBloc.formErrors.value = validationResult.errors!;
+      return;
+    }
+
+    final params = validationResult.data!;
+    final result = await _operationService.updateCategory(
+      params,
+      formData,
+      context,
+    );
+
+    result.fold((failure) => _handleFailure(failure, context), (category) {
+      logger.i('Category updated successfully');
+      PopUpManager.pop();
     });
   }
 
-  Future<void> _executeValidation(
-    BuildContext context,
-    Future<void> Function(CategoryName name, ParentCategoryId? parentCategoryId)
-    execute,
-  ) async {
-    final validatedInputs = _validateInputs(context);
-    if (validatedInputs == null) return;
-
-    final (name, parentCategoryId) = validatedInputs;
-    await execute(name, parentCategoryId);
-  }
-
-  (CategoryName, ParentCategoryId?)? _validateInputs(BuildContext context) {
-    CategoryName? name;
-    ParentCategoryId? parentCategoryId;
-
-    try {
-      name = CategoryName.create(
-        createAndEditCategoryBloc.name.value.trim(),
-        context,
+  void _handleFailure(Failure failure, BuildContext context) {
+    if (failure is DuplicateEntryFailure) {
+      createAndEditCategoryBloc.formErrors.value = CategoryFormErrors(
+        name: context.t.categories.validation.category_name_already_exists,
       );
-    } on ValidationException catch (e) {
-      createAndEditCategoryBloc.nameError.value = e.message;
+    } else if (failure is NoChangesFailure) {
+      logger.i(context.t.messages.warnings.no_changes_provided);
+      CWSnackBar.snackBar(
+        title: context.t.messages.warnings.no_changes_provided,
+        type: SnackBarType.info,
+      );
+      PopUpManager.pop();
+    } else {
+      CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
+      logger.e('Error with category operation: ${failure.message}');
     }
-
-    try {
-      final parentId = createAndEditCategoryBloc.parentCategoryId.value;
-      parentCategoryId = parentId != null
-          ? ParentCategoryId.create(parentId, context)
-          : ParentCategoryId.none();
-    } on ValidationException catch (e) {
-      logger.e('Error validating parent category: ${e.message}');
-    }
-
-    if (name == null) {
-      return null;
-    }
-
-    return (name, parentCategoryId);
   }
 }

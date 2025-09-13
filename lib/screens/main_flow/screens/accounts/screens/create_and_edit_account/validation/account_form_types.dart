@@ -1,15 +1,5 @@
 import 'package:app_database/app_database.dart';
 
-enum AccountFormField {
-  name,
-  initialBalance;
-
-  String get fieldName => switch (this) {
-    AccountFormField.name => 'name',
-    AccountFormField.initialBalance => 'initialBalance',
-  };
-}
-
 class AccountFormData {
   AccountFormData({
     this.name = '',
@@ -19,6 +9,17 @@ class AccountFormData {
     this.iconType = AccountIconType.none,
     DateTime? initDate,
   }) : initDate = initDate ?? DateTime.now();
+
+  factory AccountFormData.fromAccount(AccountData account) {
+    return AccountFormData(
+      name: account.name,
+      initialBalance: account.initialBalance,
+      accountType: account.accountType,
+      currencyType: account.currencyType,
+      iconType: account.iconType,
+      initDate: account.initDate,
+    );
+  }
 
   final String name;
   final double initialBalance;
@@ -59,13 +60,6 @@ class AccountFormErrors {
       name: name ?? this.name,
       initialBalance: initialBalance ?? this.initialBalance,
     );
-  }
-
-  AccountFormErrors clearField(AccountFormField field) {
-    return switch (field) {
-      AccountFormField.name => copyWith(name: ''),
-      AccountFormField.initialBalance => copyWith(initialBalance: ''),
-    };
   }
 
   AccountFormErrors clear() {

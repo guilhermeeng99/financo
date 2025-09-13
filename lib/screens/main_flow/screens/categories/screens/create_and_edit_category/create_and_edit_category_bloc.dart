@@ -1,29 +1,51 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
+import 'validation/category_form_types.dart';
+
 CreateAndEditCategoryBloc get createAndEditCategoryBloc =>
     Modular.get<CreateAndEditCategoryBloc>();
 
 class CreateAndEditCategoryBloc extends GetxController {
   CreateAndEditCategoryBloc() {
     loadAvailableParentCategories();
+
+    ever(formData, (CategoryFormData data) {
+      formErrors.value = const CategoryFormErrors();
+    });
   }
 
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
-  final RxString name = ''.obs;
-  final RxString nameError = ''.obs;
-
-  final RxnInt parentCategoryId = RxnInt();
-
-  final selectedCategoryType = FinancialType.expense.obs;
+  final Rx<CategoryFormData> formData = CategoryFormData().obs;
+  final Rx<CategoryFormErrors> formErrors = const CategoryFormErrors().obs;
 
   final RxList<CategoryData> availableParentCategories = <CategoryData>[].obs;
-
   final RxnInt currentCategoryId = RxnInt();
 
+  String get name => formData.value.name;
+  FinancialType get selectedCategoryType => formData.value.categoryType;
+  int? get parentCategoryId => formData.value.parentCategoryId;
+
+  void updateName(String name) {
+    formData.value = formData.value.copyWith(name: name);
+    _clearFormError('name');
+  }
+
+  void updateCategoryType(FinancialType categoryType) {
+    formData.value = formData.value.copyWith(categoryType: categoryType);
+    loadAvailableParentCategories();
+  }
+
+  void updateParentCategoryId(int? parentCategoryId) {
+    formData.value = formData.value.copyWith(
+      parentCategoryId: parentCategoryId,
+      clearParentCategoryId: parentCategoryId == null,
+    );
+  }
+
   int? get validatedParentCategoryId {
-    final selectedId = parentCategoryId.value;
+    final selectedId = parentCategoryId;
     if (selectedId == null) return null;
 
     final availableIds = availableParentCategories.map((c) => c.id).toSet();
@@ -43,15 +65,14 @@ class CreateAndEditCategoryBloc extends GetxController {
   }
 
   void initializeWithCategoryData(CategoryData category) {
-    name.value = category.name;
-    selectedCategoryType.value = category.categoryType;
-    parentCategoryId.value = category.parentCategoryId;
+    formData.value = CategoryFormData.fromCategory(category);
     currentCategoryId.value = category.id;
+    clearAllErrors();
     loadAvailableParentCategories();
   }
 
   Future<void> initializeSubCategoryFromCategory(int parentCategoryId) async {
-    createAndEditCategoryBloc.parentCategoryId.value = parentCategoryId;
+    updateParentCategoryId(parentCategoryId);
 
     final result = await _categoryUsecase.getCategoryById(parentCategoryId);
 
@@ -62,8 +83,7 @@ class CreateAndEditCategoryBloc extends GetxController {
       },
       (parentCategory) {
         if (parentCategory != null) {
-          createAndEditCategoryBloc.selectedCategoryType.value =
-              parentCategory.categoryType;
+          updateCategoryType(parentCategory.categoryType);
         }
       },
     );
@@ -74,7 +94,7 @@ class CreateAndEditCategoryBloc extends GetxController {
   Future<void> loadAvailableParentCategories() async {
     try {
       final result = await _categoryUsecase.getEligibleParentCategories(
-        selectedCategoryType.value,
+        selectedCategoryType,
         currentCategoryId.value,
       );
 
@@ -94,12 +114,21 @@ class CreateAndEditCategoryBloc extends GetxController {
     }
   }
 
+  void _clearFormError(String field) {
+    switch (field) {
+      case 'name':
+        formErrors.value = formErrors.value.copyWith(name: '');
+    }
+  }
+
+  void clearAllErrors() {
+    formErrors.value = const CategoryFormErrors();
+  }
+
   @override
   void onClose() {
-    name.close();
-    nameError.close();
-    parentCategoryId.close();
-    selectedCategoryType.close();
+    formData.close();
+    formErrors.close();
     availableParentCategories.close();
     currentCategoryId.close();
     super.onClose();

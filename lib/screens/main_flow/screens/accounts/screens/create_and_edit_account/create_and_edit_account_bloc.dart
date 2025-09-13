@@ -2,7 +2,6 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
 import 'validation/account_form_types.dart';
-import 'validation/account_form_validator.dart';
 
 CreateAndEditAccountBloc get createAndEditAccountBloc =>
     Modular.get<CreateAndEditAccountBloc>();
@@ -30,13 +29,13 @@ class CreateAndEditAccountBloc extends GetxController {
   // Convenience setters
   void updateName(String name) {
     formData.value = formData.value.copyWith(name: name);
-    clearFieldError(AccountFormField.name);
+    _clearFormError('name');
   }
 
   void updateInitialBalance(String value, BuildContext context) {
     final parsedValue = CurrencyFormatter.parseAmount(value, context);
     formData.value = formData.value.copyWith(initialBalance: parsedValue);
-    clearFieldError(AccountFormField.initialBalance);
+    _clearFormError('initialBalance');
   }
 
   void updateAccountType(AccountType accountType) {
@@ -56,84 +55,22 @@ class CreateAndEditAccountBloc extends GetxController {
   }
 
   void initializeWithAccountData(AccountData account) {
-    formData.value = AccountFormData(
-      name: account.name,
-      initialBalance: account.initialBalance,
-      accountType: account.accountType,
-      currencyType: account.currencyType,
-      iconType: account.iconType,
-      initDate: account.initDate,
-    );
+    formData.value = AccountFormData.fromAccount(account);
     clearAllErrors();
   }
 
-  void validateForm(BuildContext context) {
-    final errors = AccountFormValidator.validateField(
-      formData.value,
-      AccountFormField.name,
-      context,
-    );
-    final balanceErrors = AccountFormValidator.validateField(
-      formData.value,
-      AccountFormField.initialBalance,
-      context,
-    );
+  void _clearFormError(String field) {
+    switch (field) {
+      case 'name':
+        formErrors.value = formErrors.value.copyWith(name: '');
 
-    formErrors.value = AccountFormErrors(
-      name: errors.name,
-      initialBalance: balanceErrors.initialBalance,
-    );
-  }
-
-  void validateField(AccountFormField field, BuildContext context) {
-    final fieldErrors = AccountFormValidator.validateField(
-      formData.value,
-      field,
-      context,
-    );
-
-    formErrors.value = switch (field) {
-      AccountFormField.name => formErrors.value.copyWith(
-        name: fieldErrors.name,
-      ),
-      AccountFormField.initialBalance => formErrors.value.copyWith(
-        initialBalance: fieldErrors.initialBalance,
-      ),
-    };
-  }
-
-  void clearFieldError(AccountFormField field) {
-    formErrors.value = formErrors.value.clearField(field);
+      case 'initialBalance':
+        formErrors.value = formErrors.value.copyWith(initialBalance: '');
+    }
   }
 
   void clearAllErrors() {
     formErrors.value = const AccountFormErrors();
-  }
-
-  void setFieldError(AccountFormField field, String error) {
-    formErrors.value = switch (field) {
-      AccountFormField.name => formErrors.value.copyWith(name: error),
-      AccountFormField.initialBalance => formErrors.value.copyWith(
-        initialBalance: error,
-      ),
-    };
-  }
-
-  bool isFormValid(BuildContext context) {
-    final nameErrors = AccountFormValidator.validateField(
-      formData.value,
-      AccountFormField.name,
-      context,
-    );
-    final balanceErrors = AccountFormValidator.validateField(
-      formData.value,
-      AccountFormField.initialBalance,
-      context,
-    );
-
-    return !nameErrors.hasErrors &&
-        !balanceErrors.hasErrors &&
-        !formErrors.value.hasErrors;
   }
 
   @override

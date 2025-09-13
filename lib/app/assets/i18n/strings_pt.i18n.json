@@ -65,6 +65,13 @@
       "weekly": "Semanal",
       "monthly": "Mensal",
       "yearly": "Anual"
+    },
+    "period_types": {
+      "daily": "Diário",
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "quarterly": "Trimestral",
+      "semester": "Semestral"
     }
   },
   "accounts": {

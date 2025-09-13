@@ -57,63 +57,21 @@ class AccountFormValidator {
     Balance? balanceValidation;
     var errors = const AccountFormErrors();
 
-    try {
-      nameValidation = AccountName.create(formData.name, context);
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(name: e.message);
-    }
+    nameValidation = ValidationResult.validateField(
+      () => AccountName.create(formData.name, context),
+      (errorMessage) => errors = errors.copyWith(name: errorMessage),
+    );
 
-    try {
-      balanceValidation = Balance.create(formData.initialBalance, context);
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(initialBalance: e.message);
-    }
+    balanceValidation = ValidationResult.validateField(
+      () => Balance.create(formData.initialBalance, context),
+      (errorMessage) => errors = errors.copyWith(initialBalance: errorMessage),
+    );
 
     return _FieldValidationResults(
       nameValidation: nameValidation,
       balanceValidation: balanceValidation,
       errors: errors,
     );
-  }
-
-  static AccountFormErrors validateField(
-    AccountFormData formData,
-    AccountFormField field,
-    BuildContext context,
-  ) {
-    return switch (field) {
-      AccountFormField.name => _validateNameField(formData.name, context),
-      AccountFormField.initialBalance => _validateBalanceField(
-        formData.initialBalance,
-        context,
-      ),
-    };
-  }
-
-  static AccountFormErrors _validateNameField(
-    String name,
-    BuildContext context,
-  ) {
-    try {
-      AccountName.create(name, context);
-      return const AccountFormErrors();
-    } on ValidationException catch (e) {
-      return AccountFormErrors(name: e.message);
-    }
-  }
-
-  static AccountFormErrors _validateBalanceField(
-    double balance,
-    BuildContext context,
-  ) {
-    try {
-      Balance.create(balance, context);
-      return const AccountFormErrors();
-    } on ValidationException catch (e) {
-      return AccountFormErrors(initialBalance: e.message);
-    }
   }
 }
 

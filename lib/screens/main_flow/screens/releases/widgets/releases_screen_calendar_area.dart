@@ -16,53 +16,78 @@ class CWAReleasesScreenCalendar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                onPressed: () {
-                  final newDate = DateTime(
-                    focusedDate.year,
-                    focusedDate.month - 1,
-                  );
-                  dateFilterBloc.currentDate = newDate;
-                },
+                onPressed: () => dateFilterBloc.navigateToPrevious(),
                 icon: const Icon(Icons.chevron_left),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
               ),
-              GestureDetector(
-                onTap: () async {
-                  final selectedDate = await showDatePicker(
-                    context: context,
-                    initialDate: focusedDate,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-                  );
+              Expanded(
+                child: GestureDetector(
+                  onTap: () async {
+                    final selectedDate = await showDatePicker(
+                      context: context,
+                      initialDate: focusedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime.now().add(
+                        const Duration(days: 365 * 5),
+                      ),
+                    );
 
-                  if (selectedDate != null) {
-                    dateFilterBloc.currentDate = selectedDate;
-                  }
-                },
-                child: Text(
-                  focusedDate.formattedMonthYear(context: context),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                    if (selectedDate != null) {
+                      dateFilterBloc.currentDate = selectedDate;
+                    }
+                  },
+                  child: Text(
+                    dateFilterBloc.getFormattedPeriod(context),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-              IconButton(
-                onPressed: () {
-                  final newDate = DateTime(
-                    focusedDate.year,
-                    focusedDate.month + 1,
-                  );
-                  dateFilterBloc.currentDate = newDate;
-                },
-                icon: const Icon(Icons.chevron_right),
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                padding: EdgeInsets.zero,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => dateFilterBloc.navigateToNext(),
+                    icon: const Icon(Icons.chevron_right),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  const _PeriodDropdown(),
+                ],
               ),
             ],
           );
         }),
       ),
     );
+  }
+}
+
+class _PeriodDropdown extends StatelessWidget {
+  const _PeriodDropdown();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return CWDropdownField<DatePeriodType>(
+        value: dateFilterBloc.currentPeriod,
+        items: DatePeriodType.values,
+        onChanged: (DatePeriodType? newPeriod) {
+          if (newPeriod != null) {
+            dateFilterBloc.currentPeriod = newPeriod;
+          }
+        },
+        itemBuilder: (DatePeriodType period, BuildContext context) {
+          return Text(period.getName(context));
+        },
+        textStyle: Theme.of(context).textTheme.bodyMedium,
+      );
+    });
   }
 }

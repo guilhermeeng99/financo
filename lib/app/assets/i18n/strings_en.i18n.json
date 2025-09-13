@@ -65,6 +65,13 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "yearly": "Yearly"
+    },
+    "period_types": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "semester": "Semester"
     }
   },
   "accounts": {

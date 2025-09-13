@@ -25,7 +25,6 @@ class CreateAndEditAccountModel {
   Future<void> _createAccount(BuildContext context) async {
     final formData = createAndEditAccountBloc.formData.value;
 
-    // Validate form using the new validator pattern
     final validationResult = AccountFormValidator.validateCreateAccount(
       formData,
       context,
@@ -81,9 +80,8 @@ class CreateAndEditAccountModel {
 
   void _handleFailure(Failure failure, BuildContext context) {
     if (failure is DuplicateEntryFailure) {
-      createAndEditAccountBloc.setFieldError(
-        AccountFormField.name,
-        context.t.accounts.validation.name_already_exists,
+      createAndEditAccountBloc.formErrors.value = AccountFormErrors(
+        name: context.t.accounts.validation.name_already_exists,
       );
     } else if (failure is NoChangesFailure) {
       logger.i(context.t.messages.warnings.no_changes_provided);

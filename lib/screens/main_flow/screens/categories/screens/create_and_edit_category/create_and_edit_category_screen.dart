@@ -72,13 +72,13 @@ class _Name extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final name = createAndEditCategoryBloc.name.value;
-      final nameError = createAndEditCategoryBloc.nameError.value;
+      final name = createAndEditCategoryBloc.name;
+      final nameError = createAndEditCategoryBloc.formErrors.value.name;
 
       return CWTextField(
         hintText: '${context.t.common.labels.name}*',
         initialValue: name,
-        onChanged: (value) => createAndEditCategoryBloc.name.value = value,
+        onChanged: (value) => createAndEditCategoryBloc.updateName(value),
         error: nameError,
       );
     });
@@ -91,7 +91,7 @@ class _Type extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final selectedType = createAndEditCategoryBloc.selectedCategoryType.value;
+      final selectedType = createAndEditCategoryBloc.selectedCategoryType;
       return CWDropdownField<FinancialType>(
         title: context.t.common.labels.type,
         value: selectedType,
@@ -99,9 +99,9 @@ class _Type extends StatelessWidget {
         isExpanded: true,
         onChanged: (FinancialType? value) {
           if (value != null) {
-            createAndEditCategoryBloc.selectedCategoryType.value = value;
-            createAndEditCategoryBloc.parentCategoryId.value = null;
-            createAndEditCategoryBloc.loadAvailableParentCategories();
+            createAndEditCategoryBloc..updateCategoryType(value)
+            ..updateParentCategoryId(null)
+            ..loadAvailableParentCategories();
           }
         },
         itemBuilder: (FinancialType type, BuildContext context) {
@@ -135,7 +135,7 @@ class _ParentCategory extends StatelessWidget {
         items: items,
         isExpanded: true,
         onChanged: (CategoryData? category) {
-          createAndEditCategoryBloc.parentCategoryId.value = category?.id;
+          createAndEditCategoryBloc.updateParentCategoryId(category?.id);
         },
         itemBuilder: (CategoryData? category, BuildContext context) {
           if (category == null) {

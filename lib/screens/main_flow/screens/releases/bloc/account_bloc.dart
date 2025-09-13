@@ -26,7 +26,7 @@ TransactionsAccountsBloc get transactionsAccountsBloc =>
 class TransactionsAccountsBloc extends GetxController {
   TransactionsAccountsBloc() {
     loadCheckingAccounts();
-    ever(dateFilterBloc.selectedDate, (_) => updateFilteredBalances());
+    ever(dateFilterBloc.selected, (_) => updateFilteredBalances());
     ever(checkingAccounts, (_) => _updateTotalFromFilteredBalances());
   }
 
@@ -107,7 +107,7 @@ class TransactionsAccountsBloc extends GetxController {
 
   Future<void> updateFilteredBalances() async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final endOfMonth = dateFilterBloc.endOfMonth;
+    final endOfPeriod = dateFilterBloc.endOfPeriod;
 
     try {
       if (checkingAccounts.isEmpty) return;
@@ -118,7 +118,7 @@ class TransactionsAccountsBloc extends GetxController {
           .getMultipleAccountsBalanceForPeriod(
             accountIds,
             DateTime(1900),
-            endOfMonth,
+            endOfPeriod,
           );
 
       final balances = balancesResult.fold((Failure failure) {
@@ -130,7 +130,7 @@ class TransactionsAccountsBloc extends GetxController {
           .getMultipleAccountsBalanceForPeriod(
             accountIds,
             DateTime(1900),
-            endOfMonth,
+            endOfPeriod,
             onlyPaidTransactions: false,
           );
 
@@ -194,7 +194,7 @@ class TransactionsAccountsBloc extends GetxController {
         .toSet();
 
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final endOfMonth = DateTime(
+    final endOfPeriod = DateTime(
       selectedDate.year,
       selectedDate.month + 1,
       0,
@@ -207,7 +207,7 @@ class TransactionsAccountsBloc extends GetxController {
         .getMultipleAccountsBalanceForPeriod(
           enabledAccountIds,
           DateTime(1900),
-          endOfMonth,
+          endOfPeriod,
         );
 
     return balancesResult.fold(
@@ -224,7 +224,7 @@ class TransactionsAccountsBloc extends GetxController {
     DateTime selectedDate,
   ) async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
-    final endOfMonth = DateTime(
+    final endOfPeriod = DateTime(
       selectedDate.year,
       selectedDate.month + 1,
       0,
@@ -236,7 +236,7 @@ class TransactionsAccountsBloc extends GetxController {
     final balanceResult = await transactionUsecase.getAccountBalanceForPeriod(
       accountId,
       DateTime(1900),
-      endOfMonth,
+      endOfPeriod,
     );
 
     return balanceResult.fold(

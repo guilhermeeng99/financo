@@ -79,6 +79,7 @@ class TranslationsCommonEn {
 	late final TranslationsCommonActionsEn actions = TranslationsCommonActionsEn._(_root);
 	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn._(_root);
 	late final TranslationsCommonFrequencyEn frequency = TranslationsCommonFrequencyEn._(_root);
+	late final TranslationsCommonPeriodTypesEn period_types = TranslationsCommonPeriodTypesEn._(_root);
 }
 
 // Path: accounts
@@ -367,6 +368,30 @@ class TranslationsCommonFrequencyEn {
 
 	/// en: 'Yearly'
 	String get yearly => 'Yearly';
+}
+
+// Path: common.period_types
+class TranslationsCommonPeriodTypesEn {
+	TranslationsCommonPeriodTypesEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Daily'
+	String get daily => 'Daily';
+
+	/// en: 'Weekly'
+	String get weekly => 'Weekly';
+
+	/// en: 'Monthly'
+	String get monthly => 'Monthly';
+
+	/// en: 'Quarterly'
+	String get quarterly => 'Quarterly';
+
+	/// en: 'Semester'
+	String get semester => 'Semester';
 }
 
 // Path: accounts.types
@@ -685,6 +710,11 @@ extension on Translations {
 			case 'common.frequency.weekly': return 'Weekly';
 			case 'common.frequency.monthly': return 'Monthly';
 			case 'common.frequency.yearly': return 'Yearly';
+			case 'common.period_types.daily': return 'Daily';
+			case 'common.period_types.weekly': return 'Weekly';
+			case 'common.period_types.monthly': return 'Monthly';
+			case 'common.period_types.quarterly': return 'Quarterly';
+			case 'common.period_types.semester': return 'Semester';
 			case 'accounts.new_account': return 'New Account';
 			case 'accounts.edit_account': return 'Edit Account';
 			case 'accounts.select_account': return 'Select Account';

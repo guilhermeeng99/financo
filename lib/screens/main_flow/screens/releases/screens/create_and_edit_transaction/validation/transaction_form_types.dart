@@ -1,22 +1,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
-enum TransactionFormField {
-  description,
-  amount,
-  account,
-  category,
-  actualDate;
-
-  String get fieldName => switch (this) {
-    TransactionFormField.description => 'description',
-    TransactionFormField.amount => 'amount',
-    TransactionFormField.account => 'account',
-    TransactionFormField.category => 'category',
-    TransactionFormField.actualDate => 'actualDate',
-  };
-}
-
 enum TransactionScreenType {
   income,
   expense,

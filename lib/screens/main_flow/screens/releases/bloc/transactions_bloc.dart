@@ -8,7 +8,7 @@ TransactionsBloc get transactionsBloc => Modular.get<TransactionsBloc>();
 class TransactionsBloc extends GetxController {
   TransactionsBloc() {
     loadTransactions();
-    ever(dateFilterBloc.selectedDate, (_) => loadTransactions());
+    ever(dateFilterBloc.selected, (_) => loadTransactions());
     ever(transactionsAccountsBloc.checkingAccounts, (_) => _calculateResults());
     ever(transactions, (_) => _calculateResults());
   }
@@ -23,8 +23,8 @@ class TransactionsBloc extends GetxController {
 
     try {
       final result = await transactionUsecase.getTransactionsWithDetails(
-        startDate: dateFilterBloc.startOfMonth,
-        endDate: dateFilterBloc.endOfMonth,
+        startDate: dateFilterBloc.startOfPeriod,
+        endDate: dateFilterBloc.endOfPeriod,
       );
 
       result.fold(
@@ -39,7 +39,7 @@ class TransactionsBloc extends GetxController {
               'Transactions loaded from database: ${transactionsList.length} items',
             )
             ..i(
-              'Date range: ${dateFilterBloc.startOfMonth} to ${dateFilterBloc.endOfMonth}',
+              'Date range: ${dateFilterBloc.startOfPeriod} to ${dateFilterBloc.endOfPeriod}',
             );
           _calculateResults();
         },
@@ -64,26 +64,18 @@ class TransactionsBloc extends GetxController {
     try {
       final result = await transactionUsecase.getTransactionSummary(
         accountIds: enabledAccountIds,
-        startDate: dateFilterBloc.startOfMonth,
-        endDate: dateFilterBloc.endOfMonth,
+        startDate: dateFilterBloc.startOfPeriod,
+        endDate: dateFilterBloc.endOfPeriod,
       );
 
       result.fold(
         (Failure failure) {
           logger.e('Error calculating transaction summary: ${failure.message}');
-          // Keep current values in case of error
         },
         (TransactionSummary summary) {
           projectedTotalIncome.value = summary.projectedTotalIncome;
           projectedTotalExpense.value = summary.projectedTotalExpense;
           projectedTotalTransfers.value = summary.projectedTotalTransfers;
-
-          logger.i(
-            'Transaction summary calculated: '
-            'Income: ${summary.projectedTotalIncome}, '
-            'Expense: ${summary.projectedTotalExpense}, '
-            'Transfers: ${summary.projectedTotalTransfers}',
-          );
         },
       );
     } catch (e) {

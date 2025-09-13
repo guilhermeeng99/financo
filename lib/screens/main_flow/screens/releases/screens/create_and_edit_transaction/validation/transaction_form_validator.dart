@@ -40,20 +40,6 @@ class TransactionFormErrors {
       actualDate: actualDate ?? this.actualDate,
     );
   }
-
-  TransactionFormErrors clearField(TransactionFormField field) {
-    return switch (field) {
-      TransactionFormField.description => copyWith(description: ''),
-      TransactionFormField.amount => copyWith(amount: ''),
-      TransactionFormField.account => copyWith(account: ''),
-      TransactionFormField.category => copyWith(category: ''),
-      TransactionFormField.actualDate => copyWith(actualDate: ''),
-    };
-  }
-
-  TransactionFormErrors clear() {
-    return const TransactionFormErrors();
-  }
 }
 
 class TransactionFormValidator {
@@ -121,67 +107,47 @@ class TransactionFormValidator {
     TransactionDescription? descriptionValidation;
     var errors = const TransactionFormErrors();
 
-    try {
-      descriptionValidation = TransactionDescription.create(
-        formData.description.trim(),
-        context,
-      );
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(description: e.message);
-    }
+    descriptionValidation = ValidationResult.validateField(
+      () => TransactionDescription.create(formData.description.trim(), context),
+      (errorMessage) => errors = errors.copyWith(description: errorMessage),
+    );
 
-    try {
-      amountValidation = TransactionAmount.create(
+    amountValidation = ValidationResult.validateField(
+      () => TransactionAmount.create(
         formData.amount,
         context,
         transactionType: formData.isTransfer
             ? FinancialType.expense
             : formData.selectedTransactionType,
-      );
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(amount: e.message);
-    }
+      ),
+      (errorMessage) => errors = errors.copyWith(amount: errorMessage),
+    );
 
-    try {
-      accountValidation = TransactionAccountId.create(
-        formData.selectedAccountId,
-        context,
-      );
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(account: e.message);
-    }
+    accountValidation = ValidationResult.validateField(
+      () => TransactionAccountId.create(formData.selectedAccountId, context),
+      (errorMessage) => errors = errors.copyWith(account: errorMessage),
+    );
 
     if (formData.isTransfer) {
-      try {
-        targetAccountValidation = TransactionAccountId.create(
+      targetAccountValidation = ValidationResult.validateField(
+        () => TransactionAccountId.create(
           formData.selectedTargetAccountId,
           context,
-        );
-      } on ValidationException catch (e) {
-        logger.e(e.message);
-        errors = errors.copyWith(account: e.message);
-      }
+        ),
+        (errorMessage) => errors = errors.copyWith(account: errorMessage),
+      );
     } else {
-      try {
-        categoryValidation = TransactionCategoryId.create(
-          formData.selectedCategoryId,
-          context,
-        );
-      } on ValidationException catch (e) {
-        logger.e(e.message);
-        errors = errors.copyWith(category: e.message);
-      }
+      categoryValidation = ValidationResult.validateField(
+        () =>
+            TransactionCategoryId.create(formData.selectedCategoryId, context),
+        (errorMessage) => errors = errors.copyWith(category: errorMessage),
+      );
     }
 
-    try {
-      dateValidation = TransactionDate.create(formData.actualDate, context);
-    } on ValidationException catch (e) {
-      logger.e(e.message);
-      errors = errors.copyWith(actualDate: e.message);
-    }
+    dateValidation = ValidationResult.validateField(
+      () => TransactionDate.create(formData.actualDate, context),
+      (errorMessage) => errors = errors.copyWith(actualDate: errorMessage),
+    );
 
     return _FieldValidationResults(
       amountValidation: amountValidation,
