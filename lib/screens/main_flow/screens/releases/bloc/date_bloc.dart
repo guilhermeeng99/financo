@@ -1,6 +1,7 @@
 import 'package:app_widgets/app_widgets.dart';
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 
-enum DatePeriodType { daily, weekly, monthly, quarterly, semester }
+enum DatePeriodType { daily, weekly, monthly, quarterly, semester, custom }
 
 extension DatePeriodTypeExtension on DatePeriodType {
   String getName(BuildContext context) {
@@ -15,18 +16,37 @@ extension DatePeriodTypeExtension on DatePeriodType {
         return context.t.common.period_types.quarterly;
       case DatePeriodType.semester:
         return context.t.common.period_types.semester;
+      case DatePeriodType.custom:
+        return context.t.common.period_types.custom;
     }
   }
 }
 
 class DateFilter {
-  const DateFilter({required this.date, required this.period});
+  const DateFilter({
+    required this.date,
+    required this.period,
+    this.startDate,
+    this.endDate,
+  });
 
   final DateTime date;
   final DatePeriodType period;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
-  DateFilter copyWith({DateTime? date, DatePeriodType? period}) {
-    return DateFilter(date: date ?? this.date, period: period ?? this.period);
+  DateFilter copyWith({
+    DateTime? date,
+    DatePeriodType? period,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    return DateFilter(
+      date: date ?? this.date,
+      period: period ?? this.period,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+    );
   }
 }
 
@@ -55,10 +75,53 @@ class DateFilterBloc extends GetxController {
   }
 
   set currentPeriod(DatePeriodType newPeriod) {
+    if (newPeriod == DatePeriodType.custom) {
+      return;
+    }
     _current.value = _current.value.copyWith(period: newPeriod);
   }
 
+  Future<void> selectCustomPeriod(BuildContext context) async {
+    await openCustomCalendarDialog(context);
+  }
+
+  void setCustomPeriod(DateTime? startDate, DateTime? endDate) {
+    _current.value = _current.value.copyWith(
+      period: DatePeriodType.custom,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  Future<void> openCustomCalendarDialog(BuildContext context) async {
+    final results = await CustomCalendarDialog.show(
+      context,
+      initialDates: [
+        current.startDate ?? DateTime.now(),
+        current.endDate ?? DateTime.now(),
+      ],
+      calendarType: CalendarDatePicker2Type.range,
+    );
+
+    if (results != null && results.length >= 2) {
+      final startDate = results[0];
+      final endDate = results[1];
+
+      if (startDate != null && endDate != null) {
+        setCustomPeriod(startDate, endDate);
+      } else if (startDate != null) {
+        setCustomPeriod(startDate, startDate);
+      }
+    }
+  }
+
   bool isTransactionInSelectedMonth(DateTime transactionDate) {
+    if (currentPeriod == DatePeriodType.custom) {
+      final start = startOfPeriod;
+      final end = endOfPeriod;
+      return transactionDate.isAfter(start.subtract(const Duration(days: 1))) &&
+          transactionDate.isBefore(end.add(const Duration(days: 1)));
+    }
     return transactionDate.year == currentDate.year &&
         transactionDate.month == currentDate.month;
   }
@@ -79,6 +142,8 @@ class DateFilterBloc extends GetxController {
       case DatePeriodType.semester:
         final semesterMonth = date.month <= 6 ? 1 : 7;
         return DateTime(date.year, semesterMonth);
+      case DatePeriodType.custom:
+        return current.startDate ?? DateTime(date.year, date.month, date.day);
     }
   }
 
@@ -106,6 +171,11 @@ class DateFilterBloc extends GetxController {
       case DatePeriodType.semester:
         final semesterEndMonth = date.month <= 6 ? 7 : 13;
         return DateTime(date.year, semesterEndMonth, 0, 23, 59, 59);
+      case DatePeriodType.custom:
+        final endDate =
+            current.endDate ??
+            DateTime(date.year, date.month, date.day, 23, 59, 59);
+        return DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
     }
   }
 
@@ -132,6 +202,8 @@ class DateFilterBloc extends GetxController {
         currentDate = DateTime(date.year, date.month - 3, date.day);
       case DatePeriodType.semester:
         currentDate = DateTime(date.year, date.month - 6, date.day);
+      case DatePeriodType.custom:
+        break;
     }
   }
 
@@ -148,6 +220,8 @@ class DateFilterBloc extends GetxController {
         currentDate = DateTime(date.year, date.month + 3, date.day);
       case DatePeriodType.semester:
         currentDate = DateTime(date.year, date.month + 6, date.day);
+      case DatePeriodType.custom:
+        break;
     }
   }
 
@@ -168,6 +242,13 @@ class DateFilterBloc extends GetxController {
       case DatePeriodType.semester:
         final semester = date.month <= 6 ? 1 : 2;
         return '$semesterº Semestre ${date.year}';
+      case DatePeriodType.custom:
+        final start = current.startDate ?? date;
+        final end = current.endDate ?? date;
+        if (start == end) {
+          return start.formattedDateddMMyyyy(context: context);
+        }
+        return '${start.formattedDateddMMyy(context: context)} - ${end.formattedDateddMMyy(context: context)}';
     }
   }
 

@@ -10,8 +10,6 @@ class CWAReleasesScreenCalendar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Obx(() {
-          final focusedDate = dateFilterBloc.currentDate;
-
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -22,45 +20,22 @@ class CWAReleasesScreenCalendar extends StatelessWidget {
                 padding: EdgeInsets.zero,
               ),
               Expanded(
-                child: GestureDetector(
-                  onTap: () async {
-                    final selectedDate = await showDatePicker(
-                      context: context,
-                      initialDate: focusedDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now().add(
-                        const Duration(days: 365 * 5),
-                      ),
-                    );
-
-                    if (selectedDate != null) {
-                      dateFilterBloc.currentDate = selectedDate;
-                    }
-                  },
-                  child: Text(
-                    dateFilterBloc.getFormattedPeriod(context),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                child: Text(
+                  dateFilterBloc.getFormattedPeriod(context),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () => dateFilterBloc.navigateToNext(),
-                    icon: const Icon(Icons.chevron_right),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                    padding: EdgeInsets.zero,
-                  ),
-                  const _PeriodDropdown(),
-                ],
+              IconButton(
+                onPressed: () => dateFilterBloc.navigateToNext(),
+                icon: const Icon(Icons.chevron_right),
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                padding: EdgeInsets.zero,
               ),
+              const Gap(10),
+              const _PeriodDropdown(),
             ],
           );
         }),
@@ -74,20 +49,27 @@ class _PeriodDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return CWDropdownField<DatePeriodType>(
-        value: dateFilterBloc.currentPeriod,
-        items: DatePeriodType.values,
-        onChanged: (DatePeriodType? newPeriod) {
-          if (newPeriod != null) {
-            dateFilterBloc.currentPeriod = newPeriod;
-          }
-        },
-        itemBuilder: (DatePeriodType period, BuildContext context) {
-          return Text(period.getName(context));
-        },
-        textStyle: Theme.of(context).textTheme.bodyMedium,
-      );
-    });
+    return PopupMenuButton<DatePeriodType>(
+      onSelected: (DatePeriodType newPeriod) async {
+        if (newPeriod == DatePeriodType.custom) {
+          await dateFilterBloc.selectCustomPeriod(context);
+        } else {
+          dateFilterBloc.currentPeriod = newPeriod;
+        }
+      },
+      icon: const Icon(Icons.settings),
+      color: Theme.of(context).scaffoldBackgroundColor,
+      itemBuilder: (BuildContext context) {
+        return DatePeriodType.values.map((DatePeriodType period) {
+          return PopupMenuItem<DatePeriodType>(
+            value: period,
+            child: Text(
+              period.getName(context),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          );
+        }).toList();
+      },
+    );
   }
 }

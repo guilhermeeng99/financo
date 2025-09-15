@@ -336,11 +336,23 @@ class TranslationsCommonLabelsEn {
 	/// en: 'Exits'
 	String get exits => 'Exits';
 
-	/// en: 'Confirmed'
-	String get confirmed => 'Confirmed';
+	/// en: '(one) {Confirmed} (other) {Confirmed}'
+	String confirmed({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+		one: 'Confirmed',
+		other: 'Confirmed',
+	);
 
-	/// en: 'Projected'
-	String get projected => 'Projected';
+	/// en: '(one) {Projected} (other) {Projected}'
+	String projected({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+		one: 'Projected',
+		other: 'Projected',
+	);
+
+	/// en: '(one) {Pending} (other) {Pending}'
+	String pending({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+		one: 'Pending',
+		other: 'Pending',
+	);
 
 	/// en: '(one) {Result} (other) {Results}'
 	String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
@@ -392,6 +404,9 @@ class TranslationsCommonPeriodTypesEn {
 
 	/// en: 'Semester'
 	String get semester => 'Semester';
+
+	/// en: 'Custom'
+	String get custom => 'Custom';
 }
 
 // Path: accounts.types
@@ -700,8 +715,18 @@ extension on Translations {
 				other: 'Transfers',
 			);
 			case 'common.labels.exits': return 'Exits';
-			case 'common.labels.confirmed': return 'Confirmed';
-			case 'common.labels.projected': return 'Projected';
+			case 'common.labels.confirmed': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+				one: 'Confirmed',
+				other: 'Confirmed',
+			);
+			case 'common.labels.projected': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+				one: 'Projected',
+				other: 'Projected',
+			);
+			case 'common.labels.pending': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
+				one: 'Pending',
+				other: 'Pending',
+			);
 			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
 				one: 'Result',
 				other: 'Results',
@@ -715,6 +740,7 @@ extension on Translations {
 			case 'common.period_types.monthly': return 'Monthly';
 			case 'common.period_types.quarterly': return 'Quarterly';
 			case 'common.period_types.semester': return 'Semester';
+			case 'common.period_types.custom': return 'Custom';
 			case 'accounts.new_account': return 'New Account';
 			case 'accounts.edit_account': return 'Edit Account';
 			case 'accounts.select_account': return 'Select Account';

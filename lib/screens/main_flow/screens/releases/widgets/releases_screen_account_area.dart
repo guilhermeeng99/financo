@@ -29,13 +29,13 @@ class _Accounts extends StatelessWidget {
           children: [
             _ContainerItem(
               child: Text(
-                context.t.common.labels.confirmed,
+                context.t.common.labels.confirmed(n: 1),
                 style: const TextStyle(fontSize: 14),
               ),
             ),
             _ContainerItem(
               child: Text(
-                context.t.common.labels.projected,
+                context.t.common.labels.projected(n: 1),
                 style: const TextStyle(fontSize: 14),
               ),
             ),

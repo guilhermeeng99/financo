@@ -2,6 +2,7 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/releases/bloc/date_bloc.dart';
+import 'package:financo/screens/main_flow/screens/releases/bloc/transaction_filter_types.dart';
 
 TransactionsBloc get transactionsBloc => Modular.get<TransactionsBloc>();
 
@@ -11,12 +12,20 @@ class TransactionsBloc extends GetxController {
     ever(dateFilterBloc.selected, (_) => loadTransactions());
     ever(transactionsAccountsBloc.checkingAccounts, (_) => _calculateResults());
     ever(transactions, (_) => _calculateResults());
+    ever(activeFilters, (_) => _recalculateFilteredTransactions());
   }
 
   final RxList<TransactionI> transactions = <TransactionI>[].obs;
+  final RxList<TransactionI> filteredTransactions = <TransactionI>[].obs;
   final RxDouble projectedTotalIncome = 0.0.obs;
   final RxDouble projectedTotalExpense = 0.0.obs;
   final RxDouble projectedTotalTransfers = 0.0.obs;
+
+  final RxSet<TransactionFilterType> activeFilters = <TransactionFilterType>{
+    TransactionFilterType.pending,
+    TransactionFilterType.unpaid,
+    TransactionFilterType.paid,
+  }.obs;
 
   Future<void> loadTransactions() async {
     final transactionUsecase = Modular.get<ITransactionUsecase>();
@@ -42,6 +51,7 @@ class TransactionsBloc extends GetxController {
               'Date range: ${dateFilterBloc.startOfPeriod} to ${dateFilterBloc.endOfPeriod}',
             );
           _calculateResults();
+          _recalculateFilteredTransactions();
         },
       );
     } catch (e) {
@@ -84,11 +94,36 @@ class TransactionsBloc extends GetxController {
   }
 
   List<TransactionI> getFilteredTransactions(Set<int> enabledAccountIds) {
-    return transactions
+    return filteredTransactions
         .where(
           (transaction) => enabledAccountIds.contains(transaction.t.accountId),
         )
         .toList();
+  }
+
+  void _recalculateFilteredTransactions() {
+    if (activeFilters.isEmpty) {
+      filteredTransactions.value = [];
+      return;
+    }
+
+    filteredTransactions.value = transactions.where((transaction) {
+      return activeFilters.any(
+        (filter) => filter.matchesTransaction(transaction),
+      );
+    }).toList();
+  }
+
+  void toggleFilter(TransactionFilterType filterType) {
+    if (activeFilters.contains(filterType)) {
+      activeFilters.remove(filterType);
+    } else {
+      activeFilters.add(filterType);
+    }
+  }
+
+  bool isFilterActive(TransactionFilterType filterType) {
+    return activeFilters.contains(filterType);
   }
 
   double get projectedTotalResult =>
@@ -97,9 +132,11 @@ class TransactionsBloc extends GetxController {
   @override
   void onClose() {
     transactions.close();
+    filteredTransactions.close();
     projectedTotalIncome.close();
     projectedTotalExpense.close();
     projectedTotalTransfers.close();
+    activeFilters.close();
     super.onClose();
   }
 }

@@ -4,7 +4,7 @@ import 'package:financo/gen/i18n/strings.g.dart';
 
 class AppIntializer {
   static Future<void> initializeBeforeApp() async {
-    await LocaleSettings.useDeviceLocale();
+    await _configureLocalization();
   }
 
   static Future<void> initializeOnLoading() async {
@@ -18,6 +18,28 @@ class AppIntializer {
     } catch (e) {
       logger.e('❌ Error during database initialization: $e');
     }
+  }
+
+  static Future<void> _configureLocalization() async {
+    await LocaleSettings.setPluralResolver(
+      language: 'pt',
+      cardinalResolver:
+          (
+            num n, {
+            String? zero,
+            String? one,
+            String? two,
+            String? few,
+            String? many,
+            String? other,
+          }) {
+            if (n == 1) {
+              return one ?? other ?? '';
+            }
+            return other ?? one ?? '';
+          },
+    );
+    await LocaleSettings.useDeviceLocale();
   }
 }
 

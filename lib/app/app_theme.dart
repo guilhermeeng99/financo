@@ -65,6 +65,7 @@ class CustomColorsData {
     this.fourth = const Color(0xff232323),
     this.income = const Color(0xff199428),
     this.expense = const Color(0xffCE6050),
+    this.pending = const Color(0xff73acce),
     this.button01 = const Color(0xff00A797),
     this.button02 = const Color(0xffFF4081),
     this.secondaryTextColor = const Color(0xff888888),
@@ -75,6 +76,7 @@ class CustomColorsData {
   final Color textColor;
   final Color fourth;
   final Color income;
+  final Color pending;
   final Color expense;
   final Color button01;
   final Color button02;

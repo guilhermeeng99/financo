@@ -11,6 +11,13 @@ extension DateFormatterX on DateTime {
     return DateFormat(format, locale).format(this);
   }
 
+  String formattedDateddMMyy({required BuildContext context}) {
+    return _formattedDate(
+      context: context,
+      format: 'dd/MM/yy',
+    );
+  }
+
   String formattedDateddMMyyyy({required BuildContext context}) {
     return _formattedDate(
       context: context,

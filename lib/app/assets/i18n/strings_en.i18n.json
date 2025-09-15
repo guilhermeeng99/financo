@@ -53,8 +53,18 @@
         "other": "Transfers"
       },
       "exits": "Exits",
-      "confirmed": "Confirmed",
-      "projected": "Projected",
+      "confirmed": {
+        "one": "Confirmed",
+        "other": "Confirmed"
+      },
+      "projected": {
+        "one": "Projected",
+        "other": "Projected"
+      },
+      "pending": {
+        "one": "Pending",
+        "other": "Pending"
+      },
       "result": {
         "one": "Result",
         "other": "Results"
@@ -71,7 +81,8 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "semester": "Semester"
+      "semester": "Semester",
+      "custom": "Custom"
     }
   },
   "accounts": {

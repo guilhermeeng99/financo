@@ -209,8 +209,18 @@ class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
 		other: 'Transferências',
 	);
 	@override String get exits => 'Saídas';
-	@override String get confirmed => 'Confirmado';
-	@override String get projected => 'Previsto';
+	@override String confirmed({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Confirmado',
+		other: 'Confirmados',
+	);
+	@override String projected({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Projetado',
+		other: 'Projetados',
+	);
+	@override String pending({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+		one: 'Pendente',
+		other: 'Pendentes',
+	);
 	@override String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 		one: 'Resultado',
 		other: 'Resultados',
@@ -242,6 +252,7 @@ class _TranslationsCommonPeriodTypesPt implements TranslationsCommonPeriodTypesE
 	@override String get monthly => 'Mensal';
 	@override String get quarterly => 'Trimestral';
 	@override String get semester => 'Semestral';
+	@override String get custom => 'Personalizado';
 }
 
 // Path: accounts.types
@@ -460,8 +471,18 @@ extension on TranslationsPt {
 				other: 'Transferências',
 			);
 			case 'common.labels.exits': return 'Saídas';
-			case 'common.labels.confirmed': return 'Confirmado';
-			case 'common.labels.projected': return 'Previsto';
+			case 'common.labels.confirmed': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Confirmado',
+				other: 'Confirmados',
+			);
+			case 'common.labels.projected': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Projetado',
+				other: 'Projetados',
+			);
+			case 'common.labels.pending': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
+				one: 'Pendente',
+				other: 'Pendentes',
+			);
 			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 				one: 'Resultado',
 				other: 'Resultados',
@@ -475,6 +496,7 @@ extension on TranslationsPt {
 			case 'common.period_types.monthly': return 'Mensal';
 			case 'common.period_types.quarterly': return 'Trimestral';
 			case 'common.period_types.semester': return 'Semestral';
+			case 'common.period_types.custom': return 'Personalizado';
 			case 'accounts.new_account': return 'Nova Conta';
 			case 'accounts.edit_account': return 'Editar Conta';
 			case 'accounts.select_account': return 'Selecionar Conta';
