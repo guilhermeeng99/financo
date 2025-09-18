@@ -1,9 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/create_and_edit_transaction_model.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/validation/transaction_form_types.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_model.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/validation/transaction_form_types.dart';
 
 enum CreateAndEditTransactionPopUpType { create, edit }
 

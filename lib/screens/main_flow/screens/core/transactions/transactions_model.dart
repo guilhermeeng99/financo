@@ -2,14 +2,36 @@ import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:excel/excel.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_module.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_module.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_screen.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/create_and_edit_transaction_module.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/screens/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
 
 TransactionsModel get transactionsModel => Modular.get<TransactionsModel>();
 
 class TransactionsModel {
+  void onTapFloatingActionButton() {
+    PopUpManager.showDialog(
+      builder: (c) => WidgetModuleProvider(
+        module: CreateAndEditTransactionModule(),
+        child: () => CreateAndEditTransactionPopUp(
+          CreateAndEditTransactionPopUpArgs(
+            type: CreateAndEditTransactionPopUpType.create,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onTapImportPopUp() => PopUpManager.showDialog(
+    builder: (c) => WidgetModuleProvider(
+      module: ImportTransactionsModule(),
+      child: ImportTransactionsPopUp.new,
+    ),
+  );
+
   void onTapOpenTransaction(DataTransaction transaction) {
     PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
@@ -114,7 +136,8 @@ class TransactionsModel {
   }
 }
 
-TransactionsModelExcel get transactionsModelExcel => Modular.get<TransactionsModelExcel>();
+TransactionsModelExcel get transactionsModelExcel =>
+    Modular.get<TransactionsModelExcel>();
 
 class TransactionsModelExcel {
   Future<void> onTapDownloadUserTransactions(

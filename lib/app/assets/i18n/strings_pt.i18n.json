@@ -1,8 +1,10 @@
 {
   "navigation": {
     "overview": "Visão Geral",
-    "financial_movement": "Movimentação Financeira",
-    "filtered_releases": "Lançamentos Filtrados",
+    "financial_movement": "Movimentação financeira",
+    "paid_and_received": "Pagas e recebidas",
+    "to_pay_and_to_receive": "A pagar e a receber",
+    "account_statement": "Extrato de conta",
     "releases": "Lançamentos",
     "register": "Registro",
     "categories": "Categorias",

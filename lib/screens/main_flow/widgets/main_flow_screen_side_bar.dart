@@ -11,19 +11,31 @@ class MainFlowScreenSideBar extends StatelessWidget {
     return Obx(() {
       final isSideBarOn = mainFlowBloc.isSideBarOn.value;
 
-      return AnimatedContainer(
+      return TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        width: isSideBarOn ? 300 : 0,
-        color: Theme.of(context).scaffoldBackgroundColor,
-        padding: const EdgeInsets.only(top: 25),
-        child: Obx(() {
-          return Column(
-            children: mainFlowSideBarController.flattenedItems
-                .map(_Item.new)
-                .toList(),
+        tween: Tween<double>(begin: 0, end: isSideBarOn ? 1 : 0),
+        builder: (context, factor, child) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            widthFactor: factor,
+            child: child,
           );
-        }),
+        },
+        child: Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          padding: const EdgeInsets.only(top: 25),
+          child: IntrinsicWidth(
+            child: Obx(() {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: mainFlowSideBarController.flattenedItems
+                    .map(_Item.new)
+                    .toList(),
+              );
+            }),
+          ),
+        ),
       );
     });
   }
@@ -53,6 +65,7 @@ class _Item extends StatelessWidget {
             left: 20 + (item.level * 20),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (item.isParent) ...[
                 const Icon(Icons.label, size: 20),
@@ -82,7 +95,7 @@ class _Item extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
-              const Spacer(),
+              const Gap(8),
               if (item.isParent)
                 Icon(
                   isExpanded ? Icons.expand_less : Icons.expand_more,

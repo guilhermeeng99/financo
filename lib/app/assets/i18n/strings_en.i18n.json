@@ -1,8 +1,10 @@
 {
   "navigation": {
     "overview": "Overview",
-    "financial_movement": "Financial Movement",
-    "filtered_releases": "Filtered Releases",
+    "financial_movement": "Financial movement",
+    "paid_and_received": "Paid and received",
+    "to_pay_and_to_receive": "To pay and to receive",
+    "account_statement": "Account Statement",
     "releases": "Releases",
     "register": "Register",
     "categories": "Categories",

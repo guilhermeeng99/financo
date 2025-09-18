@@ -1,19 +1,19 @@
+import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
-import 'package:app_database/app_database.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_types.dart';
 
-FilteredReleasesBloc get filteredReleasesBloc =>
-    Modular.get<FilteredReleasesBloc>();
+PastAndFutureReleasesBloc get pastAndFutureReleasesBloc =>
+    Modular.get<PastAndFutureReleasesBloc>();
 
-class FilteredReleasesBloc extends GetxController {
-  FilteredReleasesBloc() {
+class PastAndFutureReleasesBloc extends GetxController {
+  PastAndFutureReleasesBloc() {
     _initializeListeners();
   }
 
   void _initializeListeners() {
-    // Update transactions filter when accounts change
     ever(
       coreAccountsBloc.checkingAccounts,
       (_) => _updateTransactionsFilterBloc(),
@@ -25,27 +25,27 @@ class FilteredReleasesBloc extends GetxController {
       coreAccountsBloc.enabledAccountIds,
     );
   }
-  // Custom method for filtered releases that applies account filter only to pending and unpaid transactions
-  List<TransactionI> getFilteredTransactions() {
+
+  List<TransactionI> getFilteredTransactions(
+    PastAndFutureReleasesScreenType type,
+  ) {
     final allTransactions = transactionsFilterBloc.filteredTransactionsFilter;
     final targetAccountIds = coreAccountsBloc.enabledAccountIds;
+    final allowedFilters = type.allowedFilters;
 
     return allTransactions.where((transaction) {
-      // Apply account filter only for pending and unpaid transactions
-      final isPendingOrUnpaid =
-          TransactionFilterType.pending.matchesTransaction(transaction) ||
-          TransactionFilterType.unpaid.matchesTransaction(transaction);
+      final matchesTypeFilter = allowedFilters.any(
+        (filter) => filter.matchesTransaction(transaction),
+      );
 
-      if (isPendingOrUnpaid) {
+      if (matchesTypeFilter) {
         return targetAccountIds.contains(transaction.t.accountId);
       }
 
-      // For paid transactions, don't apply account filter
-      return true;
+      return false;
     }).toList();
   }
 
-  // Delegated methods for account management
   Future<void> loadCheckingAccounts() =>
       coreAccountsBloc.loadCheckingAccounts();
   Future<void> updateFilteredBalances() =>

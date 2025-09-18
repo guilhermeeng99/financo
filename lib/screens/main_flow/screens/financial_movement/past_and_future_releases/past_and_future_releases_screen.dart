@@ -3,11 +3,14 @@ import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts
 import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts_results_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_transaction_area.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_types.dart';
 
-class ReleasesScreen extends StatelessWidget {
-  const ReleasesScreen({super.key});
+import 'past_and_future_releases_bloc.dart';
+
+class PastAndFutureReleasesScreen extends StatelessWidget {
+  const PastAndFutureReleasesScreen({required this.type, super.key});
+
+  final PastAndFutureReleasesScreenType type;
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +21,8 @@ class ReleasesScreen extends StatelessWidget {
           width: MediaQuery.of(context).size.width * 0.95,
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Obx(() {
-            final transactions = releasesBloc.filteredTransactions;
-
+            final customTransactions = pastAndFutureReleasesBloc
+                .getFilteredTransactions(type);
             return Row(
               spacing: 20,
               children: [
@@ -38,8 +41,10 @@ class ReleasesScreen extends StatelessWidget {
                           child: Column(
                             spacing: 25,
                             children: [
-                              const CWAccountsList(),
-                              CWAccountsResults(transactions: transactions),
+                            const  CWAccountsList(),
+                              CWAccountsResults(
+                                transactions: customTransactions,
+                              ),
                             ],
                           ),
                         ),
@@ -47,7 +52,7 @@ class ReleasesScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                CWAReleasesScreenTransactions(transactions: transactions),
+                CWTransactionsTable(transactions: customTransactions),
               ],
             );
           }),

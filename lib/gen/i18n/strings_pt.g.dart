@@ -53,8 +53,10 @@ class _TranslationsNavigationPt implements TranslationsNavigationEn {
 
 	// Translations
 	@override String get overview => 'Visão Geral';
-	@override String get financial_movement => 'Movimentação Financeira';
-	@override String get filtered_releases => 'Lançamentos Filtrados';
+	@override String get financial_movement => 'Movimentação financeira';
+	@override String get paid_and_received => 'Pagas e recebidas';
+	@override String get to_pay_and_to_receive => 'A pagar e a receber';
+	@override String get account_statement => 'Extrato de conta';
 	@override String get releases => 'Lançamentos';
 	@override String get register => 'Registro';
 	@override String get categories => 'Categorias';
@@ -427,8 +429,10 @@ extension on TranslationsPt {
 	dynamic _flatMapFunction(String path) {
 		switch (path) {
 			case 'navigation.overview': return 'Visão Geral';
-			case 'navigation.financial_movement': return 'Movimentação Financeira';
-			case 'navigation.filtered_releases': return 'Lançamentos Filtrados';
+			case 'navigation.financial_movement': return 'Movimentação financeira';
+			case 'navigation.paid_and_received': return 'Pagas e recebidas';
+			case 'navigation.to_pay_and_to_receive': return 'A pagar e a receber';
+			case 'navigation.account_statement': return 'Extrato de conta';
 			case 'navigation.releases': return 'Lançamentos';
 			case 'navigation.register': return 'Registro';
 			case 'navigation.categories': return 'Categorias';

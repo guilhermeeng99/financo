@@ -22,7 +22,9 @@ class MainFlowTopBarController {
 
 enum SideBarItemType {
   financialMovement,
-  filteredReleases,
+  pastReleases,
+  futureReleases,
+  accountStatement,
   releases,
   registrations,
   categories,
@@ -34,10 +36,14 @@ extension SideBarItemTypeExtension on SideBarItemType {
     switch (this) {
       case SideBarItemType.financialMovement:
         return null;
-      case SideBarItemType.filteredReleases:
-        return ro.mainFlow.financialMovement.filteredReleases.route;
+      case SideBarItemType.futureReleases:
+        return '${ro.mainFlow.financialMovement.pastAndFutureReleases.route}?type=future';
+      case SideBarItemType.pastReleases:
+        return '${ro.mainFlow.financialMovement.pastAndFutureReleases.route}?type=past';
       case SideBarItemType.releases:
         return ro.mainFlow.financialMovement.releases.route;
+      case SideBarItemType.accountStatement:
+        return ro.mainFlow.financialMovement.accountStatement.route;
       case SideBarItemType.registrations:
         return null;
       case SideBarItemType.categories:
@@ -51,8 +57,12 @@ extension SideBarItemTypeExtension on SideBarItemType {
     switch (this) {
       case SideBarItemType.financialMovement:
         return context.t.navigation.financial_movement;
-      case SideBarItemType.filteredReleases:
-        return context.t.navigation.filtered_releases;
+      case SideBarItemType.futureReleases:
+        return context.t.navigation.to_pay_and_to_receive;
+      case SideBarItemType.pastReleases:
+        return context.t.navigation.paid_and_received;
+      case SideBarItemType.accountStatement:
+        return context.t.navigation.account_statement;
       case SideBarItemType.releases:
         return context.t.navigation.releases;
       case SideBarItemType.registrations:
@@ -97,8 +107,10 @@ class MainFlowSideBarController {
     const SideBarItem(
       type: SideBarItemType.financialMovement,
       children: [
-        SideBarItem(type: SideBarItemType.filteredReleases, level: 1),
         SideBarItem(type: SideBarItemType.releases, level: 1),
+        SideBarItem(type: SideBarItemType.futureReleases, level: 1),
+        SideBarItem(type: SideBarItemType.pastReleases, level: 1),
+        SideBarItem(type: SideBarItemType.accountStatement, level: 1),
       ],
     ),
     const SideBarItem(

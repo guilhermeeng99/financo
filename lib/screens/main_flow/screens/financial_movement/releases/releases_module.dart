@@ -4,7 +4,6 @@ import 'package:financo/screens/main_flow/screens/core/calendar/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_module.dart';
 
 import 'releases_bloc.dart';
-import 'releases_model.dart';
 import 'releases_screen.dart';
 
 class ReleasesModule extends Module {
@@ -17,9 +16,7 @@ class ReleasesModule extends Module {
 
   @override
   void binds(Injector i) {
-    i
-      ..addSingleton<ReleasesBloc>(ReleasesBloc.new)
-      ..addSingleton<ReleasesModel>(ReleasesModel.new);
+    i.addSingleton<ReleasesBloc>(ReleasesBloc.new);
   }
 
   @override

@@ -30,42 +30,51 @@ class AppRoutesMainFlow {
 class AppRoutesMainFlowFinancialMovement {
   const AppRoutesMainFlowFinancialMovement();
 
-  final AppRoutesMainFlowFinancialMovementFilteredReleases filteredReleases =
-      const AppRoutesMainFlowFinancialMovementFilteredReleases();
+  final AppRoutesMainFlowFinancialMovementAccountStatement accountStatement =
+      const AppRoutesMainFlowFinancialMovementAccountStatement();
+  final AppRoutesMainFlowFinancialMovementCreateAndEditTransaction
+  createAndEditTransaction =
+      const AppRoutesMainFlowFinancialMovementCreateAndEditTransaction();
+  final AppRoutesMainFlowFinancialMovementImportTransactions
+  importTransactions =
+      const AppRoutesMainFlowFinancialMovementImportTransactions();
+  final AppRoutesMainFlowFinancialMovementPastAndFutureReleases
+  pastAndFutureReleases =
+      const AppRoutesMainFlowFinancialMovementPastAndFutureReleases();
   final AppRoutesMainFlowFinancialMovementReleases releases =
       const AppRoutesMainFlowFinancialMovementReleases();
 }
 
-class AppRoutesMainFlowFinancialMovementFilteredReleases {
-  const AppRoutesMainFlowFinancialMovementFilteredReleases();
+class AppRoutesMainFlowFinancialMovementAccountStatement {
+  const AppRoutesMainFlowFinancialMovementAccountStatement();
 
-  final String route = '/main_flow/financial_movement/filtered_releases/';
+  final String route = '/main_flow/financial_movement/account_statement/';
+}
+
+class AppRoutesMainFlowFinancialMovementCreateAndEditTransaction {
+  const AppRoutesMainFlowFinancialMovementCreateAndEditTransaction();
+
+  final String route =
+      '/main_flow/financial_movement/create_and_edit_transaction/';
+}
+
+class AppRoutesMainFlowFinancialMovementImportTransactions {
+  const AppRoutesMainFlowFinancialMovementImportTransactions();
+
+  final String route = '/main_flow/financial_movement/import_transactions/';
+}
+
+class AppRoutesMainFlowFinancialMovementPastAndFutureReleases {
+  const AppRoutesMainFlowFinancialMovementPastAndFutureReleases();
+
+  final String route =
+      '/main_flow/financial_movement/past_and_future_releases/';
 }
 
 class AppRoutesMainFlowFinancialMovementReleases {
   const AppRoutesMainFlowFinancialMovementReleases();
 
   final String route = '/main_flow/financial_movement/releases/';
-  final AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction
-  createAndEditTransaction =
-      const AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction();
-  final AppRoutesMainFlowFinancialMovementReleasesImportTransactions
-  importTransactions =
-      const AppRoutesMainFlowFinancialMovementReleasesImportTransactions();
-}
-
-class AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction {
-  const AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction();
-
-  final String route =
-      '/main_flow/financial_movement/releases/create_and_edit_transaction/';
-}
-
-class AppRoutesMainFlowFinancialMovementReleasesImportTransactions {
-  const AppRoutesMainFlowFinancialMovementReleasesImportTransactions();
-
-  final String route =
-      '/main_flow/financial_movement/releases/import_transactions/';
 }
 
 class AppRoutesMainFlowHome {

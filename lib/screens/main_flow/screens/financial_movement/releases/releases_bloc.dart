@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
@@ -51,6 +52,9 @@ class ReleasesBloc extends GetxController {
   double get totalEnabledAccountsBalance =>
       coreAccountsBloc.totalEnabledAccountsBalance;
   Set<int> get enabledAccountIds => coreAccountsBloc.enabledAccountIds;
+
+  List<TransactionI> get filteredTransactions =>
+      transactionsFilterBloc.getFilteredTransactions(enabledAccountIds);
 
   Future<double> getTotalEnabledAccountsBalanceForDate(DateTime selectedDate) =>
       coreAccountsBloc.getTotalEnabledAccountsBalanceForDate(selectedDate);
