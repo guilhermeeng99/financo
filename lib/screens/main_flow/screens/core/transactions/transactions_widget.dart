@@ -4,65 +4,74 @@ import 'package:financo/screens/main_flow/screens/core/transactions/item_menu_ac
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_model.dart';
 
-class CWATransactionsTable extends StatelessWidget {
-  const CWATransactionsTable({super.key, this.accountIds});
+class CWTransactionsTable extends StatelessWidget {
+  const CWTransactionsTable({
+    super.key,
+    this.accountIds,
+    this.customTransactions,
+  });
 
   final Set<int>? accountIds;
+  final List<TransactionI>? customTransactions;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: CWCard(
-        child: Obx(() {
-          final transactions = transactionsFilterBloc.getFilteredTransactions(
-            accountIds,
-          );
+        child: customTransactions != null
+            ? _buildContent(context, customTransactions!)
+            : Obx(() {
+                final transactions = transactionsFilterBloc
+                    .getFilteredTransactions(accountIds);
+                return _buildContent(context, transactions);
+              }),
+      ),
+    );
+  }
 
-          return Column(
+  Widget _buildContent(BuildContext context, List<TransactionI> transactions) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      context.t.common.actions.filter,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    InkWell(
-                      onTap: () => transactionsModelExcel
-                          .onTapDownloadUserTransactions(context, transactions),
-                      child: const Icon(Icons.download),
-                    ),
-                  ],
-                ),
+              Text(
+                context.t.common.actions.filter,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const CWDivider(width: double.infinity, height: 1),
-              Expanded(
-                child: transactions.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No transactions found',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      )
-                    : ListView.separated(
-                        itemCount: transactions.length + 2,
-                        separatorBuilder: (context, index) =>
-                            const CWDivider(width: double.infinity, height: 1),
-                        itemBuilder: (context, index) {
-                          if (index == 0 || index == transactions.length + 1) {
-                            return const SizedBox.shrink();
-                          }
-                          final transaction = transactions[index - 1];
-                          return _TransactionItem(transaction: transaction);
-                        },
-                      ),
+              InkWell(
+                onTap: () => transactionsModelExcel
+                    .onTapDownloadUserTransactions(context, transactions),
+                child: const Icon(Icons.download),
               ),
             ],
-          );
-        }),
-      ),
+          ),
+        ),
+        const CWDivider(width: double.infinity, height: 1),
+        Expanded(
+          child: transactions.isEmpty
+              ? Center(
+                  child: Text(
+                    'No transactions found',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: transactions.length + 2,
+                  separatorBuilder: (context, index) =>
+                      const CWDivider(width: double.infinity, height: 1),
+                  itemBuilder: (context, index) {
+                    if (index == 0 || index == transactions.length + 1) {
+                      return const SizedBox.shrink();
+                    }
+                    final transaction = transactions[index - 1];
+                    return _TransactionItem(transaction: transaction);
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

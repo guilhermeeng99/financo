@@ -1,12 +1,12 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 
-class CWAReleasesScreenAccount extends StatelessWidget {
-  const CWAReleasesScreenAccount({super.key});
+class CWAFilteredReleasesScreenAccount extends StatelessWidget {
+  const CWAFilteredReleasesScreenAccount({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const CWCard(
+    return const  CWCard(
       child: Padding(
         padding:  EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: Column(

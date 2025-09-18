@@ -53,7 +53,10 @@ class _TranslationsNavigationPt implements TranslationsNavigationEn {
 
 	// Translations
 	@override String get overview => 'Visão Geral';
+	@override String get financial_movement => 'Movimentação Financeira';
+	@override String get filtered_releases => 'Lançamentos Filtrados';
 	@override String get releases => 'Lançamentos';
+	@override String get register => 'Registro';
 	@override String get categories => 'Categorias';
 	@override String get accounts => 'Contas';
 }
@@ -424,7 +427,10 @@ extension on TranslationsPt {
 	dynamic _flatMapFunction(String path) {
 		switch (path) {
 			case 'navigation.overview': return 'Visão Geral';
+			case 'navigation.financial_movement': return 'Movimentação Financeira';
+			case 'navigation.filtered_releases': return 'Lançamentos Filtrados';
 			case 'navigation.releases': return 'Lançamentos';
+			case 'navigation.register': return 'Registro';
 			case 'navigation.categories': return 'Categorias';
 			case 'navigation.accounts': return 'Contas';
 			case 'common.actions.edit': return 'Editar';

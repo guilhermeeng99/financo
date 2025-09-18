@@ -2,8 +2,8 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_filter.dart';
 
-class CWACalendarNavigator extends StatelessWidget {
-  const CWACalendarNavigator({super.key});
+class CWCalendarNavigator extends StatelessWidget {
+  const CWCalendarNavigator({super.key});
 
   @override
   Widget build(BuildContext context) {

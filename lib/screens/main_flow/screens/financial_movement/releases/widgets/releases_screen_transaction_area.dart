@@ -14,7 +14,7 @@ class CWAReleasesScreenTransactions extends StatelessWidget {
       child: Obx(() {
         return Column(
           children: [
-            CWATransactionsTable(accountIds: releasesBloc.enabledAccountIds),
+            CWTransactionsTable(accountIds: releasesBloc.enabledAccountIds),
             const _TransactionBottomFilter(),
           ],
         );

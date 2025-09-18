@@ -1,9 +1,12 @@
 import 'package:app_core/app_core.dart';
+import 'package:financo/app/app_routes.dart';
 import 'package:financo/screens/main_flow/main_flow_bloc.dart';
+import 'package:financo/screens/main_flow/main_flow_item.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/filtered_releases/filtered_releases_module.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_module.dart';
+import 'package:financo/screens/main_flow/screens/home/home_module.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/accounts_module.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_module.dart';
-import 'package:financo/screens/main_flow/screens/home/home_module.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_module.dart';
 
 import 'main_flow_model.dart';
 import 'main_flow_screen.dart';
@@ -27,30 +30,42 @@ class MainFlowModule extends Module {
       transition: TransitionType.fadeIn,
       children: [
         ModuleRoute(
-          '/home',
+          _getRelativeRoute(ro.mainFlow.home.route),
           module: HomeModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),
         ModuleRoute(
-          '/categories',
+          _getRelativeRoute(ro.mainFlow.register.categories.route),
           module: CategoriesModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),
         ModuleRoute(
-          '/accounts',
+          _getRelativeRoute(ro.mainFlow.register.accounts.route),
           module: AccountsModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),
         ModuleRoute(
-          '/releases',
+          _getRelativeRoute(ro.mainFlow.financialMovement.releases.route),
           module: ReleasesModule(),
+          duration: Duration.zero,
+          transition: TransitionType.fadeIn,
+        ),
+        ModuleRoute(
+          _getRelativeRoute(
+            ro.mainFlow.financialMovement.filteredReleases.route,
+          ),
+          module: FilteredReleasesModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),
       ],
     );
+  }
+
+  String _getRelativeRoute(String fullRoute) {
+    return fullRoute.replaceFirst(ro.mainFlow.route, '');
   }
 }

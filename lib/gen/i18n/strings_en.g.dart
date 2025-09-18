@@ -59,8 +59,17 @@ class TranslationsNavigationEn {
 	/// en: 'Overview'
 	String get overview => 'Overview';
 
+	/// en: 'Financial Movement'
+	String get financial_movement => 'Financial Movement';
+
+	/// en: 'Filtered Releases'
+	String get filtered_releases => 'Filtered Releases';
+
 	/// en: 'Releases'
 	String get releases => 'Releases';
+
+	/// en: 'Register'
+	String get register => 'Register';
 
 	/// en: 'Categories'
 	String get categories => 'Categories';
@@ -668,7 +677,10 @@ extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		switch (path) {
 			case 'navigation.overview': return 'Overview';
+			case 'navigation.financial_movement': return 'Financial Movement';
+			case 'navigation.filtered_releases': return 'Filtered Releases';
 			case 'navigation.releases': return 'Releases';
+			case 'navigation.register': return 'Register';
 			case 'navigation.categories': return 'Categories';
 			case 'navigation.accounts': return 'Accounts';
 			case 'common.actions.edit': return 'Edit';

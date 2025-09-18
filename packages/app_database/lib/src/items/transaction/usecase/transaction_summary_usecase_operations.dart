@@ -21,7 +21,8 @@ mixin TransactionSummaryUsecaseOperations {
         TransactionSummary(
           projectedTotalIncome: summaryData.projectedTotalIncome,
           projectedTotalExpense: summaryData.projectedTotalExpense,
-          projectedTotalTransfers: summaryData.projectedTotalTransfers,
+          projectedTotalTransfersIn: summaryData.projectedTotalTransfersIn,
+          projectedTotalTransfersOut: summaryData.projectedTotalTransfersOut,
         ),
       ),
     );

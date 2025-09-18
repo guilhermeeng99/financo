@@ -1,11 +1,12 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_model.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_account_area.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_transaction_area.dart';
+import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/filtered_releases/filtered_releases_model.dart';
 
-class ReleasesScreen extends StatelessWidget {
-  const ReleasesScreen({super.key});
+import 'filtered_releases_bloc.dart';
+
+class FilteredReleasesScreen extends StatelessWidget {
+  const FilteredReleasesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +23,10 @@ class ReleasesScreen extends StatelessWidget {
                 width: MediaQuery.of(context).size.width * 0.3,
                 child: const Column(
                   spacing: 10,
-                  children: [
-                    CWCalendarNavigator(),
-                    CWAReleasesScreenAccount(),
-                  ],
+                  children: [CWCalendarNavigator()],
                 ),
               ),
-              const CWAReleasesScreenTransactions(),
+              _CustomTransactionsTable(),
             ],
           ),
         ),
@@ -58,7 +56,7 @@ class _FloatingActionButton extends HookWidget {
               bottom: 0,
               child: CWFloatingActionButton(
                 tooltipMessage: context.t.transactions.new_transaction,
-                onTap: releasesModel.onTapFloatingActionButton,
+                onTap: filteredReleasesModel.onTapFloatingActionButton,
               ),
             ),
             if (showSecondButton.value)
@@ -71,7 +69,7 @@ class _FloatingActionButton extends HookWidget {
                     icon: Icons.upload,
                     size: 40,
                     tooltipMessage: context.t.transactions.import_transactions,
-                    onTap: releasesModel.onTapImportPopUp,
+                    onTap: filteredReleasesModel.onTapImportPopUp,
                   ),
                 ),
               ),
@@ -79,5 +77,17 @@ class _FloatingActionButton extends HookWidget {
         ),
       ),
     );
+  }
+}
+
+class _CustomTransactionsTable extends StatelessWidget {
+  const _CustomTransactionsTable();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final customTransactions = filteredReleasesBloc.getFilteredTransactions();
+      return CWTransactionsTable(customTransactions: customTransactions);
+    });
   }
 }

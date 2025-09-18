@@ -1,6 +1,7 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/main_flow_bloc.dart';
+import 'package:financo/screens/main_flow/main_flow_item.dart';
 
 class MainFlowScreenSideBar extends StatelessWidget {
   const MainFlowScreenSideBar({super.key});
@@ -16,11 +17,13 @@ class MainFlowScreenSideBar extends StatelessWidget {
         width: isSideBarOn ? 300 : 0,
         color: Theme.of(context).scaffoldBackgroundColor,
         padding: const EdgeInsets.only(top: 25),
-        child: Column(
-          children: mainFlowSideBarController.sideBarItems
-              .map(_Item.new)
-              .toList(),
-        ),
+        child: Obx(() {
+          return Column(
+            children: mainFlowSideBarController.flattenedItems
+                .map(_Item.new)
+                .toList(),
+          );
+        }),
       );
     });
   }
@@ -36,15 +39,28 @@ class _Item extends StatelessWidget {
     return Obx(() {
       final selectedItem = mainFlowBloc.selectedSideBarItem.value;
       final isSelected = selectedItem == item.type;
+      final isExpanded =
+          item.isParent && mainFlowBloc.isItemExpanded(item.type);
 
       return CWAnimatedScaleButtonWidget(
         onTap: item.onTap,
+        scale: item.isParent ? 1.0 : 1.1,
         child: Container(
           color: Colors.transparent,
-          padding: const EdgeInsets.only(top: 10, bottom: 10, left: 20),
+          padding: EdgeInsets.only(
+            top: 10,
+            bottom: 10,
+            left: 20 + (item.level * 20),
+          ),
           child: Row(
             children: [
-              if (item.icon != null)
+              if (item.isParent) ...[
+                const Icon(Icons.label, size: 20),
+                const Gap(10),
+              ],
+              if (item.level > 0) const Gap(15),
+              if (item.icon != null) ...[
+                if (item.isParent || item.level > 0) const Gap(8),
                 SvgPicture.asset(
                   item.icon!,
                   width: 16,
@@ -56,7 +72,7 @@ class _Item extends StatelessWidget {
                         )
                       : null,
                 ),
-              const SizedBox(width: 8),
+              ],
               Text(
                 item.title(context),
                 style: TextStyle(
@@ -66,6 +82,16 @@ class _Item extends StatelessWidget {
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
+              const Spacer(),
+              if (item.isParent)
+                Icon(
+                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                  size: 30,
+                  color: isSelected
+                      ? Theme.of(context).customColors.button02
+                      : null,
+                ),
+              const Gap(15),
             ],
           ),
         ),

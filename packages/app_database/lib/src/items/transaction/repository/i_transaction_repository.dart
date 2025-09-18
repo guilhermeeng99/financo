@@ -92,10 +92,12 @@ class TransactionSummaryData {
   const TransactionSummaryData({
     required this.projectedTotalIncome,
     required this.projectedTotalExpense,
-    required this.projectedTotalTransfers,
+    required this.projectedTotalTransfersIn,
+    required this.projectedTotalTransfersOut,
   });
 
   final double projectedTotalIncome;
   final double projectedTotalExpense;
-  final double projectedTotalTransfers;
+  final double projectedTotalTransfersIn;
+  final double projectedTotalTransfersOut;
 }

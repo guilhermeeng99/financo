@@ -21,47 +21,51 @@ class AppRoutesMainFlow {
   const AppRoutesMainFlow();
 
   final String route = '/main_flow/';
-  final AppRoutesMainFlowAccounts accounts = const AppRoutesMainFlowAccounts();
-  final AppRoutesMainFlowCategories categories =
-      const AppRoutesMainFlowCategories();
+  final AppRoutesMainFlowFinancialMovement financialMovement =
+      const AppRoutesMainFlowFinancialMovement();
   final AppRoutesMainFlowHome home = const AppRoutesMainFlowHome();
-  final AppRoutesMainFlowReleases releases = const AppRoutesMainFlowReleases();
+  final AppRoutesMainFlowRegister register = const AppRoutesMainFlowRegister();
 }
 
-class AppRoutesMainFlowAccounts {
-  const AppRoutesMainFlowAccounts();
+class AppRoutesMainFlowFinancialMovement {
+  const AppRoutesMainFlowFinancialMovement();
 
-  final String route = '/main_flow/accounts/';
-  final AppRoutesMainFlowAccountsCreateAndEditAccount createAndEditAccount =
-      const AppRoutesMainFlowAccountsCreateAndEditAccount();
+  final AppRoutesMainFlowFinancialMovementFilteredReleases filteredReleases =
+      const AppRoutesMainFlowFinancialMovementFilteredReleases();
+  final AppRoutesMainFlowFinancialMovementReleases releases =
+      const AppRoutesMainFlowFinancialMovementReleases();
 }
 
-class AppRoutesMainFlowAccountsCreateAndEditAccount {
-  const AppRoutesMainFlowAccountsCreateAndEditAccount();
+class AppRoutesMainFlowFinancialMovementFilteredReleases {
+  const AppRoutesMainFlowFinancialMovementFilteredReleases();
 
-  final String route = '/main_flow/accounts/create_and_edit_account/';
+  final String route = '/main_flow/financial_movement/filtered_releases/';
 }
 
-class AppRoutesMainFlowCategories {
-  const AppRoutesMainFlowCategories();
+class AppRoutesMainFlowFinancialMovementReleases {
+  const AppRoutesMainFlowFinancialMovementReleases();
 
-  final String route = '/main_flow/categories/';
-  final AppRoutesMainFlowCategoriesCreateAndEditCategory createAndEditCategory =
-      const AppRoutesMainFlowCategoriesCreateAndEditCategory();
-  final AppRoutesMainFlowCategoriesImportCategories importCategories =
-      const AppRoutesMainFlowCategoriesImportCategories();
+  final String route = '/main_flow/financial_movement/releases/';
+  final AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction
+  createAndEditTransaction =
+      const AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction();
+  final AppRoutesMainFlowFinancialMovementReleasesImportTransactions
+  importTransactions =
+      const AppRoutesMainFlowFinancialMovementReleasesImportTransactions();
 }
 
-class AppRoutesMainFlowCategoriesCreateAndEditCategory {
-  const AppRoutesMainFlowCategoriesCreateAndEditCategory();
+class AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction {
+  const AppRoutesMainFlowFinancialMovementReleasesCreateAndEditTransaction();
 
-  final String route = '/main_flow/categories/create_and_edit_category/';
+  final String route =
+      '/main_flow/financial_movement/releases/create_and_edit_transaction/';
 }
 
-class AppRoutesMainFlowCategoriesImportCategories {
-  const AppRoutesMainFlowCategoriesImportCategories();
+class AppRoutesMainFlowFinancialMovementReleasesImportTransactions {
+  const AppRoutesMainFlowFinancialMovementReleasesImportTransactions();
 
-  final String route = '/main_flow/categories/import_categories/';
+  final String route =
+      '/main_flow/financial_movement/releases/import_transactions/';
 }
 
 class AppRoutesMainFlowHome {
@@ -70,17 +74,50 @@ class AppRoutesMainFlowHome {
   final String route = '/main_flow/home/';
 }
 
-class AppRoutesMainFlowReleases {
-  const AppRoutesMainFlowReleases();
+class AppRoutesMainFlowRegister {
+  const AppRoutesMainFlowRegister();
 
-  final String route = '/main_flow/releases/';
-  final AppRoutesMainFlowReleasesCreateAndEditTransaction
-  createAndEditTransaction =
-      const AppRoutesMainFlowReleasesCreateAndEditTransaction();
+  final AppRoutesMainFlowRegisterAccounts accounts =
+      const AppRoutesMainFlowRegisterAccounts();
+  final AppRoutesMainFlowRegisterCategories categories =
+      const AppRoutesMainFlowRegisterCategories();
 }
 
-class AppRoutesMainFlowReleasesCreateAndEditTransaction {
-  const AppRoutesMainFlowReleasesCreateAndEditTransaction();
+class AppRoutesMainFlowRegisterAccounts {
+  const AppRoutesMainFlowRegisterAccounts();
 
-  final String route = '/main_flow/releases/create_and_edit_transaction/';
+  final String route = '/main_flow/register/accounts/';
+  final AppRoutesMainFlowRegisterAccountsCreateAndEditAccount
+  createAndEditAccount =
+      const AppRoutesMainFlowRegisterAccountsCreateAndEditAccount();
+}
+
+class AppRoutesMainFlowRegisterAccountsCreateAndEditAccount {
+  const AppRoutesMainFlowRegisterAccountsCreateAndEditAccount();
+
+  final String route = '/main_flow/register/accounts/create_and_edit_account/';
+}
+
+class AppRoutesMainFlowRegisterCategories {
+  const AppRoutesMainFlowRegisterCategories();
+
+  final String route = '/main_flow/register/categories/';
+  final AppRoutesMainFlowRegisterCategoriesCreateAndEditCategory
+  createAndEditCategory =
+      const AppRoutesMainFlowRegisterCategoriesCreateAndEditCategory();
+  final AppRoutesMainFlowRegisterCategoriesImportCategories importCategories =
+      const AppRoutesMainFlowRegisterCategoriesImportCategories();
+}
+
+class AppRoutesMainFlowRegisterCategoriesCreateAndEditCategory {
+  const AppRoutesMainFlowRegisterCategoriesCreateAndEditCategory();
+
+  final String route =
+      '/main_flow/register/categories/create_and_edit_category/';
+}
+
+class AppRoutesMainFlowRegisterCategoriesImportCategories {
+  const AppRoutesMainFlowRegisterCategoriesImportCategories();
+
+  final String route = '/main_flow/register/categories/import_categories/';
 }

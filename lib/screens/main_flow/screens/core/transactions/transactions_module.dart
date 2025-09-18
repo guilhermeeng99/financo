@@ -3,7 +3,7 @@ import 'package:app_core/app_core.dart';
 import 'transactions_bloc.dart';
 import 'transactions_model.dart';
 
-class TransactionsModule extends Module {
+class CoreTransactionsModule extends Module {
   @override
   void binds(Injector i) {
     i

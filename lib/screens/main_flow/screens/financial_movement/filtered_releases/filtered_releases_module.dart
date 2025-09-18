@@ -3,11 +3,11 @@ import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_module.dart';
 
-import 'releases_bloc.dart';
-import 'releases_model.dart';
-import 'releases_screen.dart';
+import 'filtered_releases_bloc.dart';
+import 'filtered_releases_model.dart';
+import 'filtered_releases_screen.dart';
 
-class ReleasesModule extends Module {
+class FilteredReleasesModule extends Module {
   @override
   List<Module> get imports => [
     CoreTransactionsModule(),
@@ -18,12 +18,12 @@ class ReleasesModule extends Module {
   @override
   void binds(Injector i) {
     i
-      ..addSingleton<ReleasesBloc>(ReleasesBloc.new)
-      ..addSingleton<ReleasesModel>(ReleasesModel.new);
+      ..addSingleton<FilteredReleasesBloc>(FilteredReleasesBloc.new)
+      ..addSingleton<FilteredReleasesModel>(FilteredReleasesModel.new);
   }
 
   @override
   void routes(RouteManager r) {
-    r.child('/', child: (_) => const ReleasesScreen());
+    r.child('/', child: (_) => const FilteredReleasesScreen());
   }
 }

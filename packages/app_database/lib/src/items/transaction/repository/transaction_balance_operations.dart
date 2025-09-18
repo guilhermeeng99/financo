@@ -152,20 +152,19 @@ mixin TransactionBalanceOperations {
 
       var projectedIncomeTotal = 0.0;
       var projectedExpenseTotal = 0.0;
-      var projectedTransferTotal = 0.0;
-
-      final projectedTransferIds = <String>{};
+      var projectedTransfersInTotal = 0.0;
+      var projectedTransfersOutTotal = 0.0;
 
       for (final transaction in transactions) {
         final amount = transaction.amount.abs();
         final isTransfer = transaction.transferId != null;
 
         if (isTransfer) {
-          final transferId = transaction.transferId!;
-
-          if (!projectedTransferIds.contains(transferId)) {
-            projectedTransferTotal += amount;
-            projectedTransferIds.add(transferId);
+          // Calculate transfers in/out based on transaction type
+          if (transaction.transactionType == FinancialType.income) {
+            projectedTransfersInTotal += amount;
+          } else if (transaction.transactionType == FinancialType.expense) {
+            projectedTransfersOutTotal += amount;
           }
         } else if (transaction.transactionType == FinancialType.income) {
           projectedIncomeTotal += amount;
@@ -178,7 +177,8 @@ mixin TransactionBalanceOperations {
         TransactionSummaryData(
           projectedTotalIncome: projectedIncomeTotal,
           projectedTotalExpense: projectedExpenseTotal,
-          projectedTotalTransfers: projectedTransferTotal,
+          projectedTotalTransfersIn: projectedTransfersInTotal,
+          projectedTotalTransfersOut: projectedTransfersOutTotal,
         ),
       );
     } catch (e) {

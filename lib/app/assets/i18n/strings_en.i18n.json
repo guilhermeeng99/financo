@@ -1,7 +1,10 @@
 {
   "navigation": {
     "overview": "Overview",
+    "financial_movement": "Financial Movement",
+    "filtered_releases": "Filtered Releases",
     "releases": "Releases",
+    "register": "Register",
     "categories": "Categories",
     "accounts": "Accounts"
   },

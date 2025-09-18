@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/blocs/accounts_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/blocs/balance_calculation_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/blocs/transaction_summary_bloc.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_account.dart';
 
 ReleasesBloc get releasesBloc => Modular.get<ReleasesBloc>();
@@ -16,45 +14,49 @@ class ReleasesBloc extends GetxController {
 
   void _initializeListeners() {
     // Update transactions filter when accounts change
-    ever(accountsBloc.checkingAccounts, (_) => _updateTransactionsFilterBloc());
+    ever(
+      coreAccountsBloc.checkingAccounts,
+      (_) => _updateTransactionsFilterBloc(),
+    );
   }
 
   void _updateTransactionsFilterBloc() {
     transactionsFilterBloc.updateEnabledAccountIds(
-      accountsBloc.enabledAccountIds,
+      coreAccountsBloc.enabledAccountIds,
     );
   }
 
   // Delegated properties for backward compatibility
   RxList<TransactionsAccount> get checkingAccounts =>
-      accountsBloc.checkingAccounts;
-  RxDouble get totalFilteredBalance =>
-      balanceCalculationBloc.totalFilteredBalance;
+      coreAccountsBloc.checkingAccounts;
+  RxDouble get totalFilteredBalance => coreAccountsBloc.totalFilteredBalance;
   RxDouble get totalFilteredProjectedBalance =>
-      balanceCalculationBloc.totalFilteredProjectedBalance;
-  RxDouble get projectedTotalIncome =>
-      transactionSummaryBloc.projectedTotalIncome;
-  RxDouble get projectedTotalExpense =>
-      transactionSummaryBloc.projectedTotalExpense;
-  RxDouble get projectedTotalTransfers =>
-      transactionSummaryBloc.projectedTotalTransfers;
+      coreAccountsBloc.totalFilteredProjectedBalance;
+
+  // Transaction summary delegations
+  RxDouble get projectedTotalIncome => coreAccountsBloc.projectedTotalIncome;
+  RxDouble get projectedTotalExpense => coreAccountsBloc.projectedTotalExpense;
+  RxDouble get projectedTotalTransfersIn =>
+      coreAccountsBloc.projectedTotalTransfersIn;
+  RxDouble get projectedTotalTransfersOut =>
+      coreAccountsBloc.projectedTotalTransfersOut;
+  RxDouble get projectedTotalResult => coreAccountsBloc.projectedTotalResult;
 
   // Delegated methods for backward compatibility
-  Future<void> loadCheckingAccounts() => accountsBloc.loadCheckingAccounts();
+  Future<void> loadCheckingAccounts() =>
+      coreAccountsBloc.loadCheckingAccounts();
   Future<void> updateFilteredBalances() =>
-      balanceCalculationBloc.updateFilteredBalances();
+      coreAccountsBloc.updateFilteredBalances();
 
   double get totalEnabledAccountsBalance =>
-      accountsBloc.totalEnabledAccountsBalance;
-  Set<int> get enabledAccountIds => accountsBloc.enabledAccountIds;
-  double get projectedTotalResult =>
-      transactionSummaryBloc.projectedTotalResult;
+      coreAccountsBloc.totalEnabledAccountsBalance;
+  Set<int> get enabledAccountIds => coreAccountsBloc.enabledAccountIds;
 
   Future<double> getTotalEnabledAccountsBalanceForDate(DateTime selectedDate) =>
-      accountsBloc.getTotalEnabledAccountsBalanceForDate(selectedDate);
+      coreAccountsBloc.getTotalEnabledAccountsBalanceForDate(selectedDate);
 
   Future<double> getAccountBalanceForDate(
     int accountId,
     DateTime selectedDate,
-  ) => accountsBloc.getAccountBalanceForDate(accountId, selectedDate);
+  ) => coreAccountsBloc.getAccountBalanceForDate(accountId, selectedDate);
 }

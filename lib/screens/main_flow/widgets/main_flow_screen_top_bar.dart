@@ -1,6 +1,6 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/main_flow_bloc.dart';
+import 'package:financo/screens/main_flow/main_flow_item.dart';
 
 class MainFlowScreenTopBar extends StatelessWidget {
   const MainFlowScreenTopBar({super.key});
