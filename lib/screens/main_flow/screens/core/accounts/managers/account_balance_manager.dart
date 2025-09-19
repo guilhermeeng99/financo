@@ -1,7 +1,7 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/services/account_balance_service.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/transaction_account_data.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_account.dart';
 
 class AccountBalanceManager {
   static Future<void> updateFilteredBalances(

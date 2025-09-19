@@ -1,24 +1,24 @@
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
 
-enum PastAndFutureReleasesScreenType {
+enum PastAndFutureReleasesType {
   past,
   future;
 
-  static PastAndFutureReleasesScreenType fromString(String? value) {
+  static PastAndFutureReleasesType fromString(String? value) {
     switch (value?.toLowerCase()) {
       case 'past':
-        return PastAndFutureReleasesScreenType.past;
+        return PastAndFutureReleasesType.past;
       case 'future':
       default:
-        return PastAndFutureReleasesScreenType.future;
+        return PastAndFutureReleasesType.future;
     }
   }
 
   List<TransactionFilterType> get allowedFilters {
     switch (this) {
-      case PastAndFutureReleasesScreenType.past:
+      case PastAndFutureReleasesType.past:
         return [TransactionFilterType.pending, TransactionFilterType.paid];
-      case PastAndFutureReleasesScreenType.future:
+      case PastAndFutureReleasesType.future:
         return [TransactionFilterType.pending, TransactionFilterType.unpaid];
     }
   }

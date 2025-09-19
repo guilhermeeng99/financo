@@ -38,6 +38,7 @@ class TranslationsPt implements Translations {
 	// Translations
 	@override late final _TranslationsNavigationPt navigation = _TranslationsNavigationPt._(_root);
 	@override late final _TranslationsCommonPt common = _TranslationsCommonPt._(_root);
+	@override late final _TranslationsPastAndFutureReleasesPt past_and_future_releases = _TranslationsPastAndFutureReleasesPt._(_root);
 	@override late final _TranslationsAccountsPt accounts = _TranslationsAccountsPt._(_root);
 	@override late final _TranslationsCategoriesPt categories = _TranslationsCategoriesPt._(_root);
 	@override late final _TranslationsTransactionsPt transactions = _TranslationsTransactionsPt._(_root);
@@ -74,6 +75,20 @@ class _TranslationsCommonPt implements TranslationsCommonEn {
 	@override late final _TranslationsCommonLabelsPt labels = _TranslationsCommonLabelsPt._(_root);
 	@override late final _TranslationsCommonFrequencyPt frequency = _TranslationsCommonFrequencyPt._(_root);
 	@override late final _TranslationsCommonPeriodTypesPt period_types = _TranslationsCommonPeriodTypesPt._(_root);
+}
+
+// Path: past_and_future_releases
+class _TranslationsPastAndFutureReleasesPt implements TranslationsPastAndFutureReleasesEn {
+	_TranslationsPastAndFutureReleasesPt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get period_result => 'Resultado do período';
+	@override String get total_to_pay => 'Total a pagar';
+	@override String get total_to_receive => 'Total a receber';
+	@override String get total_received => 'Total recebido';
+	@override String get total_paid => 'Total pago';
 }
 
 // Path: accounts
@@ -507,6 +522,11 @@ extension on TranslationsPt {
 			case 'common.period_types.quarterly': return 'Trimestral';
 			case 'common.period_types.semester': return 'Semestral';
 			case 'common.period_types.custom': return 'Personalizado';
+			case 'past_and_future_releases.period_result': return 'Resultado do período';
+			case 'past_and_future_releases.total_to_pay': return 'Total a pagar';
+			case 'past_and_future_releases.total_to_receive': return 'Total a receber';
+			case 'past_and_future_releases.total_received': return 'Total recebido';
+			case 'past_and_future_releases.total_paid': return 'Total pago';
 			case 'accounts.new_account': return 'Nova Conta';
 			case 'accounts.edit_account': return 'Editar Conta';
 			case 'accounts.select_account': return 'Selecionar Conta';

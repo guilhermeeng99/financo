@@ -4,8 +4,8 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/managers/account_balance_manager.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/managers/account_loader.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/managers/transaction_summary_manager.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/transaction_account_data.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_account.dart';
 
 CoreAccountsBloc get coreAccountsBloc => Modular.get<CoreAccountsBloc>();
 

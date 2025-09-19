@@ -90,6 +90,13 @@
       "custom": "Custom"
     }
   },
+  "past_and_future_releases": {
+    "period_result": "Period result",
+    "total_to_pay": "Total to pay",
+    "total_to_receive": "Total to receive",
+    "total_received": "Total received",
+    "total_paid": "Total paid"
+  },
   "accounts": {
     "new_account": "New Account",
     "edit_account": "Edit Account",

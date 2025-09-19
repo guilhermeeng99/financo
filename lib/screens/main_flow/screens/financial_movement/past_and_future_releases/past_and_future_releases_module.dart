@@ -27,7 +27,7 @@ class PastAndFutureReleasesModule extends Module {
       child: (context) {
         final args = Modular.args;
         final typeParam = args.queryParams['type'];
-        final screenType = PastAndFutureReleasesScreenType.fromString(
+        final screenType = PastAndFutureReleasesType.fromString(
           typeParam,
         );
         return PastAndFutureReleasesScreen(type: screenType);

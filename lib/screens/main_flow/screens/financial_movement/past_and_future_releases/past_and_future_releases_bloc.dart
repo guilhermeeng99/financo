@@ -3,6 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_service.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_types.dart';
 
 PastAndFutureReleasesBloc get pastAndFutureReleasesBloc =>
@@ -11,6 +12,18 @@ PastAndFutureReleasesBloc get pastAndFutureReleasesBloc =>
 class PastAndFutureReleasesBloc extends GetxController {
   PastAndFutureReleasesBloc() {
     _initializeListeners();
+  }
+
+  final Rx<FinancialType> _selectedFinancialType = Rx<FinancialType>(
+    FinancialType.expense,
+  );
+  FinancialType get selectedFinancialType => _selectedFinancialType.value;
+
+  void setFinancialTypeFilter(FinancialType type) {
+    if (_selectedFinancialType.value != type) {
+      _selectedFinancialType.value = type;
+      update();
+    }
   }
 
   void _initializeListeners() {
@@ -27,10 +40,14 @@ class PastAndFutureReleasesBloc extends GetxController {
   }
 
   List<TransactionI> getFilteredTransactions(
-    PastAndFutureReleasesScreenType type,
-  ) {
+    PastAndFutureReleasesType type, {
+    int? accountId,
+    bool includeAllTypes = false,
+  }) {
     final allTransactions = transactionsFilterBloc.filteredTransactionsFilter;
-    final targetAccountIds = coreAccountsBloc.enabledAccountIds;
+    final targetAccountIds = accountId != null
+        ? [accountId]
+        : coreAccountsBloc.enabledAccountIds;
     final allowedFilters = type.allowedFilters;
 
     return allTransactions.where((transaction) {
@@ -39,15 +56,60 @@ class PastAndFutureReleasesBloc extends GetxController {
       );
 
       if (matchesTypeFilter) {
-        return targetAccountIds.contains(transaction.t.accountId);
+        final matchesAccount = targetAccountIds.contains(
+          transaction.t.accountId,
+        );
+
+        if (includeAllTypes) {
+          return matchesAccount;
+        }
+
+        final matchesFinancialType =
+            transaction.t.transactionType == _selectedFinancialType.value;
+        return matchesAccount && matchesFinancialType;
       }
 
       return false;
     }).toList();
   }
 
-  Future<void> loadCheckingAccounts() =>
-      coreAccountsBloc.loadCheckingAccounts();
-  Future<void> updateFilteredBalances() =>
-      coreAccountsBloc.updateFilteredBalances();
+  List<PastAndFutureReleasesAccountCalculationResult> getAccountCalculations(
+    PastAndFutureReleasesType type,
+  ) {
+    final checkingAccounts = coreAccountsBloc.checkingAccounts;
+    const calculator = PastAndFutureReleasesService([]);
+
+    return checkingAccounts.map((account) {
+      final transactions = getFilteredTransactions(
+        type,
+        accountId: account.account.id,
+      );
+      final calculatedBalance = calculator.calculateAccountBalance(
+        transactions,
+      );
+
+      return PastAndFutureReleasesAccountCalculationResult(
+        account: account,
+        transactions: transactions,
+        calculatedBalance: calculatedBalance,
+      );
+    }).toList();
+  }
+
+  PastAndFutureReleasesCalculationResults getCalculationResults(
+    PastAndFutureReleasesType type,
+  ) {
+    final allTransactions = getFilteredTransactions(
+      type,
+      includeAllTypes: true,
+    );
+    final calculator = PastAndFutureReleasesService(allTransactions);
+    return calculator.calculateResults();
+  }
+
+  double getTotalAllAccountsBalance(PastAndFutureReleasesType type) {
+    return getAccountCalculations(type)
+        .where((calc) => calc.account.isEnabled.value)
+        .fold<double>(0, (sum, calc) => sum + calc.calculatedBalance);
+  }
 }

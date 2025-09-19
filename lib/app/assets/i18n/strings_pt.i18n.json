@@ -90,6 +90,13 @@
       "custom": "Personalizado"
     }
   },
+  "past_and_future_releases": {
+    "period_result": "Resultado do período",
+    "total_to_pay": "Total a pagar",
+    "total_to_receive": "Total a receber",
+    "total_received": "Total recebido",
+    "total_paid": "Total pago"
+  },
   "accounts": {
     "new_account": "Nova Conta",
     "edit_account": "Editar Conta",

@@ -1,7 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/accounts_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_account.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/transaction_account_data.dart';
 
 class CWAccountsList extends StatelessWidget {
   const CWAccountsList({super.key});

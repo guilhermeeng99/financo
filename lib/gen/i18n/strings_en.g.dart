@@ -41,6 +41,7 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	// Translations
 	late final TranslationsNavigationEn navigation = TranslationsNavigationEn._(_root);
 	late final TranslationsCommonEn common = TranslationsCommonEn._(_root);
+	late final TranslationsPastAndFutureReleasesEn past_and_future_releases = TranslationsPastAndFutureReleasesEn._(_root);
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
 	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
@@ -95,6 +96,30 @@ class TranslationsCommonEn {
 	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn._(_root);
 	late final TranslationsCommonFrequencyEn frequency = TranslationsCommonFrequencyEn._(_root);
 	late final TranslationsCommonPeriodTypesEn period_types = TranslationsCommonPeriodTypesEn._(_root);
+}
+
+// Path: past_and_future_releases
+class TranslationsPastAndFutureReleasesEn {
+	TranslationsPastAndFutureReleasesEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Period result'
+	String get period_result => 'Period result';
+
+	/// en: 'Total to pay'
+	String get total_to_pay => 'Total to pay';
+
+	/// en: 'Total to receive'
+	String get total_to_receive => 'Total to receive';
+
+	/// en: 'Total received'
+	String get total_received => 'Total received';
+
+	/// en: 'Total paid'
+	String get total_paid => 'Total paid';
 }
 
 // Path: accounts
@@ -761,6 +786,11 @@ extension on Translations {
 			case 'common.period_types.quarterly': return 'Quarterly';
 			case 'common.period_types.semester': return 'Semester';
 			case 'common.period_types.custom': return 'Custom';
+			case 'past_and_future_releases.period_result': return 'Period result';
+			case 'past_and_future_releases.total_to_pay': return 'Total to pay';
+			case 'past_and_future_releases.total_to_receive': return 'Total to receive';
+			case 'past_and_future_releases.total_received': return 'Total received';
+			case 'past_and_future_releases.total_paid': return 'Total paid';
 			case 'accounts.new_account': return 'New Account';
 			case 'accounts.edit_account': return 'Edit Account';
 			case 'accounts.select_account': return 'Select Account';

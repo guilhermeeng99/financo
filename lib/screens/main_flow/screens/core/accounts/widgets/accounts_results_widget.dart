@@ -86,12 +86,12 @@ class CWAccountsResults extends StatelessWidget {
   }
 
   double _calculateTotalExpense() {
-    return transactions
+    return -transactions
         .where(
           (transaction) =>
               transaction.t.transactionType == FinancialType.expense,
         )
-        .fold(0, (sum, transaction) => sum + transaction.t.amount);
+        .fold<double>(0, (sum, transaction) => sum + transaction.t.amount);
   }
 
   double _calculateTotalTransfersIn() {

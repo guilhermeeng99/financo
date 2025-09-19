@@ -5,5 +5,6 @@ export 'managers/account_loader.dart';
 export 'managers/transaction_summary_manager.dart';
 export 'services/account_balance_service.dart';
 export 'services/transaction_summary_service.dart';
+export 'transaction_account_data.dart';
 export 'widgets/accounts_area_widget.dart';
 export 'widgets/accounts_results_widget.dart';
