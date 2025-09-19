@@ -36,7 +36,7 @@ class CWTransactionsTable extends StatelessWidget {
               child: transactions.isEmpty
                   ? Center(
                       child: Text(
-                        'No transactions found',
+                        context.t.transactions.no_transactions_found,
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     )

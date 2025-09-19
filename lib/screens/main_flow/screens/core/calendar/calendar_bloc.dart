@@ -3,22 +3,19 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 
 import 'calendar_filter.dart';
 
-CalendarFilterBloc get calendarFilterBloc => Modular.get<CalendarFilterBloc>();
+CoreCalendarBloc get coreCalendarBloc => Modular.get<CoreCalendarBloc>();
 
-class CalendarFilterBloc extends GetxController {
-  // Private State
+class CoreCalendarBloc extends GetxController {
   final Rx<CalendarFilter> _current = CalendarFilter(
     date: DateTime.now(),
     period: DatePeriodType.monthly,
   ).obs;
 
-  // Public Getters
   CalendarFilter get current => _current.value;
   DateTime get currentDate => _current.value.date;
   DatePeriodType get currentPeriod => _current.value.period;
   Rx<CalendarFilter> get selected => _current;
 
-  // Public Setters
   set currentDate(DateTime newDate) {
     _current.value = _current.value.copyWith(date: newDate);
   }
@@ -30,7 +27,6 @@ class CalendarFilterBloc extends GetxController {
     _current.value = _current.value.copyWith(period: newPeriod);
   }
 
-  // Custom Period Management
   Future<void> selectCustomPeriod(BuildContext context) async {
     await openCustomCalendarDialog(context);
   }
@@ -40,6 +36,13 @@ class CalendarFilterBloc extends GetxController {
       period: DatePeriodType.custom,
       startDate: startDate,
       endDate: endDate,
+    );
+  }
+
+  void resetDate() {
+    _current.value = CalendarFilter(
+      date: DateTime.now(),
+      period: DatePeriodType.monthly,
     );
   }
 

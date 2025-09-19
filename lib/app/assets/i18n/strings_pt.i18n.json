@@ -147,6 +147,7 @@
     "export_transactions": "Exportar Transações",
     "import_transactions": "Importar Transações",
     "unknown_transfer": "Transferência Desconhecida",
+    "no_transactions_found": "Nenhuma transação encontrada",
     "types": {
       "income": "Receita",
       "expense": "Despesa"

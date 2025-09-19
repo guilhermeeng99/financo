@@ -26,7 +26,7 @@ class CoreAccountsBloc extends GetxController {
   }
 
   void _setupCalendarListener() {
-    ever(calendarFilterBloc.selected, (_) {
+    ever(coreCalendarBloc.selected, (_) {
       updateFilteredBalances();
     });
   }
@@ -85,33 +85,8 @@ class CoreAccountsBloc extends GetxController {
     return total.obs;
   }
 
-  double get totalEnabledAccountsBalance =>
-      AccountBalanceManager.getTotalEnabledAccountsBalance(checkingAccounts);
-
   Set<int> get enabledAccountIds =>
       AccountBalanceManager.getEnabledAccountIds(checkingAccounts);
-
-  Future<double> getTotalEnabledAccountsBalanceForDate(DateTime selectedDate) =>
-      AccountBalanceManager.getTotalEnabledAccountsBalanceForDate(
-        checkingAccounts,
-        selectedDate,
-      );
-
-  Future<double> getAccountBalanceForDate(
-    int accountId,
-    DateTime selectedDate,
-  ) => AccountBalanceManager.getAccountBalanceForDate(accountId, selectedDate);
-
-  RxDouble get projectedTotalIncome =>
-      _transactionSummaryManager.projectedTotalIncome;
-  RxDouble get projectedTotalExpense =>
-      _transactionSummaryManager.projectedTotalExpense;
-  RxDouble get projectedTotalTransfersIn =>
-      _transactionSummaryManager.projectedTotalTransfersIn;
-  RxDouble get projectedTotalTransfersOut =>
-      _transactionSummaryManager.projectedTotalTransfersOut;
-  RxDouble get projectedTotalResult =>
-      _transactionSummaryManager.projectedTotalResult;
 
   Future<void> _updateTransactionSummary() async {
     await _transactionSummaryManager.updateTransactionSummary(
@@ -119,14 +94,9 @@ class CoreAccountsBloc extends GetxController {
     );
   }
 
-  Future<void> updateTransactionSummary({
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
-    await _transactionSummaryManager.updateTransactionSummary(
-      accountIds: enabledAccountIds,
-      startDate: startDate,
-      endDate: endDate,
-    );
+  void enableAllAccounts() {
+    for (final account in checkingAccounts) {
+      account.isEnabled.value = true;
+    }
   }
 }

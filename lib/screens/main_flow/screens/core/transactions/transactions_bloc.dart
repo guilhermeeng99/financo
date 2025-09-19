@@ -3,13 +3,13 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
 
-TransactionsFilterBloc get transactionsFilterBloc =>
-    Modular.get<TransactionsFilterBloc>();
+CoreTransactionsBloc get coreTransactionsBloc =>
+    Modular.get<CoreTransactionsBloc>();
 
-class TransactionsFilterBloc extends GetxController {
-  TransactionsFilterBloc() {
+class CoreTransactionsBloc extends GetxController {
+  CoreTransactionsBloc() {
     loadTransactions();
-    ever(calendarFilterBloc.selected, (_) => loadTransactions());
+    ever(coreCalendarBloc.selected, (_) => loadTransactions());
     ever(activeFilters, (_) => _recalculateFilteredTransactions());
   }
 
@@ -29,8 +29,8 @@ class TransactionsFilterBloc extends GetxController {
 
     try {
       final result = await transactionUsecase.getTransactionsWithDetails(
-        startDate: calendarFilterBloc.startOfPeriod,
-        endDate: calendarFilterBloc.endOfPeriod,
+        startDate: coreCalendarBloc.startOfPeriod,
+        endDate: coreCalendarBloc.endOfPeriod,
       );
 
       result.fold(
@@ -90,6 +90,17 @@ class TransactionsFilterBloc extends GetxController {
 
   bool isFilterActive(TransactionFilterType filterType) {
     return activeFilters.contains(filterType);
+  }
+
+  void resetFilters() {
+    activeFilters
+      ..clear()
+      ..addAll({
+        TransactionFilterType.pending,
+        TransactionFilterType.unpaid,
+        TransactionFilterType.paid,
+      });
+    enabledAccountIds.clear();
   }
 
   @override

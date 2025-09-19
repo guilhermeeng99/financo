@@ -213,6 +213,9 @@ class TranslationsTransactionsEn {
 	/// en: 'Unknown Transfer'
 	String get unknown_transfer => 'Unknown Transfer';
 
+	/// en: 'No transactions found'
+	String get no_transactions_found => 'No transactions found';
+
 	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn._(_root);
 	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn._(_root);
 	late final TranslationsTransactionsStatusTypeEn status_type = TranslationsTransactionsStatusTypeEn._(_root);
@@ -830,6 +833,7 @@ extension on Translations {
 			case 'transactions.export_transactions': return 'Export Transactions';
 			case 'transactions.import_transactions': return 'Import Transactions';
 			case 'transactions.unknown_transfer': return 'Unknown Transfer';
+			case 'transactions.no_transactions_found': return 'No transactions found';
 			case 'transactions.types.income': return 'Income';
 			case 'transactions.types.expense': return 'Expense';
 			case 'transactions.recurrence_type.unique': return 'Unique';

@@ -154,7 +154,7 @@ class TransactionOperationService {
   }
 
   void _onTransactionSuccess() {
-    transactionsFilterBloc.loadTransactions();
+    coreTransactionsBloc.loadTransactions();
     PopUpManager.pop();
   }
 }

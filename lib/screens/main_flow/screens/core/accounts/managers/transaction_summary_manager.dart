@@ -30,8 +30,8 @@ class TransactionSummaryManager {
       return;
     }
 
-    final finalStartDate = startDate ?? calendarFilterBloc.startOfPeriod;
-    final finalEndDate = endDate ?? calendarFilterBloc.endOfPeriod;
+    final finalStartDate = startDate ?? coreCalendarBloc.startOfPeriod;
+    final finalEndDate = endDate ?? coreCalendarBloc.endOfPeriod;
 
     final summary = await TransactionSummaryService.calculateTransactionSummary(
       accountIds: accountIds,

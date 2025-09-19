@@ -45,11 +45,11 @@ class _TransactionBottomFilterItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final isSelected = transactionsFilterBloc.isFilterActive(filterType);
+      final isSelected = coreTransactionsBloc.isFilterActive(filterType);
 
       return InkWell(
         onTap: () {
-          transactionsFilterBloc.toggleFilter(filterType);
+          coreTransactionsBloc.toggleFilter(filterType);
         },
         onHover: (isHovering) {},
         hoverColor: Theme.of(context).customColors.secondary,

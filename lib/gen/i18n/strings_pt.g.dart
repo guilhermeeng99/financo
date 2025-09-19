@@ -139,6 +139,7 @@ class _TranslationsTransactionsPt implements TranslationsTransactionsEn {
 	@override String get export_transactions => 'Exportar Transações';
 	@override String get import_transactions => 'Importar Transações';
 	@override String get unknown_transfer => 'Transferência Desconhecida';
+	@override String get no_transactions_found => 'Nenhuma transação encontrada';
 	@override late final _TranslationsTransactionsTypesPt types = _TranslationsTransactionsTypesPt._(_root);
 	@override late final _TranslationsTransactionsRecurrenceTypePt recurrence_type = _TranslationsTransactionsRecurrenceTypePt._(_root);
 	@override late final _TranslationsTransactionsStatusTypePt status_type = _TranslationsTransactionsStatusTypePt._(_root);
@@ -566,6 +567,7 @@ extension on TranslationsPt {
 			case 'transactions.export_transactions': return 'Exportar Transações';
 			case 'transactions.import_transactions': return 'Importar Transações';
 			case 'transactions.unknown_transfer': return 'Transferência Desconhecida';
+			case 'transactions.no_transactions_found': return 'Nenhuma transação encontrada';
 			case 'transactions.types.income': return 'Receita';
 			case 'transactions.types.expense': return 'Despesa';
 			case 'transactions.recurrence_type.unique': return 'Única';

@@ -1,6 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
+import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_service.dart';
@@ -11,7 +12,16 @@ PastAndFutureReleasesBloc get pastAndFutureReleasesBloc =>
 
 class PastAndFutureReleasesBloc extends GetxController {
   PastAndFutureReleasesBloc() {
+    _resetFilters();
     _initializeListeners();
+  }
+
+  void _resetFilters() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      coreTransactionsBloc.resetFilters();
+      coreAccountsBloc.enableAllAccounts();
+      coreCalendarBloc.resetDate();
+    });
   }
 
   final Rx<FinancialType> _selectedFinancialType = Rx<FinancialType>(
@@ -29,12 +39,12 @@ class PastAndFutureReleasesBloc extends GetxController {
   void _initializeListeners() {
     ever(
       coreAccountsBloc.checkingAccounts,
-      (_) => _updateTransactionsFilterBloc(),
+      (_) => _updateCoreTransactionsBloc(),
     );
   }
 
-  void _updateTransactionsFilterBloc() {
-    transactionsFilterBloc.updateEnabledAccountIds(
+  void _updateCoreTransactionsBloc() {
+    coreTransactionsBloc.updateEnabledAccountIds(
       coreAccountsBloc.enabledAccountIds,
     );
   }
@@ -44,7 +54,7 @@ class PastAndFutureReleasesBloc extends GetxController {
     int? accountId,
     bool includeAllTypes = false,
   }) {
-    final allTransactions = transactionsFilterBloc.filteredTransactionsFilter;
+    final allTransactions = coreTransactionsBloc.filteredTransactionsFilter;
     final targetAccountIds = accountId != null
         ? [accountId]
         : coreAccountsBloc.enabledAccountIds;

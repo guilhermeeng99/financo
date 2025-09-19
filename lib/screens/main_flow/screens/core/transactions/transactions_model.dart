@@ -7,7 +7,6 @@ import 'package:financo/screens/main_flow/screens/financial_movement/create_and_
 import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_screen.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
 
 TransactionsModel get transactionsModel => Modular.get<TransactionsModel>();
 
@@ -73,8 +72,7 @@ class TransactionsModel {
         logger.i(
           'Transaction deleted successfully: ${transaction.description ?? 'No description'}',
         );
-        releasesBloc.loadCheckingAccounts();
-        transactionsFilterBloc.loadTransactions();
+        coreTransactionsBloc.loadTransactions();
       },
     );
   }
@@ -129,8 +127,7 @@ class TransactionsModel {
       (updatedTransactionOrTransactions) {
         logger.i('Payment status updated successfully');
 
-        transactionsFilterBloc.loadTransactions();
-        releasesBloc.loadCheckingAccounts();
+        coreTransactionsBloc.loadTransactions();
       },
     );
   }

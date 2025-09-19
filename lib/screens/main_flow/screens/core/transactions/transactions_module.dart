@@ -9,6 +9,6 @@ class CoreTransactionsModule extends Module {
     i
       ..addSingleton<TransactionsModel>(TransactionsModel.new)
       ..addSingleton<TransactionsModelExcel>(TransactionsModelExcel.new)
-      ..addSingleton<TransactionsFilterBloc>(TransactionsFilterBloc.new);
+      ..addSingleton<CoreTransactionsBloc>(CoreTransactionsBloc.new);
   }
 }

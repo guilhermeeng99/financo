@@ -217,7 +217,7 @@ class ImportTransactionsModel {
         transactionsToCreate,
         context,
       );
-      await transactionsFilterBloc.loadTransactions();
+      await coreTransactionsBloc.loadTransactions();
 
       await AppSystemFiles.showImportResult(context, importResult);
     } catch (e, stackTrace) {

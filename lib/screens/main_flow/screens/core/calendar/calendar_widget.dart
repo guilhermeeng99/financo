@@ -15,14 +15,14 @@ class CWCalendarNavigator extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                onPressed: () => calendarFilterBloc.navigateToPrevious(),
+                onPressed: () => coreCalendarBloc.navigateToPrevious(),
                 icon: const Icon(Icons.chevron_left),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
               ),
               Expanded(
                 child: Text(
-                  calendarFilterBloc.getFormattedPeriod(context),
+                  coreCalendarBloc.getFormattedPeriod(context),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -30,7 +30,7 @@ class CWCalendarNavigator extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () => calendarFilterBloc.navigateToNext(),
+                onPressed: () => coreCalendarBloc.navigateToNext(),
                 icon: const Icon(Icons.chevron_right),
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 padding: EdgeInsets.zero,
@@ -53,9 +53,9 @@ class _PeriodDropdown extends StatelessWidget {
     return PopupMenuButton<DatePeriodType>(
       onSelected: (DatePeriodType newPeriod) async {
         if (newPeriod == DatePeriodType.custom) {
-          await calendarFilterBloc.selectCustomPeriod(context);
+          await coreCalendarBloc.selectCustomPeriod(context);
         } else {
-          calendarFilterBloc.currentPeriod = newPeriod;
+          coreCalendarBloc.currentPeriod = newPeriod;
         }
       },
       icon: const Icon(Icons.settings),

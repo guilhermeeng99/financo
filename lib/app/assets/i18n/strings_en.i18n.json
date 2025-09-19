@@ -147,6 +147,7 @@
     "export_transactions": "Export Transactions",
     "import_transactions": "Import Transactions",
     "unknown_transfer": "Unknown Transfer",
+    "no_transactions_found": "No transactions found",
     "types": {
       "income": "Income",
       "expense": "Expense"

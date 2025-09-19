@@ -5,6 +5,6 @@ import 'calendar_bloc.dart';
 class CoreCalendarModule extends Module {
   @override
   void binds(Injector i) {
-    i.addSingleton<CalendarFilterBloc>(CalendarFilterBloc.new);
+    i.addSingleton<CoreCalendarBloc>(CoreCalendarBloc.new);
   }
 }
