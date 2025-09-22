@@ -3,6 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
+import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
 
 ReleasesBloc get releasesBloc => Modular.get<ReleasesBloc>();
 
@@ -37,4 +38,12 @@ class ReleasesBloc extends GetxController {
 
   List<TransactionI> get filteredTransactions =>
       coreTransactionsBloc.getFilteredTransactions(enabledAccountIds);
+
+  void toggleFilter(TransactionFilterType filterType) {
+    coreTransactionsBloc.toggleFilter(filterType);
+  }
+
+  bool isFilterActive(TransactionFilterType filterType) {
+    return coreTransactionsBloc.isFilterActive(filterType);
+  }
 }

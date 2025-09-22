@@ -90,6 +90,11 @@
       "custom": "Custom"
     }
   },
+  "overview": {
+    "cash_balance": "Cash balance",
+    "result_of_the_month": "Result of the month",
+    "projected_situation": "Projected situation"
+  },
   "past_and_future_releases": {
     "period_result": "Period result",
     "total_to_pay": "Total to pay",
@@ -199,5 +204,9 @@
       "excel_not_found": "Excel file not found",
       "excel_not_valid": "Invalid Excel file"
     }
+  },
+  "date": {
+    "semester_year": "$semesterº Semester $date_year",
+    "semester_year_small": "$semesterº Sem $date_year"
   }
 }

@@ -3,8 +3,8 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/transaction_account_data.dart';
 
-class CWAccountsList extends StatelessWidget {
-  const CWAccountsList({super.key});
+class CWAReleasesScreenAccountsList extends StatelessWidget {
+  const CWAReleasesScreenAccountsList({super.key});
 
   @override
   Widget build(BuildContext context) {

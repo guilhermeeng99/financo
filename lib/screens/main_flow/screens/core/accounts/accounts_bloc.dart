@@ -20,6 +20,9 @@ class CoreAccountsBloc extends GetxController {
   final TransactionSummaryManager _transactionSummaryManager =
       TransactionSummaryManager();
 
+  final RxDouble _totalAllAccountsBalance = 0.0.obs;
+  final RxDouble _totalAllAccountsProjectedBalance = 0.0.obs;
+
   void _initializeBloc() {
     loadCheckingAccounts();
     _setupCalendarListener();
@@ -35,7 +38,6 @@ class CoreAccountsBloc extends GetxController {
     final accounts = await AccountLoader.loadCheckingAccounts();
     checkingAccounts.assignAll(accounts);
 
-    // Add listener for each account's isEnabled property
     for (final account in accounts) {
       ever(account.isEnabled, (_) {
         updateFilteredBalances();
@@ -46,10 +48,25 @@ class CoreAccountsBloc extends GetxController {
   }
 
   Future<void> updateFilteredBalances() async {
-    // Update individual account balances for all accounts
     await AccountBalanceManager.updateFilteredBalances(checkingAccounts);
-    // Update transaction summary only for enabled accounts
     await _updateTransactionSummary();
+    _updateTotals();
+  }
+
+  void _updateTotals() {
+    final enabledAccounts = checkingAccounts.where(
+      (account) => account.isEnabled.value,
+    );
+
+    _totalAllAccountsBalance.value = enabledAccounts.fold<double>(
+      0,
+      (sum, account) => sum + account.filteredBalance.value,
+    );
+
+    _totalAllAccountsProjectedBalance.value = enabledAccounts.fold<double>(
+      0,
+      (sum, account) => sum + account.filteredProjectedBalance.value,
+    );
   }
 
   RxDouble get totalFilteredBalance {
@@ -69,21 +86,10 @@ class CoreAccountsBloc extends GetxController {
     return total.obs;
   }
 
-  RxDouble get totalAllAccountsBalance {
-    final total = checkingAccounts.fold<double>(
-      0,
-      (sum, account) => sum + account.filteredBalance.value,
-    );
-    return total.obs;
-  }
+  RxDouble get totalAllAccountsBalance => _totalAllAccountsBalance;
 
-  RxDouble get totalAllAccountsProjectedBalance {
-    final total = checkingAccounts.fold<double>(
-      0,
-      (sum, account) => sum + account.filteredProjectedBalance.value,
-    );
-    return total.obs;
-  }
+  RxDouble get totalAllAccountsProjectedBalance =>
+      _totalAllAccountsProjectedBalance;
 
   Set<int> get enabledAccountIds =>
       AccountBalanceManager.getEnabledAccountIds(checkingAccounts);

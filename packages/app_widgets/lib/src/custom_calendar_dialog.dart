@@ -60,6 +60,17 @@ class CustomCalendarDialog {
       value: initialDates,
       dialogBackgroundColor:
           backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  onSurface: Colors.white,
+                  primary: Colors.white,
+                ),
+          ),
+          child: child!,
+        );
+      },
     );
   }
 

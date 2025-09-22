@@ -1,9 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_filter.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
 
 class CWAReleasesScreenTransactions extends StatelessWidget {
   const CWAReleasesScreenTransactions({required this.transactions, super.key});
@@ -45,11 +45,11 @@ class _TransactionBottomFilterItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final isSelected = coreTransactionsBloc.isFilterActive(filterType);
+      final isSelected = releasesBloc.isFilterActive(filterType);
 
       return InkWell(
         onTap: () {
-          coreTransactionsBloc.toggleFilter(filterType);
+          releasesBloc.toggleFilter(filterType);
         },
         onHover: (isHovering) {},
         hoverColor: Theme.of(context).customColors.secondary,

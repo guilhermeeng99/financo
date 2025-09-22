@@ -11,7 +11,10 @@ class AccountStatementBloc extends GetxController {
   AccountStatementBloc() {
     _resetFilters();
     _initializeListeners();
+    _handleRouteParameters();
   }
+
+  bool _accountSelectedFromUrl = false;
 
   void _resetFilters() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -24,11 +27,45 @@ class AccountStatementBloc extends GetxController {
   void _initializeListeners() {
     ever(coreAccountsBloc.checkingAccounts, (_) {
       _updateCoreTransactionsBloc();
-      // Ensure single account selection after accounts are loaded
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ensureSingleAccountSelected();
       });
     });
+  }
+
+  void _handleRouteParameters() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = Modular.args;
+      final accountId = _getAccountIdFromArguments(arguments);
+
+      if (accountId != null) {
+        _selectAccountWhenAvailable(accountId);
+      }
+    });
+  }
+
+  int? _getAccountIdFromArguments(ModularArguments arguments) {
+    if (arguments.data is Map<String, dynamic>) {
+      final accountId = (arguments.data as Map<String, dynamic>)['accountId'];
+      if (accountId is int) return accountId;
+    }
+
+    final queryParam = arguments.queryParams['accountId'];
+    return queryParam != null ? int.tryParse(queryParam) : null;
+  }
+
+  void _selectAccountWhenAvailable(int accountId) {
+    if (accounts.any((acc) => acc.account.id == accountId)) {
+      selectAccount(accountId);
+      _accountSelectedFromUrl = true;
+    } else {
+      ever(coreAccountsBloc.checkingAccounts, (_) {
+        if (accounts.any((acc) => acc.account.id == accountId)) {
+          selectAccount(accountId);
+          _accountSelectedFromUrl = true;
+        }
+      });
+    }
   }
 
   void _updateCoreTransactionsBloc() {
@@ -68,7 +105,7 @@ class AccountStatementBloc extends GetxController {
   }
 
   void ensureSingleAccountSelected() {
-    if (!hasValidSelection && accounts.isNotEmpty) {
+    if (!_accountSelectedFromUrl && !hasValidSelection && accounts.isNotEmpty) {
       selectAccount(accounts.first.account.id);
     }
   }
@@ -81,6 +118,11 @@ class AccountStatementBloc extends GetxController {
     for (final account in accounts) {
       account.isEnabled.value = account.account.id == accountId;
     }
+    _accountSelectedFromUrl = true;
+  }
+
+  void setInitialAccount(int accountId) {
+    _selectAccountWhenAvailable(accountId);
   }
 
   TransactionsAccount getAccountById(int accountId) {

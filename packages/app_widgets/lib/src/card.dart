@@ -22,6 +22,42 @@ class CWCard extends StatelessWidget {
   }
 }
 
+class CWCardStyled extends StatelessWidget {
+  const CWCardStyled({
+    required this.child,
+    required this.bottomChild,
+    super.key,
+  });
+
+  final Widget child;
+  final Widget bottomChild;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: CWCard(
+        child: Column(
+          children: [
+            child,
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Theme.of(context).customColors.fourth,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+              ),
+              child: bottomChild,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class CWSquareButton extends StatelessWidget {
   const CWSquareButton({required this.onTap, this.title, super.key});
 

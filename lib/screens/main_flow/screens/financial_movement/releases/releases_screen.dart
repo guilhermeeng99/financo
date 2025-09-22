@@ -1,9 +1,9 @@
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts_area_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts_results_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_accounts_list.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_transaction_area.dart';
 
 class ReleasesScreen extends StatelessWidget {
@@ -38,7 +38,7 @@ class ReleasesScreen extends StatelessWidget {
                           child: Column(
                             spacing: 25,
                             children: [
-                              const CWAccountsList(),
+                              const CWAReleasesScreenAccountsList(),
                               CWAccountsResults(transactions: transactions),
                             ],
                           ),

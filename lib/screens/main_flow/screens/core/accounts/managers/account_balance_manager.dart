@@ -57,8 +57,7 @@ class AccountBalanceManager {
   }) async {
     if (accountIds.isEmpty) return {};
 
-    // For account balances, we want accumulated balance up to the end of selected period
-    final startDate = DateTime(2000); // From beginning of time
+    final startDate = DateTimeUtils.getHistoricalStart();
     final endDate = coreCalendarBloc.endOfPeriod;
 
     return AccountBalanceService.getAccountBalances(

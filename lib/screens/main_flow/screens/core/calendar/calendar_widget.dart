@@ -22,7 +22,7 @@ class CWCalendarNavigator extends StatelessWidget {
               ),
               Expanded(
                 child: Text(
-                  coreCalendarBloc.getFormattedPeriod(context),
+                  coreCalendarBloc.getFormattedPeriod(context: context),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -36,7 +36,7 @@ class CWCalendarNavigator extends StatelessWidget {
                 padding: EdgeInsets.zero,
               ),
               const Gap(10),
-              const _PeriodDropdown(),
+              const CWCalendarNavigatorPeriodDropdown(),
             ],
           );
         }),
@@ -45,8 +45,8 @@ class CWCalendarNavigator extends StatelessWidget {
   }
 }
 
-class _PeriodDropdown extends StatelessWidget {
-  const _PeriodDropdown();
+class CWCalendarNavigatorPeriodDropdown extends StatelessWidget {
+  const CWCalendarNavigatorPeriodDropdown({super.key});
 
   @override
   Widget build(BuildContext context) {

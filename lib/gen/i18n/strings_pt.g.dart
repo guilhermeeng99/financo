@@ -38,12 +38,14 @@ class TranslationsPt implements Translations {
 	// Translations
 	@override late final _TranslationsNavigationPt navigation = _TranslationsNavigationPt._(_root);
 	@override late final _TranslationsCommonPt common = _TranslationsCommonPt._(_root);
+	@override late final _TranslationsOverviewPt overview = _TranslationsOverviewPt._(_root);
 	@override late final _TranslationsPastAndFutureReleasesPt past_and_future_releases = _TranslationsPastAndFutureReleasesPt._(_root);
 	@override late final _TranslationsAccountsPt accounts = _TranslationsAccountsPt._(_root);
 	@override late final _TranslationsCategoriesPt categories = _TranslationsCategoriesPt._(_root);
 	@override late final _TranslationsTransactionsPt transactions = _TranslationsTransactionsPt._(_root);
 	@override late final _TranslationsSettingsPt settings = _TranslationsSettingsPt._(_root);
 	@override late final _TranslationsMessagesPt messages = _TranslationsMessagesPt._(_root);
+	@override late final _TranslationsDatePt date = _TranslationsDatePt._(_root);
 }
 
 // Path: navigation
@@ -75,6 +77,18 @@ class _TranslationsCommonPt implements TranslationsCommonEn {
 	@override late final _TranslationsCommonLabelsPt labels = _TranslationsCommonLabelsPt._(_root);
 	@override late final _TranslationsCommonFrequencyPt frequency = _TranslationsCommonFrequencyPt._(_root);
 	@override late final _TranslationsCommonPeriodTypesPt period_types = _TranslationsCommonPeriodTypesPt._(_root);
+}
+
+// Path: overview
+class _TranslationsOverviewPt implements TranslationsOverviewEn {
+	_TranslationsOverviewPt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get cash_balance => 'Saldo em caixa';
+	@override String get result_of_the_month => 'Resultado do mês';
+	@override String get projected_situation => 'Situação projetada';
 }
 
 // Path: past_and_future_releases
@@ -168,6 +182,17 @@ class _TranslationsMessagesPt implements TranslationsMessagesEn {
 	@override late final _TranslationsMessagesSuccessPt success = _TranslationsMessagesSuccessPt._(_root);
 	@override late final _TranslationsMessagesWarningsPt warnings = _TranslationsMessagesWarningsPt._(_root);
 	@override late final _TranslationsMessagesErrorsPt errors = _TranslationsMessagesErrorsPt._(_root);
+}
+
+// Path: date
+class _TranslationsDatePt implements TranslationsDateEn {
+	_TranslationsDatePt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String semester_year({required Object semester, required Object date_year}) => '${semester}º Semestre ${date_year}';
+	@override String semester_year_small({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 }
 
 // Path: common.actions
@@ -523,6 +548,9 @@ extension on TranslationsPt {
 			case 'common.period_types.quarterly': return 'Trimestral';
 			case 'common.period_types.semester': return 'Semestral';
 			case 'common.period_types.custom': return 'Personalizado';
+			case 'overview.cash_balance': return 'Saldo em caixa';
+			case 'overview.result_of_the_month': return 'Resultado do mês';
+			case 'overview.projected_situation': return 'Situação projetada';
 			case 'past_and_future_releases.period_result': return 'Resultado do período';
 			case 'past_and_future_releases.total_to_pay': return 'Total a pagar';
 			case 'past_and_future_releases.total_to_receive': return 'Total a receber';
@@ -595,6 +623,8 @@ extension on TranslationsPt {
 			case 'messages.errors.export_error': return 'Erro ao exportar';
 			case 'messages.errors.excel_not_found': return 'Arquivo Excel não encontrado';
 			case 'messages.errors.excel_not_valid': return 'Arquivo Excel inválido';
+			case 'date.semester_year': return ({required Object semester, required Object date_year}) => '${semester}º Semestre ${date_year}';
+			case 'date.semester_year_small': return ({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 			default: return null;
 		}
 	}

@@ -18,16 +18,38 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^6.0.0
-  melos: ^6.3.3
+  melos: ^7.1.1
   intl: ^0.20.2
   slang: ^4.8.1
-  very_good_analysis: 9.0.0
+  very_good_analysis: ^10.0.0
 
+dependency_overrides:
+  very_good_analysis: ^10.0.0
 
 workspace:
   - packages/app_core
   - packages/app_widgets
   - packages/app_database
+
+melos:
+  scripts:
+    build_runner_app_database_by_path:
+      run: cd packages/app_database && dart run build_runner build --delete-conflicting-outputs
+
+    generate_routes:
+      run: dart run financo:routes
+
+    slang:
+      run: dart run slang
+    
+    generate_assets_folders:
+      run: dart run financo:assets
+      
+    packages_update:
+      run: dart pub outdated
+
+    run_release:
+      run: flutter run --release
 
 flutter:
   uses-material-design: true

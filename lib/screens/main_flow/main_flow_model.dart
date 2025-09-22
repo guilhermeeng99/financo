@@ -10,6 +10,7 @@ class MainFlowTopBarModel {
 
   void onTapOverview() {
     mainFlowBloc.selectedSideBarItem.value = null;
+    mainFlowBloc.isSideBarOn.value = false;
     Modular.to.navigate(ro.mainFlow.home.route);
   }
 

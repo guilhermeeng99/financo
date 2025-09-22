@@ -90,6 +90,11 @@
       "custom": "Personalizado"
     }
   },
+  "overview": {
+    "cash_balance": "Saldo em caixa",
+    "result_of_the_month": "Resultado do mês",
+    "projected_situation": "Situação projetada"
+  },
   "past_and_future_releases": {
     "period_result": "Resultado do período",
     "total_to_pay": "Total a pagar",
@@ -199,5 +204,9 @@
       "excel_not_found": "Arquivo Excel não encontrado",
       "excel_not_valid": "Arquivo Excel inválido"
     }
+  },
+  "date": {
+    "semester_year": "$semesterº Semestre $date_year",
+    "semester_year_small": "$semesterº Sem $date_year"
   }
 }

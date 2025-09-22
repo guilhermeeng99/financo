@@ -29,59 +29,56 @@ class CWPopUp extends StatelessWidget {
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             child: IntrinsicWidth(
-              child: IntrinsicHeight(
-                child: CWCard(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: padding ??
-                            const EdgeInsets.only(
-                              top: 10,
-                              left: 30,
-                              right: 10,
-                            ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(title),
-                                InkWell(
-                                  onTap: PopUpManager.pop,
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(20),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 20,
-                                    ),
+              child: CWCardStyled(
+                bottomChild: bottomContent != null
+                    ? Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).customColors.fourth,
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(8),
+                          ),
+                        ),
+                        child: bottomContent,
+                      )
+                    : const SizedBox.shrink(),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: padding ??
+                          const EdgeInsets.only(
+                            top: 10,
+                            left: 30,
+                            right: 10,
+                          ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(title),
+                              InkWell(
+                                onTap: PopUpManager.pop,
+                                child: const Padding(
+                                  padding: EdgeInsets.all(20),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 20,
                                   ),
                                 ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: centerContent,
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (bottomContent != null) ...[
-                        const Spacer(),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).customColors.fourth,
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(8),
-                              bottomRight: Radius.circular(8),
-                            ),
+                              ),
+                            ],
                           ),
-                          child: bottomContent,
-                        ),
-                      ],
-                    ],
-                  ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: centerContent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

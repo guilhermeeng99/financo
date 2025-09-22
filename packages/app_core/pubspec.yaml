@@ -18,17 +18,12 @@ dependencies:
     path: ../../
   flutter:
     sdk: flutter
-  flutter_modular: 6.4.1
-  logger: 2.6.1
-  get: 4.7.2
-  flutter_hooks: 0.21.3
-  file_saver: 0.3.1
-  excel: 4.0.6
-  url_launcher: 6.3.2
-  win32: 5.14.0
+  flutter_modular: ^6.4.1
+  logger: ^2.6.1
+  get: ^4.7.2
+  flutter_hooks: ^0.21.3+1
+  file_saver: ^0.3.1
+  excel: ^4.0.6
+  url_launcher: ^6.3.2
+  win32: ^5.14.0
   intl:
-
-dev_dependencies:
-  # flutter_test:
-  #   sdk: flutter
-  very_good_analysis: 9.0.0

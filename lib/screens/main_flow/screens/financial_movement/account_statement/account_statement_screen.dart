@@ -3,7 +3,6 @@ import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/releases/widgets/releases_screen_transaction_area.dart';
 
 class AccountStatementScreen extends StatelessWidget {
   const AccountStatementScreen({super.key});
@@ -41,7 +40,7 @@ class AccountStatementScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                CWAReleasesScreenTransactions(transactions: transactions),
+                CWTransactionsTable(transactions: transactions),
               ],
             );
           }),

@@ -180,8 +180,10 @@ class CoreCalendarBloc extends GetxController {
     }
   }
 
-  // Formatting Methods
-  String getFormattedPeriod(BuildContext context) {
+  String getFormattedPeriod({
+    required BuildContext context,
+    bool short = false,
+  }) {
     final date = currentDate;
     switch (currentPeriod) {
       case DatePeriodType.daily:
@@ -189,15 +191,35 @@ class CoreCalendarBloc extends GetxController {
       case DatePeriodType.weekly:
         final start = startOfPeriod;
         final end = endOfPeriod;
-        return '${start.formattedDateddMM(context: context)} - ${end.formattedDateddMMyyyy(context: context)}';
+        if (short) {
+          return '${start.formattedDateddMMyyyy(context: context)} \n-\n ${end.formattedDateddMMyyyy(context: context)}';
+        } else {
+          return '${start.formattedDateddMMyyyy(context: context)} - ${end.formattedDateddMMyyyy(context: context)}';
+        }
       case DatePeriodType.monthly:
-        return date.formattedMonthYear(context: context);
+        if (short) {
+          return date.formattedSmallMonthYear(context: context);
+        } else {
+          return date.formattedMonthYear(context: context);
+        }
       case DatePeriodType.quarterly:
         final quarter = ((date.month - 1) ~/ 3) + 1;
         return 'T$quarter ${date.year}';
       case DatePeriodType.semester:
         final semester = date.month <= 6 ? 1 : 2;
-        return '$semesterº Semestre ${date.year}';
+
+        if (short) {
+          return context.t.date.semester_year_small(
+            semester: semester,
+            date_year: date.year,
+          );
+        } else {
+          return context.t.date.semester_year(
+            semester: semester,
+            date_year: date.year,
+          );
+        }
+
       case DatePeriodType.custom:
         final start = current.startDate ?? date;
         final end = current.endDate ?? date;

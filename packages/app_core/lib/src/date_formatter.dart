@@ -38,4 +38,11 @@ extension DateFormatterX on DateTime {
       format: 'MMMM yyyy',
     );
   }
+
+  String formattedSmallMonthYear({required BuildContext context}) {
+    return _formattedDate(
+      context: context,
+      format: 'MMM yyyy',
+    );
+  }
 }

@@ -41,12 +41,14 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	// Translations
 	late final TranslationsNavigationEn navigation = TranslationsNavigationEn._(_root);
 	late final TranslationsCommonEn common = TranslationsCommonEn._(_root);
+	late final TranslationsOverviewEn overview = TranslationsOverviewEn._(_root);
 	late final TranslationsPastAndFutureReleasesEn past_and_future_releases = TranslationsPastAndFutureReleasesEn._(_root);
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
 	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
 	late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
 	late final TranslationsMessagesEn messages = TranslationsMessagesEn._(_root);
+	late final TranslationsDateEn date = TranslationsDateEn._(_root);
 }
 
 // Path: navigation
@@ -96,6 +98,24 @@ class TranslationsCommonEn {
 	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn._(_root);
 	late final TranslationsCommonFrequencyEn frequency = TranslationsCommonFrequencyEn._(_root);
 	late final TranslationsCommonPeriodTypesEn period_types = TranslationsCommonPeriodTypesEn._(_root);
+}
+
+// Path: overview
+class TranslationsOverviewEn {
+	TranslationsOverviewEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Cash balance'
+	String get cash_balance => 'Cash balance';
+
+	/// en: 'Result of the month'
+	String get result_of_the_month => 'Result of the month';
+
+	/// en: 'Projected situation'
+	String get projected_situation => 'Projected situation';
 }
 
 // Path: past_and_future_releases
@@ -246,6 +266,21 @@ class TranslationsMessagesEn {
 	late final TranslationsMessagesSuccessEn success = TranslationsMessagesSuccessEn._(_root);
 	late final TranslationsMessagesWarningsEn warnings = TranslationsMessagesWarningsEn._(_root);
 	late final TranslationsMessagesErrorsEn errors = TranslationsMessagesErrorsEn._(_root);
+}
+
+// Path: date
+class TranslationsDateEn {
+	TranslationsDateEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: '$semesterº Semester $date_year'
+	String semester_year({required Object semester, required Object date_year}) => '${semester}º Semester ${date_year}';
+
+	/// en: '$semesterº Sem $date_year'
+	String semester_year_small({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 }
 
 // Path: common.actions
@@ -789,6 +824,9 @@ extension on Translations {
 			case 'common.period_types.quarterly': return 'Quarterly';
 			case 'common.period_types.semester': return 'Semester';
 			case 'common.period_types.custom': return 'Custom';
+			case 'overview.cash_balance': return 'Cash balance';
+			case 'overview.result_of_the_month': return 'Result of the month';
+			case 'overview.projected_situation': return 'Projected situation';
 			case 'past_and_future_releases.period_result': return 'Period result';
 			case 'past_and_future_releases.total_to_pay': return 'Total to pay';
 			case 'past_and_future_releases.total_to_receive': return 'Total to receive';
@@ -861,6 +899,8 @@ extension on Translations {
 			case 'messages.errors.export_error': return 'Error while exporting';
 			case 'messages.errors.excel_not_found': return 'Excel file not found';
 			case 'messages.errors.excel_not_valid': return 'Invalid Excel file';
+			case 'date.semester_year': return ({required Object semester, required Object date_year}) => '${semester}º Semester ${date_year}';
+			case 'date.semester_year_small': return ({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 			default: return null;
 		}
 	}
