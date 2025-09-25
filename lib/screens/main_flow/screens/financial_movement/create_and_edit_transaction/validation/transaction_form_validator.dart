@@ -1,5 +1,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/validation/transaction_validation_exceptions.dart';
 
 import 'transaction_form_types.dart';
 
@@ -107,47 +108,92 @@ class TransactionFormValidator {
     TransactionDescription? descriptionValidation;
     var errors = const TransactionFormErrors();
 
-    descriptionValidation = ValidationResult.validateField(
-      () => TransactionDescription.create(formData.description.trim(), context),
-      (errorMessage) => errors = errors.copyWith(description: errorMessage),
-    );
+    try {
+      descriptionValidation = TransactionDescription.create(
+        formData.description.trim(),
+      );
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = TransactionValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(description: errorMessage);
+      }
+    }
 
-    amountValidation = ValidationResult.validateField(
-      () => TransactionAmount.create(
+    try {
+      amountValidation = TransactionAmount.create(
         formData.amount,
-        context,
         transactionType: formData.isTransfer
             ? FinancialType.expense
             : formData.selectedTransactionType,
-      ),
-      (errorMessage) => errors = errors.copyWith(amount: errorMessage),
-    );
-
-    accountValidation = ValidationResult.validateField(
-      () => TransactionAccountId.create(formData.selectedAccountId, context),
-      (errorMessage) => errors = errors.copyWith(account: errorMessage),
-    );
-
-    if (formData.isTransfer) {
-      targetAccountValidation = ValidationResult.validateField(
-        () => TransactionAccountId.create(
-          formData.selectedTargetAccountId,
+      );
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = TransactionValidationException.getMessage(
+          e,
           context,
-        ),
-        (errorMessage) => errors = errors.copyWith(account: errorMessage),
-      );
-    } else {
-      categoryValidation = ValidationResult.validateField(
-        () =>
-            TransactionCategoryId.create(formData.selectedCategoryId, context),
-        (errorMessage) => errors = errors.copyWith(category: errorMessage),
-      );
+        );
+        errors = errors.copyWith(amount: errorMessage);
+      }
     }
 
-    dateValidation = ValidationResult.validateField(
-      () => TransactionDate.create(formData.actualDate, context),
-      (errorMessage) => errors = errors.copyWith(actualDate: errorMessage),
-    );
+    try {
+      accountValidation = TransactionAccountId.create(
+        formData.selectedAccountId,
+      );
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = TransactionValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(account: errorMessage);
+      }
+    }
+
+    if (formData.isTransfer) {
+      try {
+        targetAccountValidation = TransactionAccountId.create(
+          formData.selectedTargetAccountId,
+        );
+      } catch (e) {
+        if (e is Exception) {
+          final errorMessage = TransactionValidationException.getMessage(
+            e,
+            context,
+          );
+          errors = errors.copyWith(account: errorMessage);
+        }
+      }
+    } else {
+      try {
+        categoryValidation = TransactionCategoryId.create(
+          formData.selectedCategoryId,
+        );
+      } catch (e) {
+        if (e is Exception) {
+          final errorMessage = TransactionValidationException.getMessage(
+            e,
+            context,
+          );
+          errors = errors.copyWith(category: errorMessage);
+        }
+      }
+    }
+
+    try {
+      dateValidation = TransactionDate.create(formData.actualDate);
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = TransactionValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(actualDate: errorMessage);
+      }
+    }
 
     return _FieldValidationResults(
       amountValidation: amountValidation,

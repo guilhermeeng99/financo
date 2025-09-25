@@ -26,28 +26,31 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(vertical: 20),
-                child: Column(
+                child: Row(
                   spacing: 20,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 20,
-                      children: [
-                        CWHomeScreenAccountsList(),
-                        CWHomeScreenAccountsResults(),
-                      ],
+                    Expanded(
+                      child: Column(
+                        spacing: 20,
+                        children: [
+                          CWHomeScreenAccountsList(),
+                          CWHomeScreenCategoriesByType(
+                            financialType: FinancialType.expense,
+                          ),
+                        ],
+                      ),
                     ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 20,
-                      children: [
-                        CWHomeScreenCategoriesByType(
-                          financialType: FinancialType.expense,
-                        ),
-                        CWHomeScreenCategoriesByType(
-                          financialType: FinancialType.income,
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        spacing: 20,
+                        children: [
+                          CWHomeScreenAccountsResults(),
+                          CWHomeScreenCategoriesByType(
+                            financialType: FinancialType.income,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

@@ -23,10 +23,6 @@ extension AccountTypeExtension on AccountType {
         return context.t.accounts.types.checking_account;
       case AccountType.creditCard:
         return context.t.accounts.types.credit_card;
-      case AccountType.others:
-        return context.t.accounts.types.others;
-      case AccountType.cash:
-        return context.t.accounts.types.money;
     }
   }
 }

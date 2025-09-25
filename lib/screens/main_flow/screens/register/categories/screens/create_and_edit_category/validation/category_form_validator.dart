@@ -1,5 +1,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_validation_exceptions.dart';
 
 import 'category_form_types.dart';
 
@@ -56,18 +57,23 @@ class CategoryFormValidator {
     ParentCategoryId? parentCategoryIdValidation;
     var errors = const CategoryFormErrors();
 
-    nameValidation = ValidationResult.validateField(
-      () => CategoryName.create(formData.name, context),
-      (errorMessage) => errors = errors.copyWith(name: errorMessage),
-    );
+    try {
+      nameValidation = CategoryName.create(formData.name);
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = CategoryValidationException.getMessage(e, context);
+        errors = errors.copyWith(name: errorMessage);
+      }
+    }
 
     try {
       final parentId = formData.parentCategoryId;
       parentCategoryIdValidation = parentId != null
-          ? ParentCategoryId.create(parentId, context)
+          ? ParentCategoryId.create(parentId)
           : ParentCategoryId.none();
-    } on ValidationException catch (e) {
-      logger.e('Error validating parent category: ${e.message}');
+    } catch (e) {
+      final errorMessage = e.toString();
+      errors = errors.copyWith(name: errorMessage);
     }
 
     return _FieldValidationResults(

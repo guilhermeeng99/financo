@@ -1,5 +1,6 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_validaton_exceptions.dart';
 
 import 'account_form_types.dart';
 
@@ -57,15 +58,23 @@ class AccountFormValidator {
     Balance? balanceValidation;
     var errors = const AccountFormErrors();
 
-    nameValidation = ValidationResult.validateField(
-      () => AccountName.create(formData.name, context),
-      (errorMessage) => errors = errors.copyWith(name: errorMessage),
-    );
+    try {
+      nameValidation = AccountName.create(formData.name);
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = AccountValidationException.getMessage(e, context);
+        errors = errors.copyWith(name: errorMessage);
+      }
+    }
 
-    balanceValidation = ValidationResult.validateField(
-      () => Balance.create(formData.initialBalance, context),
-      (errorMessage) => errors = errors.copyWith(initialBalance: errorMessage),
-    );
+    try {
+      balanceValidation = Balance.create(formData.initialBalance);
+    } catch (e) {
+      if (e is Exception) {
+        final errorMessage = AccountValidationException.getMessage(e, context);
+        errors = errors.copyWith(initialBalance: errorMessage);
+      }
+    }
 
     return _FieldValidationResults(
       nameValidation: nameValidation,

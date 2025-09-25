@@ -1,33 +1,21 @@
-import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';
-
 import '../../../core/exceptions.dart';
 
 class CategoryName {
-  factory CategoryName.create(String value, BuildContext context) {
+  factory CategoryName.create(String value) {
     final trimmedValue = value.trim();
     const nameMinLengthNumber = 2;
     const nameMaxLengthNumber = 15;
 
     if (trimmedValue.isEmpty) {
-      throw ValidationException(
-        context.t.categories.validation.name_cannot_be_empty,
-      );
+      throw const NameEmptyException();
     }
 
     if (trimmedValue.length < nameMinLengthNumber) {
-      throw ValidationException(
-        context.t.categories.validation.name_min_length_number(
-          number: nameMinLengthNumber,
-        ),
-      );
+      throw const NameTooShortException(nameMinLengthNumber);
     }
+
     if (trimmedValue.length > nameMaxLengthNumber) {
-      throw ValidationException(
-        context.t.categories.validation.name_max_length_number(
-          number: nameMaxLengthNumber,
-        ),
-      );
+      throw const NameTooLongException(nameMaxLengthNumber);
     }
 
     return CategoryName._(trimmedValue);
@@ -39,11 +27,9 @@ class CategoryName {
 }
 
 class ParentCategoryId {
-  factory ParentCategoryId.create(int? value, BuildContext context) {
+  factory ParentCategoryId.create(int? value) {
     if (value != null && value <= 0) {
-      throw ValidationException(
-        context.t.categories.validation.parent_id_must_be_positive,
-      );
+      throw const InvalidParentIdException();
     }
 
     return ParentCategoryId._(value);

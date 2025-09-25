@@ -1,8 +1,6 @@
 enum AccountType {
   checking('checking'),
-  creditCard('creditCard'),
-  others('others'),
-  cash('cash');
+  creditCard('creditCard');
 
   const AccountType(this.value);
   final String value;

@@ -1,27 +1,17 @@
-import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';
-
 import '../../../core/exceptions.dart';
 import '../../../core/financial_type.dart';
 
-
-
 class TransactionAmount {
   factory TransactionAmount.create(
-    double value,
-    BuildContext context, {
+    double value, {
     FinancialType? transactionType,
   }) {
     if (value.isNaN || value.isInfinite) {
-      throw ValidationException(
-        context.t.transactions.validation.amount_invalid_number,
-      );
+      throw const InvalidNumberException();
     }
 
     if (value == 0) {
-      throw ValidationException(
-        context.t.transactions.validation.amount_cannot_be_zero,
-      );
+      throw const NumberCannotBeZeroException();
     }
 
     final signedValue = switch (transactionType) {
@@ -39,7 +29,7 @@ class TransactionAmount {
 }
 
 class TransactionDescription {
-  factory TransactionDescription.create(String? value, BuildContext context) {
+  factory TransactionDescription.create(String? value) {
     if (value == null) {
       return TransactionDescription._(null);
     }
@@ -52,11 +42,7 @@ class TransactionDescription {
 
     const descriptionMaxLengthNumber = 255;
     if (trimmedValue.length > descriptionMaxLengthNumber) {
-      throw ValidationException(
-        context.t.transactions.validation.description_max_length_number(
-          number: descriptionMaxLengthNumber,
-        ),
-      );
+      throw const NameTooLongException(descriptionMaxLengthNumber);
     }
 
     return TransactionDescription._(trimmedValue);
@@ -68,17 +54,13 @@ class TransactionDescription {
 }
 
 class TransactionAccountId {
-  factory TransactionAccountId.create(int? value, BuildContext context) {
+  factory TransactionAccountId.create(int? value) {
     if (value == null) {
-      throw ValidationException(
-        context.t.transactions.validation.account_must_be_selected,
-      );
+      throw const AccountNotSelectedException();
     }
 
     if (value <= 0) {
-      throw ValidationException(
-        context.t.transactions.validation.account_id_must_be_positive,
-      );
+      throw const InvalidAccountIdException();
     }
 
     return TransactionAccountId._(value);
@@ -90,17 +72,13 @@ class TransactionAccountId {
 }
 
 class TransactionCategoryId {
-  factory TransactionCategoryId.create(int? value, BuildContext context) {
+  factory TransactionCategoryId.create(int? value) {
     if (value == null) {
-      throw ValidationException(
-        context.t.transactions.validation.category_must_be_selected,
-      );
+      throw const CategoryNotSelectedException();
     }
 
     if (value <= 0) {
-      throw ValidationException(
-        context.t.transactions.validation.category_id_must_be_positive,
-      );
+      throw const InvalidCategoryIdException();
     }
 
     return TransactionCategoryId._(value);
@@ -112,23 +90,15 @@ class TransactionCategoryId {
 }
 
 class TransactionDate {
-  factory TransactionDate.create(DateTime value, BuildContext context) {
+  factory TransactionDate.create(DateTime value) {
     final minimumDate = DateTime.now().subtract(const Duration(days: 36500));
     if (value.isBefore(minimumDate)) {
-      throw ValidationException(
-        context.t.transactions.validation.date_too_far_past_number(
-          number: minimumDate.year,
-        ),
-      );
+      throw DateTooFarInPastException(minimumDate.year);
     }
 
     final maximumDate = DateTime.now().add(const Duration(days: 3650));
     if (value.isAfter(maximumDate)) {
-      throw ValidationException(
-        context.t.transactions.validation.date_too_far_future_number(
-          number: maximumDate.year,
-        ),
-      );
+      throw DateTooFarInFutureException(maximumDate.year);
     }
 
     return TransactionDate._(value);

@@ -561,33 +561,28 @@ class ImportTransactionsModel {
       );
       final amount = TransactionAmount.create(
         transactionData['amount'] as double,
-        context,
+
         transactionType: transactionData['transactionType'] as FinancialType,
       );
 
       final accountId = TransactionAccountId.create(
         transactionData['accountId'] as int,
-        context,
       );
 
       final categoryId = TransactionCategoryId.create(
         transactionData['categoryId'] as int,
-        context,
       );
 
       final actualDate = TransactionDate.create(
         transactionData['actualDate'] as DateTime,
-        context,
       );
 
       final competenceDate = TransactionDate.create(
         transactionData['competenceDate'] as DateTime,
-        context,
       );
 
       final description = TransactionDescription.create(
         transactionData['description'] as String,
-        context,
       );
 
       return _transactionUsecase.createStandardTransaction(

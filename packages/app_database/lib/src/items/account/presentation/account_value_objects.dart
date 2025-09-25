@@ -1,34 +1,22 @@
-import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';
-
 import '../../../core/exceptions.dart';
 import '../domain/account_enums.dart';
 
 class AccountName {
-  factory AccountName.create(String value, BuildContext context) {
+  factory AccountName.create(String value) {
     final trimmedValue = value.trim();
     const nameMinLengthNumber = 3;
     const nameMaxLengthNumber = 15;
 
     if (trimmedValue.isEmpty) {
-      throw ValidationException(
-        context.t.accounts.validation.name_cannot_be_empty,
-      );
+      throw const NameEmptyException();
     }
 
     if (trimmedValue.length < nameMinLengthNumber) {
-      throw ValidationException(
-        context.t.accounts.validation.name_min_length_number(
-          number: nameMinLengthNumber,
-        ),
-      );
+      throw const NameTooShortException(nameMinLengthNumber);
     }
+
     if (trimmedValue.length > nameMaxLengthNumber) {
-      throw ValidationException(
-        context.t.accounts.validation.name_max_length_number(
-          number: nameMaxLengthNumber,
-        ),
-      );
+      throw const NameTooLongException(nameMaxLengthNumber);
     }
 
     return AccountName._(trimmedValue);
@@ -42,22 +30,16 @@ class AccountName {
 class Currency {
   factory Currency.fromType(CurrencyType type) => Currency._(type.value);
 
-  factory Currency.create(String value, BuildContext context) {
+  factory Currency.create(String value) {
     final trimmedValue = value.trim().toUpperCase();
     const currencyCodeLengthNumber = 3;
 
     if (trimmedValue.length != currencyCodeLengthNumber) {
-      throw ValidationException(
-        context.t.accounts.validation.currency_code_length_number(
-          number: currencyCodeLengthNumber,
-        ),
-      );
+      throw const CurrencyInvalidLengthException(currencyCodeLengthNumber);
     }
 
     if (!RegExp(r'^[A-Z]{3}$').hasMatch(trimmedValue)) {
-      throw ValidationException(
-        context.t.accounts.validation.currency_code_format,
-      );
+      throw const CurrencyInvalidFormatException();
     }
 
     return Currency._(trimmedValue);
@@ -70,25 +52,19 @@ class Currency {
 class Balance {
   Balance._(this.value);
 
-  factory Balance.create(double value, BuildContext context) {
-    const number = 999999999;
+  factory Balance.create(double value) {
+    const number = 999999999.0;
 
     if (value.isNaN || value.isInfinite) {
-      throw ValidationException(
-        context.t.accounts.validation.balance_invalid_number,
-      );
+      throw const InvalidNumberException();
     }
 
     if (value < -number) {
-      throw ValidationException(
-        context.t.accounts.validation.balance_min_value_number(number: number),
-      );
+      throw const NumberTooLowException(-number);
     }
 
     if (value > number) {
-      throw ValidationException(
-        context.t.accounts.validation.balance_max_value_number(number: number),
-      );
+      throw const NumberTooHighException(number);
     }
 
     return Balance._(value);

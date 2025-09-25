@@ -418,10 +418,7 @@ class ImportCategoriesModel {
     BuildContext context,
   ) async {
     try {
-      final categoryName = CategoryName.create(
-        categoryData['name'] as String,
-        context,
-      );
+      final categoryName = CategoryName.create(categoryData['name'] as String);
 
       final result = await _categoryUsecase.createCategory(
         name: categoryName,
@@ -454,10 +451,9 @@ class ImportCategoriesModel {
     try {
       final categoryName = CategoryName.create(
         subcategoryData['name'] as String,
-        context,
       );
 
-      final parentCategoryId = ParentCategoryId.create(parentId, context);
+      final parentCategoryId = ParentCategoryId.create(parentId);
 
       final result = await _categoryUsecase.createCategory(
         name: categoryName,
