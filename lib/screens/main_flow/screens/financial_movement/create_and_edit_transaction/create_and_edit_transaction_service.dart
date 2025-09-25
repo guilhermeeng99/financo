@@ -28,16 +28,16 @@ class TransactionOperationService {
       categoryId: params.categoryId,
     );
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error creating transaction: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (transaction) {
+      (transaction) async {
         logger.i(
           'Transaction created successfully: ${transaction.description}',
         );
-        _onTransactionSuccess();
+        await _onTransactionSuccess();
       },
     );
   }
@@ -51,16 +51,16 @@ class TransactionOperationService {
       description: params.description,
     );
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error creating transfer: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (txs) {
+      (txs) async {
         logger.i(
           'Transfer created successfully: ${txs.map((e) => e.id).join(',')}',
         );
-        _onTransactionSuccess();
+        await _onTransactionSuccess();
       },
     );
   }
@@ -87,25 +87,25 @@ class TransactionOperationService {
       categoryId: params.categoryId,
     );
 
-    result.fold(
-      (failure) {
+    await result.fold(
+      (failure) async {
         if (failure is NoChangesFailure) {
           logger.i(context.t.messages.warnings.no_changes_provided);
           CWSnackBar.snackBar(
             title: context.t.messages.warnings.no_changes_provided,
             type: SnackBarType.info,
           );
-          PopUpManager.pop();
+          await PopUpManager.pop();
         } else {
           logger.e('Error updating transaction: ${failure.message}');
           CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         }
       },
-      (transaction) {
+      (transaction) async {
         logger.i(
           'Transaction updated successfully: ${transaction.description}',
         );
-        _onTransactionSuccess();
+        await _onTransactionSuccess();
       },
     );
   }
@@ -130,31 +130,31 @@ class TransactionOperationService {
           : null,
     );
 
-    result.fold(
-      (failure) {
+    await result.fold(
+      (failure) async {
         if (failure is NoChangesFailure) {
           logger.i(context.t.messages.warnings.no_changes_provided);
           CWSnackBar.snackBar(
             title: context.t.messages.warnings.no_changes_provided,
             type: SnackBarType.info,
           );
-          PopUpManager.pop();
+          await PopUpManager.pop();
         } else {
           logger.e('Error updating transfer: ${failure.message}');
           CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         }
       },
-      (transactions) {
+      (transactions) async {
         logger.i(
           'Transfer updated successfully: ${transactions.map((e) => e.id).join(',')}',
         );
-        _onTransactionSuccess();
+        await _onTransactionSuccess();
       },
     );
   }
 
-  void _onTransactionSuccess() {
-    coreTransactionsBloc.loadTransactions();
-    PopUpManager.pop();
+  Future<void> _onTransactionSuccess() async {
+    await coreTransactionsBloc.loadTransactions();
+    await PopUpManager.pop();
   }
 }

@@ -6,48 +6,42 @@ class AccountValidationException {
   static String getMessage(Exception exception, BuildContext context) {
     final t = context.t;
 
-    switch (exception.runtimeType) {
-      case NameEmptyException:
+    switch (exception) {
+      case NameEmptyException _:
         return t.accounts.validation.name_cannot_be_empty;
 
-      case NameTooShortException:
-        final ex = exception as NameTooShortException;
+      case final NameTooShortException ex:
         return t.accounts.validation.name_min_length_number(
           number: ex.minLength,
         );
 
-      case NameTooLongException:
-        final ex = exception as NameTooLongException;
+      case final NameTooLongException ex:
         return t.accounts.validation.name_max_length_number(
           number: ex.maxLength,
         );
 
-      case CurrencyInvalidLengthException:
-        final ex = exception as CurrencyInvalidLengthException;
+      case final CurrencyInvalidLengthException ex:
         return t.accounts.validation.currency_code_length_number(
           number: ex.expectedLength,
         );
 
-      case CurrencyInvalidFormatException:
+      case CurrencyInvalidFormatException _:
         return t.accounts.validation.currency_code_format;
 
-      case InvalidNumberException:
+      case InvalidNumberException _:
         return t.accounts.validation.balance_invalid_number;
 
-      case NumberTooLowException:
-        final ex = exception as NumberTooLowException;
+      case final NumberTooLowException ex:
         return t.accounts.validation.balance_min_value_number(
           number: ex.minValue,
         );
 
-      case NumberTooHighException:
-        final ex = exception as NumberTooHighException;
+      case final NumberTooHighException ex:
         return t.accounts.validation.balance_max_value_number(
           number: ex.maxValue,
         );
 
-      case ValidationException:
-        final ex = exception as ValidationException;
+      case final ValidationException ex:
         return ex.message;
 
       default:

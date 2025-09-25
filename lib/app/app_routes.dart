@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_field_initializers_in_const_classes, subtype_of_disallowed_type
+// ignore_for_file: avoid_field_initializers_in_const_classes,
 
 AppRoutes get ro => AppRoutes.instance;
 

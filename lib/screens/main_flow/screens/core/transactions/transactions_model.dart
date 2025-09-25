@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:excel/excel.dart';
@@ -11,8 +13,8 @@ import 'package:financo/screens/main_flow/screens/financial_movement/import_tran
 TransactionsModel get transactionsModel => Modular.get<TransactionsModel>();
 
 class TransactionsModel {
-  void onTapFloatingActionButton() {
-    PopUpManager.showDialog(
+  Future<void> onTapFloatingActionButton() async {
+    await PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
         child: () => CreateAndEditTransactionPopUp(
@@ -31,8 +33,8 @@ class TransactionsModel {
     ),
   );
 
-  void onTapOpenTransaction(DataTransaction transaction) {
-    PopUpManager.showDialog(
+  Future<void> onTapOpenTransaction(DataTransaction transaction) async {
+    await PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
         child: () => CreateAndEditTransactionPopUp(
@@ -72,13 +74,13 @@ class TransactionsModel {
         logger.i(
           'Transaction deleted successfully: ${transaction.description ?? 'No description'}',
         );
-        coreTransactionsBloc.loadTransactions();
+        unawaited(coreTransactionsBloc.loadTransactions());
       },
     );
   }
 
-  void onTapCloneTransaction(DataTransaction transaction) {
-    PopUpManager.showDialog(
+  Future<void> onTapCloneTransaction(DataTransaction transaction) async {
+    await PopUpManager.showDialog(
       builder: (c) => WidgetModuleProvider(
         module: CreateAndEditTransactionModule(),
         child: () {
@@ -127,7 +129,7 @@ class TransactionsModel {
       (updatedTransactionOrTransactions) {
         logger.i('Payment status updated successfully');
 
-        coreTransactionsBloc.loadTransactions();
+        unawaited(coreTransactionsBloc.loadTransactions());
       },
     );
   }
@@ -283,7 +285,7 @@ class TransactionsModelExcel {
           type: SnackBarType.success,
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Error exporting transactions: $e');
       if (context.mounted) {
         CWSnackBar.snackBar(

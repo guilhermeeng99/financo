@@ -46,21 +46,21 @@ enum TransactionMenuAction implements PopupMenuAction<DataTransaction> {
   }
 
   @override
-  void execute(DataTransaction transaction) {
+  Future<void> execute(DataTransaction transaction) async {
     switch (this) {
       case TransactionMenuAction.edit:
-        transactionsModel.onTapOpenTransaction(transaction);
+        await transactionsModel.onTapOpenTransaction(transaction);
       case TransactionMenuAction.delete:
-        transactionsModel.onTapDeleteTransaction(transaction);
+        await transactionsModel.onTapDeleteTransaction(transaction);
       case TransactionMenuAction.clone:
-        transactionsModel.onTapCloneTransaction(transaction);
+        await transactionsModel.onTapCloneTransaction(transaction);
       case TransactionMenuAction.pay:
-        transactionsModel.onTapPayOrUnpayTransaction(
+        await transactionsModel.onTapPayOrUnpayTransaction(
           transaction: transaction,
           paymentStatus: TransactionPaymentStatus.paid,
         );
       case TransactionMenuAction.unPay:
-        transactionsModel.onTapPayOrUnpayTransaction(
+        await transactionsModel.onTapPayOrUnpayTransaction(
           transaction: transaction,
           paymentStatus: TransactionPaymentStatus.unpaid,
         );

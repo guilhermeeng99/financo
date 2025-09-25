@@ -6,45 +6,41 @@ class TransactionValidationException {
   static String getMessage(Exception exception, BuildContext context) {
     final t = context.t;
 
-    switch (exception.runtimeType) {
-      case InvalidNumberException:
+    switch (exception) {
+      case InvalidNumberException _:
         return t.transactions.validation.amount_invalid_number;
 
-      case NumberCannotBeZeroException:
+      case NumberCannotBeZeroException _:
         return t.transactions.validation.amount_cannot_be_zero;
 
-      case NameTooLongException:
-        final ex = exception as NameTooLongException;
+      case final NameTooLongException ex:
         return t.transactions.validation.description_max_length_number(
           number: ex.maxLength,
         );
 
-      case AccountNotSelectedException:
+      case AccountNotSelectedException _:
         return t.transactions.validation.account_must_be_selected;
 
-      case InvalidAccountIdException:
+      case InvalidAccountIdException _:
         return t.transactions.validation.account_id_must_be_positive;
 
-      case CategoryNotSelectedException:
+      case CategoryNotSelectedException _:
         return t.transactions.validation.category_must_be_selected;
 
-      case InvalidCategoryIdException:
+      case InvalidCategoryIdException _:
         return t.transactions.validation.category_id_must_be_positive;
 
-      case DateTooFarInPastException:
-        final ex = exception as DateTooFarInPastException;
+      case final DateTooFarInPastException ex:
         return t.transactions.validation.date_too_far_past_number(
           number: ex.minimumYear,
         );
 
-      case DateTooFarInFutureException:
-        final ex = exception as DateTooFarInFutureException;
+      case final DateTooFarInFutureException ex:
         return t.transactions.validation.date_too_far_future_number(
           number: ex.maximumYear,
         );
 
-      case ValidationException:
-        final ex = exception as ValidationException;
+      case final ValidationException ex:
         return ex.message;
 
       default:

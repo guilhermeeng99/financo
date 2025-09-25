@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_constants.dart';
 import 'package:financo/app/app_theme.dart';
@@ -12,7 +14,7 @@ class LoadingScreen extends HookWidget {
     final model = useMemoized(LoadingModel.new);
 
     useEffect(() {
-      model.initialize();
+      unawaited(model.initialize());
       return model.dispose;
     }, [model]);
 

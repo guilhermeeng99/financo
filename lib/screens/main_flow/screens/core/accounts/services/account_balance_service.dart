@@ -44,7 +44,7 @@ class AccountBalanceService {
         logger.e('Error getting account balance for date: ${failure.message}');
         return 0.0;
       }, (double balance) => balance);
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Unexpected error getting account balance for date: $e');
       return 0.0;
     }
@@ -77,7 +77,7 @@ class AccountBalanceService {
           (double sum, double balance) => sum + balance,
         ),
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Unexpected error getting total balance for date: $e');
       return 0.0;
     }

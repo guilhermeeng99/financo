@@ -28,10 +28,10 @@ class AccountsModel {
         ),
       );
 
-  void onTapShowOnlyActiveAccounts() {
+  Future<void> onTapShowOnlyActiveAccounts() async {
     accountsBloc.showOnlyActiveAccounts.value =
         !accountsBloc.showOnlyActiveAccounts.value;
-    accountsBloc.loadGroupedAccounts();
+    await accountsBloc.loadGroupedAccounts();
   }
 
   Future<void> onTapFreezeOrUnfreeze({
@@ -43,15 +43,15 @@ class AccountsModel {
       isActive: !freeze,
     );
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error updating account status: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (updatedAccount) {
+      (updatedAccount) async {
         logger.i('Account status updated successfully');
 
-        accountsBloc.loadGroupedAccounts();
+        await accountsBloc.loadGroupedAccounts();
       },
     );
   }
@@ -59,15 +59,15 @@ class AccountsModel {
   Future<void> onTapDeleteAccout(AccountData account) async {
     final result = await _accountUsecase.deleteAccount(account.id);
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error deleting account: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (deletedAccount) {
+      (deletedAccount) async {
         logger.i('Account deleted successfully');
 
-        accountsBloc.loadGroupedAccounts();
+        await accountsBloc.loadGroupedAccounts();
       },
     );
   }

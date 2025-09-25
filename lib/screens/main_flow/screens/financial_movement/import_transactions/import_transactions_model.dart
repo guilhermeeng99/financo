@@ -87,7 +87,7 @@ class ImportTransactionsModel {
           );
         }
       }
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       logger
         ..e('Error generating Excel template: $e')
         ..e('Stack trace: $stackTrace');
@@ -220,7 +220,7 @@ class ImportTransactionsModel {
       await coreTransactionsBloc.loadTransactions();
 
       await AppSystemFiles.showImportResult(context, importResult);
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       logger
         ..e('Error importing transactions from Excel: $e')
         ..e('Stack trace: $stackTrace');
@@ -380,7 +380,7 @@ class ImportTransactionsModel {
         'accountId': accountId,
         'categoryId': categoryId,
       };
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Error parsing transaction row: $e');
       return null;
     }
@@ -403,7 +403,7 @@ class ImportTransactionsModel {
             logger.d('_parseDate: DateCellValue parsed to $parsed');
             return parsed;
           }
-        } catch (e) {
+        } on Exception catch (e) {
           logger.w('Error parsing DateCellValue toString: $e');
         }
       }
@@ -426,7 +426,7 @@ class ImportTransactionsModel {
       }
       logger.w('_parseDate: unhandled type ${value.runtimeType}');
       return null;
-    } catch (e) {
+    } on Exception catch (e) {
       logger.w('Error parsing date: $value, error: $e');
       return null;
     }
@@ -444,7 +444,7 @@ class ImportTransactionsModel {
       // Handle numeric values that come as other types
       final numValue = double.tryParse(value.toString());
       return numValue;
-    } catch (e) {
+    } on Exception catch (e) {
       logger.w(
         'Error parsing amount: $value (type: ${value.runtimeType}), error: $e',
       );

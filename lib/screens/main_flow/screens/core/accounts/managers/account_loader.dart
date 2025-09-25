@@ -13,7 +13,7 @@ class AccountLoader {
         _handleLoadAccountsError(failure);
         return <TransactionsAccount>[];
       }, _processLoadedAccounts);
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Unexpected error loading checking accounts: $e');
       _showErrorMessage('Failed to load accounts');
       return <TransactionsAccount>[];

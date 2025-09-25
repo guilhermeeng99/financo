@@ -6,27 +6,24 @@ class CategoryValidationException {
   static String getMessage(Exception exception, BuildContext context) {
     final t = context.t;
 
-    switch (exception.runtimeType) {
-      case NameEmptyException:
+    switch (exception) {
+      case NameEmptyException _:
         return t.categories.validation.name_cannot_be_empty;
 
-      case NameTooShortException:
-        final ex = exception as NameTooShortException;
+      case final NameTooShortException ex:
         return t.categories.validation.name_min_length_number(
           number: ex.minLength,
         );
 
-      case NameTooLongException:
-        final ex = exception as NameTooLongException;
+      case final NameTooLongException ex:
         return t.categories.validation.name_max_length_number(
           number: ex.maxLength,
         );
 
-      case InvalidParentIdException:
+      case InvalidParentIdException _:
         return t.categories.validation.parent_id_must_be_positive;
 
-      case ValidationException:
-        final ex = exception as ValidationException;
+      case final ValidationException ex:
         return ex.message;
 
       default:

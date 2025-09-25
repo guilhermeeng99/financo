@@ -59,11 +59,9 @@ class CategoryFormValidator {
 
     try {
       nameValidation = CategoryName.create(formData.name);
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = CategoryValidationException.getMessage(e, context);
-        errors = errors.copyWith(name: errorMessage);
-      }
+    } on Exception catch (e) {
+      final errorMessage = CategoryValidationException.getMessage(e, context);
+      errors = errors.copyWith(name: errorMessage);
     }
 
     try {
@@ -71,7 +69,7 @@ class CategoryFormValidator {
       parentCategoryIdValidation = parentId != null
           ? ParentCategoryId.create(parentId)
           : ParentCategoryId.none();
-    } catch (e) {
+    } on Exception catch (e) {
       final errorMessage = e.toString();
       errors = errors.copyWith(name: errorMessage);
     }

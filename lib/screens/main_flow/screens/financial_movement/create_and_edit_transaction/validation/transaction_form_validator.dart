@@ -112,15 +112,13 @@ class TransactionFormValidator {
       descriptionValidation = TransactionDescription.create(
         formData.description.trim(),
       );
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = TransactionValidationException.getMessage(
-          e,
-          context,
-        );
-        errors = errors.copyWith(description: errorMessage);
-      }
-    }
+    } on Exception catch (e) {
+      final errorMessage = TransactionValidationException.getMessage(
+        e,
+        context,
+      );
+      errors = errors.copyWith(description: errorMessage);
+        }
 
     try {
       amountValidation = TransactionAmount.create(
@@ -129,71 +127,61 @@ class TransactionFormValidator {
             ? FinancialType.expense
             : formData.selectedTransactionType,
       );
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = TransactionValidationException.getMessage(
-          e,
-          context,
-        );
-        errors = errors.copyWith(amount: errorMessage);
-      }
-    }
+    } on Exception catch (e) {
+      final errorMessage = TransactionValidationException.getMessage(
+        e,
+        context,
+      );
+      errors = errors.copyWith(amount: errorMessage);
+        }
 
     try {
       accountValidation = TransactionAccountId.create(
         formData.selectedAccountId,
       );
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = TransactionValidationException.getMessage(
-          e,
-          context,
-        );
-        errors = errors.copyWith(account: errorMessage);
-      }
-    }
+    } on Exception catch (e) {
+      final errorMessage = TransactionValidationException.getMessage(
+        e,
+        context,
+      );
+      errors = errors.copyWith(account: errorMessage);
+        }
 
     if (formData.isTransfer) {
       try {
         targetAccountValidation = TransactionAccountId.create(
           formData.selectedTargetAccountId,
         );
-      } catch (e) {
-        if (e is Exception) {
-          final errorMessage = TransactionValidationException.getMessage(
-            e,
-            context,
-          );
-          errors = errors.copyWith(account: errorMessage);
-        }
-      }
+    } on Exception catch (e) {
+        final errorMessage = TransactionValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(account: errorMessage);
+            }
     } else {
       try {
         categoryValidation = TransactionCategoryId.create(
           formData.selectedCategoryId,
         );
-      } catch (e) {
-        if (e is Exception) {
-          final errorMessage = TransactionValidationException.getMessage(
-            e,
-            context,
-          );
-          errors = errors.copyWith(category: errorMessage);
-        }
-      }
-    }
-
-    try {
-      dateValidation = TransactionDate.create(formData.actualDate);
-    } catch (e) {
-      if (e is Exception) {
+    } on Exception catch (e) {
         final errorMessage = TransactionValidationException.getMessage(
           e,
           context,
         );
-        errors = errors.copyWith(actualDate: errorMessage);
-      }
+        errors = errors.copyWith(category: errorMessage);
+            }
     }
+
+    try {
+      dateValidation = TransactionDate.create(formData.actualDate);
+    } on Exception catch (e) {
+      final errorMessage = TransactionValidationException.getMessage(
+        e,
+        context,
+      );
+      errors = errors.copyWith(actualDate: errorMessage);
+        }
 
     return _FieldValidationResults(
       amountValidation: amountValidation,

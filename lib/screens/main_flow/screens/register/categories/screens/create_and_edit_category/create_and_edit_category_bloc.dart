@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
@@ -8,7 +10,7 @@ CreateAndEditCategoryBloc get createAndEditCategoryBloc =>
 
 class CreateAndEditCategoryBloc extends GetxController {
   CreateAndEditCategoryBloc() {
-    loadAvailableParentCategories();
+    unawaited(loadAvailableParentCategories());
 
     ever(formData, (CategoryFormData data) {
       formErrors.value = const CategoryFormErrors();
@@ -34,7 +36,7 @@ class CreateAndEditCategoryBloc extends GetxController {
 
   void updateCategoryType(FinancialType categoryType) {
     formData.value = formData.value.copyWith(categoryType: categoryType);
-    loadAvailableParentCategories();
+    unawaited(loadAvailableParentCategories());
   }
 
   void updateParentCategoryId(int? parentCategoryId) {
@@ -68,7 +70,7 @@ class CreateAndEditCategoryBloc extends GetxController {
     formData.value = CategoryFormData.fromCategory(category);
     currentCategoryId.value = category.id;
     clearAllErrors();
-    loadAvailableParentCategories();
+    unawaited(loadAvailableParentCategories());
   }
 
   Future<void> initializeSubCategoryFromCategory(int parentCategoryId) async {
@@ -108,7 +110,7 @@ class CreateAndEditCategoryBloc extends GetxController {
           availableParentCategories.value = categories;
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Error loading parent categories: $e');
       availableParentCategories.clear();
     }

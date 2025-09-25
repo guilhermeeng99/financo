@@ -1,5 +1,6 @@
-// ignore_for_file: unnecessary_brace_in_string_interps, prefer_final_locals, cascade_invocations, prefer_final_in_for_each, omit_local_variable_types, unnecessary_raw_strings, depend_on_referenced_packages
+// ignore_for_file: unnecessary_brace_in_string_interps, prefer_final_locals, cascade_invocations, prefer_final_in_for_each, omit_local_variable_types, depend_on_referenced_packages
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
 
 void main() async {
@@ -31,8 +32,10 @@ void main() async {
   Node root = Node('');
 
   for (String path in paths) {
-    List<String> segments =
-        path.split('/').where((segment) => segment != 'screens').toList();
+    List<String> segments = path
+        .split('/')
+        .where((segment) => segment != 'screens')
+        .toList();
     Node current = root;
 
     for (int i = 0; i < segments.length; i++) {
@@ -83,7 +86,7 @@ String toValidDartClassName(String name) {
     return name.split('_').map((part) {
       return part[0].toUpperCase() + part.substring(1);
     }).join();
-  } catch (e) {
+  } on Exception {
     return name;
   }
 }
@@ -95,7 +98,7 @@ String toValidDartVariableName(String name) {
       return part[0].toUpperCase() + part.substring(1);
     }).join();
     return fixedName[0].toLowerCase() + fixedName.substring(1);
-  } catch (e) {
+  } on Exception {
     return fixedName;
   }
 }

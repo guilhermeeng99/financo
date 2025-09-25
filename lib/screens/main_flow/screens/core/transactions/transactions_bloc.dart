@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
@@ -8,8 +10,8 @@ CoreTransactionsBloc get coreTransactionsBloc =>
 
 class CoreTransactionsBloc extends GetxController {
   CoreTransactionsBloc() {
-    loadTransactions();
-    ever(coreCalendarBloc.selected, (_) => loadTransactions());
+    unawaited(loadTransactions());
+    ever(coreCalendarBloc.selected, (_) => unawaited(loadTransactions()));
     ever(activeFilters, (_) => _recalculateFilteredTransactions());
   }
 
@@ -46,7 +48,7 @@ class CoreTransactionsBloc extends GetxController {
           _recalculateFilteredTransactions();
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Error loading transactions: $e');
     }
   }

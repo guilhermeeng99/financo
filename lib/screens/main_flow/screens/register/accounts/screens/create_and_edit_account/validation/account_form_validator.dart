@@ -60,21 +60,17 @@ class AccountFormValidator {
 
     try {
       nameValidation = AccountName.create(formData.name);
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = AccountValidationException.getMessage(e, context);
-        errors = errors.copyWith(name: errorMessage);
-      }
-    }
+    } on Exception catch (e) {
+      final errorMessage = AccountValidationException.getMessage(e, context);
+      errors = errors.copyWith(name: errorMessage);
+        }
 
     try {
       balanceValidation = Balance.create(formData.initialBalance);
-    } catch (e) {
-      if (e is Exception) {
-        final errorMessage = AccountValidationException.getMessage(e, context);
-        errors = errors.copyWith(initialBalance: errorMessage);
-      }
-    }
+    } on Exception catch (e) {
+      final errorMessage = AccountValidationException.getMessage(e, context);
+      errors = errors.copyWith(initialBalance: errorMessage);
+        }
 
     return _FieldValidationResults(
       nameValidation: nameValidation,

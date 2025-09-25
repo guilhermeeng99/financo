@@ -24,13 +24,13 @@ class CoreAccountsBloc extends GetxController {
   final RxDouble _totalAllAccountsProjectedBalance = 0.0.obs;
 
   void _initializeBloc() {
-    loadCheckingAccounts();
+    unawaited(loadCheckingAccounts());
     _setupCalendarListener();
   }
 
   void _setupCalendarListener() {
-    ever(coreCalendarBloc.selected, (_) {
-      updateFilteredBalances();
+    ever(coreCalendarBloc.selected, (_) async {
+      await updateFilteredBalances();
     });
   }
 
@@ -39,8 +39,8 @@ class CoreAccountsBloc extends GetxController {
     checkingAccounts.assignAll(accounts);
 
     for (final account in accounts) {
-      ever(account.isEnabled, (_) {
-        updateFilteredBalances();
+      ever(account.isEnabled, (_) async {
+        await updateFilteredBalances();
       });
     }
 

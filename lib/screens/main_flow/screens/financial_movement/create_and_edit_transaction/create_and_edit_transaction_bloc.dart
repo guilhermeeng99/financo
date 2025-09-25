@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
@@ -12,8 +14,8 @@ class CreateAndEditTransactionBloc extends GetxController {
     // Initialize reactive date
     actualDateRx = formData.value.actualDate.obs;
 
-    _loadAccounts();
-    _loadCategories();
+    unawaited(_loadAccounts());
+    unawaited(_loadCategories());
 
     // Listen to form data changes
     ever(formData, (TransactionFormData data) {
@@ -21,7 +23,7 @@ class CreateAndEditTransactionBloc extends GetxController {
       actualDateRx.value = data.actualDate;
 
       if (!data.transactionScreenType.isTransfer) {
-        _loadCategories();
+        unawaited(_loadCategories());
       }
     });
 

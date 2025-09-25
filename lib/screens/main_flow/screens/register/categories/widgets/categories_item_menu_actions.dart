@@ -46,21 +46,24 @@ enum CategoryMenuAction implements PopupMenuAction<CategoryData> {
   }
 
   @override
-  void execute(CategoryData category) {
+  Future<void> execute(CategoryData category) async {
     switch (this) {
       case CategoryMenuAction.edit:
         categoriesModel.onTapUpdateCategoryPopUp(category);
       case CategoryMenuAction.freeze:
-        categoriesModel.onTapFreezeOrUnfreeze(category: category, freeze: true);
+        await categoriesModel.onTapFreezeOrUnfreeze(
+          category: category,
+          freeze: true,
+        );
       case CategoryMenuAction.unfreeze:
-        categoriesModel.onTapFreezeOrUnfreeze(
+        await categoriesModel.onTapFreezeOrUnfreeze(
           category: category,
           freeze: false,
         );
       case CategoryMenuAction.createSubCategory:
         categoriesModel.onTapCreateSubCategory(category);
       case CategoryMenuAction.delete:
-        categoriesModel.onTapDeleteCategory(category);
+        await categoriesModel.onTapDeleteCategory(category);
     }
   }
 

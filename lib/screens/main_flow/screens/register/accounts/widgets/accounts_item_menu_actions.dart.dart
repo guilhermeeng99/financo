@@ -41,16 +41,22 @@ enum AccountMenuAction implements PopupMenuAction<AccountData> {
   }
 
   @override
-  void execute(AccountData account) {
+  Future<void> execute(AccountData account) async {
     switch (this) {
       case AccountMenuAction.edit:
         accountsModel.onTapUpdateAccountPopUp(account);
       case AccountMenuAction.freeze:
-        accountsModel.onTapFreezeOrUnfreeze(account: account, freeze: true);
+        await accountsModel.onTapFreezeOrUnfreeze(
+          account: account,
+          freeze: true,
+        );
       case AccountMenuAction.unfreeze:
-        accountsModel.onTapFreezeOrUnfreeze(account: account, freeze: false);
+        await accountsModel.onTapFreezeOrUnfreeze(
+          account: account,
+          freeze: false,
+        );
       case AccountMenuAction.delete:
-        accountsModel.onTapDeleteAccout(account);
+        await accountsModel.onTapDeleteAccout(account);
     }
   }
 

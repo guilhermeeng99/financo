@@ -42,9 +42,11 @@ class CreateAndEditAccountModel {
       context,
     );
 
-    result.fold((failure) => _handleFailure(failure, context), (account) {
+    await result.fold((failure) => _handleFailure(failure, context), (
+      account,
+    ) async {
       logger.i('Account created successfully');
-      PopUpManager.pop();
+      await PopUpManager.pop();
     });
   }
 
@@ -72,13 +74,15 @@ class CreateAndEditAccountModel {
       context,
     );
 
-    result.fold((failure) => _handleFailure(failure, context), (account) {
+    await result.fold((failure) => _handleFailure(failure, context), (
+      account,
+    ) async {
       logger.i('Account updated successfully');
-      PopUpManager.pop();
+      await PopUpManager.pop();
     });
   }
 
-  void _handleFailure(Failure failure, BuildContext context) {
+  Future<void> _handleFailure(Failure failure, BuildContext context) async {
     if (failure is DuplicateEntryFailure) {
       createAndEditAccountBloc.formErrors.value = AccountFormErrors(
         name: context.t.accounts.validation.name_already_exists,
@@ -89,7 +93,7 @@ class CreateAndEditAccountModel {
         title: context.t.messages.warnings.no_changes_provided,
         type: SnackBarType.info,
       );
-      PopUpManager.pop();
+      await PopUpManager.pop();
     } else {
       CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       logger.e('Error with account operation: ${failure.message}');

@@ -16,10 +16,10 @@ class CategoriesModel {
     CreateAndEditCategoryPopUpArgs(type: CreateAndEditCategoryPopUpType.create),
   );
 
-  void onTapShowOnlyActiveCategories() {
+  Future<void> onTapShowOnlyActiveCategories() async {
     categoriesBloc.showOnlyActiveCategories.value =
         !categoriesBloc.showOnlyActiveCategories.value;
-    categoriesBloc.loadCategories();
+    await categoriesBloc.loadCategories();
   }
 
   void onTapUpdateCategoryPopUp(CategoryData category) => _showCategoryPopUp(
@@ -46,14 +46,14 @@ class CategoriesModel {
       isActive: !freeze,
     );
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error updating category status: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (updatedCategory) {
+      (updatedCategory) async {
         logger.i('Category status updated successfully');
-        categoriesBloc.loadCategories();
+        await categoriesBloc.loadCategories();
       },
     );
   }
@@ -70,15 +70,15 @@ class CategoriesModel {
   Future<void> onTapDeleteCategory(CategoryData category) async {
     final result = await _categoryUsecase.deleteCategory(category.id);
 
-    result.fold(
+    await result.fold(
       (failure) {
         logger.e('Error deleting category: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (success) {
+      (success) async {
         logger.i('Category deleted successfully');
 
-        categoriesBloc.loadCategories();
+        await categoriesBloc.loadCategories();
       },
     );
   }
@@ -233,7 +233,7 @@ class CategoriesModelExcel {
           }
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Error exporting categories: $e');
       if (context.mounted) {
         CWSnackBar.snackBar(

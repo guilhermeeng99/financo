@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
@@ -30,8 +32,10 @@ class CreateAndEditCategoryPopUp extends HookWidget {
         createAndEditCategoryBloc.initializeWithCategoryData(args.category!);
       }
       if (args.parentCategoryId != null) {
-        createAndEditCategoryBloc.initializeSubCategoryFromCategory(
-          args.parentCategoryId!,
+        unawaited(
+          createAndEditCategoryBloc.initializeSubCategoryFromCategory(
+            args.parentCategoryId!,
+          ),
         );
       }
 
@@ -99,9 +103,12 @@ class _Type extends StatelessWidget {
         isExpanded: true,
         onChanged: (FinancialType? value) {
           if (value != null) {
-            createAndEditCategoryBloc..updateCategoryType(value)
-            ..updateParentCategoryId(null)
-            ..loadAvailableParentCategories();
+            createAndEditCategoryBloc
+              ..updateCategoryType(value)
+              ..updateParentCategoryId(null);
+            unawaited(
+              createAndEditCategoryBloc.loadAvailableParentCategories(),
+            );
           }
         },
         itemBuilder: (FinancialType type, BuildContext context) {

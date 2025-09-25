@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
@@ -5,7 +7,7 @@ CategoriesBloc get categoriesBloc => Modular.get<CategoriesBloc>();
 
 class CategoriesBloc extends GetxController {
   CategoriesBloc() {
-    loadCategories();
+    unawaited(loadCategories());
   }
   ICategoryUsecase get _categoryUsecase => Modular.get<ICategoryUsecase>();
 
@@ -31,7 +33,7 @@ class CategoriesBloc extends GetxController {
           logger.i('✅ Grouped categories loaded from database');
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Error loading categories: $e');
     }
   }

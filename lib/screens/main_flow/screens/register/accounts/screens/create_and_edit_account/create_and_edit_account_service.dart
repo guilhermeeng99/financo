@@ -23,9 +23,9 @@ class AccountOperationService {
 
     result.fold(
       (failure) => logger.e('Error creating account: ${failure.message}'),
-      (account) {
+      (account) async {
         logger.i('Account created successfully: ${account.name}');
-        accountsBloc.loadGroupedAccounts();
+        await accountsBloc.loadGroupedAccounts();
       },
     );
 
@@ -49,9 +49,9 @@ class AccountOperationService {
 
     result.fold(
       (failure) => logger.e('Error updating account: ${failure.message}'),
-      (account) {
+      (account) async {
         logger.i('Account updated successfully: ${account.name}');
-        accountsBloc.loadGroupedAccounts();
+        await accountsBloc.loadGroupedAccounts();
       },
     );
 

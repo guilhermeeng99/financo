@@ -58,7 +58,7 @@ class ImportCategoriesModel {
           );
         }
       }
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       logger
         ..e('Error generating Excel template: $e')
         ..e('Stack trace: $stackTrace');
@@ -151,7 +151,7 @@ class ImportCategoriesModel {
       await categoriesBloc.loadCategories();
 
       await AppSystemFiles.showImportResult(context, importResult);
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       logger
         ..e('Error importing categories from Excel: $e')
         ..e('Stack trace: $stackTrace');
@@ -407,7 +407,7 @@ class ImportCategoriesModel {
             )
             .firstOrNull;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Error finding existing parent category: $e');
       return null;
     }
@@ -437,7 +437,7 @@ class ImportCategoriesModel {
     } on ValidationException catch (e) {
       logger.e('Validation error creating parent category: ${e.message}');
       return Either.left(ValidationFailure(e.message));
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Unexpected error creating parent category: $e');
       return Either.left(DatabaseFailure('Unexpected error: $e'));
     }
@@ -473,7 +473,7 @@ class ImportCategoriesModel {
     } on ValidationException catch (e) {
       logger.e('Validation error creating subcategory: ${e.message}');
       return Either.left(ValidationFailure(e.message));
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('Unexpected error creating subcategory: $e');
       return Either.left(DatabaseFailure('Unexpected error: $e'));
     }

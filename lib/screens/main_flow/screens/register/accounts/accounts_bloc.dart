@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 
@@ -5,9 +7,9 @@ AccountsBloc get accountsBloc => Modular.get<AccountsBloc>();
 
 class AccountsBloc extends GetxController {
   AccountsBloc() {
-    loadGroupedAccounts();
+    unawaited(loadGroupedAccounts());
 
-    ever(showOnlyActiveAccounts, (_) => loadGroupedAccounts());
+    ever(showOnlyActiveAccounts, (_) => unawaited(loadGroupedAccounts()));
   }
   IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();
 
@@ -32,7 +34,7 @@ class AccountsBloc extends GetxController {
           logger.i('✅ Grouped accounts loaded from database');
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Error loading accounts: $e');
     }
   }

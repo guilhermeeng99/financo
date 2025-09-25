@@ -21,7 +21,7 @@ class TransactionSummaryService {
         logger.e('Error calculating transaction summary: ${failure.message}');
         return null;
       }, (TransactionSummary summary) => summary);
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Unexpected error calculating transaction summary: $e');
       return null;
     }

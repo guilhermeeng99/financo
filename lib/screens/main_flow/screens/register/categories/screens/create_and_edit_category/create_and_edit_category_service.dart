@@ -20,9 +20,9 @@ class CategoryOperationService {
 
     result.fold(
       (failure) => logger.e('Error creating category: ${failure.message}'),
-      (category) {
+      (category) async {
         logger.i('Category created successfully: ${category.name}');
-        categoriesBloc.loadCategories();
+        await categoriesBloc.loadCategories();
       },
     );
 
@@ -43,9 +43,9 @@ class CategoryOperationService {
 
     result.fold(
       (failure) => logger.e('Error updating category: ${failure.message}'),
-      (category) {
+      (category) async {
         logger.i('Category updated successfully: ${category.name}');
-        categoriesBloc.loadCategories();
+        await categoriesBloc.loadCategories();
       },
     );
 

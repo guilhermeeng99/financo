@@ -13,7 +13,7 @@ class LoadingModel {
       await Future.delayed(const Duration(milliseconds: 500));
 
       Modular.to.navigate(ro.mainFlow.home.route);
-    } catch (e) {
+    } on Exception catch (e) {
       hasError.value = true;
 
       logger.e('LoadingScreen Error: $e');

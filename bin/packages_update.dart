@@ -69,7 +69,7 @@ Future<void> _updatePubspec({
         );
       }
     }
-  } catch (e) {
+  } on Exception catch (e) {
     print('[PackageUpdate] Error updating pubspec.yaml in $path');
     print(e);
   }
@@ -82,10 +82,12 @@ Future<String> _removePubspecNumber({
   final indexOfDependencies = content.indexOf('dependencies:');
   final beforeDependencies = content.substring(0, indexOfDependencies);
   final afterDependencies = content.substring(indexOfDependencies);
-  var newContent =
-      afterDependencies.replaceAllMapped(RegExp(r'(\s*:\s*)\^(\d)'), (match) {
-    return '${match.group(1)}${match.group(2)}';
-  });
+  var newContent = afterDependencies.replaceAllMapped(
+    RegExp(r'(\s*:\s*)\^(\d)'),
+    (match) {
+      return '${match.group(1)}${match.group(2)}';
+    },
+  );
   if (newContent == afterDependencies) {
     return content;
   }

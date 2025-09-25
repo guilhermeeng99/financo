@@ -15,7 +15,7 @@ class AppIntializer {
 
       await _showAllCategories();
       await _showAllAccounts();
-    } catch (e) {
+    } on Exception catch (e) {
       logger.e('❌ Error during database initialization: $e');
     }
   }
