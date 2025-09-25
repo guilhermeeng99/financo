@@ -1,6 +1,7 @@
 export 'animated_button_widget.dart';
 export 'app_scroll_behaviour.dart';
 export 'card.dart';
+export 'column_chart.dart';
 export 'custom_calendar_dialog.dart';
 export 'divider.dart';
 export 'field_calendar.dart';

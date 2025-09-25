@@ -93,7 +93,10 @@
   "overview": {
     "cash_balance": "Saldo em caixa",
     "result_of_the_month": "Resultado do mês",
-    "projected_situation": "Situação projetada"
+    "projected_situation": "Situação projetada",
+    "expense_by_category": "Despesa por categoria",
+    "income_by_category": "Receita por categoria",
+    "credit_card": "Cartão de Crédito"
   },
   "past_and_future_releases": {
     "period_result": "Resultado do período",

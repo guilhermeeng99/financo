@@ -21,7 +21,6 @@ class MainFlowTopBarController {
 }
 
 enum SideBarItemType {
-  overview,
   financialMovement,
   pastReleases,
   futureReleases,
@@ -35,8 +34,6 @@ enum SideBarItemType {
 extension SideBarItemTypeExtension on SideBarItemType {
   String? get route {
     switch (this) {
-      case SideBarItemType.overview:
-        return ro.mainFlow.home.route;
       case SideBarItemType.financialMovement:
         return null;
       case SideBarItemType.futureReleases:
@@ -58,8 +55,6 @@ extension SideBarItemTypeExtension on SideBarItemType {
 
   String title(BuildContext context) {
     switch (this) {
-      case SideBarItemType.overview:
-        return context.t.navigation.overview;
       case SideBarItemType.financialMovement:
         return context.t.navigation.financial_movement;
       case SideBarItemType.futureReleases:
@@ -109,7 +104,6 @@ MainFlowSideBarController get mainFlowSideBarController =>
 
 class MainFlowSideBarController {
   final List<SideBarItem> sideBarItems = [
-    const SideBarItem(type: SideBarItemType.overview),
     const SideBarItem(
       type: SideBarItemType.financialMovement,
       children: [

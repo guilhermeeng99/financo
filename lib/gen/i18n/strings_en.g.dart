@@ -116,6 +116,15 @@ class TranslationsOverviewEn {
 
 	/// en: 'Projected situation'
 	String get projected_situation => 'Projected situation';
+
+	/// en: 'Expense by category'
+	String get expense_by_category => 'Expense by category';
+
+	/// en: 'Income by category'
+	String get income_by_category => 'Income by category';
+
+	/// en: 'Credit Card'
+	String get credit_card => 'Credit Card';
 }
 
 // Path: past_and_future_releases
@@ -827,6 +836,9 @@ extension on Translations {
 			case 'overview.cash_balance': return 'Cash balance';
 			case 'overview.result_of_the_month': return 'Result of the month';
 			case 'overview.projected_situation': return 'Projected situation';
+			case 'overview.expense_by_category': return 'Expense by category';
+			case 'overview.income_by_category': return 'Income by category';
+			case 'overview.credit_card': return 'Credit Card';
 			case 'past_and_future_releases.period_result': return 'Period result';
 			case 'past_and_future_releases.total_to_pay': return 'Total to pay';
 			case 'past_and_future_releases.total_to_receive': return 'Total to receive';

@@ -10,8 +10,8 @@ class CWHomeScreenAccountsResults extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       return HomeScreenContainer(
-        title:
-            '${context.t.overview.result_of_the_month} (${context.t.overview.projected_situation})',
+        title: context.t.overview.result_of_the_month,
+        subTitle: ' (${context.t.overview.projected_situation})',
         bottomChild: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           child: _ResultsItem(
@@ -24,7 +24,22 @@ class CWHomeScreenAccountsResults extends StatelessWidget {
         child: Column(
           spacing: 15,
           children: [
-            const _ColumnChart(),
+            CWColumnChart(
+              items: [
+                ColumnChartItem(
+                  title: context.t.common.labels.entries,
+                  value: homeBloc.totalEntries,
+                  color: Theme.of(context).customColors.income,
+                  index: 0,
+                ),
+                ColumnChartItem(
+                  title: context.t.common.labels.exits,
+                  value: homeBloc.totalExits,
+                  color: Theme.of(context).customColors.expense,
+                  index: 1,
+                ),
+              ],
+            ),
             Row(
               children: [
                 Container(
@@ -98,7 +113,7 @@ class _ResultsItem extends StatelessWidget {
               fontWeight: isBold ? FontWeight.bold : null,
             ),
           ),
-          _ContainerItem(
+          CWContainerAmoutValue(
             child: CWAmoutValue(
               value: value,
               fontSize: 14,
@@ -108,97 +123,5 @@ class _ResultsItem extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _ContainerItem extends StatelessWidget {
-  const _ContainerItem({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.centerRight,
-      width: 100,
-      child: child,
-    );
-  }
-}
-
-class _ColumnChart extends StatelessWidget {
-  const _ColumnChart();
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final barWidth = screenWidth / 8;
-
-    return Obx(() {
-      return SizedBox(
-        height: 200,
-        child: BarChart(
-          BarChartData(
-            alignment: BarChartAlignment.spaceEvenly,
-            maxY:
-                [
-                  homeBloc.totalEntries,
-                  homeBloc.totalExits,
-                ].reduce((a, b) => a.abs() > b.abs() ? a : b).abs() *
-                1.2,
-            barTouchData: const BarTouchData(enabled: false),
-            titlesData: FlTitlesData(
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (double value, TitleMeta meta) {
-                    switch (value.toInt()) {
-                      default:
-                        return const Text('');
-                    }
-                  },
-                  reservedSize: 30,
-                ),
-              ),
-              leftTitles: const AxisTitles(),
-              topTitles: const AxisTitles(),
-              rightTitles: const AxisTitles(),
-            ),
-            gridData: const FlGridData(show: false),
-            borderData: FlBorderData(show: false),
-            barGroups: [
-              BarChartGroupData(
-                x: 0,
-                barRods: [
-                  BarChartRodData(
-                    toY: homeBloc.totalEntries,
-                    color: Theme.of(context).customColors.income,
-                    width: barWidth,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(4),
-                      topRight: Radius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-              BarChartGroupData(
-                x: 1,
-                barRods: [
-                  BarChartRodData(
-                    toY: homeBloc.totalExits.abs(),
-                    color: Theme.of(context).customColors.expense,
-                    width: barWidth,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(4),
-                      topRight: Radius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    });
   }
 }

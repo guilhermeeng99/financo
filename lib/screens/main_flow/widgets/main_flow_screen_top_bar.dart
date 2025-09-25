@@ -12,15 +12,36 @@ class MainFlowScreenTopBar extends StatelessWidget {
       color: Theme.of(context).customColors.secondary,
       padding: const EdgeInsets.symmetric(horizontal: 25),
       child: Row(
+        spacing: 9,
         children: [
           _Item(mainFlowTopBarController.topBarItems[0]),
-          const Gap(9),
-          Text(context.t.navigation.overview),
-          const Gap(9),
-          const CWDivider(),
-          const Gap(12),
-          _Item(mainFlowTopBarController.topBarItems[1]),
+          const _Overview(),
         ],
+      ),
+    );
+  }
+}
+
+class _Overview extends StatelessWidget {
+  const _Overview();
+
+  @override
+  Widget build(BuildContext context) {
+    final item = mainFlowTopBarController.topBarItems[1];
+
+    return CWAnimatedScaleButtonWidget(
+      onTap: item.onTap,
+      child: ColoredBox(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            Text(context.t.navigation.overview),
+            const Gap(9),
+            const CWDivider(),
+            const Gap(12),
+            Icon(item.icon, size: 24),
+          ],
+        ),
       ),
     );
   }

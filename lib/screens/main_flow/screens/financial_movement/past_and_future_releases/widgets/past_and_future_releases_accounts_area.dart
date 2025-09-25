@@ -108,7 +108,7 @@ class _AccountItem extends StatelessWidget {
           style: const TextStyle(fontSize: 14),
         ),
         const Spacer(),
-        _ContainerItem(
+        CWContainerAmoutValue(
           child: CWAmoutValue(value: calculationResult.calculatedBalance),
         ),
       ],
@@ -132,7 +132,7 @@ class _AccountsTotal extends StatelessWidget {
             context.t.common.labels.total,
             style: const TextStyle(fontSize: 14),
           ),
-          _ContainerItem(
+          CWContainerAmoutValue(
             child: CWAmoutValue(
               value: totalBalance,
               fontWeight: FontWeight.bold,
@@ -140,21 +140,6 @@ class _AccountsTotal extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ContainerItem extends StatelessWidget {
-  const _ContainerItem({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.centerRight,
-      width: 100,
-      child: child,
     );
   }
 }

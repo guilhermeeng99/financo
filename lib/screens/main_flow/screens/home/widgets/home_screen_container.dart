@@ -5,12 +5,14 @@ class HomeScreenContainer extends StatelessWidget {
     required this.child,
     required this.bottomChild,
     required this.title,
+    this.subTitle,
     super.key,
   });
 
   final Widget child;
   final Widget bottomChild;
   final String title;
+  final String? subTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +24,19 @@ class HomeScreenContainer extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     title,
                     style: const TextStyle(
                       fontSize: 18,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  Text(
+                    subTitle ?? '',
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontStyle: FontStyle.italic,
                     ),
                   ),

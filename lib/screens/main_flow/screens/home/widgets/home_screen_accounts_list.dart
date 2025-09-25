@@ -26,13 +26,13 @@ class CWHomeScreenAccountsList extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: Text(
                   context.t.common.labels.confirmed(n: 1),
                   style: const TextStyle(fontSize: 14),
                 ),
               ),
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: Text(
                   context.t.common.labels.projected(n: 1),
                   style: const TextStyle(fontSize: 14),
@@ -73,13 +73,13 @@ class _Total extends StatelessWidget {
           Obx(
             () => Row(
               children: [
-                _ContainerItem(
+                CWContainerAmoutValue(
                   child: CWAmoutValue(
                     value: homeBloc.totalAllAccountsBalance.value,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                _ContainerItem(
+                CWContainerAmoutValue(
                   child: CWAmoutValue(
                     value: homeBloc.totalAllAccountsProjectedBalance.value,
                     fontWeight: FontWeight.bold,
@@ -125,10 +125,10 @@ class _AccountItem extends StatelessWidget {
         Obx(
           () => Row(
             children: [
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: CWAmoutValue(value: account.filteredBalance.value),
               ),
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: CWAmoutValue(
                   value: account.filteredProjectedBalance.value,
                 ),
@@ -137,21 +137,6 @@ class _AccountItem extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ContainerItem extends StatelessWidget {
-  const _ContainerItem({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.centerRight,
-      width: 100,
-      child: child,
     );
   }
 }

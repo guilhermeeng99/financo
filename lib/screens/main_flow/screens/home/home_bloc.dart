@@ -3,6 +3,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
+import 'package:financo/screens/main_flow/screens/home/home_service.dart';
 
 HomeBloc get homeBloc => Modular.get<HomeBloc>();
 
@@ -39,6 +40,14 @@ class HomeBloc extends GetxController {
   List<TransactionI> get filteredTransactions =>
       coreTransactionsBloc.getFilteredTransactions(enabledAccountIds);
 
+  Set<int> get allAccountIds =>
+      checkingAccounts.map((account) => account.account.id).toSet();
+
+  List<TransactionI> get allTransactionsWithoutTransfers => coreTransactionsBloc
+      .getFilteredTransactions(allAccountIds)
+      .where((transaction) => !transaction.t.isTransfer)
+      .toList();
+
   RxList<TransactionsAccount> get checkingAccounts =>
       coreAccountsBloc.checkingAccounts;
 
@@ -47,51 +56,6 @@ class HomeBloc extends GetxController {
 
   Rx<double> get totalAllAccountsProjectedBalance =>
       coreAccountsBloc.totalAllAccountsProjectedBalance;
-
-  double get totalIncome => _calculateTotalIncome(filteredTransactions);
-  double get totalExpense => _calculateTotalExpense(filteredTransactions);
-  double get totalTransfersIn =>
-      _calculateTotalTransfersIn(filteredTransactions);
-  double get totalTransfersOut =>
-      _calculateTotalTransfersOut(filteredTransactions);
-
-  double get totalEntries => totalIncome + totalTransfersIn;
-  double get totalExits => -(totalExpense + totalTransfersOut);
-  double get totalResult => totalEntries + totalExits;
-
-  double _calculateTotalIncome(List<TransactionI> transactions) {
-    return transactions
-        .where(
-          (transaction) =>
-              transaction.t.transactionType == FinancialType.income,
-        )
-        .fold(0, (sum, transaction) => sum + transaction.t.amount);
-  }
-
-  double _calculateTotalExpense(List<TransactionI> transactions) {
-    return -transactions
-        .where(
-          (transaction) =>
-              transaction.t.transactionType == FinancialType.expense,
-        )
-        .fold<double>(0, (sum, transaction) => sum + transaction.t.amount);
-  }
-
-  double _calculateTotalTransfersIn(List<TransactionI> transactions) {
-    return transactions
-        .where(
-          (transaction) => transaction.t.isTransfer && transaction.t.amount > 0,
-        )
-        .fold(0, (sum, transaction) => sum + transaction.t.amount);
-  }
-
-  double _calculateTotalTransfersOut(List<TransactionI> transactions) {
-    return transactions
-        .where(
-          (transaction) => transaction.t.isTransfer && transaction.t.amount < 0,
-        )
-        .fold(0, (sum, transaction) => sum + transaction.t.amount.abs());
-  }
 
   bool get areAllAccountsEnabled {
     return checkingAccounts.every((account) => account.isEnabled.value);
@@ -102,5 +66,34 @@ class HomeBloc extends GetxController {
     for (final account in checkingAccounts) {
       account.isEnabled.value = shouldEnable;
     }
+  }
+
+  void enableAllAccounts() {
+    coreAccountsBloc.enableAllAccounts();
+  }
+
+  double get totalEntries => HomeCalculationsService.calculateTotalIncome(
+    allTransactionsWithoutTransfers,
+  );
+  double get totalExits => HomeCalculationsService.calculateTotalExpense(
+    allTransactionsWithoutTransfers,
+  );
+
+  double get totalResult => totalEntries + totalExits;
+
+  List<MapEntry<String, double>> getSortedTransactionsByCategory(
+    FinancialType financialType,
+  ) {
+    return HomeCalculationsService.getSortedTransactionsByCategory(
+      financialType,
+      allTransactionsWithoutTransfers,
+    );
+  }
+
+  double getTotalByType(FinancialType financialType) {
+    return HomeCalculationsService.getTotalByType(
+      financialType,
+      allTransactionsWithoutTransfers,
+    );
   }
 }

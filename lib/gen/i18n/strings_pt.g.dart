@@ -89,6 +89,9 @@ class _TranslationsOverviewPt implements TranslationsOverviewEn {
 	@override String get cash_balance => 'Saldo em caixa';
 	@override String get result_of_the_month => 'Resultado do mês';
 	@override String get projected_situation => 'Situação projetada';
+	@override String get expense_by_category => 'Despesa por categoria';
+	@override String get income_by_category => 'Receita por categoria';
+	@override String get credit_card => 'Cartão de Crédito';
 }
 
 // Path: past_and_future_releases
@@ -551,6 +554,9 @@ extension on TranslationsPt {
 			case 'overview.cash_balance': return 'Saldo em caixa';
 			case 'overview.result_of_the_month': return 'Resultado do mês';
 			case 'overview.projected_situation': return 'Situação projetada';
+			case 'overview.expense_by_category': return 'Despesa por categoria';
+			case 'overview.income_by_category': return 'Receita por categoria';
+			case 'overview.credit_card': return 'Cartão de Crédito';
 			case 'past_and_future_releases.period_result': return 'Resultado do período';
 			case 'past_and_future_releases.total_to_pay': return 'Total a pagar';
 			case 'past_and_future_releases.total_to_receive': return 'Total a receber';

@@ -139,7 +139,7 @@ class _ResultsItem extends StatelessWidget {
               fontWeight: isBold ? FontWeight.bold : null,
             ),
           ),
-          _ContainerItem(
+          CWContainerAmoutValue(
             child: CWAmoutValue(
               value: value,
               fontSize: 14,
@@ -148,21 +148,6 @@ class _ResultsItem extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ContainerItem extends StatelessWidget {
-  const _ContainerItem({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.centerRight,
-      width: 100,
-      child: child,
     );
   }
 }

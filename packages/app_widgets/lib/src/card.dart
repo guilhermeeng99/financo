@@ -112,3 +112,21 @@ class CWAmoutValue extends StatelessWidget {
     );
   }
 }
+
+class CWContainerAmoutValue extends StatelessWidget {
+  const CWContainerAmoutValue({
+    required this.child,
+    super.key,
+  });
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      width: 100,
+      child: child,
+    );
+  }
+}

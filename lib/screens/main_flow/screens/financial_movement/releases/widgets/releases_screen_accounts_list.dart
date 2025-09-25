@@ -13,13 +13,13 @@ class CWAReleasesScreenAccountsList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            _ContainerItem(
+            CWContainerAmoutValue(
               child: Text(
                 context.t.common.labels.confirmed(n: 1),
                 style: const TextStyle(fontSize: 14),
               ),
             ),
-            _ContainerItem(
+            CWContainerAmoutValue(
               child: Text(
                 context.t.common.labels.projected(n: 1),
                 style: const TextStyle(fontSize: 14),
@@ -56,7 +56,7 @@ class CWAReleasesScreenAccountsList extends StatelessWidget {
                     Obx(
                       () => Row(
                         children: [
-                          _ContainerItem(
+                          CWContainerAmoutValue(
                             child: CWAmoutValue(
                               value: coreAccountsBloc
                                   .totalAllAccountsBalance
@@ -64,7 +64,7 @@ class CWAReleasesScreenAccountsList extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          _ContainerItem(
+                          CWContainerAmoutValue(
                             child: CWAmoutValue(
                               value: coreAccountsBloc
                                   .totalAllAccountsProjectedBalance
@@ -110,10 +110,10 @@ class _AccountItem extends StatelessWidget {
         Obx(
           () => Row(
             children: [
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: CWAmoutValue(value: account.filteredBalance.value),
               ),
-              _ContainerItem(
+              CWContainerAmoutValue(
                 child: CWAmoutValue(
                   value: account.filteredProjectedBalance.value,
                 ),
@@ -122,21 +122,6 @@ class _AccountItem extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ContainerItem extends StatelessWidget {
-  const _ContainerItem({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.centerRight,
-      width: 100,
-      child: child,
     );
   }
 }

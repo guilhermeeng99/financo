@@ -93,7 +93,10 @@
   "overview": {
     "cash_balance": "Cash balance",
     "result_of_the_month": "Result of the month",
-    "projected_situation": "Projected situation"
+    "projected_situation": "Projected situation",
+    "expense_by_category": "Expense by category",
+    "income_by_category": "Income by category",
+    "credit_card": "Credit Card"
   },
   "past_and_future_releases": {
     "period_result": "Period result",
