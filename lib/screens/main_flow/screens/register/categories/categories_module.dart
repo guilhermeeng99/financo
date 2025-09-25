@@ -1,8 +1,7 @@
 import 'package:app_core/app_core.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_bloc.dart';
-
-import 'categories_model.dart';
-import 'categories_screen.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/categories_model.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/categories_screen.dart';
 
 class CategoriesModule extends Module {
   @override

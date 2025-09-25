@@ -2,15 +2,14 @@ import 'package:app_core/app_core.dart';
 import 'package:financo/app/app_routes.dart';
 import 'package:financo/screens/main_flow/main_flow_bloc.dart';
 import 'package:financo/screens/main_flow/main_flow_item.dart';
+import 'package:financo/screens/main_flow/main_flow_model.dart';
+import 'package:financo/screens/main_flow/main_flow_screen.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_module.dart';
 import 'package:financo/screens/main_flow/screens/home/home_module.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/accounts_module.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_module.dart';
-
-import 'main_flow_model.dart';
-import 'main_flow_screen.dart';
 
 class MainFlowModule extends Module {
   @override

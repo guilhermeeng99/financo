@@ -1,6 +1,5 @@
 import 'package:app_core/app_core.dart';
-
-import 'loading_screen.dart';
+import 'package:financo/screens/loading/loading_screen.dart';
 
 class LoadingModule extends Module {
   @override

@@ -1,8 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_form_types.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_validaton_exceptions.dart';
-
-import 'account_form_types.dart';
 
 class AccountFormValidator {
   static ValidationResult<CreateAccountParams, AccountFormErrors>
@@ -63,14 +62,14 @@ class AccountFormValidator {
     } on Exception catch (e) {
       final errorMessage = AccountValidationException.getMessage(e, context);
       errors = errors.copyWith(name: errorMessage);
-        }
+    }
 
     try {
       balanceValidation = Balance.create(formData.initialBalance);
     } on Exception catch (e) {
       final errorMessage = AccountValidationException.getMessage(e, context);
       errors = errors.copyWith(initialBalance: errorMessage);
-        }
+    }
 
     return _FieldValidationResults(
       nameValidation: nameValidation,

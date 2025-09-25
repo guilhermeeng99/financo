@@ -2,9 +2,8 @@ import 'package:app_core/app_core.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_module.dart';
-
-import 'account_statement_bloc.dart';
-import 'account_statement_screen.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_screen.dart';
 
 class AccountStatementModule extends Module {
   @override

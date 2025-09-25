@@ -1,10 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-
-import 'create_and_edit_category_bloc.dart';
-import 'create_and_edit_category_service.dart';
-import 'validation/category_form_types.dart';
-import 'validation/category_form_validator.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/create_and_edit_category_bloc.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/create_and_edit_category_service.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_form_types.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_form_validator.dart';
 
 CreateAndEditCategoryModel get createAndEditCategoryModel =>
     Modular.get<CreateAndEditCategoryModel>();

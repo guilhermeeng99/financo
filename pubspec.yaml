@@ -10,6 +10,12 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  app_core:
+    path: packages/app_core
+  app_database:
+    path: packages/app_database
+  app_widgets:
+    path: packages/app_widgets
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -18,8 +24,8 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^6.0.0
-  melos: ^7.1.1
   intl: ^0.20.2
+  melos: ^7.1.1
   slang: ^4.8.1
   very_good_analysis: ^10.0.0
 

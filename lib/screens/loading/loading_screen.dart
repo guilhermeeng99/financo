@@ -4,7 +4,7 @@ import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_constants.dart';
 import 'package:financo/app/app_theme.dart';
 
-import 'loading_model.dart';
+import 'package:financo/screens/loading/loading_model.dart';
 
 class LoadingScreen extends HookWidget {
   const LoadingScreen({super.key});

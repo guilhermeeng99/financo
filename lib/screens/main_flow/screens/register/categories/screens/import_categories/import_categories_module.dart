@@ -1,6 +1,5 @@
 import 'package:app_core/app_core.dart';
-
-import 'import_categories_model.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/import_categories/import_categories_model.dart';
 
 class ImportCategoriesModule extends Module {
   @override

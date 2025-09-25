@@ -1,8 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/accounts_bloc.dart';
-
-import 'validation/account_form_types.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_form_types.dart';
 
 class AccountOperationService {
   IAccountUsecase get _accountUsecase => Modular.get<IAccountUsecase>();

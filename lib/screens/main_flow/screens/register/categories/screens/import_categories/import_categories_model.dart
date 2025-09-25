@@ -2,6 +2,7 @@
 
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+// ignore: depend_on_referenced_packages
 import 'package:excel/excel.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_bloc.dart';
 

@@ -1,10 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-
-import 'create_and_edit_account_bloc.dart';
-import 'create_and_edit_account_service.dart';
-import 'validation/account_form_types.dart';
-import 'validation/account_form_validator.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/create_and_edit_account_service.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_form_types.dart';
+import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_form_validator.dart';
 
 CreateAndEditAccountModel get createAndEditAccountModel =>
     Modular.get<CreateAndEditAccountModel>();

@@ -1,7 +1,6 @@
 import 'package:app_core/app_core.dart';
-
-import 'transactions_bloc.dart';
-import 'transactions_model.dart';
+import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
+import 'package:financo/screens/main_flow/screens/core/transactions/transactions_model.dart';
 
 class CoreTransactionsModule extends Module {
   @override

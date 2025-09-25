@@ -1,12 +1,11 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_bloc.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_types.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/widgets/past_and_future_releases_accounts_area.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/widgets/past_and_future_releases_accounts_results_area.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/widgets/past_and_future_releases_financial_type_filter_area.dart';
-
-import 'past_and_future_releases_bloc.dart';
 
 class PastAndFutureReleasesScreen extends StatelessWidget {
   const PastAndFutureReleasesScreen({required this.type, super.key});

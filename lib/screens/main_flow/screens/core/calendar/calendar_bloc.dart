@@ -1,7 +1,7 @@
 import 'package:app_widgets/app_widgets.dart';
+// ignore: depend_on_referenced_packages
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-
-import 'calendar_filter.dart';
+import 'package:financo/screens/main_flow/screens/core/calendar/calendar_filter.dart';
 
 CoreCalendarBloc get coreCalendarBloc => Modular.get<CoreCalendarBloc>();
 

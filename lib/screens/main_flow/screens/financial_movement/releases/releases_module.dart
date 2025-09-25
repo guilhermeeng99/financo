@@ -2,9 +2,8 @@ import 'package:app_core/app_core.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/index.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/index.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_module.dart';
-
-import 'releases_bloc.dart';
-import 'releases_screen.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_bloc.dart';
+import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_screen.dart';
 
 class ReleasesModule extends Module {
   @override

@@ -1,8 +1,7 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_form_types.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_validation_exceptions.dart';
-
-import 'category_form_types.dart';
 
 class CategoryFormValidator {
   static ValidationResult<CreateCategoryParams, CategoryFormErrors>

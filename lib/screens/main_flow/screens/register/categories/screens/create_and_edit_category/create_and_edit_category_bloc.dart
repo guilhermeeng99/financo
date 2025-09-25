@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-
-import 'validation/category_form_types.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/validation/category_form_types.dart';
 
 CreateAndEditCategoryBloc get createAndEditCategoryBloc =>
     Modular.get<CreateAndEditCategoryBloc>();
