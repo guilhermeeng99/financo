@@ -91,7 +91,7 @@ class SideBarItem {
   });
 
   final SideBarItemType type;
-  final String? icon;
+  final IconData? icon;
   final List<SideBarItem> children;
   final int level;
 
@@ -111,19 +111,47 @@ class MainFlowSideBarController {
   final List<SideBarItem> sideBarItems = [
     const SideBarItem(
       type: SideBarItemType.financialMovement,
+      icon: Icons.paid,
       children: [
-        SideBarItem(type: SideBarItemType.releases, level: 1),
-        SideBarItem(type: SideBarItemType.futureReleases, level: 1),
-        SideBarItem(type: SideBarItemType.pastReleases, level: 1),
+        SideBarItem(
+          type: SideBarItemType.releases,
+          icon: Icons.timeline,
+          level: 1,
+        ),
+        SideBarItem(
+          type: SideBarItemType.pastReleases,
+          icon: Icons.graphic_eq,
+          level: 1,
+        ),
+        SideBarItem(
+          type: SideBarItemType.futureReleases,
+          icon: Icons.scatter_plot,
+          level: 1,
+        ),
       ],
     ),
-    const SideBarItem(type: SideBarItemType.accountStatement),
-    const SideBarItem(type: SideBarItemType.creditCard),
+    const SideBarItem(
+      type: SideBarItemType.accountStatement,
+      icon: Icons.account_balance,
+    ),
+    const SideBarItem(
+      type: SideBarItemType.creditCard,
+      icon: Icons.credit_card,
+    ),
     const SideBarItem(
       type: SideBarItemType.registrations,
+      icon: Icons.label,
       children: [
-        SideBarItem(type: SideBarItemType.categories, level: 1),
-        SideBarItem(type: SideBarItemType.accounts, level: 1),
+        SideBarItem(
+          type: SideBarItemType.categories,
+          icon: Icons.sell,
+          level: 1,
+        ),
+        SideBarItem(
+          type: SideBarItemType.accounts,
+          icon: Icons.wallet,
+          level: 1,
+        ),
       ],
     ),
   ];

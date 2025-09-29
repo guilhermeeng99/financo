@@ -23,13 +23,9 @@ dependencies:
   slang_flutter: ^4.8.0
 
 dev_dependencies:
-  flutter_lints: ^6.0.0
   intl: ^0.20.2
   melos: ^7.1.1
   slang: ^4.8.1
-  very_good_analysis: ^10.0.0
-
-dependency_overrides:
   very_good_analysis: ^10.0.0
 
 workspace:

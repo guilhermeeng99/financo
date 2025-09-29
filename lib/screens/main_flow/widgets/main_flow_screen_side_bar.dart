@@ -67,24 +67,16 @@ class _Item extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (item.isParent) ...[
-                const Icon(Icons.label, size: 20),
-                const Gap(10),
-              ],
               if (item.level > 0) const Gap(15),
               if (item.icon != null) ...[
-                if (item.isParent || item.level > 0) const Gap(8),
-                SvgPicture.asset(
-                  item.icon!,
-                  width: 16,
-                  height: 16,
-                  colorFilter: isSelected
-                      ? ColorFilter.mode(
-                          Theme.of(context).customColors.button02,
-                          BlendMode.srcIn,
-                        )
+                Icon(
+                  item.icon,
+                  size: 20,
+                  color: isSelected
+                      ? Theme.of(context).customColors.button02
                       : null,
                 ),
+                const Gap(10),
               ],
               Text(
                 item.title(context),

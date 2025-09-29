@@ -6,6 +6,8 @@ import 'package:financo/screens/main_flow/screens/home/widgets/home_screen_conta
 class CWHomeScreenAccountsResults extends StatelessWidget {
   const CWHomeScreenAccountsResults({super.key});
 
+  bool get isEmpty => homeBloc.allTransactionsWithoutTransfers.isEmpty;
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -21,65 +23,72 @@ class CWHomeScreenAccountsResults extends StatelessWidget {
             isBold: true,
           ),
         ),
-        child: Column(
-          spacing: 15,
-          children: [
-            CWColumnChart(
-              items: [
-                ColumnChartItem(
-                  title: context.t.common.labels.entries,
-                  value: homeBloc.totalEntries,
-                  color: Theme.of(context).customColors.income,
-                  index: 0,
+        child: isEmpty
+            ? Center(
+                child: Text(
+                  context.t.transactions.no_transactions_found,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
-                ColumnChartItem(
-                  title: context.t.common.labels.exits,
-                  value: homeBloc.totalExits,
-                  color: Theme.of(context).customColors.expense,
-                  index: 1,
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).customColors.income,
-                    shape: BoxShape.circle,
+              )
+            : Column(
+                spacing: 15,
+                children: [
+                  CWColumnChart(
+                    items: [
+                      ColumnChartItem(
+                        title: context.t.common.labels.entries,
+                        value: homeBloc.totalEntries,
+                        color: Theme.of(context).customColors.income,
+                        index: 0,
+                      ),
+                      ColumnChartItem(
+                        title: context.t.common.labels.exits,
+                        value: homeBloc.totalExits,
+                        color: Theme.of(context).customColors.expense,
+                        index: 1,
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: _ResultsItem(
-                    title: context.t.common.labels.entries,
-                    value: homeBloc.totalEntries,
-                    padding: const EdgeInsets.only(left: 10),
+                  Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).customColors.income,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Expanded(
+                        child: _ResultsItem(
+                          title: context.t.common.labels.entries,
+                          value: homeBloc.totalEntries,
+                          padding: const EdgeInsets.only(left: 10),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).customColors.expense,
-                    shape: BoxShape.circle,
+                  Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).customColors.expense,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Expanded(
+                        child: _ResultsItem(
+                          title: context.t.common.labels.exits,
+                          value: homeBloc.totalExits,
+                          padding: const EdgeInsets.only(left: 10),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Expanded(
-                  child: _ResultsItem(
-                    title: context.t.common.labels.exits,
-                    value: homeBloc.totalExits,
-                    padding: const EdgeInsets.only(left: 10),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                ],
+              ),
       );
     });
   }
