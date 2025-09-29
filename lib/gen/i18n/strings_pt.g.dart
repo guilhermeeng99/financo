@@ -60,6 +60,7 @@ class _TranslationsNavigationPt implements TranslationsNavigationEn {
 	@override String get paid_and_received => 'Pagas e recebidas';
 	@override String get to_pay_and_to_receive => 'A pagar e a receber';
 	@override String get account_statement => 'Extrato de conta';
+	@override String get credit_card => 'Cartão de Crédito';
 	@override String get releases => 'Lançamentos';
 	@override String get register => 'Registro';
 	@override String get categories => 'Categorias';
@@ -244,6 +245,10 @@ class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
 	@override String get subcategory => 'Subcategoria';
 	@override String get transactions => 'Transações';
 	@override String get balance => 'Saldo';
+	@override String get credit_limit => 'Limite de Crédito';
+	@override String get bill_closing_day => 'Dia de Fechamento';
+	@override String get first_due_date => 'Primeiro Vencimento';
+	@override String get payment_account => 'Conta de Pagamento';
 	@override String get available_balance => 'Saldo Disponível';
 	@override String get initial_balance_date => 'Data do Saldo Inicial';
 	@override String get total => 'Total';
@@ -333,6 +338,7 @@ class _TranslationsAccountsValidationPt implements TranslationsAccountsValidatio
 	@override String get balance_invalid_number => 'O saldo deve ser um número válido';
 	@override String balance_min_value_number({required Object number}) => 'O saldo não pode ser menor que ${number}';
 	@override String balance_max_value_number({required Object number}) => 'O saldo não pode ser maior que ${number}';
+	@override String get bill_closing_day_invalid => 'O dia de fechamento da fatura deve estar entre 1 e 31';
 }
 
 // Path: categories.validation
@@ -477,6 +483,7 @@ extension on TranslationsPt {
 			case 'navigation.paid_and_received': return 'Pagas e recebidas';
 			case 'navigation.to_pay_and_to_receive': return 'A pagar e a receber';
 			case 'navigation.account_statement': return 'Extrato de conta';
+			case 'navigation.credit_card': return 'Cartão de Crédito';
 			case 'navigation.releases': return 'Lançamentos';
 			case 'navigation.register': return 'Registro';
 			case 'navigation.categories': return 'Categorias';
@@ -511,6 +518,10 @@ extension on TranslationsPt {
 			case 'common.labels.subcategory': return 'Subcategoria';
 			case 'common.labels.transactions': return 'Transações';
 			case 'common.labels.balance': return 'Saldo';
+			case 'common.labels.credit_limit': return 'Limite de Crédito';
+			case 'common.labels.bill_closing_day': return 'Dia de Fechamento';
+			case 'common.labels.first_due_date': return 'Primeiro Vencimento';
+			case 'common.labels.payment_account': return 'Conta de Pagamento';
 			case 'common.labels.available_balance': return 'Saldo Disponível';
 			case 'common.labels.initial_balance_date': return 'Data do Saldo Inicial';
 			case 'common.labels.total': return 'Total';
@@ -581,6 +592,7 @@ extension on TranslationsPt {
 			case 'accounts.validation.balance_invalid_number': return 'O saldo deve ser um número válido';
 			case 'accounts.validation.balance_min_value_number': return ({required Object number}) => 'O saldo não pode ser menor que ${number}';
 			case 'accounts.validation.balance_max_value_number': return ({required Object number}) => 'O saldo não pode ser maior que ${number}';
+			case 'accounts.validation.bill_closing_day_invalid': return 'O dia de fechamento da fatura deve estar entre 1 e 31';
 			case 'categories.new_category': return 'Nova Categoria';
 			case 'categories.edit_category': return 'Editar Categoria';
 			case 'categories.create_sub_category': return 'Criar Subcategoria';

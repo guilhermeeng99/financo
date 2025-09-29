@@ -1,5 +1,5 @@
 import 'package:app_core/app_core.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_model.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/import_transactions/import_transactions_model.dart';
 
 class ImportTransactionsModule extends Module {
   @override

@@ -7,7 +7,6 @@ import '../../../core/financial_type.dart';
 import '../../../database/database_manager.dart';
 import 'i_transaction_repository.dart';
 
-/// Mixin containing balance calculation operations for transactions
 mixin TransactionBalanceOperations {
   DatabaseManager get database;
 
@@ -72,7 +71,9 @@ mixin TransactionBalanceOperations {
         (sum, transaction) => sum + transaction.amount,
       );
 
-      return Either.right(account.initialBalance + totalTransactions);
+      // For credit cards, there's no initial balance, so we use 0 as base
+      final initialBalance = account.initialBalance ?? 0.0;
+      return Either.right(initialBalance + totalTransactions);
     } catch (e) {
       return Either.left(
         DatabaseFailure('Error getting account balance for period: $e'),
@@ -95,7 +96,8 @@ mixin TransactionBalanceOperations {
       final accounts = await accountsQuery.get();
 
       for (final account in accounts) {
-        balances[account.id] = account.initialBalance;
+        // For credit cards, there's no initial balance, so we use 0 as base
+        balances[account.id] = account.initialBalance ?? 0.0;
       }
 
       // Build query based on whether to include only paid transactions or all

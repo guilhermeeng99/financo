@@ -21,6 +21,15 @@ mixin AccountQueryUsecaseOperations {
     );
   }
 
+  Future<Either<Failure, List<AccountData>>> getCreditCardAccounts({
+    bool onlyActive = true,
+  }) async {
+    return accountRepository.getAccountsByType(
+      AccountType.creditCard,
+      onlyActive: onlyActive,
+    );
+  }
+
   Future<Either<Failure, AccountData?>> getAccountById(int id) async {
     try {
       return await accountRepository.getAccountById(id);

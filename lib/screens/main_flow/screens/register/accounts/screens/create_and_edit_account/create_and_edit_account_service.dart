@@ -11,18 +11,34 @@ class AccountOperationService {
     AccountFormData formData,
     BuildContext context,
   ) async {
-    final result = await _accountUsecase.createAccount(
-      name: params.name,
-      accountType: params.accountType,
-      initialBalance: params.initialBalance,
-      currencyType: params.currencyType,
-      iconType: params.iconType,
-      initDate: params.initDate,
-    );
+    final Either<Failure, AccountData> result;
+
+    switch (params.accountType) {
+      case AccountType.checking:
+        result = await _accountUsecase.createStandardAccount(
+          name: params.name,
+          initialBalance: params.initialBalance,
+          currencyType: params.currencyType,
+          iconType: params.iconType,
+          initDate: params.initDate,
+        );
+      case AccountType.creditCard:
+        result = await _accountUsecase.createCreditCardAccount(
+          name: params.name,
+          creditLimit: CreditLimit.create(formData.creditLimit!),
+          firstBillDueDate: formData.firstBillDueDate!,
+          billClosingDay: BillClosingDay.create(formData.billClosingDay),
+          paymentAccountId: formData.paymentAccountId!,
+          currencyType: params.currencyType,
+          iconType: params.iconType,
+          initDate: params.initDate,
+        );
+    }
 
     result.fold(
-      (failure) => logger.e('Error creating account: ${failure.message}'),
-      (account) async {
+      (Failure failure) =>
+          logger.e('Error creating account: ${failure.message}'),
+      (AccountData account) async {
         logger.i('Account created successfully: ${account.name}');
         await accountsBloc.loadGroupedAccounts();
       },
@@ -36,19 +52,36 @@ class AccountOperationService {
     AccountFormData formData,
     BuildContext context,
   ) async {
-    final result = await _accountUsecase.updateAccount(
-      id: params.id,
-      name: params.name,
-      accountType: params.accountType,
-      initialBalance: params.initialBalance,
-      currencyType: params.currencyType,
-      iconType: params.iconType,
-      initDate: params.initDate,
-    );
+    final Either<Failure, AccountData> result;
+
+    switch (params.accountType) {
+      case AccountType.checking:
+        result = await _accountUsecase.updateStandardAccount(
+          id: params.id,
+          name: params.name,
+          initialBalance: params.initialBalance,
+          currencyType: params.currencyType,
+          iconType: params.iconType,
+          initDate: params.initDate,
+        );
+      case AccountType.creditCard:
+        result = await _accountUsecase.updateCreditCardAccount(
+          id: params.id,
+          name: params.name,
+          creditLimit: params.creditLimit,
+          firstBillDueDate: params.firstBillDueDate,
+          billClosingDay: params.billClosingDay,
+          paymentAccountId: params.paymentAccountId,
+          currencyType: params.currencyType,
+          iconType: params.iconType,
+          initDate: params.initDate,
+        );
+    }
 
     result.fold(
-      (failure) => logger.e('Error updating account: ${failure.message}'),
-      (account) async {
+      (Failure failure) =>
+          logger.e('Error updating account: ${failure.message}'),
+      (AccountData account) async {
         logger.i('Account updated successfully: ${account.name}');
         await accountsBloc.loadGroupedAccounts();
       },

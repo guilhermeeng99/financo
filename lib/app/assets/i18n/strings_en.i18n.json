@@ -5,6 +5,7 @@
     "paid_and_received": "Paid and received",
     "to_pay_and_to_receive": "To pay and to receive",
     "account_statement": "Account Statement",
+    "credit_card": "Credit Card",
     "releases": "Releases",
     "register": "Register",
     "categories": "Categories",
@@ -44,6 +45,10 @@
       "subcategory": "Subcategory",
       "transactions": "Transactions",
       "balance": "Balance",
+      "credit_limit": "Credit Limit",
+      "bill_closing_day": "Bill Closing Day",
+      "first_due_date": "First Due Date",
+      "payment_account": "Payment Account",
       "available_balance": "Available Balance",
       "initial_balance_date": "Initial Balance Date",
       "total": "Total",
@@ -127,7 +132,8 @@
       "currency_code_format": "Currency code must contain only capital letters",
       "balance_invalid_number": "Balance must be a valid number",
       "balance_min_value_number": "Balance cannot be less than $number",
-      "balance_max_value_number": "Balance cannot be greater than $number"
+      "balance_max_value_number": "Balance cannot be greater than $number",
+      "bill_closing_day_invalid": "Bill closing day must be between 1 and 31"
     }
   },
   "categories": {

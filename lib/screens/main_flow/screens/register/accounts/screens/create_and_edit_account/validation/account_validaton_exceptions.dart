@@ -41,6 +41,15 @@ class AccountValidationException {
           number: ex.maxValue,
         );
 
+      case PaymentAccountRequiredException _:
+        return t.transactions.validation.account_must_be_selected;
+
+      case BillClosingDayInvalidException _:
+        return t.accounts.validation.bill_closing_day_invalid;
+
+      case final ArgumentError ex:
+        return ex.message?.toString() ?? ex.toString();
+
       case final ValidationException ex:
         return ex.message;
 

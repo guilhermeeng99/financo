@@ -5,11 +5,11 @@ import 'package:app_widgets/app_widgets.dart';
 // ignore: depend_on_referenced_packages
 import 'package:excel/excel.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_module.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_module.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_screen.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/create_and_edit_transaction_bloc.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/create_and_edit_transaction_module.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/create_and_edit_transaction_screen.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/import_transactions/import_transactions_module.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/import_transactions/import_transactions_screen.dart';
 
 TransactionsModel get transactionsModel => Modular.get<TransactionsModel>();
 

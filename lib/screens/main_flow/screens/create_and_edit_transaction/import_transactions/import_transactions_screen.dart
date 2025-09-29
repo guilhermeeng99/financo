@@ -1,6 +1,6 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/import_transactions/import_transactions_model.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/import_transactions/import_transactions_model.dart';
 
 class ImportTransactionsPopUp extends StatelessWidget {
   const ImportTransactionsPopUp({super.key});

@@ -73,3 +73,41 @@ class Balance {
   factory Balance.zero() => Balance._(0);
   final double value;
 }
+
+class CreditLimit {
+  CreditLimit._(this.value);
+
+  factory CreditLimit.create(double value) {
+    const maxLimit = 999999999.0;
+
+    if (value.isNaN || value.isInfinite) {
+      throw const InvalidNumberException();
+    }
+
+    if (value <= 0) {
+      throw const NumberTooLowException(0.01);
+    }
+
+    if (value > maxLimit) {
+      throw const NumberTooHighException(maxLimit);
+    }
+
+    return CreditLimit._(value);
+  }
+
+  final double value;
+}
+
+class BillClosingDay {
+  BillClosingDay._(this.value);
+
+  factory BillClosingDay.create(int day) {
+    if (day < 1 || day > 31) {
+      throw const BillClosingDayInvalidException();
+    }
+
+    return BillClosingDay._(day);
+  }
+
+  final int value;
+}

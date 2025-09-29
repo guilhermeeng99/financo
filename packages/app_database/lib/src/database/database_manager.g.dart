@@ -60,10 +60,9 @@ class $AccountsTable extends Accounts
   late final GeneratedColumn<double> initialBalance = GeneratedColumn<double>(
     'initial_balance',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0),
   );
   @override
   late final GeneratedColumnWithTypeConverter<CurrencyType, String>
@@ -101,6 +100,57 @@ class $AccountsTable extends Accounts
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
+  static const VerificationMeta _creditLimitMeta = const VerificationMeta(
+    'creditLimit',
+  );
+  @override
+  late final GeneratedColumn<double> creditLimit = GeneratedColumn<double>(
+    'credit_limit',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _firstBillDueDateMeta = const VerificationMeta(
+    'firstBillDueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstBillDueDate =
+      GeneratedColumn<DateTime>(
+        'first_bill_due_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _billClosingDayMeta = const VerificationMeta(
+    'billClosingDay',
+  );
+  @override
+  late final GeneratedColumn<int> billClosingDay = GeneratedColumn<int>(
+    'bill_closing_day',
+    aliasedName,
+    true,
+    check: () => const CustomExpression(
+      'bill_closing_day >= 1 AND bill_closing_day <= 31',
+    ),
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paymentAccountIdMeta = const VerificationMeta(
+    'paymentAccountId',
+  );
+  @override
+  late final GeneratedColumn<int> paymentAccountId = GeneratedColumn<int>(
+    'payment_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (id)',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -111,6 +161,10 @@ class $AccountsTable extends Accounts
     currencyType,
     isActive,
     initDate,
+    creditLimit,
+    firstBillDueDate,
+    billClosingDay,
+    paymentAccountId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -156,6 +210,42 @@ class $AccountsTable extends Accounts
         initDate.isAcceptableOrUnknown(data['init_date']!, _initDateMeta),
       );
     }
+    if (data.containsKey('credit_limit')) {
+      context.handle(
+        _creditLimitMeta,
+        creditLimit.isAcceptableOrUnknown(
+          data['credit_limit']!,
+          _creditLimitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('first_bill_due_date')) {
+      context.handle(
+        _firstBillDueDateMeta,
+        firstBillDueDate.isAcceptableOrUnknown(
+          data['first_bill_due_date']!,
+          _firstBillDueDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bill_closing_day')) {
+      context.handle(
+        _billClosingDayMeta,
+        billClosingDay.isAcceptableOrUnknown(
+          data['bill_closing_day']!,
+          _billClosingDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('payment_account_id')) {
+      context.handle(
+        _paymentAccountIdMeta,
+        paymentAccountId.isAcceptableOrUnknown(
+          data['payment_account_id']!,
+          _paymentAccountIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -165,16 +255,26 @@ class $AccountsTable extends Accounts
   AccountData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AccountData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      iconType: $AccountsTable.$convertericonType.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}icon_type'],
+        )!,
+      ),
       accountType: $AccountsTable.$converteraccountType.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}account_type'],
         )!,
       ),
-      initialBalance: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}initial_balance'],
-      )!,
       currencyType: $AccountsTable.$convertercurrencyType.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -189,19 +289,25 @@ class $AccountsTable extends Accounts
         DriftSqlType.dateTime,
         data['${effectivePrefix}init_date'],
       )!,
-      id: attachedDatabase.typeMapping.read(
+      initialBalance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}initial_balance'],
+      ),
+      creditLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}credit_limit'],
+      ),
+      firstBillDueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_bill_due_date'],
+      ),
+      billClosingDay: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      iconType: $AccountsTable.$convertericonType.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}icon_type'],
-        )!,
+        data['${effectivePrefix}bill_closing_day'],
+      ),
+      paymentAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}payment_account_id'],
       ),
     );
   }
@@ -228,10 +334,14 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
   final Value<String> name;
   final Value<AccountIconType> iconType;
   final Value<AccountType> accountType;
-  final Value<double> initialBalance;
+  final Value<double?> initialBalance;
   final Value<CurrencyType> currencyType;
   final Value<bool> isActive;
   final Value<DateTime> initDate;
+  final Value<double?> creditLimit;
+  final Value<DateTime?> firstBillDueDate;
+  final Value<int?> billClosingDay;
+  final Value<int?> paymentAccountId;
   const AccountsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -241,6 +351,10 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     this.currencyType = const Value.absent(),
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
+    this.creditLimit = const Value.absent(),
+    this.firstBillDueDate = const Value.absent(),
+    this.billClosingDay = const Value.absent(),
+    this.paymentAccountId = const Value.absent(),
   });
   AccountsCompanion.insert({
     this.id = const Value.absent(),
@@ -251,6 +365,10 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     required CurrencyType currencyType,
     this.isActive = const Value.absent(),
     this.initDate = const Value.absent(),
+    this.creditLimit = const Value.absent(),
+    this.firstBillDueDate = const Value.absent(),
+    this.billClosingDay = const Value.absent(),
+    this.paymentAccountId = const Value.absent(),
   }) : name = Value(name),
        iconType = Value(iconType),
        accountType = Value(accountType),
@@ -264,6 +382,10 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     Expression<String>? currencyType,
     Expression<bool>? isActive,
     Expression<DateTime>? initDate,
+    Expression<double>? creditLimit,
+    Expression<DateTime>? firstBillDueDate,
+    Expression<int>? billClosingDay,
+    Expression<int>? paymentAccountId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -274,6 +396,10 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       if (currencyType != null) 'currency_type': currencyType,
       if (isActive != null) 'is_active': isActive,
       if (initDate != null) 'init_date': initDate,
+      if (creditLimit != null) 'credit_limit': creditLimit,
+      if (firstBillDueDate != null) 'first_bill_due_date': firstBillDueDate,
+      if (billClosingDay != null) 'bill_closing_day': billClosingDay,
+      if (paymentAccountId != null) 'payment_account_id': paymentAccountId,
     });
   }
 
@@ -282,10 +408,14 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     Value<String>? name,
     Value<AccountIconType>? iconType,
     Value<AccountType>? accountType,
-    Value<double>? initialBalance,
+    Value<double?>? initialBalance,
     Value<CurrencyType>? currencyType,
     Value<bool>? isActive,
     Value<DateTime>? initDate,
+    Value<double?>? creditLimit,
+    Value<DateTime?>? firstBillDueDate,
+    Value<int?>? billClosingDay,
+    Value<int?>? paymentAccountId,
   }) {
     return AccountsCompanion(
       id: id ?? this.id,
@@ -296,6 +426,10 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
       currencyType: currencyType ?? this.currencyType,
       isActive: isActive ?? this.isActive,
       initDate: initDate ?? this.initDate,
+      creditLimit: creditLimit ?? this.creditLimit,
+      firstBillDueDate: firstBillDueDate ?? this.firstBillDueDate,
+      billClosingDay: billClosingDay ?? this.billClosingDay,
+      paymentAccountId: paymentAccountId ?? this.paymentAccountId,
     );
   }
 
@@ -332,6 +466,18 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
     if (initDate.present) {
       map['init_date'] = Variable<DateTime>(initDate.value);
     }
+    if (creditLimit.present) {
+      map['credit_limit'] = Variable<double>(creditLimit.value);
+    }
+    if (firstBillDueDate.present) {
+      map['first_bill_due_date'] = Variable<DateTime>(firstBillDueDate.value);
+    }
+    if (billClosingDay.present) {
+      map['bill_closing_day'] = Variable<int>(billClosingDay.value);
+    }
+    if (paymentAccountId.present) {
+      map['payment_account_id'] = Variable<int>(paymentAccountId.value);
+    }
     return map;
   }
 
@@ -345,7 +491,11 @@ class AccountsCompanion extends UpdateCompanion<AccountData> {
           ..write('initialBalance: $initialBalance, ')
           ..write('currencyType: $currencyType, ')
           ..write('isActive: $isActive, ')
-          ..write('initDate: $initDate')
+          ..write('initDate: $initDate, ')
+          ..write('creditLimit: $creditLimit, ')
+          ..write('firstBillDueDate: $firstBillDueDate, ')
+          ..write('billClosingDay: $billClosingDay, ')
+          ..write('paymentAccountId: $paymentAccountId')
           ..write(')'))
         .toString();
   }
@@ -1250,10 +1400,14 @@ typedef $$AccountsTableCreateCompanionBuilder =
       required String name,
       required AccountIconType iconType,
       required AccountType accountType,
-      Value<double> initialBalance,
+      Value<double?> initialBalance,
       required CurrencyType currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
+      Value<double?> creditLimit,
+      Value<DateTime?> firstBillDueDate,
+      Value<int?> billClosingDay,
+      Value<int?> paymentAccountId,
     });
 typedef $$AccountsTableUpdateCompanionBuilder =
     AccountsCompanion Function({
@@ -1261,11 +1415,39 @@ typedef $$AccountsTableUpdateCompanionBuilder =
       Value<String> name,
       Value<AccountIconType> iconType,
       Value<AccountType> accountType,
-      Value<double> initialBalance,
+      Value<double?> initialBalance,
       Value<CurrencyType> currencyType,
       Value<bool> isActive,
       Value<DateTime> initDate,
+      Value<double?> creditLimit,
+      Value<DateTime?> firstBillDueDate,
+      Value<int?> billClosingDay,
+      Value<int?> paymentAccountId,
     });
+
+final class $$AccountsTableReferences
+    extends BaseReferences<_$DatabaseManager, $AccountsTable, AccountData> {
+  $$AccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $AccountsTable _paymentAccountIdTable(_$DatabaseManager db) =>
+      db.accounts.createAlias(
+        $_aliasNameGenerator(db.accounts.paymentAccountId, db.accounts.id),
+      );
+
+  $$AccountsTableProcessedTableManager? get paymentAccountId {
+    final $_column = $_itemColumn<int>('payment_account_id');
+    if ($_column == null) return null;
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_paymentAccountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
 
 class $$AccountsTableFilterComposer
     extends Composer<_$DatabaseManager, $AccountsTable> {
@@ -1318,6 +1500,44 @@ class $$AccountsTableFilterComposer
     column: $table.initDate,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<double> get creditLimit => $composableBuilder(
+    column: $table.creditLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstBillDueDate => $composableBuilder(
+    column: $table.firstBillDueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get billClosingDay => $composableBuilder(
+    column: $table.billClosingDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$AccountsTableFilterComposer get paymentAccountId {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.paymentAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$AccountsTableOrderingComposer
@@ -1368,6 +1588,44 @@ class $$AccountsTableOrderingComposer
     column: $table.initDate,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get creditLimit => $composableBuilder(
+    column: $table.creditLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firstBillDueDate => $composableBuilder(
+    column: $table.firstBillDueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get billClosingDay => $composableBuilder(
+    column: $table.billClosingDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$AccountsTableOrderingComposer get paymentAccountId {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.paymentAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$AccountsTableAnnotationComposer
@@ -1410,6 +1668,44 @@ class $$AccountsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get initDate =>
       $composableBuilder(column: $table.initDate, builder: (column) => column);
+
+  GeneratedColumn<double> get creditLimit => $composableBuilder(
+    column: $table.creditLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get firstBillDueDate => $composableBuilder(
+    column: $table.firstBillDueDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get billClosingDay => $composableBuilder(
+    column: $table.billClosingDay,
+    builder: (column) => column,
+  );
+
+  $$AccountsTableAnnotationComposer get paymentAccountId {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.paymentAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$AccountsTableTableManager
@@ -1423,12 +1719,9 @@ class $$AccountsTableTableManager
           $$AccountsTableAnnotationComposer,
           $$AccountsTableCreateCompanionBuilder,
           $$AccountsTableUpdateCompanionBuilder,
-          (
-            AccountData,
-            BaseReferences<_$DatabaseManager, $AccountsTable, AccountData>,
-          ),
+          (AccountData, $$AccountsTableReferences),
           AccountData,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool paymentAccountId})
         > {
   $$AccountsTableTableManager(_$DatabaseManager db, $AccountsTable table)
     : super(
@@ -1447,10 +1740,14 @@ class $$AccountsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<AccountIconType> iconType = const Value.absent(),
                 Value<AccountType> accountType = const Value.absent(),
-                Value<double> initialBalance = const Value.absent(),
+                Value<double?> initialBalance = const Value.absent(),
                 Value<CurrencyType> currencyType = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
+                Value<double?> creditLimit = const Value.absent(),
+                Value<DateTime?> firstBillDueDate = const Value.absent(),
+                Value<int?> billClosingDay = const Value.absent(),
+                Value<int?> paymentAccountId = const Value.absent(),
               }) => AccountsCompanion(
                 id: id,
                 name: name,
@@ -1460,6 +1757,10 @@ class $$AccountsTableTableManager
                 currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,
+                creditLimit: creditLimit,
+                firstBillDueDate: firstBillDueDate,
+                billClosingDay: billClosingDay,
+                paymentAccountId: paymentAccountId,
               ),
           createCompanionCallback:
               ({
@@ -1467,10 +1768,14 @@ class $$AccountsTableTableManager
                 required String name,
                 required AccountIconType iconType,
                 required AccountType accountType,
-                Value<double> initialBalance = const Value.absent(),
+                Value<double?> initialBalance = const Value.absent(),
                 required CurrencyType currencyType,
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> initDate = const Value.absent(),
+                Value<double?> creditLimit = const Value.absent(),
+                Value<DateTime?> firstBillDueDate = const Value.absent(),
+                Value<int?> billClosingDay = const Value.absent(),
+                Value<int?> paymentAccountId = const Value.absent(),
               }) => AccountsCompanion.insert(
                 id: id,
                 name: name,
@@ -1480,11 +1785,60 @@ class $$AccountsTableTableManager
                 currencyType: currencyType,
                 isActive: isActive,
                 initDate: initDate,
+                creditLimit: creditLimit,
+                firstBillDueDate: firstBillDueDate,
+                billClosingDay: billClosingDay,
+                paymentAccountId: paymentAccountId,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AccountsTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({paymentAccountId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (paymentAccountId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.paymentAccountId,
+                                referencedTable: $$AccountsTableReferences
+                                    ._paymentAccountIdTable(db),
+                                referencedColumn: $$AccountsTableReferences
+                                    ._paymentAccountIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -1499,12 +1853,9 @@ typedef $$AccountsTableProcessedTableManager =
       $$AccountsTableAnnotationComposer,
       $$AccountsTableCreateCompanionBuilder,
       $$AccountsTableUpdateCompanionBuilder,
-      (
-        AccountData,
-        BaseReferences<_$DatabaseManager, $AccountsTable, AccountData>,
-      ),
+      (AccountData, $$AccountsTableReferences),
       AccountData,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool paymentAccountId})
     >;
 typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({

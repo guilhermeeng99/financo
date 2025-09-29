@@ -7,6 +7,7 @@ analyzer:
      lines_longer_than_80_chars: ignore
      public_member_api_docs: ignore
      document_ignores: ignore
+     flutter_style_todos: ignore
 
 linter:
 

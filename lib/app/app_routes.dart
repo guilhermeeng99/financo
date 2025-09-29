@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_field_initializers_in_const_classes,
+// ignore_for_file: avoid_field_initializers_in_const_classes
 
 AppRoutes get ro => AppRoutes.instance;
 
@@ -21,47 +21,54 @@ class AppRoutesMainFlow {
   const AppRoutesMainFlow();
 
   final String route = '/main_flow/';
+  final AppRoutesMainFlowAccountStatement accountStatement =
+      const AppRoutesMainFlowAccountStatement();
+  final AppRoutesMainFlowCreateAndEditTransaction createAndEditTransaction =
+      const AppRoutesMainFlowCreateAndEditTransaction();
+  final AppRoutesMainFlowCreditCard creditCard =
+      const AppRoutesMainFlowCreditCard();
   final AppRoutesMainFlowFinancialMovement financialMovement =
       const AppRoutesMainFlowFinancialMovement();
   final AppRoutesMainFlowHome home = const AppRoutesMainFlowHome();
   final AppRoutesMainFlowRegister register = const AppRoutesMainFlowRegister();
 }
 
+class AppRoutesMainFlowAccountStatement {
+  const AppRoutesMainFlowAccountStatement();
+
+  final String route = '/main_flow/account_statement/';
+}
+
+class AppRoutesMainFlowCreateAndEditTransaction {
+  const AppRoutesMainFlowCreateAndEditTransaction();
+
+  final String route = '/main_flow/create_and_edit_transaction/';
+  final AppRoutesMainFlowCreateAndEditTransactionImportTransactions
+  importTransactions =
+      const AppRoutesMainFlowCreateAndEditTransactionImportTransactions();
+}
+
+class AppRoutesMainFlowCreateAndEditTransactionImportTransactions {
+  const AppRoutesMainFlowCreateAndEditTransactionImportTransactions();
+
+  final String route =
+      '/main_flow/create_and_edit_transaction/import_transactions/';
+}
+
+class AppRoutesMainFlowCreditCard {
+  const AppRoutesMainFlowCreditCard();
+
+  final String route = '/main_flow/credit_card/';
+}
+
 class AppRoutesMainFlowFinancialMovement {
   const AppRoutesMainFlowFinancialMovement();
 
-  final AppRoutesMainFlowFinancialMovementAccountStatement accountStatement =
-      const AppRoutesMainFlowFinancialMovementAccountStatement();
-  final AppRoutesMainFlowFinancialMovementCreateAndEditTransaction
-  createAndEditTransaction =
-      const AppRoutesMainFlowFinancialMovementCreateAndEditTransaction();
-  final AppRoutesMainFlowFinancialMovementImportTransactions
-  importTransactions =
-      const AppRoutesMainFlowFinancialMovementImportTransactions();
   final AppRoutesMainFlowFinancialMovementPastAndFutureReleases
   pastAndFutureReleases =
       const AppRoutesMainFlowFinancialMovementPastAndFutureReleases();
   final AppRoutesMainFlowFinancialMovementReleases releases =
       const AppRoutesMainFlowFinancialMovementReleases();
-}
-
-class AppRoutesMainFlowFinancialMovementAccountStatement {
-  const AppRoutesMainFlowFinancialMovementAccountStatement();
-
-  final String route = '/main_flow/financial_movement/account_statement/';
-}
-
-class AppRoutesMainFlowFinancialMovementCreateAndEditTransaction {
-  const AppRoutesMainFlowFinancialMovementCreateAndEditTransaction();
-
-  final String route =
-      '/main_flow/financial_movement/create_and_edit_transaction/';
-}
-
-class AppRoutesMainFlowFinancialMovementImportTransactions {
-  const AppRoutesMainFlowFinancialMovementImportTransactions();
-
-  final String route = '/main_flow/financial_movement/import_transactions/';
 }
 
 class AppRoutesMainFlowFinancialMovementPastAndFutureReleases {

@@ -83,7 +83,7 @@ void printNode(Node node, [int level = 0]) {
 
 String toValidDartClassName(String name) {
   try {
-    return name.split('_').map((part) {
+    return name.split('_').where((part) => part.isNotEmpty).map((part) {
       return part[0].toUpperCase() + part.substring(1);
     }).join();
   } on Exception {
@@ -94,7 +94,9 @@ String toValidDartClassName(String name) {
 String toValidDartVariableName(String name) {
   String fixedName = name;
   try {
-    fixedName = fixedName.split('_').map((part) {
+    fixedName = fixedName.split('_').where((part) => part.isNotEmpty).map((
+      part,
+    ) {
       return part[0].toUpperCase() + part.substring(1);
     }).join();
     return fixedName[0].toLowerCase() + fixedName.substring(1);

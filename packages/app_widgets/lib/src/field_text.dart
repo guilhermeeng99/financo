@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 
 class CWTextField extends HookWidget {
   const CWTextField({
-    required this.hintText,
     required this.onChanged,
+    this.hintText,
     super.key,
     this.initialValue,
     this.controller,
@@ -15,7 +15,7 @@ class CWTextField extends HookWidget {
     this.error = '',
   });
 
-  final String hintText;
+  final String? hintText;
   final ValueChanged<String> onChanged;
   final String? initialValue;
   final TextEditingController? controller;

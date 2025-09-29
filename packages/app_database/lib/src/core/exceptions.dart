@@ -115,3 +115,17 @@ class DateTooFarInFutureException implements Exception {
   String toString() =>
       'DateTooFarInFutureException: maximum year is $maximumYear';
 }
+
+class PaymentAccountRequiredException implements Exception {
+  const PaymentAccountRequiredException();
+  @override
+  String toString() =>
+      'PaymentAccountRequiredException: payment account is required for credit card accounts';
+}
+
+class BillClosingDayInvalidException implements Exception {
+  const BillClosingDayInvalidException();
+  @override
+  String toString() =>
+      'BillClosingDayInvalidException: bill closing day must be between 1 and 31';
+}

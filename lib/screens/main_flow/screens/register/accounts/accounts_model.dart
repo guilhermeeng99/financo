@@ -38,17 +38,26 @@ class AccountsModel {
     required AccountData account,
     required bool freeze,
   }) async {
-    final result = await _accountUsecase.updateAccount(
-      id: account.id,
-      isActive: !freeze,
-    );
+    final Either<Failure, AccountData> result;
+
+    if (account.accountType == AccountType.checking) {
+      result = await _accountUsecase.updateStandardAccount(
+        id: account.id,
+        isActive: !freeze,
+      );
+    } else {
+      result = await _accountUsecase.updateCreditCardAccount(
+        id: account.id,
+        isActive: !freeze,
+      );
+    }
 
     await result.fold(
-      (failure) {
+      (Failure failure) {
         logger.e('Error updating account status: ${failure.message}');
         CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
       },
-      (updatedAccount) async {
+      (AccountData updatedAccount) async {
         logger.i('Account status updated successfully');
 
         await accountsBloc.loadGroupedAccounts();

@@ -1,7 +1,9 @@
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/app/app_theme.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/create_and_edit_account_bloc.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/create_and_edit_account_model.dart';
+import 'package:flutter/services.dart';
 
 enum CreateAndEditAccountPopUpType { create, edit }
 
@@ -36,26 +38,53 @@ class CreateAndEditAccountPopUp extends HookWidget {
           spacing: 20,
           children: [
             const _Name(),
-            const Row(
-              spacing: 5,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [_Type(), _Coin(), _Icon()],
-            ),
             Row(
-              spacing: 15,
+              spacing: 20,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Obx(
-                  () => CWCalendarDropDown(
-                    title: context.t.common.labels.initial_balance_date,
-                    selectedDateRx:
-                        createAndEditAccountBloc.selectedInitDate.obs,
-                  ),
-                ),
-                const Expanded(child: _Balance()),
+                if (args.type == CreateAndEditAccountPopUpType.create)
+                  const _Type(),
+                const _Coin(),
+                const _Icon(),
               ],
             ),
+            Obx(() {
+              final accountType = createAndEditAccountBloc.selectedAccountType;
+              if (accountType == AccountType.checking) {
+                return Row(
+                  spacing: 15,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    CWCalendarDropDown(
+                      title: context.t.common.labels.initial_balance_date,
+                      selectedDateRx:
+                          createAndEditAccountBloc.selectedInitDate.obs,
+                    ),
+                    const Expanded(child: _Balance()),
+                  ],
+                );
+              } else {
+                return const Column(
+                  spacing: 20,
+                  children: [
+                    Row(
+                      spacing: 15,
+                      children: [
+                        Expanded(child: _CreditLimit()),
+                        Expanded(child: _BillClosingDay()),
+                      ],
+                    ),
+                    Row(
+                      spacing: 15,
+                      children: [
+                        Expanded(child: _FirstBillDueDate()),
+                        Expanded(child: _PaymentAccount()),
+                      ],
+                    ),
+                  ],
+                );
+              }
+            }),
           ],
         ),
       ),
@@ -168,7 +197,7 @@ class _Name extends HookWidget {
       final nameError = createAndEditAccountBloc.formErrors.value.name;
 
       return CWTextField(
-        hintText: '${context.t.common.labels.name}*',
+        hintText: context.t.common.labels.name,
         initialValue: name,
         onChanged: (value) => createAndEditAccountBloc.updateName(value),
         error: nameError,
@@ -190,7 +219,6 @@ class _Balance extends HookWidget {
 
       return CWTextField(
         title: context.t.common.labels.balance,
-        hintText: '0',
         initialValue: formattedBalance,
         inputFormatters: [CurrencyInputFormatter()],
         keyboardType: TextInputType.number,
@@ -198,6 +226,139 @@ class _Balance extends HookWidget {
           createAndEditAccountBloc.updateInitialBalance(value, context);
         },
         error: balanceError,
+      );
+    });
+  }
+}
+
+class _CreditLimit extends HookWidget {
+  const _CreditLimit();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final creditLimit = createAndEditAccountBloc.creditLimit ?? 0.0;
+      final creditLimitError =
+          createAndEditAccountBloc.formErrors.value.creditLimit;
+      final formattedLimit = CurrencyFormatter.formatAmount(
+        creditLimit,
+        context,
+      );
+
+      return CWTextField(
+        title: context.t.common.labels.credit_limit,
+        initialValue: formattedLimit,
+        inputFormatters: [CurrencyInputFormatter()],
+        keyboardType: TextInputType.number,
+        onChanged: (value) {
+          createAndEditAccountBloc.updateCreditLimit(value, context);
+        },
+        error: creditLimitError,
+      );
+    });
+  }
+}
+
+class _BillClosingDay extends HookWidget {
+  const _BillClosingDay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final billClosingDay = createAndEditAccountBloc.billClosingDay;
+      final billClosingDayError =
+          createAndEditAccountBloc.formErrors.value.billClosingDay;
+
+      return CWTextField(
+        title: context.t.common.labels.bill_closing_day,
+        initialValue: billClosingDay.toString(),
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(2),
+        ],
+        onChanged: (value) {
+          final day = int.tryParse(value);
+          if (day != null && day >= 1 && day <= 31) {
+            createAndEditAccountBloc.updateBillClosingDay(day);
+          }
+        },
+        error: billClosingDayError,
+      );
+    });
+  }
+}
+
+class _FirstBillDueDate extends HookWidget {
+  const _FirstBillDueDate();
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedDateRx = useMemoized(() {
+      final initialDate =
+          createAndEditAccountBloc.firstBillDueDate ?? DateTime.now();
+      return initialDate.obs;
+    });
+
+    useEffect(() {
+      final listener = selectedDateRx.listen((date) {
+        createAndEditAccountBloc.updateFirstBillDueDate(date);
+      });
+      return listener.cancel;
+    }, []);
+
+    return CWCalendarDropDown(
+      title: context.t.common.labels.first_due_date,
+      selectedDateRx: selectedDateRx,
+    );
+  }
+}
+
+class _PaymentAccount extends StatelessWidget {
+  const _PaymentAccount();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final availableAccounts =
+          createAndEditAccountBloc.availableCheckingAccounts;
+      final paymentAccountId = createAndEditAccountBloc.paymentAccountId;
+      final paymentAccountError =
+          createAndEditAccountBloc.formErrors.value.paymentAccountId;
+
+      final items = <AccountData?>[null, ...availableAccounts];
+
+      return CWDropdownField<AccountData?>(
+        title: context.t.common.labels.payment_account,
+        error: paymentAccountError,
+        value: paymentAccountId != null
+            ? availableAccounts.firstWhereOrNull(
+                (acc) => acc.id == paymentAccountId,
+              )
+            : null,
+        items: items,
+        onChanged: (AccountData? account) {
+          createAndEditAccountBloc.updatePaymentAccountId(account?.id);
+        },
+        itemBuilder: (AccountData? account, BuildContext context) {
+          if (account == null) {
+            return Text(
+              context.t.accounts.select_account,
+              style: TextStyle(
+                color: Theme.of(context).customColors.secondaryTextColor,
+                fontStyle: FontStyle.italic,
+              ),
+            );
+          }
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              Image.asset(account.iconPath, width: 18, height: 18),
+              Text(account.name),
+            ],
+          );
+        },
       );
     });
   }

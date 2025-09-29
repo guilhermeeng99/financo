@@ -20,10 +20,8 @@ class Transactions extends Table {
   IntColumn get accountId => integer().references(Accounts, #id)();
   IntColumn get categoryId =>
       integer().nullable().references(Categories, #id)();
-  // Target account when transferring between accounts (optional)
   IntColumn get targetAccountId =>
       integer().nullable().references(Accounts, #id)();
-  // Logical identifier that groups the two transactions (outgoing and incoming) of a transfer
   TextColumn get transferId => text().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -67,10 +65,13 @@ class TransactionI {
   final String? otherAccount;
 
   String get otherAccountName {
-    if (t.transactionType == FinancialType.expense) {
-      return '→ $otherAccount';
-    } else {
-      return '← $otherAccount';
+    if (otherAccount == null) return '';
+
+    switch (t.transactionType) {
+      case FinancialType.expense:
+        return '→ $otherAccount';
+      case FinancialType.income:
+        return '← $otherAccount';
     }
   }
 }

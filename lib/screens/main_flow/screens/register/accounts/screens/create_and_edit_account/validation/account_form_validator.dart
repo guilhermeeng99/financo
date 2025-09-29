@@ -20,6 +20,20 @@ class AccountFormValidator {
         currencyType: formData.currencyType,
         iconType: formData.iconType,
         initDate: formData.initDate,
+        creditLimit:
+            formData.accountType == AccountType.creditCard &&
+                formData.creditLimit != null
+            ? CreditLimit.create(formData.creditLimit!)
+            : null,
+        firstBillDueDate: formData.accountType == AccountType.creditCard
+            ? formData.firstBillDueDate
+            : null,
+        billClosingDay: formData.accountType == AccountType.creditCard
+            ? BillClosingDay.create(formData.billClosingDay)
+            : null,
+        paymentAccountId: formData.accountType == AccountType.creditCard
+            ? formData.paymentAccountId
+            : null,
       ),
     );
   }
@@ -45,6 +59,20 @@ class AccountFormValidator {
         currencyType: formData.currencyType,
         iconType: formData.iconType,
         initDate: formData.initDate,
+        creditLimit:
+            formData.accountType == AccountType.creditCard &&
+                formData.creditLimit != null
+            ? CreditLimit.create(formData.creditLimit!)
+            : null,
+        firstBillDueDate: formData.accountType == AccountType.creditCard
+            ? formData.firstBillDueDate
+            : null,
+        billClosingDay: formData.accountType == AccountType.creditCard
+            ? BillClosingDay.create(formData.billClosingDay)
+            : null,
+        paymentAccountId: formData.accountType == AccountType.creditCard
+            ? formData.paymentAccountId
+            : null,
       ),
     );
   }
@@ -69,6 +97,36 @@ class AccountFormValidator {
     } on Exception catch (e) {
       final errorMessage = AccountValidationException.getMessage(e, context);
       errors = errors.copyWith(initialBalance: errorMessage);
+    }
+
+    if (formData.accountType == AccountType.creditCard) {
+      try {
+        CreditLimit.create(formData.creditLimit ?? 0.0);
+      } on Exception catch (e) {
+        final errorMessage = AccountValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(creditLimit: errorMessage);
+      }
+
+      try {
+        BillClosingDay.create(formData.billClosingDay);
+      } on Exception catch (e) {
+        final errorMessage = AccountValidationException.getMessage(
+          e,
+          context,
+        );
+        errors = errors.copyWith(billClosingDay: errorMessage);
+      }
+
+      if (formData.paymentAccountId == null) {
+        final errorMessage = AccountValidationException.getMessage(
+          const PaymentAccountRequiredException(),
+          context,
+        );
+        errors = errors.copyWith(paymentAccountId: errorMessage);
+      }
     }
 
     return _FieldValidationResults(

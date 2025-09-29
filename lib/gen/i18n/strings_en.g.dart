@@ -74,6 +74,9 @@ class TranslationsNavigationEn {
 	/// en: 'Account Statement'
 	String get account_statement => 'Account Statement';
 
+	/// en: 'Credit Card'
+	String get credit_card => 'Credit Card';
+
 	/// en: 'Releases'
 	String get releases => 'Releases';
 
@@ -387,6 +390,18 @@ class TranslationsCommonLabelsEn {
 	/// en: 'Balance'
 	String get balance => 'Balance';
 
+	/// en: 'Credit Limit'
+	String get credit_limit => 'Credit Limit';
+
+	/// en: 'Bill Closing Day'
+	String get bill_closing_day => 'Bill Closing Day';
+
+	/// en: 'First Due Date'
+	String get first_due_date => 'First Due Date';
+
+	/// en: 'Payment Account'
+	String get payment_account => 'Payment Account';
+
 	/// en: 'Available Balance'
 	String get available_balance => 'Available Balance';
 
@@ -551,6 +566,9 @@ class TranslationsAccountsValidationEn {
 
 	/// en: 'Balance cannot be greater than $number'
 	String balance_max_value_number({required Object number}) => 'Balance cannot be greater than ${number}';
+
+	/// en: 'Bill closing day must be between 1 and 31'
+	String get bill_closing_day_invalid => 'Bill closing day must be between 1 and 31';
 }
 
 // Path: categories.validation
@@ -759,6 +777,7 @@ extension on Translations {
 			case 'navigation.paid_and_received': return 'Paid and received';
 			case 'navigation.to_pay_and_to_receive': return 'To pay and to receive';
 			case 'navigation.account_statement': return 'Account Statement';
+			case 'navigation.credit_card': return 'Credit Card';
 			case 'navigation.releases': return 'Releases';
 			case 'navigation.register': return 'Register';
 			case 'navigation.categories': return 'Categories';
@@ -793,6 +812,10 @@ extension on Translations {
 			case 'common.labels.subcategory': return 'Subcategory';
 			case 'common.labels.transactions': return 'Transactions';
 			case 'common.labels.balance': return 'Balance';
+			case 'common.labels.credit_limit': return 'Credit Limit';
+			case 'common.labels.bill_closing_day': return 'Bill Closing Day';
+			case 'common.labels.first_due_date': return 'First Due Date';
+			case 'common.labels.payment_account': return 'Payment Account';
 			case 'common.labels.available_balance': return 'Available Balance';
 			case 'common.labels.initial_balance_date': return 'Initial Balance Date';
 			case 'common.labels.total': return 'Total';
@@ -863,6 +886,7 @@ extension on Translations {
 			case 'accounts.validation.balance_invalid_number': return 'Balance must be a valid number';
 			case 'accounts.validation.balance_min_value_number': return ({required Object number}) => 'Balance cannot be less than ${number}';
 			case 'accounts.validation.balance_max_value_number': return ({required Object number}) => 'Balance cannot be greater than ${number}';
+			case 'accounts.validation.bill_closing_day_invalid': return 'Bill closing day must be between 1 and 31';
 			case 'categories.new_category': return 'New Category';
 			case 'categories.edit_category': return 'Edit Category';
 			case 'categories.create_sub_category': return 'Create Subcategory';

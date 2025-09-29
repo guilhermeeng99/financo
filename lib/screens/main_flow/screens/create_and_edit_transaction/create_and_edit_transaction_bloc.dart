@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/validation/transaction_form_types.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/create_and_edit_transaction/validation/transaction_form_validator.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/validation/transaction_form_types.dart';
+import 'package:financo/screens/main_flow/screens/create_and_edit_transaction/validation/transaction_form_validator.dart';
 
 CreateAndEditTransactionBloc get createAndEditTransactionBloc =>
     Modular.get<CreateAndEditTransactionBloc>();

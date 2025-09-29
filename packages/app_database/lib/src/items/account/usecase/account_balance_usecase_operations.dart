@@ -21,7 +21,8 @@ mixin AccountBalanceUsecaseOperations on AccountQueryUsecaseOperations {
         return transactionBalanceResult.fold(Either.left, (
           double transactionBalance,
         ) {
-          final finalBalance = account.initialBalance + transactionBalance;
+          final initialBalance = account.initialBalance ?? 0.0;
+          final finalBalance = initialBalance + transactionBalance;
           return Either.right(finalBalance);
         });
       });

@@ -23,6 +23,7 @@ class MainFlowTopBarController {
 enum SideBarItemType {
   financialMovement,
   pastReleases,
+  creditCard,
   futureReleases,
   accountStatement,
   releases,
@@ -43,7 +44,9 @@ extension SideBarItemTypeExtension on SideBarItemType {
       case SideBarItemType.releases:
         return ro.mainFlow.financialMovement.releases.route;
       case SideBarItemType.accountStatement:
-        return ro.mainFlow.financialMovement.accountStatement.route;
+        return ro.mainFlow.accountStatement.route;
+      case SideBarItemType.creditCard:
+        return ro.mainFlow.creditCard.route;
       case SideBarItemType.registrations:
         return null;
       case SideBarItemType.categories:
@@ -63,6 +66,8 @@ extension SideBarItemTypeExtension on SideBarItemType {
         return context.t.navigation.paid_and_received;
       case SideBarItemType.accountStatement:
         return context.t.navigation.account_statement;
+      case SideBarItemType.creditCard:
+        return context.t.navigation.credit_card;
       case SideBarItemType.releases:
         return context.t.navigation.releases;
       case SideBarItemType.registrations:
@@ -110,9 +115,10 @@ class MainFlowSideBarController {
         SideBarItem(type: SideBarItemType.releases, level: 1),
         SideBarItem(type: SideBarItemType.futureReleases, level: 1),
         SideBarItem(type: SideBarItemType.pastReleases, level: 1),
-        SideBarItem(type: SideBarItemType.accountStatement, level: 1),
       ],
     ),
+    const SideBarItem(type: SideBarItemType.accountStatement),
+    const SideBarItem(type: SideBarItemType.creditCard),
     const SideBarItem(
       type: SideBarItemType.registrations,
       children: [

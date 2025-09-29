@@ -1,8 +1,8 @@
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/account_statement/account_statement_bloc.dart';
 import 'package:financo/screens/main_flow/screens/core/accounts/widgets/accounts_results_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/calendar/calendar_widget.dart';
 import 'package:financo/screens/main_flow/screens/core/transactions/transactions_widget.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_bloc.dart';
 
 class AccountStatementScreen extends StatelessWidget {
   const AccountStatementScreen({super.key});

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/screens/create_and_edit_account/validation/account_form_types.dart';
@@ -24,6 +26,10 @@ class CreateAndEditAccountBloc extends GetxController {
   CurrencyType get selectedCurrencyType => formData.value.currencyType;
   AccountIconType get selectedIconType => formData.value.iconType;
   DateTime get selectedInitDate => formData.value.initDate;
+  double? get creditLimit => formData.value.creditLimit;
+  DateTime? get firstBillDueDate => formData.value.firstBillDueDate;
+  int get billClosingDay => formData.value.billClosingDay;
+  int? get paymentAccountId => formData.value.paymentAccountId;
 
   // Convenience setters
   void updateName(String name) {
@@ -39,6 +45,11 @@ class CreateAndEditAccountBloc extends GetxController {
 
   void updateAccountType(AccountType accountType) {
     formData.value = formData.value.copyWith(accountType: accountType);
+
+    // Load checking accounts when switching to credit card
+    if (accountType == AccountType.creditCard) {
+      unawaited(loadAvailableCheckingAccounts());
+    }
   }
 
   void updateCurrencyType(CurrencyType currencyType) {
@@ -53,18 +64,67 @@ class CreateAndEditAccountBloc extends GetxController {
     formData.value = formData.value.copyWith(initDate: initDate);
   }
 
+  void updateCreditLimit(String value, BuildContext context) {
+    final parsedValue = CurrencyFormatter.parseAmount(value, context);
+    formData.value = formData.value.copyWith(creditLimit: parsedValue);
+    _clearFormError('creditLimit');
+  }
+
+  void updateFirstBillDueDate(DateTime date) {
+    formData.value = formData.value.copyWith(firstBillDueDate: date);
+    _clearFormError('firstBillDueDate');
+  }
+
+  void updateBillClosingDay(int day) {
+    formData.value = formData.value.copyWith(billClosingDay: day);
+    _clearFormError('billClosingDay');
+  }
+
+  void updatePaymentAccountId(int? accountId) {
+    formData.value = formData.value.copyWith(paymentAccountId: accountId);
+    _clearFormError('paymentAccountId');
+  }
+
+  final RxList<AccountData> _checkingAccounts = <AccountData>[].obs;
+  List<AccountData> get availableCheckingAccounts => _checkingAccounts;
+
+  Future<void> loadAvailableCheckingAccounts() async {
+    final accountUsecase = Modular.get<IAccountUsecase>();
+    final result = await accountUsecase.getCheckingAccounts();
+
+    result.fold(
+      (failure) {
+        logger.e('Error loading checking accounts: ${failure.message}');
+        _checkingAccounts.clear();
+      },
+      _checkingAccounts.assignAll,
+    );
+  }
+
   void initializeWithAccountData(AccountData account) {
     formData.value = AccountFormData.fromAccount(account);
     clearAllErrors();
+
+    // Load checking accounts if this is a credit card
+    if (account.accountType == AccountType.creditCard) {
+      unawaited(loadAvailableCheckingAccounts());
+    }
   }
 
   void _clearFormError(String field) {
     switch (field) {
       case 'name':
         formErrors.value = formErrors.value.copyWith(name: '');
-
       case 'initialBalance':
         formErrors.value = formErrors.value.copyWith(initialBalance: '');
+      case 'creditLimit':
+        formErrors.value = formErrors.value.copyWith(creditLimit: '');
+      case 'firstBillDueDate':
+        formErrors.value = formErrors.value.copyWith(firstBillDueDate: '');
+      case 'billClosingDay':
+        formErrors.value = formErrors.value.copyWith(billClosingDay: '');
+      case 'paymentAccountId':
+        formErrors.value = formErrors.value.copyWith(paymentAccountId: '');
     }
   }
 

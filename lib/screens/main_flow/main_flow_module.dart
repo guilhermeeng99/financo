@@ -4,7 +4,7 @@ import 'package:financo/screens/main_flow/main_flow_bloc.dart';
 import 'package:financo/screens/main_flow/main_flow_item.dart';
 import 'package:financo/screens/main_flow/main_flow_model.dart';
 import 'package:financo/screens/main_flow/main_flow_screen.dart';
-import 'package:financo/screens/main_flow/screens/financial_movement/account_statement/account_statement_module.dart';
+import 'package:financo/screens/main_flow/screens/account_statement/account_statement_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_module.dart';
 import 'package:financo/screens/main_flow/screens/home/home_module.dart';
@@ -63,7 +63,7 @@ class MainFlowModule extends Module {
         ),
         ModuleRoute(
           _getRelativeRoute(
-            ro.mainFlow.financialMovement.accountStatement.route,
+            ro.mainFlow.accountStatement.route,
           ),
           module: AccountStatementModule(),
           duration: Duration.zero,
