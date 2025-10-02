@@ -33,6 +33,9 @@
       "type": "Tipo",
       "amount": "Valor",
       "date": "Data",
+      "details": "Detalhamento",
+      "used": "Utilizado",
+      "available": "Disponível",
       "description": "Descrição",
       "account": {
         "one": "Conta",
@@ -197,6 +200,18 @@
       "date_too_far_future_number": "A data da transação não pode ser de mais de $number anos no futuro"
     }
   },
+  "credit_card": {
+    "current_bill": "Fatura atual",
+    "closing": "Fechamento",
+    "due": "Vencimento",
+    "close_bill": "Fechar fatura",
+    "launch_payment": "Lançar pagamento",
+    "limit": "Limite (Total)",
+    "account_limit": "Limite da conta",
+    "previous_balance": "Saldo anterior",
+    "total_paid": "Total pago",
+    "amount_due": "Valor a pagar"
+  },
   "settings": {
     "additional_settings": "Configurações Adicionais"
   },
@@ -211,7 +226,9 @@
     "errors": {
       "export_error": "Erro ao exportar",
       "excel_not_found": "Arquivo Excel não encontrado",
-      "excel_not_valid": "Arquivo Excel inválido"
+      "excel_not_valid": "Arquivo Excel inválido",
+      "no_accounts_to_import": "Nenhuma conta cadastrada. Por favor, crie pelo menos uma conta antes de importar transações.",
+      "no_categories_to_import": "Nenhuma categoria cadastrada. Por favor, crie pelo menos uma categoria antes de importar transações."
     }
   },
   "date": {

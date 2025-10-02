@@ -35,7 +35,7 @@ class HomeBloc extends GetxController {
     return coreCalendarBloc.getFormattedPeriod(context: context, short: short);
   }
 
-  Set<int> get enabledAccountIds => coreAccountsBloc.enabledAccountIds;
+  Set<int> get enabledAccountIds => coreAccountsBloc.enabledCheckingAccountIds;
 
   List<TransactionI> get filteredTransactions =>
       coreTransactionsBloc.getFilteredTransactions(enabledAccountIds);

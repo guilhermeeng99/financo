@@ -5,8 +5,8 @@ import 'package:excel/excel.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_bloc.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/create_and_edit_category_module.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/create_and_edit_category_screen.dart';
-import 'package:financo/screens/main_flow/screens/register/categories/screens/import_categories/import_categories_module.dart';
-import 'package:financo/screens/main_flow/screens/register/categories/screens/import_categories/import_categories_screen.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/import_categories/import_categories_module.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/import_categories/import_categories_screen.dart';
 
 CategoriesModel get categoriesModel => Modular.get<CategoriesModel>();
 

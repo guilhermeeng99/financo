@@ -32,6 +32,9 @@
       "name": "Name",
       "type": "Type",
       "amount": "Amount",
+      "details": "Details",
+      "used": "Used",
+      "available": "Available",
       "date": "Date",
       "description": "Description",
       "account": {
@@ -197,6 +200,18 @@
       "date_too_far_future_number": "Transaction date cannot be more than $number years in the future"
     }
   },
+  "credit_card": {
+    "current_bill": "Current Bill",
+    "closing": "Closing",
+    "due": "Due Date",
+    "close_bill": "Close Bill",
+    "launch_payment": "Launch Payment",
+    "limit": "Limit (Total)",
+    "account_limit": "Account Limit",
+    "previous_balance": "Previous Balance",
+    "total_paid": "Total Paid",
+    "amount_due": "Amount Due"
+  },
   "settings": {
     "additional_settings": "Additional Settings"
   },
@@ -211,7 +226,9 @@
     "errors": {
       "export_error": "Error while exporting",
       "excel_not_found": "Excel file not found",
-      "excel_not_valid": "Invalid Excel file"
+      "excel_not_valid": "Invalid Excel file",
+      "no_accounts_to_import": "No accounts registered. Please create at least one account before importing transactions.",
+      "no_categories_to_import": "No categories registered. Please create at least one category before importing transactions."
     }
   },
   "date": {

@@ -70,11 +70,11 @@ class AccountStatementBloc extends GetxController {
 
   void _updateCoreTransactionsBloc() {
     coreTransactionsBloc.updateEnabledAccountIds(
-      coreAccountsBloc.enabledAccountIds,
+      coreAccountsBloc.enabledCheckingAccountIds,
     );
   }
 
-  Set<int> get enabledAccountIds => coreAccountsBloc.enabledAccountIds;
+  Set<int> get enabledAccountIds => coreAccountsBloc.enabledCheckingAccountIds;
 
   List<TransactionI> get filteredTransactions =>
       coreTransactionsBloc.getFilteredTransactions(enabledAccountIds);

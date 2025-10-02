@@ -26,7 +26,7 @@ class CWAPastAndFutureReleasesAccountsResults extends StatelessWidget {
                 style: const TextStyle(fontSize: 14),
               ),
               const Gap(15),
-              ResultsList(results: results),
+              _ResultsList(results: results),
             ],
           ),
         ),
@@ -35,8 +35,8 @@ class CWAPastAndFutureReleasesAccountsResults extends StatelessWidget {
   }
 }
 
-class ResultsList extends StatelessWidget {
-  const ResultsList({required this.results, super.key});
+class _ResultsList extends StatelessWidget {
+  const _ResultsList({required this.results});
 
   final PastAndFutureReleasesCalculationResults results;
 

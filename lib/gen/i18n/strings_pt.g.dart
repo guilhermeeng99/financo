@@ -43,6 +43,7 @@ class TranslationsPt implements Translations {
 	@override late final _TranslationsAccountsPt accounts = _TranslationsAccountsPt._(_root);
 	@override late final _TranslationsCategoriesPt categories = _TranslationsCategoriesPt._(_root);
 	@override late final _TranslationsTransactionsPt transactions = _TranslationsTransactionsPt._(_root);
+	@override late final _TranslationsCreditCardPt credit_card = _TranslationsCreditCardPt._(_root);
 	@override late final _TranslationsSettingsPt settings = _TranslationsSettingsPt._(_root);
 	@override late final _TranslationsMessagesPt messages = _TranslationsMessagesPt._(_root);
 	@override late final _TranslationsDatePt date = _TranslationsDatePt._(_root);
@@ -166,6 +167,25 @@ class _TranslationsTransactionsPt implements TranslationsTransactionsEn {
 	@override late final _TranslationsTransactionsValidationPt validation = _TranslationsTransactionsValidationPt._(_root);
 }
 
+// Path: credit_card
+class _TranslationsCreditCardPt implements TranslationsCreditCardEn {
+	_TranslationsCreditCardPt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get current_bill => 'Fatura atual';
+	@override String get closing => 'Fechamento';
+	@override String get due => 'Vencimento';
+	@override String get close_bill => 'Fechar fatura';
+	@override String get launch_payment => 'Lançar pagamento';
+	@override String get limit => 'Limite (Total)';
+	@override String get account_limit => 'Limite da conta';
+	@override String get previous_balance => 'Saldo anterior';
+	@override String get total_paid => 'Total pago';
+	@override String get amount_due => 'Valor a pagar';
+}
+
 // Path: settings
 class _TranslationsSettingsPt implements TranslationsSettingsEn {
 	_TranslationsSettingsPt._(this._root);
@@ -233,6 +253,9 @@ class _TranslationsCommonLabelsPt implements TranslationsCommonLabelsEn {
 	@override String get type => 'Tipo';
 	@override String get amount => 'Valor';
 	@override String get date => 'Data';
+	@override String get details => 'Detalhamento';
+	@override String get used => 'Utilizado';
+	@override String get available => 'Disponível';
 	@override String get description => 'Descrição';
 	@override String account({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 		one: 'Conta',
@@ -459,6 +482,8 @@ class _TranslationsMessagesErrorsPt implements TranslationsMessagesErrorsEn {
 	@override String get export_error => 'Erro ao exportar';
 	@override String get excel_not_found => 'Arquivo Excel não encontrado';
 	@override String get excel_not_valid => 'Arquivo Excel inválido';
+	@override String get no_accounts_to_import => 'Nenhuma conta cadastrada. Por favor, crie pelo menos uma conta antes de importar transações.';
+	@override String get no_categories_to_import => 'Nenhuma categoria cadastrada. Por favor, crie pelo menos uma categoria antes de importar transações.';
 }
 
 // Path: transactions.currency.types
@@ -506,6 +531,9 @@ extension on TranslationsPt {
 			case 'common.labels.type': return 'Tipo';
 			case 'common.labels.amount': return 'Valor';
 			case 'common.labels.date': return 'Data';
+			case 'common.labels.details': return 'Detalhamento';
+			case 'common.labels.used': return 'Utilizado';
+			case 'common.labels.available': return 'Disponível';
 			case 'common.labels.description': return 'Descrição';
 			case 'common.labels.account': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('pt'))(n,
 				one: 'Conta',
@@ -634,6 +662,16 @@ extension on TranslationsPt {
 			case 'transactions.validation.category_id_must_be_positive': return 'O ID da categoria deve ser um número positivo';
 			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no passado';
 			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'A data da transação não pode ser de mais de ${number} anos no futuro';
+			case 'credit_card.current_bill': return 'Fatura atual';
+			case 'credit_card.closing': return 'Fechamento';
+			case 'credit_card.due': return 'Vencimento';
+			case 'credit_card.close_bill': return 'Fechar fatura';
+			case 'credit_card.launch_payment': return 'Lançar pagamento';
+			case 'credit_card.limit': return 'Limite (Total)';
+			case 'credit_card.account_limit': return 'Limite da conta';
+			case 'credit_card.previous_balance': return 'Saldo anterior';
+			case 'credit_card.total_paid': return 'Total pago';
+			case 'credit_card.amount_due': return 'Valor a pagar';
 			case 'settings.additional_settings': return 'Configurações Adicionais';
 			case 'messages.success.export_successfully': return 'Exportado com sucesso!';
 			case 'messages.success.excel_import_successfully': return 'Arquivo Excel importado com sucesso';
@@ -641,6 +679,8 @@ extension on TranslationsPt {
 			case 'messages.errors.export_error': return 'Erro ao exportar';
 			case 'messages.errors.excel_not_found': return 'Arquivo Excel não encontrado';
 			case 'messages.errors.excel_not_valid': return 'Arquivo Excel inválido';
+			case 'messages.errors.no_accounts_to_import': return 'Nenhuma conta cadastrada. Por favor, crie pelo menos uma conta antes de importar transações.';
+			case 'messages.errors.no_categories_to_import': return 'Nenhuma categoria cadastrada. Por favor, crie pelo menos uma categoria antes de importar transações.';
 			case 'date.semester_year': return ({required Object semester, required Object date_year}) => '${semester}º Semestre ${date_year}';
 			case 'date.semester_year_small': return ({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 			default: return null;

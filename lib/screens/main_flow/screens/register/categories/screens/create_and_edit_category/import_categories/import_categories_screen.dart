@@ -1,6 +1,6 @@
 import 'package:app_widgets/app_widgets.dart';
 import 'package:financo/app/app_theme.dart';
-import 'package:financo/screens/main_flow/screens/register/categories/screens/import_categories/import_categories_model.dart';
+import 'package:financo/screens/main_flow/screens/register/categories/screens/create_and_edit_category/import_categories/import_categories_model.dart';
 
 class ImportCategoriesPopUp extends StatelessWidget {
   const ImportCategoriesPopUp({super.key});

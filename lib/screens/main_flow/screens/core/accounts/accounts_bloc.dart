@@ -17,6 +17,9 @@ class CoreAccountsBloc extends GetxController {
   final RxList<TransactionsAccount> checkingAccounts =
       <TransactionsAccount>[].obs;
 
+  final RxList<TransactionsAccount> creditCardAccounts =
+      <TransactionsAccount>[].obs;
+
   final TransactionSummaryManager _transactionSummaryManager =
       TransactionSummaryManager();
 
@@ -25,12 +28,14 @@ class CoreAccountsBloc extends GetxController {
 
   void _initializeBloc() {
     unawaited(loadCheckingAccounts());
+    unawaited(loadCreditCardAccounts());
     _setupCalendarListener();
   }
 
   void _setupCalendarListener() {
     ever(coreCalendarBloc.selected, (_) async {
       await updateFilteredBalances();
+      await updateFilteredCreditCardBalances();
     });
   }
 
@@ -47,10 +52,27 @@ class CoreAccountsBloc extends GetxController {
     await updateFilteredBalances();
   }
 
+  Future<void> loadCreditCardAccounts() async {
+    final accounts = await AccountLoader.loadCreditCardAccounts();
+    creditCardAccounts.assignAll(accounts);
+
+    for (final account in accounts) {
+      ever(account.isEnabled, (_) async {
+        await updateFilteredCreditCardBalances();
+      });
+    }
+
+    await updateFilteredCreditCardBalances();
+  }
+
   Future<void> updateFilteredBalances() async {
     await AccountBalanceManager.updateFilteredBalances(checkingAccounts);
     await _updateTransactionSummary();
     _updateTotals();
+  }
+
+  Future<void> updateFilteredCreditCardBalances() async {
+    await AccountBalanceManager.updateFilteredBalances(creditCardAccounts);
   }
 
   void _updateTotals() {
@@ -91,17 +113,23 @@ class CoreAccountsBloc extends GetxController {
   RxDouble get totalAllAccountsProjectedBalance =>
       _totalAllAccountsProjectedBalance;
 
-  Set<int> get enabledAccountIds =>
+  Set<int> get enabledCheckingAccountIds =>
       AccountBalanceManager.getEnabledAccountIds(checkingAccounts);
+
+  Set<int> get enabledCreditCardAccountIds =>
+      AccountBalanceManager.getEnabledAccountIds(creditCardAccounts);
 
   Future<void> _updateTransactionSummary() async {
     await _transactionSummaryManager.updateTransactionSummary(
-      accountIds: enabledAccountIds,
+      accountIds: enabledCheckingAccountIds,
     );
   }
 
   void enableAllAccounts() {
     for (final account in checkingAccounts) {
+      account.isEnabled.value = true;
+    }
+    for (final account in creditCardAccounts) {
       account.isEnabled.value = true;
     }
   }

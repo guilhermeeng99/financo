@@ -45,7 +45,7 @@ class PastAndFutureReleasesBloc extends GetxController {
 
   void _updateCoreTransactionsBloc() {
     coreTransactionsBloc.updateEnabledAccountIds(
-      coreAccountsBloc.enabledAccountIds,
+      coreAccountsBloc.enabledCheckingAccountIds,
     );
   }
 
@@ -57,7 +57,7 @@ class PastAndFutureReleasesBloc extends GetxController {
     final allTransactions = coreTransactionsBloc.filteredTransactionsFilter;
     final targetAccountIds = accountId != null
         ? [accountId]
-        : coreAccountsBloc.enabledAccountIds;
+        : coreAccountsBloc.enabledCheckingAccountIds;
     final allowedFilters = type.allowedFilters;
 
     return allTransactions.where((transaction) {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:app_widgets/app_widgets.dart';
@@ -132,6 +133,7 @@ $openFileDialog.FilterIndex = 1
 $openFileDialog.Multiselect = $false
 
 if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     Write-Output $openFileDialog.FileName
 } else {
     exit 1
@@ -141,6 +143,7 @@ if ($openFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
       final result = await Process.run(
         'powershell',
         ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
+        stdoutEncoding: utf8,
       );
 
       if (result.exitCode == 0) {

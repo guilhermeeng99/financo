@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_database/app_database.dart';
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/accounts_bloc.dart';
 
 AccountsBloc get accountsBloc => Modular.get<AccountsBloc>();
 
@@ -24,13 +25,16 @@ class AccountsBloc extends GetxController {
         onlyActive: showOnlyActiveAccounts.value,
       );
 
-      result.fold(
+      await result.fold(
         (failure) {
           logger.e('❌ Error loading accounts: ${failure.message}');
           CWSnackBar.snackBar(title: failure.message, type: SnackBarType.error);
         },
-        (grouped) {
+        (grouped) async {
           groupedAccounts.value = grouped;
+          await coreAccountsBloc.loadCheckingAccounts();
+          await coreAccountsBloc.loadCreditCardAccounts();
+
           logger.i('✅ Grouped accounts loaded from database');
         },
       );

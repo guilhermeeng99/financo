@@ -46,6 +46,7 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
 	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
+	late final TranslationsCreditCardEn credit_card = TranslationsCreditCardEn._(_root);
 	late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
 	late final TranslationsMessagesEn messages = TranslationsMessagesEn._(_root);
 	late final TranslationsDateEn date = TranslationsDateEn._(_root);
@@ -256,6 +257,45 @@ class TranslationsTransactionsEn {
 	late final TranslationsTransactionsValidationEn validation = TranslationsTransactionsValidationEn._(_root);
 }
 
+// Path: credit_card
+class TranslationsCreditCardEn {
+	TranslationsCreditCardEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Current Bill'
+	String get current_bill => 'Current Bill';
+
+	/// en: 'Closing'
+	String get closing => 'Closing';
+
+	/// en: 'Due Date'
+	String get due => 'Due Date';
+
+	/// en: 'Close Bill'
+	String get close_bill => 'Close Bill';
+
+	/// en: 'Launch Payment'
+	String get launch_payment => 'Launch Payment';
+
+	/// en: 'Limit (Total)'
+	String get limit => 'Limit (Total)';
+
+	/// en: 'Account Limit'
+	String get account_limit => 'Account Limit';
+
+	/// en: 'Previous Balance'
+	String get previous_balance => 'Previous Balance';
+
+	/// en: 'Total Paid'
+	String get total_paid => 'Total Paid';
+
+	/// en: 'Amount Due'
+	String get amount_due => 'Amount Due';
+}
+
 // Path: settings
 class TranslationsSettingsEn {
 	TranslationsSettingsEn._(this._root);
@@ -362,6 +402,15 @@ class TranslationsCommonLabelsEn {
 
 	/// en: 'Amount'
 	String get amount => 'Amount';
+
+	/// en: 'Details'
+	String get details => 'Details';
+
+	/// en: 'Used'
+	String get used => 'Used';
+
+	/// en: 'Available'
+	String get available => 'Available';
 
 	/// en: 'Date'
 	String get date => 'Date';
@@ -747,6 +796,12 @@ class TranslationsMessagesErrorsEn {
 
 	/// en: 'Invalid Excel file'
 	String get excel_not_valid => 'Invalid Excel file';
+
+	/// en: 'No accounts registered. Please create at least one account before importing transactions.'
+	String get no_accounts_to_import => 'No accounts registered. Please create at least one account before importing transactions.';
+
+	/// en: 'No categories registered. Please create at least one category before importing transactions.'
+	String get no_categories_to_import => 'No categories registered. Please create at least one category before importing transactions.';
 }
 
 // Path: transactions.currency.types
@@ -799,6 +854,9 @@ extension on Translations {
 			case 'common.labels.name': return 'Name';
 			case 'common.labels.type': return 'Type';
 			case 'common.labels.amount': return 'Amount';
+			case 'common.labels.details': return 'Details';
+			case 'common.labels.used': return 'Used';
+			case 'common.labels.available': return 'Available';
 			case 'common.labels.date': return 'Date';
 			case 'common.labels.description': return 'Description';
 			case 'common.labels.account': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
@@ -928,6 +986,16 @@ extension on Translations {
 			case 'transactions.validation.category_id_must_be_positive': return 'Category ID must be a positive number';
 			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'Transaction date cannot be more than ${number} years in the past';
 			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'Transaction date cannot be more than ${number} years in the future';
+			case 'credit_card.current_bill': return 'Current Bill';
+			case 'credit_card.closing': return 'Closing';
+			case 'credit_card.due': return 'Due Date';
+			case 'credit_card.close_bill': return 'Close Bill';
+			case 'credit_card.launch_payment': return 'Launch Payment';
+			case 'credit_card.limit': return 'Limit (Total)';
+			case 'credit_card.account_limit': return 'Account Limit';
+			case 'credit_card.previous_balance': return 'Previous Balance';
+			case 'credit_card.total_paid': return 'Total Paid';
+			case 'credit_card.amount_due': return 'Amount Due';
 			case 'settings.additional_settings': return 'Additional Settings';
 			case 'messages.success.export_successfully': return 'Exported successfully!';
 			case 'messages.success.excel_import_successfully': return 'Excel file imported successfully';
@@ -935,6 +1003,8 @@ extension on Translations {
 			case 'messages.errors.export_error': return 'Error while exporting';
 			case 'messages.errors.excel_not_found': return 'Excel file not found';
 			case 'messages.errors.excel_not_valid': return 'Invalid Excel file';
+			case 'messages.errors.no_accounts_to_import': return 'No accounts registered. Please create at least one account before importing transactions.';
+			case 'messages.errors.no_categories_to_import': return 'No categories registered. Please create at least one category before importing transactions.';
 			case 'date.semester_year': return ({required Object semester, required Object date_year}) => '${semester}º Semester ${date_year}';
 			case 'date.semester_year_small': return ({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
 			default: return null;
