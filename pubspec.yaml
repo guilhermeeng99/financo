@@ -20,12 +20,12 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  slang_flutter: ^4.8.0
+  slang_flutter: ^4.9.0
 
 dev_dependencies:
   intl: ^0.20.2
   melos: ^7.1.1
-  slang: ^4.8.1
+  slang: ^4.9.0
   very_good_analysis: ^10.0.0
 
 workspace:

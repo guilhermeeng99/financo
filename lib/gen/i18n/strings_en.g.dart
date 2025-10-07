@@ -48,6 +48,7 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
 	late final TranslationsCreditCardEn credit_card = TranslationsCreditCardEn._(_root);
 	late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
+	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
 	late final TranslationsMessagesEn messages = TranslationsMessagesEn._(_root);
 	late final TranslationsDateEn date = TranslationsDateEn._(_root);
 }
@@ -306,6 +307,30 @@ class TranslationsSettingsEn {
 
 	/// en: 'Additional Settings'
 	String get additional_settings => 'Additional Settings';
+}
+
+// Path: profile
+class TranslationsProfileEn {
+	TranslationsProfileEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Profile'
+	String get title => 'Profile';
+
+	/// en: 'Delete All Data'
+	String get delete_all_data => 'Delete All Data';
+
+	/// en: 'Deleting...'
+	String get deleting => 'Deleting...';
+
+	/// en: 'All data deleted successfully'
+	String get delete_success => 'All data deleted successfully';
+
+	/// en: 'Error deleting data: $error'
+	String delete_error({required Object error}) => 'Error deleting data: ${error}';
 }
 
 // Path: messages
@@ -997,6 +1022,11 @@ extension on Translations {
 			case 'credit_card.total_paid': return 'Total Paid';
 			case 'credit_card.amount_due': return 'Amount Due';
 			case 'settings.additional_settings': return 'Additional Settings';
+			case 'profile.title': return 'Profile';
+			case 'profile.delete_all_data': return 'Delete All Data';
+			case 'profile.deleting': return 'Deleting...';
+			case 'profile.delete_success': return 'All data deleted successfully';
+			case 'profile.delete_error': return ({required Object error}) => 'Error deleting data: ${error}';
 			case 'messages.success.export_successfully': return 'Exported successfully!';
 			case 'messages.success.excel_import_successfully': return 'Excel file imported successfully';
 			case 'messages.warnings.no_changes_provided': return 'No changes were provided';

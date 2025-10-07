@@ -14,7 +14,9 @@ class MainFlowTopBarModel {
     Modular.to.navigate(ro.mainFlow.home.route);
   }
 
-  void onTapSearch() {}
-
-  void onTapCalculator() {}
+  void onTapProfile() {
+    mainFlowBloc.selectedSideBarItem.value = null;
+    mainFlowBloc.isSideBarOn.value = false;
+    Modular.to.navigate(ro.mainFlow.profile.route);
+  }
 }

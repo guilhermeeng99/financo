@@ -9,6 +9,7 @@ import 'package:financo/screens/main_flow/screens/credit_card/credit_card_module
 import 'package:financo/screens/main_flow/screens/financial_movement/past_and_future_releases/past_and_future_releases_module.dart';
 import 'package:financo/screens/main_flow/screens/financial_movement/releases/releases_module.dart';
 import 'package:financo/screens/main_flow/screens/home/home_module.dart';
+import 'package:financo/screens/main_flow/screens/profile/profile_module.dart';
 import 'package:financo/screens/main_flow/screens/register/accounts/accounts_module.dart';
 import 'package:financo/screens/main_flow/screens/register/categories/categories_module.dart';
 
@@ -75,6 +76,14 @@ class MainFlowModule extends Module {
             ro.mainFlow.creditCard.route,
           ),
           module: CreditCardModule(),
+          duration: Duration.zero,
+          transition: TransitionType.fadeIn,
+        ),
+        ModuleRoute(
+          _getRelativeRoute(
+            ro.mainFlow.profile.route,
+          ),
+          module: ProfileModule(),
           duration: Duration.zero,
           transition: TransitionType.fadeIn,
         ),

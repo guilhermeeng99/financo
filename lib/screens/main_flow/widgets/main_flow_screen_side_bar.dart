@@ -50,9 +50,8 @@ class _Item extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final selectedItem = mainFlowBloc.selectedSideBarItem.value;
-      final isSelected = selectedItem == item.type;
-      final isExpanded =
-          item.isParent && mainFlowBloc.isItemExpanded(item.type);
+      final isSelected = selectedItem == item;
+      final isExpanded = item.isParent && mainFlowBloc.isItemExpanded(item);
 
       return CWAnimatedScaleButtonWidget(
         onTap: item.onTap,

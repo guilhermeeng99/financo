@@ -14,20 +14,22 @@ class MainFlowScreenTopBar extends StatelessWidget {
       child: Row(
         spacing: 9,
         children: [
-          _Item(mainFlowTopBarController.topBarItems[0]),
-          const _Overview(),
+          _Item(mainFlowTopBarController.sideBarItem),
+          const _OverviewItem(),
+          const Spacer(),
+          _Item(mainFlowTopBarController.profileItem),
         ],
       ),
     );
   }
 }
 
-class _Overview extends StatelessWidget {
-  const _Overview();
+class _OverviewItem extends StatelessWidget {
+  const _OverviewItem();
 
   @override
   Widget build(BuildContext context) {
-    final item = mainFlowTopBarController.topBarItems[1];
+    final item = mainFlowTopBarController.overviewItem;
 
     return CWAnimatedScaleButtonWidget(
       onTap: item.onTap,

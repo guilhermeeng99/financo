@@ -45,6 +45,7 @@ class TranslationsPt implements Translations {
 	@override late final _TranslationsTransactionsPt transactions = _TranslationsTransactionsPt._(_root);
 	@override late final _TranslationsCreditCardPt credit_card = _TranslationsCreditCardPt._(_root);
 	@override late final _TranslationsSettingsPt settings = _TranslationsSettingsPt._(_root);
+	@override late final _TranslationsProfilePt profile = _TranslationsProfilePt._(_root);
 	@override late final _TranslationsMessagesPt messages = _TranslationsMessagesPt._(_root);
 	@override late final _TranslationsDatePt date = _TranslationsDatePt._(_root);
 }
@@ -194,6 +195,20 @@ class _TranslationsSettingsPt implements TranslationsSettingsEn {
 
 	// Translations
 	@override String get additional_settings => 'Configurações Adicionais';
+}
+
+// Path: profile
+class _TranslationsProfilePt implements TranslationsProfileEn {
+	_TranslationsProfilePt._(this._root);
+
+	final TranslationsPt _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Perfil';
+	@override String get delete_all_data => 'Deletar Todos os Dados';
+	@override String get deleting => 'Deletando...';
+	@override String get delete_success => 'Todos os dados foram deletados com sucesso';
+	@override String delete_error({required Object error}) => 'Erro ao deletar dados: ${error}';
 }
 
 // Path: messages
@@ -673,6 +688,11 @@ extension on TranslationsPt {
 			case 'credit_card.total_paid': return 'Total pago';
 			case 'credit_card.amount_due': return 'Valor a pagar';
 			case 'settings.additional_settings': return 'Configurações Adicionais';
+			case 'profile.title': return 'Perfil';
+			case 'profile.delete_all_data': return 'Deletar Todos os Dados';
+			case 'profile.deleting': return 'Deletando...';
+			case 'profile.delete_success': return 'Todos os dados foram deletados com sucesso';
+			case 'profile.delete_error': return ({required Object error}) => 'Erro ao deletar dados: ${error}';
 			case 'messages.success.export_successfully': return 'Exportado com sucesso!';
 			case 'messages.success.excel_import_successfully': return 'Arquivo Excel importado com sucesso';
 			case 'messages.warnings.no_changes_provided': return 'Nenhuma alteração foi fornecida';

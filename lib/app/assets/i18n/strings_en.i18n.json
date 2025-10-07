@@ -215,6 +215,13 @@
   "settings": {
     "additional_settings": "Additional Settings"
   },
+  "profile": {
+    "title": "Profile",
+    "delete_all_data": "Delete All Data",
+    "deleting": "Deleting...",
+    "delete_success": "All data deleted successfully",
+    "delete_error": "Error deleting data: $error"
+  },
   "messages": {
     "success": {
       "export_successfully": "Exported successfully!",

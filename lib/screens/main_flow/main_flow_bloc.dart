@@ -5,27 +5,28 @@ MainFlowBloc get mainFlowBloc => Modular.get<MainFlowBloc>();
 
 class MainFlowBloc extends GetxController {
   Rx<bool> isSideBarOn = false.obs;
-  Rx<SideBarItemType?> selectedSideBarItem = Rx<SideBarItemType?>(null);
-  RxSet<SideBarItemType> expandedItems = <SideBarItemType>{}.obs;
+  Rx<SideBarItem?> selectedSideBarItem = Rx<SideBarItem?>(null);
+  RxSet<SideBarItem> expandedItems = <SideBarItem>{}.obs;
 
-  void selectSideBarItem(SideBarItemType type) {
-    if (type.route != null) {
-      selectedSideBarItem.value = type;
+  void selectSideBarItem(SideBarItem item) {
+    if (item.route != null) {
+      selectedSideBarItem.value = item;
       isSideBarOn.value = false;
-      Modular.to.navigate(type.route!);
+      Modular.to.navigate(item.route!);
     }
   }
 
-  void toggleSideBarItem(SideBarItemType type) {
-    if (expandedItems.contains(type)) {
-      expandedItems.remove(type);
+  void toggleSideBarItem(SideBarItem item) {
+    if (expandedItems.contains(item)) {
+      expandedItems.remove(item);
     } else {
-      expandedItems.add(type);
+      expandedItems.add(item);
     }
+    expandedItems.refresh();
   }
 
-  bool isItemExpanded(SideBarItemType type) {
-    return expandedItems.contains(type);
+  bool isItemExpanded(SideBarItem item) {
+    return expandedItems.contains(item);
   }
 
   void clearSelection() {
