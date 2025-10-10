@@ -27,8 +27,7 @@ class CoreAccountsBloc extends GetxController {
   final RxDouble _totalAllAccountsProjectedBalance = 0.0.obs;
 
   void _initializeBloc() {
-    unawaited(loadCheckingAccounts());
-    unawaited(loadCreditCardAccounts());
+    unawaited(loadAllAccounts());
     _setupCalendarListener();
   }
 
@@ -37,6 +36,11 @@ class CoreAccountsBloc extends GetxController {
       await updateFilteredBalances();
       await updateFilteredCreditCardBalances();
     });
+  }
+
+  Future<void> loadAllAccounts() async {
+    await loadCheckingAccounts();
+    await loadCreditCardAccounts();
   }
 
   Future<void> loadCheckingAccounts() async {

@@ -1,4 +1,5 @@
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/screens/core/accounts/accounts_bloc.dart';
 import 'package:financo/screens/main_flow/screens/profile/profile_model.dart';
 
 ProfileBloc get profileBloc => Modular.get<ProfileBloc>();
@@ -12,6 +13,8 @@ class ProfileBloc extends GetxController {
       _isDeleting.value = true;
       await profileModel.deleteAllData();
 
+      await coreAccountsBloc.loadAllAccounts();
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -22,6 +25,7 @@ class ProfileBloc extends GetxController {
       }
     } on Exception catch (e) {
       if (context.mounted) {
+        logger.e(t.profile.delete_error(error: e.toString()));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(t.profile.delete_error(error: e.toString())),

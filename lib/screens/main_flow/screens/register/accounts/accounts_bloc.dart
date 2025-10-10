@@ -32,8 +32,7 @@ class AccountsBloc extends GetxController {
         },
         (grouped) async {
           groupedAccounts.value = grouped;
-          await coreAccountsBloc.loadCheckingAccounts();
-          await coreAccountsBloc.loadCreditCardAccounts();
+          await coreAccountsBloc.loadAllAccounts();
 
           logger.i('✅ Grouped accounts loaded from database');
         },

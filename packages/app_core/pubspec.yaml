@@ -25,5 +25,5 @@ dependencies:
   file_saver: ^0.3.1
   excel: ^4.0.6
   url_launcher: ^6.3.2
-  win32: ^5.14.0
+  win32: ^5.15.0
   intl:

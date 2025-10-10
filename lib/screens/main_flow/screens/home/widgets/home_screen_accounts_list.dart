@@ -13,44 +13,52 @@ class CWHomeScreenAccountsList extends StatelessWidget {
     return HomeScreenContainer(
       title: context.t.overview.cash_balance,
       bottomChild: const _Total(),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+      child: Obx(
+        () {
+          final checkingAccounts = homeBloc.checkingAccounts;
+
+          if (checkingAccounts.isEmpty) {
+            return Center(
+              child: Text(
+                context.t.accounts.no_accounts_found,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+            );
+          }
+          return Column(
+            spacing: 10,
             children: [
-              Obx(
-                () => Checkbox(
-                  value: homeBloc.areAllAccountsEnabled,
-                  tristate: true,
-                  onChanged: (value) => homeBloc.toggleAllAccounts(),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Checkbox(
+                    value: homeBloc.areAllAccountsEnabled,
+                    tristate: true,
+                    onChanged: (value) => homeBloc.toggleAllAccounts(),
+                  ),
+                  const Spacer(),
+                  CWContainerAmoutValue(
+                    child: Text(
+                      context.t.common.labels.confirmed(n: 1),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                  CWContainerAmoutValue(
+                    child: Text(
+                      context.t.common.labels.projected(n: 1),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              CWContainerAmoutValue(
-                child: Text(
-                  context.t.common.labels.confirmed(n: 1),
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-              CWContainerAmoutValue(
-                child: Text(
-                  context.t.common.labels.projected(n: 1),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Column(
+                children: checkingAccounts
+                    .map((account) => _AccountItem(account: account))
+                    .toList(),
               ),
             ],
-          ),
-          const Gap(10),
-          Obx(() {
-            final checkingAccounts = homeBloc.checkingAccounts;
-
-            return Column(
-              children: checkingAccounts
-                  .map((account) => _AccountItem(account: account))
-                  .toList(),
-            );
-          }),
-        ],
+          );
+        },
       ),
     );
   }

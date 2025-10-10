@@ -182,6 +182,9 @@ class TranslationsAccountsEn {
 	/// en: 'Show Only Active Accounts'
 	String get show_only_active => 'Show Only Active Accounts';
 
+	/// en: 'No accounts found'
+	String get no_accounts_found => 'No accounts found';
+
 	late final TranslationsAccountsTypesEn types = TranslationsAccountsTypesEn._(_root);
 	late final TranslationsAccountsValidationEn validation = TranslationsAccountsValidationEn._(_root);
 }
@@ -220,6 +223,9 @@ class TranslationsCategoriesEn {
 
 	/// en: 'No Category'
 	String get no_category => 'No Category';
+
+	/// en: 'No categories found'
+	String get no_categories_found => 'No categories found';
 
 	late final TranslationsCategoriesValidationEn validation = TranslationsCategoriesValidationEn._(_root);
 }
@@ -320,8 +326,8 @@ class TranslationsProfileEn {
 	/// en: 'Profile'
 	String get title => 'Profile';
 
-	/// en: 'Delete All Data'
-	String get delete_all_data => 'Delete All Data';
+	/// en: 'Delete all data'
+	String get delete_all_data => 'Delete all data';
 
 	/// en: 'Deleting...'
 	String get deleting => 'Deleting...';
@@ -956,6 +962,7 @@ extension on Translations {
 			case 'accounts.origin_account': return 'Origin Account';
 			case 'accounts.destination_account': return 'Destination Account';
 			case 'accounts.show_only_active': return 'Show Only Active Accounts';
+			case 'accounts.no_accounts_found': return 'No accounts found';
 			case 'accounts.types.checking_account': return 'Checking Account';
 			case 'accounts.types.credit_card': return 'Credit Card';
 			case 'accounts.types.money': return 'Cash';
@@ -979,6 +986,7 @@ extension on Translations {
 			case 'categories.select_category': return 'Select Category';
 			case 'categories.subcategory_of': return 'Subcategory of';
 			case 'categories.no_category': return 'No Category';
+			case 'categories.no_categories_found': return 'No categories found';
 			case 'categories.validation.name_cannot_be_empty': return 'Category name cannot be empty';
 			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'Category name must be at least ${number} characters long';
 			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'Category name must be at most ${number} characters long';
@@ -1023,7 +1031,7 @@ extension on Translations {
 			case 'credit_card.amount_due': return 'Amount Due';
 			case 'settings.additional_settings': return 'Additional Settings';
 			case 'profile.title': return 'Profile';
-			case 'profile.delete_all_data': return 'Delete All Data';
+			case 'profile.delete_all_data': return 'Delete all data';
 			case 'profile.deleting': return 'Deleting...';
 			case 'profile.delete_success': return 'All data deleted successfully';
 			case 'profile.delete_error': return ({required Object error}) => 'Error deleting data: ${error}';

@@ -120,6 +120,7 @@
     "origin_account": "Origin Account",
     "destination_account": "Destination Account",
     "show_only_active": "Show Only Active Accounts",
+    "no_accounts_found": "No accounts found",
     "types": {
       "checking_account": "Checking Account",
       "credit_card": "Credit Card",
@@ -149,6 +150,7 @@
     "select_category": "Select Category",
     "subcategory_of": "Subcategory of",
     "no_category": "No Category",
+    "no_categories_found": "No categories found",
     "validation": {
       "name_cannot_be_empty": "Category name cannot be empty",
       "name_min_length_number": "Category name must be at least $number characters long",
@@ -217,7 +219,7 @@
   },
   "profile": {
     "title": "Profile",
-    "delete_all_data": "Delete All Data",
+    "delete_all_data": "Delete all data",
     "deleting": "Deleting...",
     "delete_success": "All data deleted successfully",
     "delete_error": "Error deleting data: $error"

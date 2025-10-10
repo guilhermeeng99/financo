@@ -13,19 +13,28 @@ class CategoriesScreen extends HookWidget {
 
     return Scaffold(
       floatingActionButton: const _FloatingActionButton(),
-      body: Scrollbar(
-        controller: scrollController,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
-          child: Column(
-            children: [
-              const _TopButtons(),
-              Expanded(
-                child: Obx(() {
-                  final categoriesWithSubcategories =
-                      categoriesBloc.categoriesWithSubcategories;
+      body: Padding(
+        padding: const EdgeInsets.only(top: 40, left: 60, right: 60),
+        child: Column(
+          children: [
+            const _TopButtons(),
+            Expanded(
+              child: Obx(() {
+                final categoriesWithSubcategories =
+                    categoriesBloc.categoriesWithSubcategories;
 
-                  return SingleChildScrollView(
+                if (categoriesWithSubcategories.isEmpty) {
+                  return Center(
+                    child: Text(
+                      context.t.categories.no_categories_found,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  );
+                }
+
+                return Scrollbar(
+                  controller: scrollController,
+                  child: SingleChildScrollView(
                     controller: scrollController,
                     padding: const EdgeInsets.only(bottom: 20),
                     child: Row(
@@ -42,11 +51,11 @@ class CategoriesScreen extends HookWidget {
                         ),
                       ],
                     ),
-                  );
-                }),
-              ),
-            ],
-          ),
+                  ),
+                );
+              }),
+            ),
+          ],
         ),
       ),
     );

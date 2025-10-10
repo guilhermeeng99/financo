@@ -120,6 +120,7 @@
     "origin_account": "Conta de Origem",
     "destination_account": "Conta de Destino",
     "show_only_active": "Mostrar Apenas Contas Ativas",
+    "no_accounts_found": "Nenhuma conta encontrada",
     "types": {
       "checking_account": "Conta Corrente",
       "credit_card": "Cartão de Crédito",
@@ -149,6 +150,7 @@
     "select_category": "Selecionar Categoria",
     "subcategory_of": "Subcategoria de",
     "no_category": "Sem Categoria",
+    "no_categories_found": "Nenhuma categoria encontrada",
     "validation": {
       "name_cannot_be_empty": "O nome da categoria não pode estar vazio",
       "name_min_length_number": "O nome da categoria deve ter pelo menos $number caracteres",
@@ -217,7 +219,7 @@
   },
   "profile": {
     "title": "Perfil",
-    "delete_all_data": "Deletar Todos os Dados",
+    "delete_all_data": "Deletar todos os dados",
     "deleting": "Deletando...",
     "delete_success": "Todos os dados foram deletados com sucesso",
     "delete_error": "Erro ao deletar dados: $error"

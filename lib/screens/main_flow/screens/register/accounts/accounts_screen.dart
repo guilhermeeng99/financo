@@ -41,6 +41,15 @@ class AccountsScreen extends StatelessWidget {
               child: Obx(() {
                 final groupedAccounts = accountsBloc.groupedAccounts;
 
+                if (groupedAccounts.isEmpty) {
+                  return Center(
+                    child: Text(
+                      context.t.accounts.no_accounts_found,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  );
+                }
+
                 return SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

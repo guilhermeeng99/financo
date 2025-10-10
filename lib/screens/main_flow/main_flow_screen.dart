@@ -1,4 +1,5 @@
 import 'package:app_widgets/app_widgets.dart';
+import 'package:financo/screens/main_flow/main_flow_bloc.dart';
 import 'package:financo/screens/main_flow/widgets/main_flow_screen_side_bar.dart';
 import 'package:financo/screens/main_flow/widgets/main_flow_screen_top_bar.dart';
 
@@ -7,15 +8,28 @@ class MainFlowScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Column(
         children: [
-          MainFlowScreenTopBar(),
+          const MainFlowScreenTopBar(),
           Expanded(
-            child: Row(
+            child: Stack(
               children: [
-                MainFlowScreenSideBar(),
-                Expanded(child: RouterOutlet()),
+                Row(
+                  children: [
+                    const MainFlowScreenSideBar(),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (mainFlowBloc.isSideBarOn.value) {
+                            mainFlowBloc.isSideBarOn.value = false;
+                          }
+                        },
+                        child: const RouterOutlet(),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

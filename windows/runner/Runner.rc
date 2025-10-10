@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.blu" "\0"
-            VALUE "FileDescription", "financo" "\0"
+            VALUE "FileDescription", "Financo" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "financo" "\0"
+            VALUE "InternalName", "Financo" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.blu. All rights reserved." "\0"
             VALUE "OriginalFilename", "financo.exe" "\0"
-            VALUE "ProductName", "financo" "\0"
+            VALUE "ProductName", "Financo" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

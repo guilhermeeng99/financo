@@ -124,6 +124,7 @@ class _TranslationsAccountsPt implements TranslationsAccountsEn {
 	@override String get origin_account => 'Conta de Origem';
 	@override String get destination_account => 'Conta de Destino';
 	@override String get show_only_active => 'Mostrar Apenas Contas Ativas';
+	@override String get no_accounts_found => 'Nenhuma conta encontrada';
 	@override late final _TranslationsAccountsTypesPt types = _TranslationsAccountsTypesPt._(_root);
 	@override late final _TranslationsAccountsValidationPt validation = _TranslationsAccountsValidationPt._(_root);
 }
@@ -144,6 +145,7 @@ class _TranslationsCategoriesPt implements TranslationsCategoriesEn {
 	@override String get select_category => 'Selecionar Categoria';
 	@override String get subcategory_of => 'Subcategoria de';
 	@override String get no_category => 'Sem Categoria';
+	@override String get no_categories_found => 'Nenhuma categoria encontrada';
 	@override late final _TranslationsCategoriesValidationPt validation = _TranslationsCategoriesValidationPt._(_root);
 }
 
@@ -205,7 +207,7 @@ class _TranslationsProfilePt implements TranslationsProfileEn {
 
 	// Translations
 	@override String get title => 'Perfil';
-	@override String get delete_all_data => 'Deletar Todos os Dados';
+	@override String get delete_all_data => 'Deletar todos os dados';
 	@override String get deleting => 'Deletando...';
 	@override String get delete_success => 'Todos os dados foram deletados com sucesso';
 	@override String delete_error({required Object error}) => 'Erro ao deletar dados: ${error}';
@@ -622,6 +624,7 @@ extension on TranslationsPt {
 			case 'accounts.origin_account': return 'Conta de Origem';
 			case 'accounts.destination_account': return 'Conta de Destino';
 			case 'accounts.show_only_active': return 'Mostrar Apenas Contas Ativas';
+			case 'accounts.no_accounts_found': return 'Nenhuma conta encontrada';
 			case 'accounts.types.checking_account': return 'Conta Corrente';
 			case 'accounts.types.credit_card': return 'Cartão de Crédito';
 			case 'accounts.types.money': return 'Dinheiro';
@@ -645,6 +648,7 @@ extension on TranslationsPt {
 			case 'categories.select_category': return 'Selecionar Categoria';
 			case 'categories.subcategory_of': return 'Subcategoria de';
 			case 'categories.no_category': return 'Sem Categoria';
+			case 'categories.no_categories_found': return 'Nenhuma categoria encontrada';
 			case 'categories.validation.name_cannot_be_empty': return 'O nome da categoria não pode estar vazio';
 			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'O nome da categoria deve ter pelo menos ${number} caracteres';
 			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'O nome da categoria deve ter no máximo ${number} caracteres';
@@ -689,7 +693,7 @@ extension on TranslationsPt {
 			case 'credit_card.amount_due': return 'Valor a pagar';
 			case 'settings.additional_settings': return 'Configurações Adicionais';
 			case 'profile.title': return 'Perfil';
-			case 'profile.delete_all_data': return 'Deletar Todos os Dados';
+			case 'profile.delete_all_data': return 'Deletar todos os dados';
 			case 'profile.deleting': return 'Deletando...';
 			case 'profile.delete_success': return 'Todos os dados foram deletados com sucesso';
 			case 'profile.delete_error': return ({required Object error}) => 'Erro ao deletar dados: ${error}';
