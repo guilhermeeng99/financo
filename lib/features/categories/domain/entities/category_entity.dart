@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum CategoryType { income, expense, both }
+enum CategoryType { income, expense }
 
 class CategoryEntity extends Equatable {
   const CategoryEntity({

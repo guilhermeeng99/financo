@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-
+import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_app_bar.dart';
 import 'package:financo/app/widgets/financo_button.dart';
@@ -85,6 +85,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   onTap: () => context.push(AppRoutes.categories),
                 ),
                 const Divider(),
+                _ThemeSelector(),
+                const Divider(),
                 const SizedBox(height: 24),
                 FinancoButton(
                   label: t.auth.signOut,
@@ -103,6 +105,44 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
+class _ThemeSelector extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ThemeCubit, ThemeMode>(
+      builder: (context, themeMode) {
+        return ListTile(
+          leading: const FaIcon(FontAwesomeIcons.palette),
+          title: Text(t.profile.theme),
+          subtitle: SegmentedButton<ThemeMode>(
+            segments: [
+              ButtonSegment(
+                value: ThemeMode.light,
+                label: Text(t.profile.themeLight),
+              ),
+              ButtonSegment(
+                value: ThemeMode.system,
+                label: Text(t.profile.themeSystem),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                label: Text(t.profile.themeDark),
+              ),
+            ],
+            selected: {themeMode},
+            onSelectionChanged: (selected) {
+              unawaited(
+                context.read<ThemeCubit>().setThemeMode(
+                  selected.first,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _ProfileTile extends StatelessWidget {
   const _ProfileTile({
     required this.icon,
@@ -110,7 +150,7 @@ class _ProfileTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final IconData icon;
+  final FaIconData icon;
   final String title;
   final VoidCallback onTap;
 

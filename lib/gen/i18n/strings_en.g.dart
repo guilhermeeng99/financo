@@ -471,6 +471,12 @@ class TranslationsAccountsEn {
 	/// en: 'e.g. Nubank'
 	String get bankHint => 'e.g. Nubank';
 
+	/// en: 'Others'
+	String get bankOthers => 'Others';
+
+	/// en: 'Linked Checking Account'
+	String get linkedAccount => 'Linked Checking Account';
+
 	/// en: 'Balance'
 	String get balance => 'Balance';
 
@@ -543,8 +549,14 @@ class TranslationsCategoriesEn {
 	/// en: 'Add Category'
 	String get addCategory => 'Add Category';
 
+	/// en: 'Edit Category'
+	String get editCategory => 'Edit Category';
+
 	/// en: 'Category name'
 	String get name => 'Category name';
+
+	/// en: 'e.g. Groceries'
+	String get nameHint => 'e.g. Groceries';
 
 	/// en: 'Income'
 	String get incomeType => 'Income';
@@ -566,6 +578,24 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Are you sure you want to delete this category?'
 	String get deleteConfirm => 'Are you sure you want to delete this category?';
+
+	/// en: 'Select a category to reassign transactions to:'
+	String get reassignPrompt => 'Select a category to reassign transactions to:';
+
+	/// en: 'Category updated'
+	String get categoryUpdated => 'Category updated';
+
+	/// en: 'Category created'
+	String get categoryCreated => 'Category created';
+
+	/// en: 'Default categories cannot be deleted.'
+	String get cannotDeleteDefault => 'Default categories cannot be deleted.';
+
+	/// en: 'Select icon'
+	String get selectIcon => 'Select icon';
+
+	/// en: 'Select color'
+	String get selectColor => 'Select color';
 }
 
 // Path: chat
@@ -805,6 +835,8 @@ extension on Translations {
 			'accounts.nameHint' => 'e.g. Nubank Gui',
 			'accounts.bank' => 'Bank',
 			'accounts.bankHint' => 'e.g. Nubank',
+			'accounts.bankOthers' => 'Others',
+			'accounts.linkedAccount' => 'Linked Checking Account',
 			'accounts.balance' => 'Balance',
 			'accounts.currentBalance' => 'Current Balance',
 			'accounts.balanceLabel' => 'Current Balance (R\$)',
@@ -826,7 +858,9 @@ extension on Translations {
 			'accounts.deleteConfirm' => 'Are you sure you want to delete this account?',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
+			'categories.editCategory' => 'Edit Category',
 			'categories.name' => 'Category name',
+			'categories.nameHint' => 'e.g. Groceries',
 			'categories.incomeType' => 'Income',
 			'categories.expenseType' => 'Expense',
 			'categories.bothType' => 'Both',
@@ -834,6 +868,12 @@ extension on Translations {
 			'categories.saved' => 'Category saved!',
 			'categories.deleted' => 'Category deleted.',
 			'categories.deleteConfirm' => 'Are you sure you want to delete this category?',
+			'categories.reassignPrompt' => 'Select a category to reassign transactions to:',
+			'categories.categoryUpdated' => 'Category updated',
+			'categories.categoryCreated' => 'Category created',
+			'categories.cannotDeleteDefault' => 'Default categories cannot be deleted.',
+			'categories.selectIcon' => 'Select icon',
+			'categories.selectColor' => 'Select color',
 			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',

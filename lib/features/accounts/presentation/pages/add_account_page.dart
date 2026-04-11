@@ -49,7 +49,6 @@ class _AddAccountView extends StatefulWidget {
 class _AddAccountViewState extends State<_AddAccountView> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _bankController = TextEditingController();
   final _balanceController = TextEditingController();
   final _creditLimitController = TextEditingController();
 
@@ -59,7 +58,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
     final state = context.read<AccountFormCubit>().state;
     if (state.isEditing) {
       _nameController.text = state.name;
-      _bankController.text = state.bank;
       _balanceController.text = state.balance.toString();
       _creditLimitController.text = state.creditLimit.toString();
     }
@@ -68,7 +66,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
   @override
   void dispose() {
     _nameController.dispose();
-    _bankController.dispose();
     _balanceController.dispose();
     _creditLimitController.dispose();
     super.dispose();
@@ -88,7 +85,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
               ),
             ),
           );
-          context.pop();
+          context.pop(true);
         } else if (state.status == FormStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -119,12 +116,12 @@ class _AddAccountViewState extends State<_AddAccountView> {
                         ButtonSegment(
                           value: AccountType.checking,
                           label: Text(t.accounts.checkingShort),
-                          icon: FaIcon(FontAwesomeIcons.buildingColumns),
+                          icon: const FaIcon(FontAwesomeIcons.buildingColumns),
                         ),
                         ButtonSegment(
                           value: AccountType.creditCard,
                           label: Text(t.accounts.creditCard),
-                          icon: FaIcon(FontAwesomeIcons.creditCard),
+                          icon: const FaIcon(FontAwesomeIcons.creditCard),
                         ),
                       ],
                       selected: {state.type},
@@ -141,11 +138,25 @@ class _AddAccountViewState extends State<_AddAccountView> {
                       onChanged: context.read<AccountFormCubit>().updateName,
                     ),
                     const SizedBox(height: 16),
-                    FinancoTextField(
-                      controller: _bankController,
-                      label: t.accounts.bank,
-                      hintText: t.accounts.bankHint,
-                      onChanged: context.read<AccountFormCubit>().updateBank,
+                    SegmentedButton<BankType>(
+                      segments: [
+                        const ButtonSegment(
+                          value: BankType.nubank,
+                          label: Text('Nubank'),
+                          icon: FaIcon(
+                            FontAwesomeIcons.buildingColumns,
+                          ),
+                        ),
+                        ButtonSegment(
+                          value: BankType.others,
+                          label: Text(t.accounts.bankOthers),
+                          icon: const FaIcon(FontAwesomeIcons.wallet),
+                        ),
+                      ],
+                      selected: {state.bank},
+                      onSelectionChanged: (selected) => context
+                          .read<AccountFormCubit>()
+                          .updateBank(selected.first),
                     ),
                     const SizedBox(height: 16),
                     FinancoTextField(
@@ -158,6 +169,14 @@ class _AddAccountViewState extends State<_AddAccountView> {
                       onChanged: context.read<AccountFormCubit>().updateBalance,
                     ),
                     if (state.type == AccountType.creditCard) ...[
+                      const SizedBox(height: 16),
+                      _LinkedAccountDropdown(
+                        selectedId: state.linkedAccountId,
+                        userId: state.userId,
+                        onChanged: context
+                            .read<AccountFormCubit>()
+                            .updateLinkedAccountId,
+                      ),
                       const SizedBox(height: 16),
                       FinancoTextField(
                         controller: _creditLimitController,
@@ -242,6 +261,71 @@ class _AddAccountViewState extends State<_AddAccountView> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LinkedAccountDropdown extends StatefulWidget {
+  const _LinkedAccountDropdown({
+    required this.selectedId,
+    required this.userId,
+    required this.onChanged,
+  });
+
+  final String selectedId;
+  final String userId;
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_LinkedAccountDropdown> createState() => _LinkedAccountDropdownState();
+}
+
+class _LinkedAccountDropdownState extends State<_LinkedAccountDropdown> {
+  List<AccountEntity>? _accounts;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadCheckingAccounts());
+  }
+
+  Future<void> _loadCheckingAccounts() async {
+    final result = await GetIt.I<AccountRepository>().getAccounts(
+      userId: widget.userId,
+    );
+    if (!mounted) return;
+    result.fold(
+      (_) => setState(() => _loading = false),
+      (accounts) {
+        final checking = accounts
+            .where((a) => a.type == AccountType.checking)
+            .toList();
+        setState(() {
+          _accounts = checking;
+          _loading = false;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const LinearProgressIndicator();
+    return DropdownButtonFormField<String>(
+      initialValue: widget.selectedId.isNotEmpty ? widget.selectedId : null,
+      decoration: InputDecoration(
+        labelText: t.accounts.linkedAccount,
+      ),
+      items: (_accounts ?? [])
+          .map(
+            (a) => DropdownMenuItem(value: a.id, child: Text(a.name)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) widget.onChanged(value);
+      },
+      validator: (v) => v == null ? t.validators.selectAccount : null,
     );
   }
 }

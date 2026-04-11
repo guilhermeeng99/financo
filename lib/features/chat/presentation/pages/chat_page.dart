@@ -11,6 +11,11 @@ import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
 import 'package:financo/features/chat/presentation/bloc/chat_bloc.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
+import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,6 +37,7 @@ class ChatPage extends StatelessWidget {
         chatRepository: GetIt.I<ChatRepository>(),
         accountRepository: GetIt.I<AccountRepository>(),
         categoryRepository: GetIt.I<CategoryRepository>(),
+        transactionRepository: GetIt.I<TransactionRepository>(),
         userId: userId,
       ),
       child: const _ChatView(),
@@ -103,7 +109,17 @@ class _ChatViewState extends State<_ChatView> {
           Expanded(
             child: BlocConsumer<ChatBloc, ChatState>(
               listener: (context, state) {
-                if (state is ChatLoaded) _scrollToBottom();
+                if (state is ChatLoaded) {
+                  _scrollToBottom();
+                  if (state.shouldRefreshTransactions) {
+                    context.read<TransactionsBloc>().add(
+                      TransactionsLoadRequested(forceRefresh: true),
+                    );
+                    context.read<DashboardBloc>().add(
+                      const DashboardRefreshRequested(),
+                    );
+                  }
+                }
               },
               builder: (context, state) {
                 if (state is ChatLoading) return const LoadingShimmer();

@@ -42,7 +42,10 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   void updateDueDay(int day) => emit(state.copyWith(dueDay: day));
 
-  void updateBank(String value) => emit(state.copyWith(bank: value));
+  void updateBank(BankType value) => emit(state.copyWith(bank: value));
+
+  void updateLinkedAccountId(String value) =>
+      emit(state.copyWith(linkedAccountId: value));
 
   Future<void> submit() async {
     if (!state.isValid) return;
@@ -62,6 +65,9 @@ class AccountFormCubit extends Cubit<AccountFormState> {
           ? state.closingDay
           : null,
       dueDay: state.type == AccountType.creditCard ? state.dueDay : null,
+      linkedAccountId: state.type == AccountType.creditCard
+          ? state.linkedAccountId
+          : null,
       isActive: true,
       createdAt: DateTime.now(),
     );
@@ -91,6 +97,7 @@ class AccountFormState extends Equatable {
     required this.creditLimit,
     required this.closingDay,
     required this.dueDay,
+    required this.linkedAccountId,
     required this.status,
     this.existingId,
     this.failure,
@@ -104,11 +111,12 @@ class AccountFormState extends Equatable {
       userId: userId,
       name: existing?.name ?? '',
       type: existing?.type ?? AccountType.checking,
-      bank: existing?.bank ?? '',
+      bank: existing?.bank ?? BankType.nubank,
       balance: existing?.balance ?? 0,
       creditLimit: existing?.creditLimit ?? 0,
       closingDay: existing?.closingDay ?? 1,
       dueDay: existing?.dueDay ?? 10,
+      linkedAccountId: existing?.linkedAccountId ?? '',
       status: FormStatus.initial,
       existingId: existing?.id,
     );
@@ -117,26 +125,30 @@ class AccountFormState extends Equatable {
   final String userId;
   final String name;
   final AccountType type;
-  final String bank;
+  final BankType bank;
   final double balance;
   final double creditLimit;
   final int closingDay;
   final int dueDay;
+  final String linkedAccountId;
   final FormStatus status;
   final String? existingId;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
-  bool get isValid => name.isNotEmpty;
+  bool get isValid =>
+      name.isNotEmpty &&
+      (type != AccountType.creditCard || linkedAccountId.isNotEmpty);
 
   AccountFormState copyWith({
     String? name,
     AccountType? type,
-    String? bank,
+    BankType? bank,
     double? balance,
     double? creditLimit,
     int? closingDay,
     int? dueDay,
+    String? linkedAccountId,
     FormStatus? status,
     Failure? failure,
   }) {
@@ -149,6 +161,7 @@ class AccountFormState extends Equatable {
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
+      linkedAccountId: linkedAccountId ?? this.linkedAccountId,
       status: status ?? this.status,
       existingId: existingId,
       failure: failure ?? this.failure,
@@ -165,6 +178,7 @@ class AccountFormState extends Equatable {
     creditLimit,
     closingDay,
     dueDay,
+    linkedAccountId,
     status,
     existingId,
     failure,

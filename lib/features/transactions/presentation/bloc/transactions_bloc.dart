@@ -33,17 +33,23 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     if (state is TransactionsLoaded && !event.forceRefresh) return;
     emit(const TransactionsLoading());
 
-    final now = DateTime.now();
+    final ref = DateTime(event.year, event.month);
     final result = await _getTransactions(
       userId: _userId,
-      startDate: startOfMonth(now),
-      endDate: endOfMonth(now),
+      startDate: startOfMonth(ref),
+      endDate: endOfMonth(ref),
       forceRefresh: event.forceRefresh,
     );
 
     result.fold(
       (failure) => emit(TransactionsError(failure)),
-      (transactions) => emit(TransactionsLoaded(transactions)),
+      (transactions) => emit(
+        TransactionsLoaded(
+          transactions,
+          selectedYear: event.year,
+          selectedMonth: event.month,
+        ),
+      ),
     );
   }
 
@@ -51,10 +57,23 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     TransactionDeleteRequested event,
     Emitter<TransactionsState> emit,
   ) async {
+    final current = state;
     final result = await _deleteTransaction(event.id);
     result.fold(
       (failure) => emit(TransactionsError(failure)),
-      (_) => add(const TransactionsLoadRequested(forceRefresh: true)),
+      (_) {
+        if (current is TransactionsLoaded) {
+          add(
+            TransactionsLoadRequested(
+              forceRefresh: true,
+              year: current.selectedYear,
+              month: current.selectedMonth,
+            ),
+          );
+        } else {
+          add(TransactionsLoadRequested(forceRefresh: true));
+        }
+      },
     );
   }
 
@@ -62,10 +81,23 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     TransactionReconcileToggled event,
     Emitter<TransactionsState> emit,
   ) async {
+    final current = state;
     final result = await _transactionRepo.toggleReconciled(event.id);
     result.fold(
       (failure) => emit(TransactionsError(failure)),
-      (_) => add(const TransactionsLoadRequested(forceRefresh: true)),
+      (_) {
+        if (current is TransactionsLoaded) {
+          add(
+            TransactionsLoadRequested(
+              forceRefresh: true,
+              year: current.selectedYear,
+              month: current.selectedMonth,
+            ),
+          );
+        } else {
+          add(TransactionsLoadRequested(forceRefresh: true));
+        }
+      },
     );
   }
 }

@@ -57,7 +57,18 @@ class _AccountsPageState extends State<AccountsPage> {
                 final account = state.accounts[index];
                 return AccountCard(
                   account: account,
-                  onTap: () => context.push(AppRoutes.accountById(account.id)),
+                  onTap: () async {
+                    final result = await context.push(
+                      AppRoutes.accountById(account.id),
+                    );
+                    if (result == true && context.mounted) {
+                      unawaited(
+                        context.read<AccountsCubit>().loadAccounts(
+                          forceRefresh: true,
+                        ),
+                      );
+                    }
+                  },
                 );
               },
             );
@@ -67,7 +78,16 @@ class _AccountsPageState extends State<AccountsPage> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'accounts_fab',
-        onPressed: () => context.push(AppRoutes.addAccount),
+        onPressed: () async {
+          final result = await context.push(AppRoutes.addAccount);
+          if (result == true && context.mounted) {
+            unawaited(
+              context.read<AccountsCubit>().loadAccounts(
+                forceRefresh: true,
+              ),
+            );
+          }
+        },
         child: const FaIcon(FontAwesomeIcons.plus),
       ),
     );

@@ -1,11 +1,17 @@
+import 'dart:async';
+
+import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 
 class AccountDetailPage extends StatelessWidget {
   const AccountDetailPage({required this.accountId, super.key});
@@ -28,8 +34,66 @@ class AccountDetailPage extends StatelessWidget {
           );
         }
 
+        final currentAccount = account;
+
         return Scaffold(
-          appBar: AppBar(title: Text(account.name)),
+          appBar: AppBar(
+            title: Text(account.name),
+            actions: [
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    final result = await context.push(
+                      AppRoutes.addAccount,
+                      extra: account,
+                    );
+                    if (result == true && context.mounted) {
+                      unawaited(
+                        context.read<AccountsCubit>().loadAccounts(
+                          forceRefresh: true,
+                        ),
+                      );
+                    }
+                  } else if (value == 'delete') {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(t.general.delete),
+                        content: Text(
+                          t.accounts.deleteConfirm,
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(t.general.cancel),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(t.general.delete),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true && context.mounted) {
+                      final repo = GetIt.I<AccountRepository>();
+                      await repo.deleteAccount(currentAccount.id);
+                      if (context.mounted) context.pop(true);
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text(t.general.edit),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(t.general.delete),
+                  ),
+                ],
+              ),
+            ],
+          ),
           body: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -57,7 +121,28 @@ class AccountDetailPage extends StatelessWidget {
                       ? t.accounts.checking
                       : t.accounts.creditCard,
                 ),
+                _DetailRow(
+                  label: t.accounts.bank,
+                  value: account.bankLabel,
+                ),
                 if (account.type == AccountType.creditCard) ...[
+                  if (account.linkedAccountId != null &&
+                      state is AccountsLoaded) ...[
+                    Builder(
+                      builder: (context) {
+                        final linked = state.accounts
+                            .where(
+                              (a) => a.id == currentAccount.linkedAccountId,
+                            )
+                            .firstOrNull;
+                        if (linked == null) return const SizedBox.shrink();
+                        return _DetailRow(
+                          label: t.accounts.linkedAccount,
+                          value: linked.name,
+                        );
+                      },
+                    ),
+                  ],
                   _DetailRow(
                     label: t.accounts.creditLimit,
                     value: formatCurrency(account.creditLimit ?? 0),

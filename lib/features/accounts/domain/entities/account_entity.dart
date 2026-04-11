@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 
 enum AccountType { checking, creditCard }
 
+enum BankType { nubank, others }
+
 class AccountEntity extends Equatable {
   const AccountEntity({
     required this.id,
@@ -15,33 +17,41 @@ class AccountEntity extends Equatable {
     this.creditLimit,
     this.closingDay,
     this.dueDay,
+    this.linkedAccountId,
   });
 
   final String id;
   final String userId;
   final String name;
   final AccountType type;
-  final String bank;
+  final BankType bank;
   final double balance;
   final double? creditLimit;
   final int? closingDay;
   final int? dueDay;
+  final String? linkedAccountId;
   final bool isActive;
   final DateTime createdAt;
 
   double get availableCredit =>
       creditLimit != null ? creditLimit! - balance : 0;
 
+  String get bankLabel => switch (bank) {
+    BankType.nubank => 'Nubank',
+    BankType.others => 'Others',
+  };
+
   AccountEntity copyWith({
     String? id,
     String? userId,
     String? name,
     AccountType? type,
-    String? bank,
+    BankType? bank,
     double? balance,
     double? creditLimit,
     int? closingDay,
     int? dueDay,
+    String? linkedAccountId,
     bool? isActive,
     DateTime? createdAt,
   }) {
@@ -55,6 +65,7 @@ class AccountEntity extends Equatable {
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
+      linkedAccountId: linkedAccountId ?? this.linkedAccountId,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -71,6 +82,7 @@ class AccountEntity extends Equatable {
     creditLimit,
     closingDay,
     dueDay,
+    linkedAccountId,
     isActive,
     createdAt,
   ];

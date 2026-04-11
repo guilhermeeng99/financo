@@ -1,6 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 
+CategoryType _parseCategoryType(String value) {
+  for (final t in CategoryType.values) {
+    if (t.name == value) return t;
+  }
+  return CategoryType.expense;
+}
+
 class CategoryModel extends CategoryEntity {
   const CategoryModel({
     required super.id,
@@ -21,7 +28,7 @@ class CategoryModel extends CategoryEntity {
       name: data['name'] as String,
       icon: data['icon'] as int,
       color: data['color'] as int,
-      type: CategoryType.values.byName(data['type'] as String),
+      type: _parseCategoryType(data['type'] as String),
       isDefault: data['isDefault'] as bool,
       sortOrder: data['sortOrder'] as int,
     );

@@ -10,6 +10,8 @@ import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
@@ -61,13 +63,15 @@ final class ChatLoaded extends ChatState {
   const ChatLoaded({
     required this.messages,
     this.isTyping = false,
+    this.shouldRefreshTransactions = false,
   });
 
   final List<ChatMessageEntity> messages;
   final bool isTyping;
+  final bool shouldRefreshTransactions;
 
   @override
-  List<Object> get props => [messages, isTyping];
+  List<Object> get props => [messages, isTyping, shouldRefreshTransactions];
 }
 
 final class ChatError extends ChatState {
@@ -86,12 +90,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required ChatRepository chatRepository,
     required AccountRepository accountRepository,
     required CategoryRepository categoryRepository,
+    required TransactionRepository transactionRepository,
     required String userId,
   }) : _sendMessage = sendMessage,
        _getChatHistory = getChatHistory,
        _chatRepo = chatRepository,
        _accountRepo = accountRepository,
        _categoryRepo = categoryRepository,
+       _transactionRepo = transactionRepository,
        _userId = userId,
        super(const ChatInitial()) {
     on<ChatLoadRequested>(_onLoadRequested);
@@ -104,6 +110,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatRepository _chatRepo;
   final AccountRepository _accountRepo;
   final CategoryRepository _categoryRepo;
+  final TransactionRepository _transactionRepo;
   final String _userId;
   static const _uuid = Uuid();
 
@@ -208,6 +215,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         resultText = await _handleAccountAction(meta);
       case 'category':
         resultText = await _handleCategoryAction(meta);
+      case 'transaction':
+        resultText = await _handleTransactionAction(meta);
       default:
         resultText = 'Unknown action type.';
     }
@@ -222,7 +231,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     _messages.add(sysMessage);
     await _chatRepo.saveChatMessage(sysMessage);
-    emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+    emit(
+      ChatLoaded(
+        messages: List.unmodifiable(_messages),
+        shouldRefreshTransactions: actionType == 'transaction',
+      ),
+    );
   }
 
   Future<String> _handleAccountAction(
@@ -231,6 +245,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final action = meta['action'] as String?;
 
     if (action == 'create') {
+      final bankStr = (meta['bank'] as String?)?.toLowerCase() ?? 'others';
+      final bank = bankStr == 'nubank' ? BankType.nubank : BankType.others;
+
       final account = AccountEntity(
         id: '',
         userId: _userId,
@@ -238,7 +255,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         type: (meta['type'] as String?) == 'creditCard'
             ? AccountType.creditCard
             : AccountType.checking,
-        bank: meta['bank'] as String? ?? '',
+        bank: bank,
         balance: (meta['balance'] as num?)?.toDouble() ?? 0,
         isActive: true,
         createdAt: DateTime.now(),
@@ -286,7 +303,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final typeStr = meta['type'] as String? ?? 'expense';
       final type = switch (typeStr) {
         'income' => CategoryType.income,
-        'both' => CategoryType.both,
         _ => CategoryType.expense,
       };
 
@@ -335,5 +351,79 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
 
     return 'Unknown category action.';
+  }
+
+  Future<String> _handleTransactionAction(
+    Map<String, dynamic> meta,
+  ) async {
+    final typeStr = meta['type'] as String? ?? 'expense';
+    final txType = typeStr == 'income'
+        ? TransactionType.income
+        : TransactionType.expense;
+
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    if (amount <= 0) return 'Invalid amount.';
+
+    final description = meta['description'] as String? ?? '';
+    final dateStr = meta['date'] as String?;
+    final date = dateStr != null
+        ? DateTime.tryParse(dateStr) ?? DateTime.now()
+        : DateTime.now();
+
+    // Find category by name
+    final categoryName = meta['category'] as String? ?? '';
+    final catResult = await _categoryRepo.getCategories(userId: _userId);
+    if (catResult.isLeft()) {
+      return 'Failed to load categories.';
+    }
+    final categories = catResult.getOrElse(() => []);
+    final matchedCat = categories
+        .where((c) => c.name.toLowerCase() == categoryName.toLowerCase())
+        .toList();
+    if (matchedCat.isEmpty) {
+      return 'Category "$categoryName" not found. '
+          'Please create it first.';
+    }
+
+    // Find account by name
+    final accountName = meta['account'] as String? ?? '';
+    final accResult = await _accountRepo.getAccounts(userId: _userId);
+    if (accResult.isLeft()) {
+      return 'Failed to load accounts.';
+    }
+    final accounts = accResult.getOrElse(() => []);
+    if (accounts.isEmpty) {
+      return 'No accounts found. Please create an account first.';
+    }
+    final matchedAccounts = accountName.isNotEmpty
+        ? accounts
+              .where((a) => a.name.toLowerCase() == accountName.toLowerCase())
+              .toList()
+        : <AccountEntity>[];
+    final account = matchedAccounts.isNotEmpty
+        ? matchedAccounts.first
+        : accounts.first;
+
+    final transaction = TransactionEntity(
+      id: '',
+      userId: _userId,
+      accountId: account.id,
+      categoryId: matchedCat.first.id,
+      type: txType,
+      amount: amount,
+      description: description,
+      date: date,
+      isReconciled: false,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final result = await _transactionRepo.createTransaction(transaction);
+    return result.fold(
+      (f) => 'Failed to create transaction: ${f.message}',
+      (t) =>
+          'Transaction "${t.description}" of '
+          'R\$ ${t.amount.toStringAsFixed(2)} created successfully!',
+    );
   }
 }

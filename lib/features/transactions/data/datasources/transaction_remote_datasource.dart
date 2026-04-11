@@ -14,6 +14,10 @@ abstract class TransactionRemoteDataSource {
   Future<TransactionModel> createTransaction(TransactionModel model);
   Future<TransactionModel> updateTransaction(TransactionModel model);
   Future<void> deleteTransaction(String id);
+  Future<void> reassignTransactions({
+    required String fromCategoryId,
+    required String toCategoryId,
+  });
 }
 
 class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
@@ -101,6 +105,25 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
       await _collection.doc(id).delete();
     } on Exception {
       throw const ServerException('Failed to delete transaction.');
+    }
+  }
+
+  @override
+  Future<void> reassignTransactions({
+    required String fromCategoryId,
+    required String toCategoryId,
+  }) async {
+    try {
+      final snapshot = await _collection
+          .where('categoryId', isEqualTo: fromCategoryId)
+          .get();
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.update(doc.reference, {'categoryId': toCategoryId});
+      }
+      await batch.commit();
+    } on Exception {
+      throw const ServerException('Failed to reassign transactions.');
     }
   }
 }

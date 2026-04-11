@@ -14,20 +14,26 @@ class AccountModel extends AccountEntity {
     super.creditLimit,
     super.closingDay,
     super.dueDay,
+    super.linkedAccountId,
   });
 
   factory AccountModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data()! as Map<String, dynamic>;
+    final bankStr = data['bank'] as String? ?? 'others';
+    final bankType =
+        BankType.values.where((b) => b.name == bankStr).firstOrNull ??
+        BankType.others;
     return AccountModel(
       id: doc.id,
       userId: data['userId'] as String,
       name: data['name'] as String,
       type: AccountType.values.byName(data['type'] as String),
-      bank: data['bank'] as String,
+      bank: bankType,
       balance: (data['balance'] as num).toDouble(),
       creditLimit: (data['creditLimit'] as num?)?.toDouble(),
       closingDay: data['closingDay'] as int?,
       dueDay: data['dueDay'] as int?,
+      linkedAccountId: data['linkedAccountId'] as String?,
       isActive: data['isActive'] as bool,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
@@ -44,6 +50,7 @@ class AccountModel extends AccountEntity {
       creditLimit: entity.creditLimit,
       closingDay: entity.closingDay,
       dueDay: entity.dueDay,
+      linkedAccountId: entity.linkedAccountId,
       isActive: entity.isActive,
       createdAt: entity.createdAt,
     );
@@ -54,11 +61,12 @@ class AccountModel extends AccountEntity {
       'userId': userId,
       'name': name,
       'type': type.name,
-      'bank': bank,
+      'bank': bank.name,
       'balance': balance,
       'creditLimit': creditLimit,
       'closingDay': closingDay,
       'dueDay': dueDay,
+      'linkedAccountId': linkedAccountId,
       'isActive': isActive,
       'createdAt': Timestamp.fromDate(createdAt),
     };

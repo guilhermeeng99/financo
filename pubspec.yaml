@@ -41,7 +41,7 @@ dependencies:
   shimmer: ^3.0.0
   fl_chart: ^1.2.0
   cupertino_icons: ^1.0.8
-  font_awesome_flutter: ^10.8.0
+  font_awesome_flutter: ^11.0.0
 
   # Utils
   intl: ^0.20.2

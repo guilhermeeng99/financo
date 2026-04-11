@@ -25,4 +25,9 @@ abstract class TransactionRepository {
   Future<Either<Failure, void>> deleteTransaction(String id);
 
   Future<Either<Failure, void>> toggleReconciled(String id);
+
+  Future<Either<Failure, void>> reassignTransactions({
+    required String fromCategoryId,
+    required String toCategoryId,
+  });
 }

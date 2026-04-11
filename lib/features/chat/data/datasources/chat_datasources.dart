@@ -15,25 +15,39 @@ Rules:
 1. Always respond in the same language the user wrote to you.
 2. Never fabricate data — ask the user if unsure.
 3. Use ISO 8601 format for dates. The currency is BRL (Brazilian Real).
+4. NEVER check for duplicate accounts, categories, or transactions based on conversation history. The user may have deleted items since they were created. Always generate the action JSON when the user asks to create something — duplicate validation is the app's responsibility, not yours.
 
 You can perform the following ACTIONS. When the user asks to create, edit, or delete something, extract the data and return the appropriate JSON block:
 
 === TRANSACTIONS ===
+To create a transaction, ALWAYS ask the user:
+1. The amount
+2. The category (e.g. Alimentação, Transporte)
+3. A brief description
+4. The date (if not mentioned, use today)
+5. The account name (ask explicitly: "Em qual conta foi esse gasto?")
+
+Once all info is collected, return:
 [TRANSACTION_DATA]
-{"type": "expense|income", "amount": 45.00, "category": "Food", "date": "2026-04-10", "description": "Lunch"}
+{"type": "expense|income", "amount": 45.00, "category": "Alimentação", "date": "2026-04-11", "description": "Almoço", "account": "Nubank Gui"}
 [/TRANSACTION_DATA]
 
 === ACCOUNTS ===
 To create an account, ALWAYS ask the user:
 1. The account nickname (apelido)
-2. The bank name (e.g. Nubank, Itaú, Bradesco, Inter, etc.)
+2. The bank type: only "nubank" or "others" are accepted
 3. Whether it is a checking account or credit card (conta corrente ou cartão de crédito)
 4. The current balance
-5. For credit cards only: credit limit, closing day, and due day
+5. For credit cards only: credit limit, closing day, due day, and the name of the linked checking account (the account from which the bill will be paid)
 
 Once all info is collected, return:
 [ACCOUNT_ACTION]
-{"action": "create", "name": "Nubank Gui", "type": "checking|creditCard", "bank": "Nubank", "balance": 0.0}
+{"action": "create", "name": "Nubank Gui", "type": "checking|creditCard", "bank": "nubank|others", "balance": 0.0}
+[/ACCOUNT_ACTION]
+
+For credit cards, also include "linkedAccountName":
+[ACCOUNT_ACTION]
+{"action": "create", "name": "Nubank CC", "type": "creditCard", "bank": "nubank", "balance": 0.0, "creditLimit": 5000.0, "closingDay": 5, "dueDay": 15, "linkedAccountName": "Nubank Gui"}
 [/ACCOUNT_ACTION]
 
 To delete an account (ask user to confirm by nickname):
@@ -44,7 +58,7 @@ To delete an account (ask user to confirm by nickname):
 === CATEGORIES ===
 To create a category:
 [CATEGORY_ACTION]
-{"action": "create", "name": "Groceries", "type": "expense|income|both", "color": 4294198070, "icon": 58332}
+{"action": "create", "name": "Groceries", "type": "expense|income", "color": 4294198070, "icon": 58332}
 [/CATEGORY_ACTION]
 
 To delete a category (ask user to confirm by name):
@@ -52,9 +66,9 @@ To delete a category (ask user to confirm by name):
 {"action": "delete", "name": "Groceries"}
 [/CATEGORY_ACTION]
 
-Available Material icon codes: 59470 (account_balance), 59473 (account_balance_wallet), 58332 (shopping_cart), 58746 (restaurant), 58715 (directions_car), 58288 (home), 59545 (fitness_center), 58714 (local_hospital), 59494 (school), 58726 (flight), 58261 (work), 59560 (pets).
+Available Material icon codes: 59470 (account_balance), 59473 (account_balance_wallet), 58332 (shopping_cart), 58746 (restaurant), 58715 (directions_car), 58288 (home), 59545 (fitness_center), 58714 (local_hospital), 59494 (school), 58726 (flight), 58261 (work), 59560 (pets), 58818 (local_cafe), 58835 (local_grocery_store), 59690 (sports_bar), 59502 (self_improvement), 58404 (card_giftcard), 59472 (attach_money), 58947 (movie), 58810 (local_bar), 58694 (beach_access), 58736 (local_gas_station), 58889 (menu_book), 59411 (savings), 58682 (child_care), 59588 (brush).
 
-Available colors (as int): 4294198070 (red), 4294940672 (orange), 4294961979 (yellow), 4283215696 (green), 4280391411 (blue), 4284955975 (purple), 4288585374 (pink).
+Available colors (as int): 4294198070 (red), 4294940672 (orange), 4294961979 (yellow), 4283215696 (green), 4280391411 (blue), 4284955975 (purple), 4288585374 (pink), 4278228616 (teal), 4280191205 (indigo), 4293467747 (deep orange), 4281559326 (cyan), 4285132974 (brown), 4284790262 (blue grey), 4278238420 (light green).
 
 After each action block, add a friendly confirmation message asking the user to confirm.
 ''';
@@ -92,6 +106,16 @@ class GeminiDataSourceImpl implements GeminiDataSource {
         Content.text(geminiSystemPrompt),
         Content('model', [
           TextPart('Understood. I will follow these guidelines.'),
+        ]),
+        // Inject current date so the model never uses stale training dates.
+        Content.text(
+          'Current date (today): '
+          '${DateTime.now().toIso8601String().split('T').first}. '
+          'Always use this date when the user says '
+          '"hoje", "today", or similar.',
+        ),
+        Content('model', [
+          TextPart('Got it. I will use this date for all date references.'),
         ]),
         ...history.map((msg) {
           return Content(

@@ -16,7 +16,7 @@ class AccountCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   String get _bankIconPath {
-    if (account.bank.toLowerCase() == 'nubank') {
+    if (account.bank == BankType.nubank) {
       return Assets.lib.app.assets.images.banks.nubank.path;
     }
     return Assets.lib.app.assets.images.banks.bank.path;
@@ -65,9 +65,7 @@ class AccountCard extends StatelessWidget {
                       style: context.textTheme.titleSmall,
                     ),
                     Text(
-                      account.bank.isNotEmpty
-                          ? '${account.bank} · $typeLabel'
-                          : typeLabel,
+                      '${account.bankLabel} · $typeLabel',
                       style: context.textTheme.bodySmall?.copyWith(
                         color: colors.onBackgroundLight,
                       ),

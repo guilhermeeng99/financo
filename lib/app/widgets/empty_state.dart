@@ -11,7 +11,7 @@ class EmptyState extends StatelessWidget {
   });
 
   final String message;
-  final IconData icon;
+  final FaIconData icon;
   final String? actionLabel;
   final VoidCallback? onAction;
 
@@ -23,7 +23,7 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: Theme.of(context).disabledColor),
+            FaIcon(icon, size: 64, color: Theme.of(context).disabledColor),
             const SizedBox(height: 16),
             Text(
               message,

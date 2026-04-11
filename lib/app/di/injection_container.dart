@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/core/cache/app_data_cache.dart';
 // Accounts
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
@@ -49,6 +50,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -56,6 +58,8 @@ const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 const _googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
 Future<void> initDependencies() async {
+  final prefs = await SharedPreferences.getInstance();
+
   if (kIsWeb) {
     await GoogleSignIn.instance.initialize(clientId: _googleWebClientId);
   } else {
@@ -73,6 +77,7 @@ Future<void> initDependencies() async {
       ),
     )
     ..registerLazySingleton(AppDataCache.new)
+    ..registerLazySingleton(() => prefs)
     ..registerLazySingleton(() => GoogleSignIn.instance)
     // ─── Datasources ────────────────────────────────────────
     ..registerLazySingleton<AuthRemoteDataSource>(
@@ -186,5 +191,8 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => StartupCubit(authBloc: sl()),
+    )
+    ..registerLazySingleton(
+      () => ThemeCubit(prefs: sl()),
     );
 }

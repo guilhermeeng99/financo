@@ -120,12 +120,12 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                         ButtonSegment(
                           value: TransactionType.expense,
                           label: Text(t.transactions.expense),
-                          icon: FaIcon(FontAwesomeIcons.arrowDown),
+                          icon: const FaIcon(FontAwesomeIcons.arrowDown),
                         ),
                         ButtonSegment(
                           value: TransactionType.income,
                           label: Text(t.transactions.income),
-                          icon: FaIcon(FontAwesomeIcons.arrowUp),
+                          icon: const FaIcon(FontAwesomeIcons.arrowUp),
                         ),
                       ],
                       selected: {state.type},
@@ -309,7 +309,7 @@ class _DatePicker extends StatelessWidget {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: t.transactions.date,
-          suffixIcon: FaIcon(FontAwesomeIcons.calendar),
+          suffixIcon: const FaIcon(FontAwesomeIcons.calendar),
         ),
         child: Text(
           '${date.day}/${date.month}/${date.year}',

@@ -10,12 +10,19 @@ sealed class TransactionsEvent extends Equatable {
 }
 
 final class TransactionsLoadRequested extends TransactionsEvent {
-  const TransactionsLoadRequested({this.forceRefresh = false});
+  TransactionsLoadRequested({
+    this.forceRefresh = false,
+    int? year,
+    int? month,
+  }) : year = year ?? DateTime.now().year,
+       month = month ?? DateTime.now().month;
 
   final bool forceRefresh;
+  final int year;
+  final int month;
 
   @override
-  List<Object> get props => [forceRefresh];
+  List<Object> get props => [forceRefresh, year, month];
 }
 
 final class TransactionDeleteRequested extends TransactionsEvent {
@@ -52,12 +59,18 @@ final class TransactionsLoading extends TransactionsState {
 }
 
 final class TransactionsLoaded extends TransactionsState {
-  const TransactionsLoaded(this.transactions);
+  const TransactionsLoaded(
+    this.transactions, {
+    required this.selectedYear,
+    required this.selectedMonth,
+  });
 
   final List<TransactionEntity> transactions;
+  final int selectedYear;
+  final int selectedMonth;
 
   @override
-  List<Object> get props => [transactions];
+  List<Object> get props => [transactions, selectedYear, selectedMonth];
 }
 
 final class TransactionsError extends TransactionsState {

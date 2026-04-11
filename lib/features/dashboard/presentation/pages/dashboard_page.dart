@@ -154,7 +154,7 @@ class _SummaryTile extends StatelessWidget {
   final String label;
   final double amount;
   final Color color;
-  final IconData icon;
+  final FaIconData icon;
 
   @override
   Widget build(BuildContext context) {

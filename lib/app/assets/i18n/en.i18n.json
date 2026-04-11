@@ -128,6 +128,8 @@
     "nameHint": "e.g. Nubank Gui",
     "bank": "Bank",
     "bankHint": "e.g. Nubank",
+    "bankOthers": "Others",
+    "linkedAccount": "Linked Checking Account",
     "balance": "Balance",
     "currentBalance": "Current Balance",
     "balanceLabel": "Current Balance (R\\$)",
@@ -151,14 +153,22 @@
   "categories": {
     "title": "Categories",
     "addCategory": "Add Category",
+    "editCategory": "Edit Category",
     "name": "Category name",
+    "nameHint": "e.g. Groceries",
     "incomeType": "Income",
     "expenseType": "Expense",
     "bothType": "Both",
     "empty": "No categories. Categories will appear here.",
     "saved": "Category saved!",
     "deleted": "Category deleted.",
-    "deleteConfirm": "Are you sure you want to delete this category?"
+    "deleteConfirm": "Are you sure you want to delete this category?",
+    "reassignPrompt": "Select a category to reassign transactions to:",
+    "categoryUpdated": "Category updated",
+    "categoryCreated": "Category created",
+    "cannotDeleteDefault": "Default categories cannot be deleted.",
+    "selectIcon": "Select icon",
+    "selectColor": "Select color"
   },
   "chat": {
     "title": "AI Assistant",

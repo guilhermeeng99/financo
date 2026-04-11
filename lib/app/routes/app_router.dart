@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/pages/account_detail_page.dart';
@@ -11,8 +12,10 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/categories/presentation/pages/add_category_page.dart';
 import 'package:financo/features/categories/presentation/pages/categories_page.dart';
 import 'package:financo/features/chat/presentation/pages/chat_page.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
@@ -160,7 +163,35 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     GoRoute(
       path: AppRoutes.addTransaction,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AddTransactionPage(),
+      builder: (context, state) {
+        final authState = context.read<AuthBloc>().state;
+        final userId = authState is Authenticated ? authState.user.id : '';
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) {
+                final cubit = AccountsCubit(
+                  getAccounts: GetIt.I<GetAccountsUseCase>(),
+                  userId: userId,
+                );
+                unawaited(cubit.loadAccounts());
+                return cubit;
+              },
+            ),
+            BlocProvider(
+              create: (_) {
+                final cubit = CategoriesCubit(
+                  getCategories: GetIt.I<GetCategoriesUseCase>(),
+                  userId: userId,
+                );
+                unawaited(cubit.loadCategories());
+                return cubit;
+              },
+            ),
+          ],
+          child: const AddTransactionPage(),
+        );
+      },
     ),
     GoRoute(
       path: AppRoutes.transactionDetail,
@@ -192,14 +223,29 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     GoRoute(
       path: AppRoutes.addAccount,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AddAccountPage(),
+      builder: (context, state) {
+        final existing = state.extra as AccountEntity?;
+        return AddAccountPage(existingAccount: existing);
+      },
     ),
     GoRoute(
       path: AppRoutes.accountDetail,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        return AccountDetailPage(accountId: id);
+        final authState = context.read<AuthBloc>().state;
+        final userId = authState is Authenticated ? authState.user.id : '';
+        return BlocProvider(
+          create: (_) {
+            final cubit = AccountsCubit(
+              getAccounts: GetIt.I<GetAccountsUseCase>(),
+              userId: userId,
+            );
+            unawaited(cubit.loadAccounts());
+            return cubit;
+          },
+          child: AccountDetailPage(accountId: id),
+        );
       },
     ),
     GoRoute(
@@ -219,6 +265,19 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           },
           child: const CategoriesPage(),
         );
+      },
+    ),
+    GoRoute(
+      path: AppRoutes.addCategory,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const AddCategoryPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.editCategory,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final extra = state.extra! as CategoryEntity;
+        return AddCategoryPage(existingCategory: extra);
       },
     ),
   ],
@@ -252,28 +311,28 @@ class ScaffoldWithNavBar extends StatelessWidget {
         onTap: (index) => _onTap(context, index),
         items: [
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.house),
-            activeIcon: FaIcon(FontAwesomeIcons.solidHouse),
+            icon: const FaIcon(FontAwesomeIcons.house),
+            activeIcon: const FaIcon(FontAwesomeIcons.solidHouse),
             label: t.nav.dashboard,
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.rightLeft),
-            activeIcon: FaIcon(FontAwesomeIcons.rightLeft),
+            icon: const FaIcon(FontAwesomeIcons.rightLeft),
+            activeIcon: const FaIcon(FontAwesomeIcons.rightLeft),
             label: t.nav.transactions,
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.comment),
-            activeIcon: FaIcon(FontAwesomeIcons.solidComment),
+            icon: const FaIcon(FontAwesomeIcons.comment),
+            activeIcon: const FaIcon(FontAwesomeIcons.solidComment),
             label: t.nav.chat,
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.chartPie),
-            activeIcon: FaIcon(FontAwesomeIcons.chartPie),
+            icon: const FaIcon(FontAwesomeIcons.chartPie),
+            activeIcon: const FaIcon(FontAwesomeIcons.chartPie),
             label: t.nav.reports,
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.user),
-            activeIcon: FaIcon(FontAwesomeIcons.solidUser),
+            icon: const FaIcon(FontAwesomeIcons.user),
+            activeIcon: const FaIcon(FontAwesomeIcons.solidUser),
             label: t.nav.profile,
           ),
         ],

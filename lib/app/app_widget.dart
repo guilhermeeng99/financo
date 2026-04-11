@@ -1,6 +1,7 @@
 import 'package:financo/app/di/injection_container.dart';
 import 'package:financo/app/routes/app_router.dart';
 import 'package:financo/app/theme/app_theme.dart';
+import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -24,13 +25,19 @@ class _FinancoAppState extends State<FinancoApp> {
       providers: [
         BlocProvider.value(value: sl<AuthBloc>()),
         BlocProvider.value(value: sl<StartupCubit>()),
+        BlocProvider.value(value: sl<ThemeCubit>()),
       ],
-      child: MaterialApp.router(
-        title: t.app.name,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
-        routerConfig: _router,
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
+            title: t.app.name,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: themeMode,
+            routerConfig: _router,
+          );
+        },
       ),
     );
   }

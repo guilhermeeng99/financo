@@ -107,4 +107,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> reassignTransactions({
+    required String fromCategoryId,
+    required String toCategoryId,
+  }) async {
+    try {
+      await _remote.reassignTransactions(
+        fromCategoryId: fromCategoryId,
+        toCategoryId: toCategoryId,
+      );
+      _cache.transactions = null;
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }
