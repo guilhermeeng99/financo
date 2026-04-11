@@ -81,7 +81,16 @@
     "recentTransactions": "Recent Transactions",
     "seeAll": "See all",
     "thisMonth": "This month",
-    "noTransactionsYet": "No transactions yet"
+    "noTransactionsYet": "No transactions yet",
+    "accountBalances": "Account Balances",
+    "monthResult": "Month Result",
+    "expensesByCategory": "Expenses by Category",
+    "incomeByCategory": "Income by Category",
+    "noAccountsYet": "No accounts registered yet",
+    "noExpensesYet": "No expenses this month",
+    "noIncomeYet": "No income this month",
+    "totalExpenses": "Total Expenses",
+    "totalIncome": "Total Income"
   },
   "transactions": {
     "title": "Transactions",
@@ -148,7 +157,12 @@
     "accountCreated": "Account created",
     "saved": "Account saved!",
     "deleted": "Account deleted.",
-    "deleteConfirm": "Are you sure you want to delete this account?"
+    "deleteConfirm": "Are you sure you want to delete this account?",
+    "statement": "Monthly Summary",
+    "monthIncome": "Income",
+    "monthExpenses": "Expenses",
+    "monthResult": "Result",
+    "noTransactionsInPeriod": "No transactions in this period"
   },
   "categories": {
     "title": "Categories",
@@ -167,6 +181,7 @@
     "categoryUpdated": "Category updated",
     "categoryCreated": "Category created",
     "cannotDeleteDefault": "Default categories cannot be deleted.",
+    "cannotDeleteLast": "Create another category before deleting this one.",
     "selectIcon": "Select icon",
     "selectColor": "Select color"
   },

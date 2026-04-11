@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
@@ -78,23 +76,6 @@ class _ChatViewState extends State<_ChatView> {
     if (text.isEmpty) return;
     context.read<ChatBloc>().add(ChatMessageSent(text));
     _controller.clear();
-    _scrollToBottom();
-  }
-
-  void _scrollToBottom() {
-    unawaited(
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          unawaited(
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            ),
-          );
-        }
-      }),
-    );
   }
 
   @override
@@ -110,7 +91,6 @@ class _ChatViewState extends State<_ChatView> {
             child: BlocConsumer<ChatBloc, ChatState>(
               listener: (context, state) {
                 if (state is ChatLoaded) {
-                  _scrollToBottom();
                   if (state.shouldRefreshTransactions) {
                     context.read<TransactionsBloc>().add(
                       TransactionsLoadRequested(forceRefresh: true),
@@ -155,15 +135,18 @@ class _ChatViewState extends State<_ChatView> {
                       ),
                     );
                   }
+                  final reversed = state.messages.reversed.toList();
                   return ListView.builder(
                     controller: _scrollController,
+                    reverse: true,
                     padding: const EdgeInsets.all(16),
-                    itemCount: state.messages.length + (state.isTyping ? 1 : 0),
+                    itemCount: reversed.length + (state.isTyping ? 1 : 0),
                     itemBuilder: (context, index) {
-                      if (index == state.messages.length) {
+                      if (state.isTyping && index == 0) {
                         return const _TypingIndicator();
                       }
-                      return _ChatBubble(message: state.messages[index]);
+                      final msgIndex = state.isTyping ? index - 1 : index;
+                      return _ChatBubble(message: reversed[msgIndex]);
                     },
                   );
                 }

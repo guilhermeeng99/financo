@@ -9,10 +9,12 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/categories/presentation/cubit/category_form_cubit.dart';
+import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -63,6 +65,76 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     super.dispose();
   }
 
+  Future<void> _confirmDelete(String categoryId) async {
+    final categoryRepo = GetIt.I<CategoryRepository>();
+    final transactionRepo = GetIt.I<TransactionRepository>();
+    final cubitState = context.read<CategoryFormCubit>().state;
+    final userId = cubitState.userId;
+
+    final categoriesResult = await categoryRepo.getCategories(userId: userId);
+    if (!mounted) return;
+
+    final others = categoriesResult.fold(
+      (_) => <CategoryEntity>[],
+      (cats) => cats.where((c) => c.id != categoryId).toList(),
+    );
+
+    if (others.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.categories.cannotDeleteLast)),
+      );
+      return;
+    }
+
+    String? targetId = others.first.id;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(t.general.delete),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(t.categories.reassignPrompt),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: targetId,
+                items: others
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c.id,
+                        child: Text(c.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setDialogState(() => targetId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(t.general.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(t.general.delete),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true && targetId != null && mounted) {
+      await transactionRepo.reassignTransactions(
+        fromCategoryId: categoryId,
+        toCategoryId: targetId!,
+      );
+      await categoryRepo.deleteCategory(categoryId);
+      if (mounted) context.pop(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<CategoryFormCubit, CategoryFormState>(
@@ -97,6 +169,24 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                   : t.categories.addCategory,
             ),
           ),
+          actions: [
+            BlocBuilder<CategoryFormCubit, CategoryFormState>(
+              builder: (context, state) {
+                if (!state.isEditing || state.isDefault) {
+                  return const SizedBox.shrink();
+                }
+                return IconButton(
+                  icon: const FaIcon(
+                    FontAwesomeIcons.trash,
+                    size: 18,
+                  ),
+                  onPressed: () => _confirmDelete(
+                    state.existingId!,
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

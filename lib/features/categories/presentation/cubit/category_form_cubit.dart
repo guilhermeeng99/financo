@@ -66,6 +66,7 @@ class CategoryFormState extends Equatable {
     required this.icon,
     required this.color,
     required this.status,
+    required this.isDefault,
     this.existingId,
     this.failure,
   });
@@ -82,6 +83,7 @@ class CategoryFormState extends Equatable {
       color: existing?.color ?? 4280391411,
       status: FormStatus.initial,
       existingId: existing?.id,
+      isDefault: existing?.isDefault ?? false,
     );
   }
 
@@ -91,6 +93,7 @@ class CategoryFormState extends Equatable {
   final int icon;
   final int color;
   final FormStatus status;
+  final bool isDefault;
   final String? existingId;
   final Failure? failure;
 
@@ -113,6 +116,7 @@ class CategoryFormState extends Equatable {
       color: color ?? this.color,
       status: status ?? this.status,
       existingId: existingId,
+      isDefault: isDefault,
       failure: failure ?? this.failure,
     );
   }
@@ -125,6 +129,7 @@ class CategoryFormState extends Equatable {
     icon,
     color,
     status,
+    isDefault,
     existingId,
     failure,
   ];

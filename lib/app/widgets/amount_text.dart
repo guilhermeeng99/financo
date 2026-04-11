@@ -22,9 +22,15 @@ class AmountText extends StatelessWidget {
     final colors = context.appColors;
     final positive = isIncome ?? amount >= 0;
     final color = positive ? colors.income : colors.expense;
-    final text = showSign
-        ? formatCurrencySigned(amount)
-        : formatCurrency(amount.abs());
+
+    final String text;
+    if (showSign) {
+      text = formatCurrencySigned(amount);
+    } else if (isIncome != null) {
+      text = formatCurrency(amount.abs());
+    } else {
+      text = formatCurrency(amount);
+    }
 
     return Text(
       text,

@@ -137,6 +137,7 @@ Future<void> initDependencies() async {
       () => DashboardRepositoryImpl(
         transactionRepository: sl(),
         accountRepository: sl(),
+        categoryRepository: sl(),
         cache: sl(),
       ),
     )

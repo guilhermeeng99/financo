@@ -67,7 +67,7 @@ class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
   @override
   Future<void> deleteAccount(String id) async {
     try {
-      await _collection.doc(id).update({'isActive': false});
+      await _collection.doc(id).delete();
     } on Exception {
       throw const ServerException('Failed to delete account.');
     }

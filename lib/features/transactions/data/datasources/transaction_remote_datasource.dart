@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
@@ -62,7 +64,13 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
 
       final snapshot = await query.get();
       return snapshot.docs.map(TransactionModel.fromFirestore).toList();
-    } on Exception {
+    } on Exception catch (e, st) {
+      log(
+        'getTransactions failed',
+        name: 'TransactionRemoteDataSource',
+        error: e,
+        stackTrace: st,
+      );
       throw const ServerException('Failed to fetch transactions.');
     }
   }

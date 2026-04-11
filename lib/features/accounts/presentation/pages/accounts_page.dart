@@ -59,7 +59,8 @@ class _AccountsPageState extends State<AccountsPage> {
                   account: account,
                   onTap: () async {
                     final result = await context.push(
-                      AppRoutes.accountById(account.id),
+                      AppRoutes.addAccount,
+                      extra: account,
                     );
                     if (result == true && context.mounted) {
                       unawaited(

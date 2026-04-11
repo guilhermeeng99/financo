@@ -6,14 +6,11 @@ import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
-import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 class CategoriesPage extends StatefulWidget {
@@ -55,6 +52,7 @@ class _CategoriesPageState extends State<CategoriesPage>
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'categories_fab',
         onPressed: () async {
           final result = await context.push(AppRoutes.addCategory);
           if (result == true && context.mounted) {
@@ -88,25 +86,16 @@ class _CategoriesPageState extends State<CategoriesPage>
             return TabBarView(
               controller: _tabController,
               children: [
+                _CategoryList(categories: state.categories),
                 _CategoryList(
-                  categories: state.categories,
-                  allCategories: state.categories,
+                  categories: state.categories
+                      .where((c) => c.type == CategoryType.income)
+                      .toList(),
                 ),
                 _CategoryList(
                   categories: state.categories
-                      .where(
-                        (c) => c.type == CategoryType.income,
-                      )
+                      .where((c) => c.type == CategoryType.expense)
                       .toList(),
-                  allCategories: state.categories,
-                ),
-                _CategoryList(
-                  categories: state.categories
-                      .where(
-                        (c) => c.type == CategoryType.expense,
-                      )
-                      .toList(),
-                  allCategories: state.categories,
                 ),
               ],
             );
@@ -119,78 +108,9 @@ class _CategoriesPageState extends State<CategoriesPage>
 }
 
 class _CategoryList extends StatelessWidget {
-  const _CategoryList({
-    required this.categories,
-    required this.allCategories,
-  });
+  const _CategoryList({required this.categories});
 
   final List<CategoryEntity> categories;
-  final List<CategoryEntity> allCategories;
-
-  Future<void> _deleteCategory(
-    BuildContext context,
-    CategoryEntity category,
-  ) async {
-    final otherCategories = allCategories
-        .where((c) => c.id != category.id)
-        .toList();
-    if (otherCategories.isEmpty) return;
-
-    String? targetCategoryId = otherCategories.first.id;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(t.general.delete),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(t.categories.reassignPrompt),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: targetCategoryId,
-                items: otherCategories
-                    .map(
-                      (c) => DropdownMenuItem(
-                        value: c.id,
-                        child: Text(c.name),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() => targetCategoryId = v),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(t.general.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(t.general.delete),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (confirmed == true && targetCategoryId != null && context.mounted) {
-      final transactionRepo = GetIt.I<TransactionRepository>();
-      final categoryRepo = GetIt.I<CategoryRepository>();
-      await transactionRepo.reassignTransactions(
-        fromCategoryId: category.id,
-        toCategoryId: targetCategoryId!,
-      );
-      await categoryRepo.deleteCategory(category.id);
-      if (context.mounted) {
-        unawaited(
-          context.read<CategoriesCubit>().loadCategories(forceRefresh: true),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -199,47 +119,78 @@ class _CategoryList extends StatelessWidget {
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Color(category.color),
-            child: Icon(
-              IconData(category.icon, fontFamily: 'MaterialIcons'),
-              color: Colors.white,
-              size: 20,
+        final colors = context.appColors;
+        final typeLabel = category.type == CategoryType.income
+            ? t.categories.incomeType
+            : t.categories.expenseType;
+
+        return Card(
+          child: InkWell(
+            onTap: category.isDefault
+                ? null
+                : () async {
+                    final result = await context.push(
+                      AppRoutes.editCategory,
+                      extra: category,
+                    );
+                    if (result == true && context.mounted) {
+                      unawaited(
+                        context.read<CategoriesCubit>().loadCategories(
+                          forceRefresh: true,
+                        ),
+                      );
+                    }
+                  },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Color(category.color),
+                    child: Icon(
+                      IconData(
+                        category.icon,
+                        fontFamily: 'MaterialIcons',
+                      ),
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.name,
+                          style: context.textTheme.titleSmall,
+                        ),
+                        Text(
+                          typeLabel,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: colors.onBackgroundLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (category.isDefault)
+                    Chip(
+                      label: Text(t.general.defaultLabel),
+                      labelStyle: context.textTheme.labelSmall,
+                    )
+                  else
+                    FaIcon(
+                      FontAwesomeIcons.chevronRight,
+                      size: 14,
+                      color: colors.onBackgroundLight,
+                    ),
+                ],
+              ),
             ),
           ),
-          title: Text(category.name),
-          subtitle: Text(category.type.name),
-          trailing: category.isDefault
-              ? Chip(
-                  label: Text(t.general.defaultLabel),
-                  labelStyle: context.textTheme.labelSmall,
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      onPressed: () async {
-                        final result = await context.push(
-                          AppRoutes.editCategory,
-                          extra: category,
-                        );
-                        if (result == true && context.mounted) {
-                          unawaited(
-                            context.read<CategoriesCubit>().loadCategories(
-                              forceRefresh: true,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, size: 20),
-                      onPressed: () => _deleteCategory(context, category),
-                    ),
-                  ],
-                ),
         );
       },
     );

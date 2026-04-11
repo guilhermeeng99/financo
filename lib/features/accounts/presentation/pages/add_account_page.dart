@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
+import 'package:financo/core/cache/app_data_cache.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
@@ -9,6 +10,9 @@ import 'package:financo/features/accounts/domain/usecases/create_account_usecase
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
+import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -71,6 +75,59 @@ class _AddAccountViewState extends State<_AddAccountView> {
     super.dispose();
   }
 
+  Future<void> _confirmDelete(String accountId, String userId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.general.delete),
+        content: Text(t.accounts.deleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.general.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              t.general.delete,
+              style: TextStyle(
+                color: Theme.of(ctx).colorScheme.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final txRepo = GetIt.I<TransactionRepository>();
+    final accountRepo = GetIt.I<AccountRepository>();
+
+    // Delete all transactions belonging to this account
+    final txResult = await txRepo.getTransactions(
+      userId: userId,
+      accountId: accountId,
+    );
+    await txResult.fold(
+      (_) async {},
+      (transactions) async {
+        await Future.wait(
+          transactions.map((tx) => txRepo.deleteTransaction(tx.id)),
+        );
+      },
+    );
+
+    await accountRepo.deleteAccount(accountId);
+    if (mounted) {
+      // Clear cache so dashboard re-fetches from Firestore
+      GetIt.I<AppDataCache>().clear();
+      context.read<DashboardBloc>().add(
+        const DashboardRefreshRequested(),
+      );
+      context.pop(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AccountFormCubit, AccountFormState>(
@@ -101,6 +158,19 @@ class _AddAccountViewState extends State<_AddAccountView> {
               state.isEditing ? t.accounts.editAccount : t.accounts.addAccount,
             ),
           ),
+          actions: [
+            BlocBuilder<AccountFormCubit, AccountFormState>(
+              builder: (context, state) {
+                if (!state.isEditing) return const SizedBox.shrink();
+                return IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.trash, size: 18),
+                  onPressed: () => unawaited(
+                    _confirmDelete(state.existingId!, state.userId),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

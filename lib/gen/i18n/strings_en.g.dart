@@ -326,6 +326,33 @@ class TranslationsDashboardEn {
 
 	/// en: 'No transactions yet'
 	String get noTransactionsYet => 'No transactions yet';
+
+	/// en: 'Account Balances'
+	String get accountBalances => 'Account Balances';
+
+	/// en: 'Month Result'
+	String get monthResult => 'Month Result';
+
+	/// en: 'Expenses by Category'
+	String get expensesByCategory => 'Expenses by Category';
+
+	/// en: 'Income by Category'
+	String get incomeByCategory => 'Income by Category';
+
+	/// en: 'No accounts registered yet'
+	String get noAccountsYet => 'No accounts registered yet';
+
+	/// en: 'No expenses this month'
+	String get noExpensesYet => 'No expenses this month';
+
+	/// en: 'No income this month'
+	String get noIncomeYet => 'No income this month';
+
+	/// en: 'Total Expenses'
+	String get totalExpenses => 'Total Expenses';
+
+	/// en: 'Total Income'
+	String get totalIncome => 'Total Income';
 }
 
 // Path: transactions
@@ -533,6 +560,21 @@ class TranslationsAccountsEn {
 
 	/// en: 'Are you sure you want to delete this account?'
 	String get deleteConfirm => 'Are you sure you want to delete this account?';
+
+	/// en: 'Monthly Summary'
+	String get statement => 'Monthly Summary';
+
+	/// en: 'Income'
+	String get monthIncome => 'Income';
+
+	/// en: 'Expenses'
+	String get monthExpenses => 'Expenses';
+
+	/// en: 'Result'
+	String get monthResult => 'Result';
+
+	/// en: 'No transactions in this period'
+	String get noTransactionsInPeriod => 'No transactions in this period';
 }
 
 // Path: categories
@@ -590,6 +632,9 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Default categories cannot be deleted.'
 	String get cannotDeleteDefault => 'Default categories cannot be deleted.';
+
+	/// en: 'Create another category before deleting this one.'
+	String get cannotDeleteLast => 'Create another category before deleting this one.';
 
 	/// en: 'Select icon'
 	String get selectIcon => 'Select icon';
@@ -793,6 +838,15 @@ extension on Translations {
 			'dashboard.seeAll' => 'See all',
 			'dashboard.thisMonth' => 'This month',
 			'dashboard.noTransactionsYet' => 'No transactions yet',
+			'dashboard.accountBalances' => 'Account Balances',
+			'dashboard.monthResult' => 'Month Result',
+			'dashboard.expensesByCategory' => 'Expenses by Category',
+			'dashboard.incomeByCategory' => 'Income by Category',
+			'dashboard.noAccountsYet' => 'No accounts registered yet',
+			'dashboard.noExpensesYet' => 'No expenses this month',
+			'dashboard.noIncomeYet' => 'No income this month',
+			'dashboard.totalExpenses' => 'Total Expenses',
+			'dashboard.totalIncome' => 'Total Income',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
@@ -856,6 +910,11 @@ extension on Translations {
 			'accounts.saved' => 'Account saved!',
 			'accounts.deleted' => 'Account deleted.',
 			'accounts.deleteConfirm' => 'Are you sure you want to delete this account?',
+			'accounts.statement' => 'Monthly Summary',
+			'accounts.monthIncome' => 'Income',
+			'accounts.monthExpenses' => 'Expenses',
+			'accounts.monthResult' => 'Result',
+			'accounts.noTransactionsInPeriod' => 'No transactions in this period',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
 			'categories.editCategory' => 'Edit Category',
@@ -872,6 +931,7 @@ extension on Translations {
 			'categories.categoryUpdated' => 'Category updated',
 			'categories.categoryCreated' => 'Category created',
 			'categories.cannotDeleteDefault' => 'Default categories cannot be deleted.',
+			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
 			'chat.title' => 'AI Assistant',

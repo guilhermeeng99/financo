@@ -30,7 +30,13 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     TransactionsLoadRequested event,
     Emitter<TransactionsState> emit,
   ) async {
-    if (state is TransactionsLoaded && !event.forceRefresh) return;
+    if (state is TransactionsLoaded && !event.forceRefresh) {
+      final loaded = state as TransactionsLoaded;
+      if (loaded.selectedYear == event.year &&
+          loaded.selectedMonth == event.month) {
+        return;
+      }
+    }
     emit(const TransactionsLoading());
 
     final ref = DateTime(event.year, event.month);

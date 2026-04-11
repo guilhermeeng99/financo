@@ -49,6 +49,9 @@ class ReportsCubit extends Cubit<ReportsState> {
           totalIncome: income,
           totalExpenses: expenses,
           netResult: income - expenses,
+          accounts: const [],
+          expensesByCategory: const [],
+          incomeByCategory: const [],
         );
 
         final byCategory = <String, double>{};

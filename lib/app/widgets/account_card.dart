@@ -75,7 +75,6 @@ class AccountCard extends StatelessWidget {
               ),
               AmountText(
                 amount: account.balance,
-                isIncome: account.balance >= 0,
                 fontSize: 16,
               ),
             ],

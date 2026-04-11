@@ -11,12 +11,19 @@ sealed class DashboardEvent extends Equatable {
 }
 
 final class DashboardLoadRequested extends DashboardEvent {
-  const DashboardLoadRequested({this.forceRefresh = false});
+  DashboardLoadRequested({
+    this.forceRefresh = false,
+    int? year,
+    int? month,
+  }) : year = year ?? DateTime.now().year,
+       month = month ?? DateTime.now().month;
 
   final bool forceRefresh;
+  final int year;
+  final int month;
 
   @override
-  List<Object> get props => [forceRefresh];
+  List<Object> get props => [forceRefresh, year, month];
 }
 
 final class DashboardRefreshRequested extends DashboardEvent {
@@ -42,13 +49,22 @@ final class DashboardLoaded extends DashboardState {
   const DashboardLoaded({
     required this.summary,
     required this.recentTransactions,
+    required this.selectedYear,
+    required this.selectedMonth,
   });
 
   final DashboardSummary summary;
   final List<TransactionEntity> recentTransactions;
+  final int selectedYear;
+  final int selectedMonth;
 
   @override
-  List<Object> get props => [summary, recentTransactions];
+  List<Object> get props => [
+    summary,
+    recentTransactions,
+    selectedYear,
+    selectedMonth,
+  ];
 }
 
 final class DashboardError extends DashboardState {

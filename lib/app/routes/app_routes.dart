@@ -13,7 +13,7 @@ class AppRoutes {
   static const addTransaction = '/transaction/add';
   static const transactionDetail = '/transaction/:id';
   static const accounts = '/accounts';
-  static const addAccount = '/account/add';
+  static const addAccount = '/accounts/add';
   static const accountDetail = '/account/:id';
   static const categories = '/categories';
   static const addCategory = '/category/add';

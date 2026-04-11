@@ -110,32 +110,20 @@ class _ThemeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, themeMode) {
-        return ListTile(
-          leading: const FaIcon(FontAwesomeIcons.palette),
+        final isDark = themeMode == ThemeMode.dark;
+        return SwitchListTile(
+          secondary: FaIcon(
+            isDark ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
+          ),
           title: Text(t.profile.theme),
-          subtitle: SegmentedButton<ThemeMode>(
-            segments: [
-              ButtonSegment(
-                value: ThemeMode.light,
-                label: Text(t.profile.themeLight),
-              ),
-              ButtonSegment(
-                value: ThemeMode.system,
-                label: Text(t.profile.themeSystem),
-              ),
-              ButtonSegment(
-                value: ThemeMode.dark,
-                label: Text(t.profile.themeDark),
-              ),
-            ],
-            selected: {themeMode},
-            onSelectionChanged: (selected) {
-              unawaited(
-                context.read<ThemeCubit>().setThemeMode(
-                  selected.first,
-                ),
-              );
-            },
+          subtitle: Text(
+            isDark ? t.profile.themeDark : t.profile.themeLight,
+          ),
+          value: isDark,
+          onChanged: (value) => unawaited(
+            context.read<ThemeCubit>().setThemeMode(
+              value ? ThemeMode.dark : ThemeMode.light,
+            ),
           ),
         );
       },

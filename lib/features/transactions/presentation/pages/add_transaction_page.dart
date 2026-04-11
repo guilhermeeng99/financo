@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -11,6 +12,8 @@ import 'package:financo/features/categories/presentation/cubit/categories_cubit.
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -87,7 +90,11 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
               ),
             ),
           );
-          context.pop();
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(AppRoutes.dashboard);
+          }
         } else if (state.status == FormStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -105,6 +112,46 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                   : t.transactions.addTransaction,
             ),
           ),
+          actions: [
+            BlocBuilder<TransactionFormCubit, TransactionFormState>(
+              builder: (context, state) {
+                if (!state.isEditing) return const SizedBox.shrink();
+                return IconButton(
+                  icon: const FaIcon(FontAwesomeIcons.trashCan),
+                  tooltip: t.general.delete,
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(t.transactions.deleteTransaction),
+                        content: Text(t.transactions.deleteConfirm),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(t.general.cancel),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(t.general.delete),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed == true && context.mounted) {
+                      context.read<TransactionsBloc>().add(
+                        TransactionDeleteRequested(state.existingId!),
+                      );
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(AppRoutes.dashboard);
+                      }
+                    }
+                  },
+                );
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),

@@ -25,34 +25,54 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardLoadRequested event,
     Emitter<DashboardState> emit,
   ) async {
-    if (state is DashboardLoaded && !event.forceRefresh) return;
+    if (state is DashboardLoaded && !event.forceRefresh) {
+      final loaded = state as DashboardLoaded;
+      if (loaded.selectedYear == event.year &&
+          loaded.selectedMonth == event.month) {
+        return;
+      }
+    }
     emit(const DashboardLoading());
-    await _loadDashboard(emit, forceRefresh: event.forceRefresh);
+    await _loadDashboard(
+      emit,
+      year: event.year,
+      month: event.month,
+      forceRefresh: event.forceRefresh,
+    );
   }
 
   Future<void> _onRefreshRequested(
     DashboardRefreshRequested event,
     Emitter<DashboardState> emit,
   ) async {
-    await _loadDashboard(emit, forceRefresh: true);
+    final current = state;
+    final year = current is DashboardLoaded
+        ? current.selectedYear
+        : DateTime.now().year;
+    final month = current is DashboardLoaded
+        ? current.selectedMonth
+        : DateTime.now().month;
+    await _loadDashboard(emit, year: year, month: month, forceRefresh: true);
   }
 
   Future<void> _loadDashboard(
     Emitter<DashboardState> emit, {
+    required int year,
+    required int month,
     bool forceRefresh = false,
   }) async {
-    final now = DateTime.now();
+    final target = DateTime(year, month);
 
     final summaryResult = await _getDashboardSummary(
       userId: _userId,
-      month: now,
+      month: target,
       forceRefresh: forceRefresh,
     );
 
     final transactionsResult = await _getTransactions(
       userId: _userId,
-      startDate: startOfMonth(now),
-      endDate: endOfMonth(now),
+      startDate: startOfMonth(target),
+      endDate: endOfMonth(target),
       forceRefresh: forceRefresh,
     );
 
@@ -66,6 +86,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             DashboardLoaded(
               summary: summary,
               recentTransactions: recent,
+              selectedYear: year,
+              selectedMonth: month,
             ),
           );
         },
