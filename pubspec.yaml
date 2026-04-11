@@ -1,73 +1,65 @@
 name: financo
-description: "A finance manager project."
-
-publish_to: 'none' 
-
-
+description: "Personal finance manager with AI-powered data entry."
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.11.4
 
 dependencies:
-  app_core:
-    path: packages/app_core
-  app_database:
-    path: packages/app_database
-  app_widgets:
-    path: packages/app_widgets
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
-  slang_flutter: ^4.9.0
+
+  # State Management
+  flutter_bloc: ^9.1.0
+  equatable: ^2.0.7
+  bloc: ^9.0.0
+
+  # Dependency Injection
+  get_it: ^9.2.1
+
+  # Routing
+  go_router: ^17.2.0
+
+  # Firebase
+  firebase_core: ^4.6.0
+  firebase_auth: ^6.3.0
+  cloud_firestore: ^6.2.0
+
+  # AI Chat
+  google_generative_ai: ^0.4.7
+
+  # Error Handling
+  dartz: ^0.10.1
+
+  # Internationalization
+  slang_flutter: ^4.14.0
+
+  # UI
+  google_fonts: ^8.0.2
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  fl_chart: ^1.2.0
+  cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.8.0
+
+  # Utils
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  shared_preferences: ^2.5.3
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
-  intl: ^0.20.2
-  melos: ^7.1.1
-  slang: ^4.9.0
-  very_good_analysis: ^10.0.0
-
-workspace:
-  - packages/app_core
-  - packages/app_widgets
-  - packages/app_database
-
-melos:
-  scripts:
-    build_runner_app_database_by_path:
-      run: cd packages/app_database && dart run build_runner build --delete-conflicting-outputs
-
-    generate_routes:
-      run: dart run financo:routes
-
-    slang:
-      run: dart run slang
-    
-    generate_assets_folders:
-      run: dart run financo:assets
-      
-    packages_update:
-      run: dart pub outdated
-
-    run_release:
-      run: flutter run --release
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.2.0
+  slang_build_runner: ^4.14.0
+  build_runner: ^2.4.15
+  mocktail: ^1.0.4
+  bloc_test: ^10.0.0
 
 flutter:
   uses-material-design: true
 
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: lib/app/assets/fonts/Inter_Regular.ttf
-          weight: 200
-        - asset: lib/app/assets/fonts/Inter_Bold.ttf
-          weight: 700
-
-
   assets:
-    - lib/app/assets/fonts/
-    - lib/app/assets/i18n/
-    - lib/app/assets/images/
     - lib/app/assets/images/banks/
-    - lib/app/assets/images/flags/

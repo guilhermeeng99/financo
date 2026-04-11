@@ -1,247 +1,199 @@
 {
-  "navigation": {
-    "overview": "Overview",
-    "financial_movement": "Financial movement",
-    "paid_and_received": "Paid and received",
-    "to_pay_and_to_receive": "To pay and to receive",
-    "account_statement": "Account Statement",
-    "credit_card": "Credit Card",
-    "releases": "Releases",
-    "register": "Register",
-    "categories": "Categories",
-    "accounts": "Accounts"
+  "app": {
+    "name": "Financo"
   },
-  "common": {
-    "actions": {
-      "edit": "Edit",
-      "delete": "Delete",
-      "save": "Save",
-      "register": "Register",
-      "filter": "Filter",
-      "pay": "Pay",
-      "unpay": "Cancel Payment",
-      "clone": "Clone",
-      "freeze": "Freeze",
-      "unfreeze": "Unfreeze",
-      "export": "Export",
-      "import": "Import",
-      "choose_file": "Choose File",
-      "download_example": "Download Example"
-    },
-    "labels": {
-      "name": "Name",
-      "type": "Type",
-      "amount": "Amount",
-      "details": "Details",
-      "used": "Used",
-      "available": "Available",
-      "date": "Date",
-      "description": "Description",
-      "account": {
-        "one": "Account",
-        "other": "Accounts"
-      },
-      "category": {
-        "one": "Category",
-        "other": "Categories"
-      },
-      "subcategory": "Subcategory",
-      "transactions": "Transactions",
-      "balance": "Balance",
-      "credit_limit": "Credit Limit",
-      "bill_closing_day": "Bill Closing Day",
-      "first_due_date": "First Due Date",
-      "payment_account": "Payment Account",
-      "available_balance": "Available Balance",
-      "initial_balance_date": "Initial Balance Date",
-      "total": "Total",
-      "icon": "Icon",
-      "coin": "Currency",
-      "status": "Status",
-      "recurrence": "Recurrence",
-      "frequency": "Frequency",
-      "entries": "Entries",
-      "transfers": {
-        "one": "Transfer",
-        "other": "Transfers"
-      },
-      "exits": "Exits",
-      "confirmed": {
-        "one": "Confirmed",
-        "other": "Confirmed"
-      },
-      "projected": {
-        "one": "Projected",
-        "other": "Projected"
-      },
-      "pending": {
-        "one": "Pending",
-        "other": "Pending"
-      },
-      "result": {
-        "one": "Result",
-        "other": "Results"
-      }
-    },
-    "frequency": {
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "yearly": "Yearly"
-    },
-    "period_types": {
-      "daily": "Daily",
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "semester": "Semester",
-      "custom": "Custom"
-    }
+  "general": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "noResults": "No results found",
+    "success": "Success",
+    "or": "or",
+    "update": "Update",
+    "create": "Create",
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "defaultLabel": "Default"
   },
-  "overview": {
-    "cash_balance": "Cash balance",
-    "result_of_the_month": "Result of the month",
-    "projected_situation": "Projected situation",
-    "expense_by_category": "Expense by category",
-    "income_by_category": "Income by category",
-    "credit_card": "Credit Card"
+  "validators": {
+    "required": "This field is required.",
+    "emailRequired": "Email is required.",
+    "emailInvalid": "Enter a valid email.",
+    "passwordRequired": "Password is required.",
+    "passwordMinLength": "Password must be at least 6 characters.",
+    "amountRequired": "Amount is required.",
+    "amountInvalid": "Enter a valid amount.",
+    "selectAccount": "Select an account",
+    "selectCategory": "Select a category"
   },
-  "past_and_future_releases": {
-    "period_result": "Period result",
-    "total_to_pay": "Total to pay",
-    "total_to_receive": "Total to receive",
-    "total_received": "Total received",
-    "total_paid": "Total paid"
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "emailHint": "your@email.com",
+    "password": "Password",
+    "passwordHint": "••••••••",
+    "name": "Name",
+    "nameHint": "Your full name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account? Sign Up",
+    "hasAccount": "Already have an account? Sign In",
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to your account",
+    "createAccount": "Create account",
+    "signUpSubtitle": "Start managing your finances today",
+    "continueWithGoogle": "Continue with Google"
   },
-  "accounts": {
-    "new_account": "New Account",
-    "edit_account": "Edit Account",
-    "select_account": "Select Account",
-    "origin_account": "Origin Account",
-    "destination_account": "Destination Account",
-    "show_only_active": "Show Only Active Accounts",
-    "no_accounts_found": "No accounts found",
-    "types": {
-      "checking_account": "Checking Account",
-      "credit_card": "Credit Card",
-      "money": "Cash",
-      "others": "Others"
-    },
-    "validation": {
-      "name_cannot_be_empty": "Account name cannot be empty",
-      "name_min_length_number": "Account name must be at least $number characters long",
-      "name_max_length_number": "Account name must be at most $number characters long",
-      "name_already_exists": "An account with this name already exists",
-      "currency_code_length_number": "Currency code must be exactly $number characters long",
-      "currency_code_format": "Currency code must contain only capital letters",
-      "balance_invalid_number": "Balance must be a valid number",
-      "balance_min_value_number": "Balance cannot be less than $number",
-      "balance_max_value_number": "Balance cannot be greater than $number",
-      "bill_closing_day_invalid": "Bill closing day must be between 1 and 31"
-    }
+  "onboarding": {
+    "tagline": "Take control of your personal finances\nwith smart tracking and AI assistance.",
+    "step1Title": "Track Your Finances",
+    "step1Body": "Log income and expenses effortlessly. Keep a clear view of where your money goes.",
+    "step2Title": "AI-Powered Entry",
+    "step2Body": "Just type naturally — our AI chat extracts transaction data for you automatically.",
+    "step3Title": "Insightful Reports",
+    "step3Body": "Beautiful charts and summaries help you understand your spending habits.",
+    "getStarted": "Get Started",
+    "next": "Next",
+    "skip": "Skip"
   },
-  "categories": {
-    "new_category": "New Category",
-    "edit_category": "Edit Category",
-    "create_sub_category": "Create Subcategory",
-    "show_only_active": "Show Only Active Categories",
-    "export_categories": "Export Categories",
-    "import_categories": "Import Categories",
-    "select_category": "Select Category",
-    "subcategory_of": "Subcategory of",
-    "no_category": "No Category",
-    "no_categories_found": "No categories found",
-    "validation": {
-      "name_cannot_be_empty": "Category name cannot be empty",
-      "name_min_length_number": "Category name must be at least $number characters long",
-      "name_max_length_number": "Category name must be at most $number characters long",
-      "parent_id_must_be_positive": "Parent category ID must be a positive number",
-      "uncategorized_parent": "Parent Category Not Defined",
-      "category_name_already_exists": "A category with this name already exists"
-    }
+  "nav": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "chat": "Chat",
+    "reports": "Reports",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalBalance": "Total Balance",
+    "income": "Income",
+    "expenses": "Expenses",
+    "netResult": "Net Result",
+    "recentTransactions": "Recent Transactions",
+    "seeAll": "See all",
+    "thisMonth": "This month",
+    "noTransactionsYet": "No transactions yet"
   },
   "transactions": {
-    "new_transaction": "New Transaction",
-    "edit_transaction": "Edit Transaction",
-    "export_transactions": "Export Transactions",
-    "import_transactions": "Import Transactions",
-    "unknown_transfer": "Unknown Transfer",
-    "no_transactions_found": "No transactions found",
-    "types": {
-      "income": "Income",
-      "expense": "Expense"
-    },
-    "recurrence_type": {
-      "unique": "Unique",
-      "fixed": "Fixed"
-    },
-    "status_type": {
-      "unpaid": "Unpaid",
-      "paid": "Paid"
-    },
-    "status": {
-      "to_pay": "To Pay",
-      "paid": "Paid"
-    },
-    "currency": {
-      "types": {
-        "brl": "Real",
-        "usd": "Dollar",
-        "eur": "Euro"
-      }
-    },
-    "validation": {
-      "amount_invalid_number": "Transaction amount must be a valid number",
-      "amount_cannot_be_zero": "Transaction amount must be different than zero",
-      "description_max_length_number": "Transaction description must be at most $number characters long",
-      "account_must_be_selected": "Account must be selected",
-      "account_id_must_be_positive": "Account ID must be a positive number",
-      "category_must_be_selected": "Category must be selected",
-      "category_id_must_be_positive": "Category ID must be a positive number",
-      "date_too_far_past_number": "Transaction date cannot be more than $number years in the past",
-      "date_too_far_future_number": "Transaction date cannot be more than $number years in the future"
-    }
+    "title": "Transactions",
+    "empty": "No transactions. Add your first transaction to get started.",
+    "addTransaction": "New Transaction",
+    "editTransaction": "Edit Transaction",
+    "transactionDetails": "Transaction Details",
+    "transaction": "Transaction",
+    "transactionNotFound": "Transaction not found",
+    "type": "Type",
+    "income": "Income",
+    "expense": "Expense",
+    "amount": "Amount",
+    "amountLabel": "Amount (R\\$)",
+    "amountHint": "0.00",
+    "description": "Description",
+    "descriptionHint": "e.g. Grocery shopping",
+    "date": "Date",
+    "category": "Category",
+    "account": "Account",
+    "notes": "Notes",
+    "notesOptional": "Notes (optional)",
+    "notesHint": "Additional details...",
+    "reconciled": "Reconciled",
+    "reconcile": "Reconcile",
+    "unreconcile": "Unreconcile",
+    "deleteTransaction": "Delete Transaction",
+    "deleteConfirm": "Are you sure you want to delete this transaction?",
+    "transactionUpdated": "Transaction updated",
+    "transactionCreated": "Transaction created",
+    "saved": "Transaction saved!",
+    "deleted": "Transaction deleted."
   },
-  "credit_card": {
-    "current_bill": "Current Bill",
-    "closing": "Closing",
-    "due": "Due Date",
-    "close_bill": "Close Bill",
-    "launch_payment": "Launch Payment",
-    "limit": "Limit (Total)",
-    "account_limit": "Account Limit",
-    "previous_balance": "Previous Balance",
-    "total_paid": "Total Paid",
-    "amount_due": "Amount Due"
+  "accounts": {
+    "title": "Accounts",
+    "addAccount": "New Account",
+    "editAccount": "Edit Account",
+    "account": "Account",
+    "accountNotFound": "Account not found",
+    "checking": "Checking Account",
+    "creditCard": "Credit Card",
+    "checkingShort": "Checking",
+    "name": "Account Nickname",
+    "nameHint": "e.g. Nubank Gui",
+    "bank": "Bank",
+    "bankHint": "e.g. Nubank",
+    "balance": "Balance",
+    "currentBalance": "Current Balance",
+    "balanceLabel": "Current Balance (R\\$)",
+    "balanceHint": "0.00",
+    "creditLimit": "Credit Limit",
+    "creditLimitLabel": "Credit Limit (R\\$)",
+    "creditLimitHint": "0.00",
+    "closingDay": "Closing Day",
+    "dueDay": "Due Day",
+    "availableCredit": "Available Credit",
+    "currentBill": "Current bill",
+    "type": "Type",
+    "empty": "No accounts. Add your first bank account or credit card.",
+    "emptySubtitle": "Add your bank accounts and credit cards.",
+    "accountUpdated": "Account updated",
+    "accountCreated": "Account created",
+    "saved": "Account saved!",
+    "deleted": "Account deleted.",
+    "deleteConfirm": "Are you sure you want to delete this account?"
   },
-  "settings": {
-    "additional_settings": "Additional Settings"
+  "categories": {
+    "title": "Categories",
+    "addCategory": "Add Category",
+    "name": "Category name",
+    "incomeType": "Income",
+    "expenseType": "Expense",
+    "bothType": "Both",
+    "empty": "No categories. Categories will appear here.",
+    "saved": "Category saved!",
+    "deleted": "Category deleted.",
+    "deleteConfirm": "Are you sure you want to delete this category?"
+  },
+  "chat": {
+    "title": "AI Assistant",
+    "placeholder": "Type a message...",
+    "welcomeTitle": "Hi! I'm your financial assistant.",
+    "welcomeBody": "Tell me about your transactions and I'll help you record them.",
+    "confirmPrompt": "I detected the following transaction. Does this look correct?",
+    "confirmed": "Transaction saved!",
+    "cancelled": "Transaction cancelled.",
+    "error": "Sorry, I couldn't understand that. Could you try again?"
+  },
+  "reports": {
+    "title": "Reports",
+    "incomeVsExpenses": "Income vs Expenses",
+    "expensesByCategory": "Expenses by Category",
+    "income": "Income",
+    "expenses": "Expenses",
+    "net": "Net",
+    "currentMonth": "Current month",
+    "lastMonth": "Last month",
+    "customRange": "Custom range",
+    "categoryBreakdown": "Category Breakdown",
+    "monthlyComparison": "Monthly Comparison",
+    "balanceEvolution": "Balance Evolution",
+    "noData": "Not enough data to generate reports."
   },
   "profile": {
     "title": "Profile",
-    "delete_all_data": "Delete all data",
-    "deleting": "Deleting...",
-    "delete_success": "All data deleted successfully",
-    "delete_error": "Error deleting data: $error"
-  },
-  "messages": {
-    "success": {
-      "export_successfully": "Exported successfully!",
-      "excel_import_successfully": "Excel file imported successfully"
-    },
-    "warnings": {
-      "no_changes_provided": "No changes were provided"
-    },
-    "errors": {
-      "export_error": "Error while exporting",
-      "excel_not_found": "Excel file not found",
-      "excel_not_valid": "Invalid Excel file",
-      "no_accounts_to_import": "No accounts registered. Please create at least one account before importing transactions.",
-      "no_categories_to_import": "No categories registered. Please create at least one category before importing transactions."
-    }
-  },
-  "date": {
-    "semester_year": "$semesterº Semester $date_year",
-    "semester_year_small": "$semesterº Sem $date_year"
+    "editProfile": "Edit Profile",
+    "accounts": "Accounts",
+    "categories": "Categories",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "signOutConfirm": "Are you sure you want to sign out?"
   }
 }

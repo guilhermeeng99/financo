@@ -1,5 +1,3 @@
 base_locale: en
 input_directory: lib/app/assets/i18n
-input_file_pattern: .i18n.json
 output_directory: lib/gen/i18n
-output_file_name: strings.g.dart 

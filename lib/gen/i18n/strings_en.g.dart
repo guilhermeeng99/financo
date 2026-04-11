@@ -3,12 +3,13 @@
 ///
 // coverage:ignore-file
 // ignore_for_file: type=lint, unused_import
+// dart format off
 
 part of 'strings.g.dart';
 
 // Path: <root>
 typedef TranslationsEn = Translations; // ignore: unused_element
-class Translations implements BaseTranslations<AppLocale, Translations> {
+class Translations with BaseTranslations<AppLocale, Translations> {
 	/// Returns the current translations of the given [context].
 	///
 	/// Usage:
@@ -39,195 +40,292 @@ class Translations implements BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
-	late final TranslationsNavigationEn navigation = TranslationsNavigationEn._(_root);
-	late final TranslationsCommonEn common = TranslationsCommonEn._(_root);
-	late final TranslationsOverviewEn overview = TranslationsOverviewEn._(_root);
-	late final TranslationsPastAndFutureReleasesEn past_and_future_releases = TranslationsPastAndFutureReleasesEn._(_root);
+	late final TranslationsAppEn app = TranslationsAppEn._(_root);
+	late final TranslationsGeneralEn general = TranslationsGeneralEn._(_root);
+	late final TranslationsValidatorsEn validators = TranslationsValidatorsEn._(_root);
+	late final TranslationsAuthEn auth = TranslationsAuthEn._(_root);
+	late final TranslationsOnboardingEn onboarding = TranslationsOnboardingEn._(_root);
+	late final TranslationsNavEn nav = TranslationsNavEn._(_root);
+	late final TranslationsDashboardEn dashboard = TranslationsDashboardEn._(_root);
+	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
-	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
-	late final TranslationsCreditCardEn credit_card = TranslationsCreditCardEn._(_root);
-	late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
+	late final TranslationsChatEn chat = TranslationsChatEn._(_root);
+	late final TranslationsReportsEn reports = TranslationsReportsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
-	late final TranslationsMessagesEn messages = TranslationsMessagesEn._(_root);
-	late final TranslationsDateEn date = TranslationsDateEn._(_root);
 }
 
-// Path: navigation
-class TranslationsNavigationEn {
-	TranslationsNavigationEn._(this._root);
+// Path: app
+class TranslationsAppEn {
+	TranslationsAppEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Overview'
-	String get overview => 'Overview';
-
-	/// en: 'Financial movement'
-	String get financial_movement => 'Financial movement';
-
-	/// en: 'Paid and received'
-	String get paid_and_received => 'Paid and received';
-
-	/// en: 'To pay and to receive'
-	String get to_pay_and_to_receive => 'To pay and to receive';
-
-	/// en: 'Account Statement'
-	String get account_statement => 'Account Statement';
-
-	/// en: 'Credit Card'
-	String get credit_card => 'Credit Card';
-
-	/// en: 'Releases'
-	String get releases => 'Releases';
-
-	/// en: 'Register'
-	String get register => 'Register';
-
-	/// en: 'Categories'
-	String get categories => 'Categories';
-
-	/// en: 'Accounts'
-	String get accounts => 'Accounts';
+	/// en: 'Financo'
+	String get name => 'Financo';
 }
 
-// Path: common
-class TranslationsCommonEn {
-	TranslationsCommonEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-	late final TranslationsCommonActionsEn actions = TranslationsCommonActionsEn._(_root);
-	late final TranslationsCommonLabelsEn labels = TranslationsCommonLabelsEn._(_root);
-	late final TranslationsCommonFrequencyEn frequency = TranslationsCommonFrequencyEn._(_root);
-	late final TranslationsCommonPeriodTypesEn period_types = TranslationsCommonPeriodTypesEn._(_root);
-}
-
-// Path: overview
-class TranslationsOverviewEn {
-	TranslationsOverviewEn._(this._root);
+// Path: general
+class TranslationsGeneralEn {
+	TranslationsGeneralEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Cash balance'
-	String get cash_balance => 'Cash balance';
+	/// en: 'Loading...'
+	String get loading => 'Loading...';
 
-	/// en: 'Result of the month'
-	String get result_of_the_month => 'Result of the month';
+	/// en: 'An error occurred'
+	String get error => 'An error occurred';
 
-	/// en: 'Projected situation'
-	String get projected_situation => 'Projected situation';
+	/// en: 'Try again'
+	String get retry => 'Try again';
 
-	/// en: 'Expense by category'
-	String get expense_by_category => 'Expense by category';
+	/// en: 'Cancel'
+	String get cancel => 'Cancel';
 
-	/// en: 'Income by category'
-	String get income_by_category => 'Income by category';
+	/// en: 'Confirm'
+	String get confirm => 'Confirm';
 
-	/// en: 'Credit Card'
-	String get credit_card => 'Credit Card';
+	/// en: 'Save'
+	String get save => 'Save';
+
+	/// en: 'Delete'
+	String get delete => 'Delete';
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Add'
+	String get add => 'Add';
+
+	/// en: 'Search'
+	String get search => 'Search';
+
+	/// en: 'No results found'
+	String get noResults => 'No results found';
+
+	/// en: 'Success'
+	String get success => 'Success';
+
+	/// en: 'or'
+	String get or => 'or';
+
+	/// en: 'Update'
+	String get update => 'Update';
+
+	/// en: 'Create'
+	String get create => 'Create';
+
+	/// en: 'Yes'
+	String get yes => 'Yes';
+
+	/// en: 'No'
+	String get no => 'No';
+
+	/// en: 'All'
+	String get all => 'All';
+
+	/// en: 'Default'
+	String get defaultLabel => 'Default';
 }
 
-// Path: past_and_future_releases
-class TranslationsPastAndFutureReleasesEn {
-	TranslationsPastAndFutureReleasesEn._(this._root);
+// Path: validators
+class TranslationsValidatorsEn {
+	TranslationsValidatorsEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Period result'
-	String get period_result => 'Period result';
+	/// en: 'This field is required.'
+	String get required => 'This field is required.';
 
-	/// en: 'Total to pay'
-	String get total_to_pay => 'Total to pay';
+	/// en: 'Email is required.'
+	String get emailRequired => 'Email is required.';
 
-	/// en: 'Total to receive'
-	String get total_to_receive => 'Total to receive';
+	/// en: 'Enter a valid email.'
+	String get emailInvalid => 'Enter a valid email.';
 
-	/// en: 'Total received'
-	String get total_received => 'Total received';
+	/// en: 'Password is required.'
+	String get passwordRequired => 'Password is required.';
 
-	/// en: 'Total paid'
-	String get total_paid => 'Total paid';
+	/// en: 'Password must be at least 6 characters.'
+	String get passwordMinLength => 'Password must be at least 6 characters.';
+
+	/// en: 'Amount is required.'
+	String get amountRequired => 'Amount is required.';
+
+	/// en: 'Enter a valid amount.'
+	String get amountInvalid => 'Enter a valid amount.';
+
+	/// en: 'Select an account'
+	String get selectAccount => 'Select an account';
+
+	/// en: 'Select a category'
+	String get selectCategory => 'Select a category';
 }
 
-// Path: accounts
-class TranslationsAccountsEn {
-	TranslationsAccountsEn._(this._root);
+// Path: auth
+class TranslationsAuthEn {
+	TranslationsAuthEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'New Account'
-	String get new_account => 'New Account';
+	/// en: 'Sign In'
+	String get signIn => 'Sign In';
 
-	/// en: 'Edit Account'
-	String get edit_account => 'Edit Account';
+	/// en: 'Sign Up'
+	String get signUp => 'Sign Up';
 
-	/// en: 'Select Account'
-	String get select_account => 'Select Account';
+	/// en: 'Sign Out'
+	String get signOut => 'Sign Out';
 
-	/// en: 'Origin Account'
-	String get origin_account => 'Origin Account';
+	/// en: 'Email'
+	String get email => 'Email';
 
-	/// en: 'Destination Account'
-	String get destination_account => 'Destination Account';
+	/// en: 'your@email.com'
+	String get emailHint => 'your@email.com';
 
-	/// en: 'Show Only Active Accounts'
-	String get show_only_active => 'Show Only Active Accounts';
+	/// en: 'Password'
+	String get password => 'Password';
 
-	/// en: 'No accounts found'
-	String get no_accounts_found => 'No accounts found';
+	/// en: '••••••••'
+	String get passwordHint => '••••••••';
 
-	late final TranslationsAccountsTypesEn types = TranslationsAccountsTypesEn._(_root);
-	late final TranslationsAccountsValidationEn validation = TranslationsAccountsValidationEn._(_root);
+	/// en: 'Name'
+	String get name => 'Name';
+
+	/// en: 'Your full name'
+	String get nameHint => 'Your full name';
+
+	/// en: 'Forgot password?'
+	String get forgotPassword => 'Forgot password?';
+
+	/// en: 'Don't have an account? Sign Up'
+	String get noAccount => 'Don\'t have an account? Sign Up';
+
+	/// en: 'Already have an account? Sign In'
+	String get hasAccount => 'Already have an account? Sign In';
+
+	/// en: 'Welcome back'
+	String get welcomeBack => 'Welcome back';
+
+	/// en: 'Sign in to your account'
+	String get signInSubtitle => 'Sign in to your account';
+
+	/// en: 'Create account'
+	String get createAccount => 'Create account';
+
+	/// en: 'Start managing your finances today'
+	String get signUpSubtitle => 'Start managing your finances today';
+
+	/// en: 'Continue with Google'
+	String get continueWithGoogle => 'Continue with Google';
 }
 
-// Path: categories
-class TranslationsCategoriesEn {
-	TranslationsCategoriesEn._(this._root);
+// Path: onboarding
+class TranslationsOnboardingEn {
+	TranslationsOnboardingEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'New Category'
-	String get new_category => 'New Category';
+	/// en: 'Take control of your personal finances with smart tracking and AI assistance.'
+	String get tagline => 'Take control of your personal finances\nwith smart tracking and AI assistance.';
 
-	/// en: 'Edit Category'
-	String get edit_category => 'Edit Category';
+	/// en: 'Track Your Finances'
+	String get step1Title => 'Track Your Finances';
 
-	/// en: 'Create Subcategory'
-	String get create_sub_category => 'Create Subcategory';
+	/// en: 'Log income and expenses effortlessly. Keep a clear view of where your money goes.'
+	String get step1Body => 'Log income and expenses effortlessly. Keep a clear view of where your money goes.';
 
-	/// en: 'Show Only Active Categories'
-	String get show_only_active => 'Show Only Active Categories';
+	/// en: 'AI-Powered Entry'
+	String get step2Title => 'AI-Powered Entry';
 
-	/// en: 'Export Categories'
-	String get export_categories => 'Export Categories';
+	/// en: 'Just type naturally — our AI chat extracts transaction data for you automatically.'
+	String get step2Body => 'Just type naturally — our AI chat extracts transaction data for you automatically.';
 
-	/// en: 'Import Categories'
-	String get import_categories => 'Import Categories';
+	/// en: 'Insightful Reports'
+	String get step3Title => 'Insightful Reports';
 
-	/// en: 'Select Category'
-	String get select_category => 'Select Category';
+	/// en: 'Beautiful charts and summaries help you understand your spending habits.'
+	String get step3Body => 'Beautiful charts and summaries help you understand your spending habits.';
 
-	/// en: 'Subcategory of'
-	String get subcategory_of => 'Subcategory of';
+	/// en: 'Get Started'
+	String get getStarted => 'Get Started';
 
-	/// en: 'No Category'
-	String get no_category => 'No Category';
+	/// en: 'Next'
+	String get next => 'Next';
 
-	/// en: 'No categories found'
-	String get no_categories_found => 'No categories found';
+	/// en: 'Skip'
+	String get skip => 'Skip';
+}
 
-	late final TranslationsCategoriesValidationEn validation = TranslationsCategoriesValidationEn._(_root);
+// Path: nav
+class TranslationsNavEn {
+	TranslationsNavEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Dashboard'
+	String get dashboard => 'Dashboard';
+
+	/// en: 'Transactions'
+	String get transactions => 'Transactions';
+
+	/// en: 'Chat'
+	String get chat => 'Chat';
+
+	/// en: 'Reports'
+	String get reports => 'Reports';
+
+	/// en: 'Profile'
+	String get profile => 'Profile';
+}
+
+// Path: dashboard
+class TranslationsDashboardEn {
+	TranslationsDashboardEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Dashboard'
+	String get title => 'Dashboard';
+
+	/// en: 'Total Balance'
+	String get totalBalance => 'Total Balance';
+
+	/// en: 'Income'
+	String get income => 'Income';
+
+	/// en: 'Expenses'
+	String get expenses => 'Expenses';
+
+	/// en: 'Net Result'
+	String get netResult => 'Net Result';
+
+	/// en: 'Recent Transactions'
+	String get recentTransactions => 'Recent Transactions';
+
+	/// en: 'See all'
+	String get seeAll => 'See all';
+
+	/// en: 'This month'
+	String get thisMonth => 'This month';
+
+	/// en: 'No transactions yet'
+	String get noTransactionsYet => 'No transactions yet';
 }
 
 // Path: transactions
@@ -238,81 +336,317 @@ class TranslationsTransactionsEn {
 
 	// Translations
 
+	/// en: 'Transactions'
+	String get title => 'Transactions';
+
+	/// en: 'No transactions. Add your first transaction to get started.'
+	String get empty => 'No transactions. Add your first transaction to get started.';
+
 	/// en: 'New Transaction'
-	String get new_transaction => 'New Transaction';
+	String get addTransaction => 'New Transaction';
 
 	/// en: 'Edit Transaction'
-	String get edit_transaction => 'Edit Transaction';
+	String get editTransaction => 'Edit Transaction';
 
-	/// en: 'Export Transactions'
-	String get export_transactions => 'Export Transactions';
+	/// en: 'Transaction Details'
+	String get transactionDetails => 'Transaction Details';
 
-	/// en: 'Import Transactions'
-	String get import_transactions => 'Import Transactions';
+	/// en: 'Transaction'
+	String get transaction => 'Transaction';
 
-	/// en: 'Unknown Transfer'
-	String get unknown_transfer => 'Unknown Transfer';
+	/// en: 'Transaction not found'
+	String get transactionNotFound => 'Transaction not found';
 
-	/// en: 'No transactions found'
-	String get no_transactions_found => 'No transactions found';
+	/// en: 'Type'
+	String get type => 'Type';
 
-	late final TranslationsTransactionsTypesEn types = TranslationsTransactionsTypesEn._(_root);
-	late final TranslationsTransactionsRecurrenceTypeEn recurrence_type = TranslationsTransactionsRecurrenceTypeEn._(_root);
-	late final TranslationsTransactionsStatusTypeEn status_type = TranslationsTransactionsStatusTypeEn._(_root);
-	late final TranslationsTransactionsStatusEn status = TranslationsTransactionsStatusEn._(_root);
-	late final TranslationsTransactionsCurrencyEn currency = TranslationsTransactionsCurrencyEn._(_root);
-	late final TranslationsTransactionsValidationEn validation = TranslationsTransactionsValidationEn._(_root);
+	/// en: 'Income'
+	String get income => 'Income';
+
+	/// en: 'Expense'
+	String get expense => 'Expense';
+
+	/// en: 'Amount'
+	String get amount => 'Amount';
+
+	/// en: 'Amount (R\$)'
+	String get amountLabel => 'Amount (R\$)';
+
+	/// en: '0.00'
+	String get amountHint => '0.00';
+
+	/// en: 'Description'
+	String get description => 'Description';
+
+	/// en: 'e.g. Grocery shopping'
+	String get descriptionHint => 'e.g. Grocery shopping';
+
+	/// en: 'Date'
+	String get date => 'Date';
+
+	/// en: 'Category'
+	String get category => 'Category';
+
+	/// en: 'Account'
+	String get account => 'Account';
+
+	/// en: 'Notes'
+	String get notes => 'Notes';
+
+	/// en: 'Notes (optional)'
+	String get notesOptional => 'Notes (optional)';
+
+	/// en: 'Additional details...'
+	String get notesHint => 'Additional details...';
+
+	/// en: 'Reconciled'
+	String get reconciled => 'Reconciled';
+
+	/// en: 'Reconcile'
+	String get reconcile => 'Reconcile';
+
+	/// en: 'Unreconcile'
+	String get unreconcile => 'Unreconcile';
+
+	/// en: 'Delete Transaction'
+	String get deleteTransaction => 'Delete Transaction';
+
+	/// en: 'Are you sure you want to delete this transaction?'
+	String get deleteConfirm => 'Are you sure you want to delete this transaction?';
+
+	/// en: 'Transaction updated'
+	String get transactionUpdated => 'Transaction updated';
+
+	/// en: 'Transaction created'
+	String get transactionCreated => 'Transaction created';
+
+	/// en: 'Transaction saved!'
+	String get saved => 'Transaction saved!';
+
+	/// en: 'Transaction deleted.'
+	String get deleted => 'Transaction deleted.';
 }
 
-// Path: credit_card
-class TranslationsCreditCardEn {
-	TranslationsCreditCardEn._(this._root);
+// Path: accounts
+class TranslationsAccountsEn {
+	TranslationsAccountsEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Current Bill'
-	String get current_bill => 'Current Bill';
+	/// en: 'Accounts'
+	String get title => 'Accounts';
 
-	/// en: 'Closing'
-	String get closing => 'Closing';
+	/// en: 'New Account'
+	String get addAccount => 'New Account';
 
-	/// en: 'Due Date'
-	String get due => 'Due Date';
+	/// en: 'Edit Account'
+	String get editAccount => 'Edit Account';
 
-	/// en: 'Close Bill'
-	String get close_bill => 'Close Bill';
+	/// en: 'Account'
+	String get account => 'Account';
 
-	/// en: 'Launch Payment'
-	String get launch_payment => 'Launch Payment';
+	/// en: 'Account not found'
+	String get accountNotFound => 'Account not found';
 
-	/// en: 'Limit (Total)'
-	String get limit => 'Limit (Total)';
+	/// en: 'Checking Account'
+	String get checking => 'Checking Account';
 
-	/// en: 'Account Limit'
-	String get account_limit => 'Account Limit';
+	/// en: 'Credit Card'
+	String get creditCard => 'Credit Card';
 
-	/// en: 'Previous Balance'
-	String get previous_balance => 'Previous Balance';
+	/// en: 'Checking'
+	String get checkingShort => 'Checking';
 
-	/// en: 'Total Paid'
-	String get total_paid => 'Total Paid';
+	/// en: 'Account Nickname'
+	String get name => 'Account Nickname';
 
-	/// en: 'Amount Due'
-	String get amount_due => 'Amount Due';
+	/// en: 'e.g. Nubank Gui'
+	String get nameHint => 'e.g. Nubank Gui';
+
+	/// en: 'Bank'
+	String get bank => 'Bank';
+
+	/// en: 'e.g. Nubank'
+	String get bankHint => 'e.g. Nubank';
+
+	/// en: 'Balance'
+	String get balance => 'Balance';
+
+	/// en: 'Current Balance'
+	String get currentBalance => 'Current Balance';
+
+	/// en: 'Current Balance (R\$)'
+	String get balanceLabel => 'Current Balance (R\$)';
+
+	/// en: '0.00'
+	String get balanceHint => '0.00';
+
+	/// en: 'Credit Limit'
+	String get creditLimit => 'Credit Limit';
+
+	/// en: 'Credit Limit (R\$)'
+	String get creditLimitLabel => 'Credit Limit (R\$)';
+
+	/// en: '0.00'
+	String get creditLimitHint => '0.00';
+
+	/// en: 'Closing Day'
+	String get closingDay => 'Closing Day';
+
+	/// en: 'Due Day'
+	String get dueDay => 'Due Day';
+
+	/// en: 'Available Credit'
+	String get availableCredit => 'Available Credit';
+
+	/// en: 'Current bill'
+	String get currentBill => 'Current bill';
+
+	/// en: 'Type'
+	String get type => 'Type';
+
+	/// en: 'No accounts. Add your first bank account or credit card.'
+	String get empty => 'No accounts. Add your first bank account or credit card.';
+
+	/// en: 'Add your bank accounts and credit cards.'
+	String get emptySubtitle => 'Add your bank accounts and credit cards.';
+
+	/// en: 'Account updated'
+	String get accountUpdated => 'Account updated';
+
+	/// en: 'Account created'
+	String get accountCreated => 'Account created';
+
+	/// en: 'Account saved!'
+	String get saved => 'Account saved!';
+
+	/// en: 'Account deleted.'
+	String get deleted => 'Account deleted.';
+
+	/// en: 'Are you sure you want to delete this account?'
+	String get deleteConfirm => 'Are you sure you want to delete this account?';
 }
 
-// Path: settings
-class TranslationsSettingsEn {
-	TranslationsSettingsEn._(this._root);
+// Path: categories
+class TranslationsCategoriesEn {
+	TranslationsCategoriesEn._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
 
-	/// en: 'Additional Settings'
-	String get additional_settings => 'Additional Settings';
+	/// en: 'Categories'
+	String get title => 'Categories';
+
+	/// en: 'Add Category'
+	String get addCategory => 'Add Category';
+
+	/// en: 'Category name'
+	String get name => 'Category name';
+
+	/// en: 'Income'
+	String get incomeType => 'Income';
+
+	/// en: 'Expense'
+	String get expenseType => 'Expense';
+
+	/// en: 'Both'
+	String get bothType => 'Both';
+
+	/// en: 'No categories. Categories will appear here.'
+	String get empty => 'No categories. Categories will appear here.';
+
+	/// en: 'Category saved!'
+	String get saved => 'Category saved!';
+
+	/// en: 'Category deleted.'
+	String get deleted => 'Category deleted.';
+
+	/// en: 'Are you sure you want to delete this category?'
+	String get deleteConfirm => 'Are you sure you want to delete this category?';
+}
+
+// Path: chat
+class TranslationsChatEn {
+	TranslationsChatEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'AI Assistant'
+	String get title => 'AI Assistant';
+
+	/// en: 'Type a message...'
+	String get placeholder => 'Type a message...';
+
+	/// en: 'Hi! I'm your financial assistant.'
+	String get welcomeTitle => 'Hi! I\'m your financial assistant.';
+
+	/// en: 'Tell me about your transactions and I'll help you record them.'
+	String get welcomeBody => 'Tell me about your transactions and I\'ll help you record them.';
+
+	/// en: 'I detected the following transaction. Does this look correct?'
+	String get confirmPrompt => 'I detected the following transaction. Does this look correct?';
+
+	/// en: 'Transaction saved!'
+	String get confirmed => 'Transaction saved!';
+
+	/// en: 'Transaction cancelled.'
+	String get cancelled => 'Transaction cancelled.';
+
+	/// en: 'Sorry, I couldn't understand that. Could you try again?'
+	String get error => 'Sorry, I couldn\'t understand that. Could you try again?';
+}
+
+// Path: reports
+class TranslationsReportsEn {
+	TranslationsReportsEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Reports'
+	String get title => 'Reports';
+
+	/// en: 'Income vs Expenses'
+	String get incomeVsExpenses => 'Income vs Expenses';
+
+	/// en: 'Expenses by Category'
+	String get expensesByCategory => 'Expenses by Category';
+
+	/// en: 'Income'
+	String get income => 'Income';
+
+	/// en: 'Expenses'
+	String get expenses => 'Expenses';
+
+	/// en: 'Net'
+	String get net => 'Net';
+
+	/// en: 'Current month'
+	String get currentMonth => 'Current month';
+
+	/// en: 'Last month'
+	String get lastMonth => 'Last month';
+
+	/// en: 'Custom range'
+	String get customRange => 'Custom range';
+
+	/// en: 'Category Breakdown'
+	String get categoryBreakdown => 'Category Breakdown';
+
+	/// en: 'Monthly Comparison'
+	String get monthlyComparison => 'Monthly Comparison';
+
+	/// en: 'Balance Evolution'
+	String get balanceEvolution => 'Balance Evolution';
+
+	/// en: 'Not enough data to generate reports.'
+	String get noData => 'Not enough data to generate reports.';
 }
 
 // Path: profile
@@ -326,727 +660,211 @@ class TranslationsProfileEn {
 	/// en: 'Profile'
 	String get title => 'Profile';
 
-	/// en: 'Delete all data'
-	String get delete_all_data => 'Delete all data';
+	/// en: 'Edit Profile'
+	String get editProfile => 'Edit Profile';
 
-	/// en: 'Deleting...'
-	String get deleting => 'Deleting...';
+	/// en: 'Accounts'
+	String get accounts => 'Accounts';
 
-	/// en: 'All data deleted successfully'
-	String get delete_success => 'All data deleted successfully';
+	/// en: 'Categories'
+	String get categories => 'Categories';
 
-	/// en: 'Error deleting data: $error'
-	String delete_error({required Object error}) => 'Error deleting data: ${error}';
+	/// en: 'Theme'
+	String get theme => 'Theme';
+
+	/// en: 'Light'
+	String get themeLight => 'Light';
+
+	/// en: 'Dark'
+	String get themeDark => 'Dark';
+
+	/// en: 'System'
+	String get themeSystem => 'System';
+
+	/// en: 'Are you sure you want to sign out?'
+	String get signOutConfirm => 'Are you sure you want to sign out?';
 }
 
-// Path: messages
-class TranslationsMessagesEn {
-	TranslationsMessagesEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-	late final TranslationsMessagesSuccessEn success = TranslationsMessagesSuccessEn._(_root);
-	late final TranslationsMessagesWarningsEn warnings = TranslationsMessagesWarningsEn._(_root);
-	late final TranslationsMessagesErrorsEn errors = TranslationsMessagesErrorsEn._(_root);
-}
-
-// Path: date
-class TranslationsDateEn {
-	TranslationsDateEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: '$semesterº Semester $date_year'
-	String semester_year({required Object semester, required Object date_year}) => '${semester}º Semester ${date_year}';
-
-	/// en: '$semesterº Sem $date_year'
-	String semester_year_small({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
-}
-
-// Path: common.actions
-class TranslationsCommonActionsEn {
-	TranslationsCommonActionsEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Edit'
-	String get edit => 'Edit';
-
-	/// en: 'Delete'
-	String get delete => 'Delete';
-
-	/// en: 'Save'
-	String get save => 'Save';
-
-	/// en: 'Register'
-	String get register => 'Register';
-
-	/// en: 'Filter'
-	String get filter => 'Filter';
-
-	/// en: 'Pay'
-	String get pay => 'Pay';
-
-	/// en: 'Cancel Payment'
-	String get unpay => 'Cancel Payment';
-
-	/// en: 'Clone'
-	String get clone => 'Clone';
-
-	/// en: 'Freeze'
-	String get freeze => 'Freeze';
-
-	/// en: 'Unfreeze'
-	String get unfreeze => 'Unfreeze';
-
-	/// en: 'Export'
-	String get export => 'Export';
-
-	/// en: 'Import'
-	String get import => 'Import';
-
-	/// en: 'Choose File'
-	String get choose_file => 'Choose File';
-
-	/// en: 'Download Example'
-	String get download_example => 'Download Example';
-}
-
-// Path: common.labels
-class TranslationsCommonLabelsEn {
-	TranslationsCommonLabelsEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Name'
-	String get name => 'Name';
-
-	/// en: 'Type'
-	String get type => 'Type';
-
-	/// en: 'Amount'
-	String get amount => 'Amount';
-
-	/// en: 'Details'
-	String get details => 'Details';
-
-	/// en: 'Used'
-	String get used => 'Used';
-
-	/// en: 'Available'
-	String get available => 'Available';
-
-	/// en: 'Date'
-	String get date => 'Date';
-
-	/// en: 'Description'
-	String get description => 'Description';
-
-	/// en: '(one) {Account} (other) {Accounts}'
-	String account({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Account',
-		other: 'Accounts',
-	);
-
-	/// en: '(one) {Category} (other) {Categories}'
-	String category({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Category',
-		other: 'Categories',
-	);
-
-	/// en: 'Subcategory'
-	String get subcategory => 'Subcategory';
-
-	/// en: 'Transactions'
-	String get transactions => 'Transactions';
-
-	/// en: 'Balance'
-	String get balance => 'Balance';
-
-	/// en: 'Credit Limit'
-	String get credit_limit => 'Credit Limit';
-
-	/// en: 'Bill Closing Day'
-	String get bill_closing_day => 'Bill Closing Day';
-
-	/// en: 'First Due Date'
-	String get first_due_date => 'First Due Date';
-
-	/// en: 'Payment Account'
-	String get payment_account => 'Payment Account';
-
-	/// en: 'Available Balance'
-	String get available_balance => 'Available Balance';
-
-	/// en: 'Initial Balance Date'
-	String get initial_balance_date => 'Initial Balance Date';
-
-	/// en: 'Total'
-	String get total => 'Total';
-
-	/// en: 'Icon'
-	String get icon => 'Icon';
-
-	/// en: 'Currency'
-	String get coin => 'Currency';
-
-	/// en: 'Status'
-	String get status => 'Status';
-
-	/// en: 'Recurrence'
-	String get recurrence => 'Recurrence';
-
-	/// en: 'Frequency'
-	String get frequency => 'Frequency';
-
-	/// en: 'Entries'
-	String get entries => 'Entries';
-
-	/// en: '(one) {Transfer} (other) {Transfers}'
-	String transfers({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Transfer',
-		other: 'Transfers',
-	);
-
-	/// en: 'Exits'
-	String get exits => 'Exits';
-
-	/// en: '(one) {Confirmed} (other) {Confirmed}'
-	String confirmed({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Confirmed',
-		other: 'Confirmed',
-	);
-
-	/// en: '(one) {Projected} (other) {Projected}'
-	String projected({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Projected',
-		other: 'Projected',
-	);
-
-	/// en: '(one) {Pending} (other) {Pending}'
-	String pending({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Pending',
-		other: 'Pending',
-	);
-
-	/// en: '(one) {Result} (other) {Results}'
-	String result({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-		one: 'Result',
-		other: 'Results',
-	);
-}
-
-// Path: common.frequency
-class TranslationsCommonFrequencyEn {
-	TranslationsCommonFrequencyEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Daily'
-	String get daily => 'Daily';
-
-	/// en: 'Weekly'
-	String get weekly => 'Weekly';
-
-	/// en: 'Monthly'
-	String get monthly => 'Monthly';
-
-	/// en: 'Yearly'
-	String get yearly => 'Yearly';
-}
-
-// Path: common.period_types
-class TranslationsCommonPeriodTypesEn {
-	TranslationsCommonPeriodTypesEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Daily'
-	String get daily => 'Daily';
-
-	/// en: 'Weekly'
-	String get weekly => 'Weekly';
-
-	/// en: 'Monthly'
-	String get monthly => 'Monthly';
-
-	/// en: 'Quarterly'
-	String get quarterly => 'Quarterly';
-
-	/// en: 'Semester'
-	String get semester => 'Semester';
-
-	/// en: 'Custom'
-	String get custom => 'Custom';
-}
-
-// Path: accounts.types
-class TranslationsAccountsTypesEn {
-	TranslationsAccountsTypesEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Checking Account'
-	String get checking_account => 'Checking Account';
-
-	/// en: 'Credit Card'
-	String get credit_card => 'Credit Card';
-
-	/// en: 'Cash'
-	String get money => 'Cash';
-
-	/// en: 'Others'
-	String get others => 'Others';
-}
-
-// Path: accounts.validation
-class TranslationsAccountsValidationEn {
-	TranslationsAccountsValidationEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Account name cannot be empty'
-	String get name_cannot_be_empty => 'Account name cannot be empty';
-
-	/// en: 'Account name must be at least $number characters long'
-	String name_min_length_number({required Object number}) => 'Account name must be at least ${number} characters long';
-
-	/// en: 'Account name must be at most $number characters long'
-	String name_max_length_number({required Object number}) => 'Account name must be at most ${number} characters long';
-
-	/// en: 'An account with this name already exists'
-	String get name_already_exists => 'An account with this name already exists';
-
-	/// en: 'Currency code must be exactly $number characters long'
-	String currency_code_length_number({required Object number}) => 'Currency code must be exactly ${number} characters long';
-
-	/// en: 'Currency code must contain only capital letters'
-	String get currency_code_format => 'Currency code must contain only capital letters';
-
-	/// en: 'Balance must be a valid number'
-	String get balance_invalid_number => 'Balance must be a valid number';
-
-	/// en: 'Balance cannot be less than $number'
-	String balance_min_value_number({required Object number}) => 'Balance cannot be less than ${number}';
-
-	/// en: 'Balance cannot be greater than $number'
-	String balance_max_value_number({required Object number}) => 'Balance cannot be greater than ${number}';
-
-	/// en: 'Bill closing day must be between 1 and 31'
-	String get bill_closing_day_invalid => 'Bill closing day must be between 1 and 31';
-}
-
-// Path: categories.validation
-class TranslationsCategoriesValidationEn {
-	TranslationsCategoriesValidationEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Category name cannot be empty'
-	String get name_cannot_be_empty => 'Category name cannot be empty';
-
-	/// en: 'Category name must be at least $number characters long'
-	String name_min_length_number({required Object number}) => 'Category name must be at least ${number} characters long';
-
-	/// en: 'Category name must be at most $number characters long'
-	String name_max_length_number({required Object number}) => 'Category name must be at most ${number} characters long';
-
-	/// en: 'Parent category ID must be a positive number'
-	String get parent_id_must_be_positive => 'Parent category ID must be a positive number';
-
-	/// en: 'Parent Category Not Defined'
-	String get uncategorized_parent => 'Parent Category Not Defined';
-
-	/// en: 'A category with this name already exists'
-	String get category_name_already_exists => 'A category with this name already exists';
-}
-
-// Path: transactions.types
-class TranslationsTransactionsTypesEn {
-	TranslationsTransactionsTypesEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Income'
-	String get income => 'Income';
-
-	/// en: 'Expense'
-	String get expense => 'Expense';
-}
-
-// Path: transactions.recurrence_type
-class TranslationsTransactionsRecurrenceTypeEn {
-	TranslationsTransactionsRecurrenceTypeEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Unique'
-	String get unique => 'Unique';
-
-	/// en: 'Fixed'
-	String get fixed => 'Fixed';
-}
-
-// Path: transactions.status_type
-class TranslationsTransactionsStatusTypeEn {
-	TranslationsTransactionsStatusTypeEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Unpaid'
-	String get unpaid => 'Unpaid';
-
-	/// en: 'Paid'
-	String get paid => 'Paid';
-}
-
-// Path: transactions.status
-class TranslationsTransactionsStatusEn {
-	TranslationsTransactionsStatusEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'To Pay'
-	String get to_pay => 'To Pay';
-
-	/// en: 'Paid'
-	String get paid => 'Paid';
-}
-
-// Path: transactions.currency
-class TranslationsTransactionsCurrencyEn {
-	TranslationsTransactionsCurrencyEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-	late final TranslationsTransactionsCurrencyTypesEn types = TranslationsTransactionsCurrencyTypesEn._(_root);
-}
-
-// Path: transactions.validation
-class TranslationsTransactionsValidationEn {
-	TranslationsTransactionsValidationEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Transaction amount must be a valid number'
-	String get amount_invalid_number => 'Transaction amount must be a valid number';
-
-	/// en: 'Transaction amount must be different than zero'
-	String get amount_cannot_be_zero => 'Transaction amount must be different than zero';
-
-	/// en: 'Transaction description must be at most $number characters long'
-	String description_max_length_number({required Object number}) => 'Transaction description must be at most ${number} characters long';
-
-	/// en: 'Account must be selected'
-	String get account_must_be_selected => 'Account must be selected';
-
-	/// en: 'Account ID must be a positive number'
-	String get account_id_must_be_positive => 'Account ID must be a positive number';
-
-	/// en: 'Category must be selected'
-	String get category_must_be_selected => 'Category must be selected';
-
-	/// en: 'Category ID must be a positive number'
-	String get category_id_must_be_positive => 'Category ID must be a positive number';
-
-	/// en: 'Transaction date cannot be more than $number years in the past'
-	String date_too_far_past_number({required Object number}) => 'Transaction date cannot be more than ${number} years in the past';
-
-	/// en: 'Transaction date cannot be more than $number years in the future'
-	String date_too_far_future_number({required Object number}) => 'Transaction date cannot be more than ${number} years in the future';
-}
-
-// Path: messages.success
-class TranslationsMessagesSuccessEn {
-	TranslationsMessagesSuccessEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Exported successfully!'
-	String get export_successfully => 'Exported successfully!';
-
-	/// en: 'Excel file imported successfully'
-	String get excel_import_successfully => 'Excel file imported successfully';
-}
-
-// Path: messages.warnings
-class TranslationsMessagesWarningsEn {
-	TranslationsMessagesWarningsEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'No changes were provided'
-	String get no_changes_provided => 'No changes were provided';
-}
-
-// Path: messages.errors
-class TranslationsMessagesErrorsEn {
-	TranslationsMessagesErrorsEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Error while exporting'
-	String get export_error => 'Error while exporting';
-
-	/// en: 'Excel file not found'
-	String get excel_not_found => 'Excel file not found';
-
-	/// en: 'Invalid Excel file'
-	String get excel_not_valid => 'Invalid Excel file';
-
-	/// en: 'No accounts registered. Please create at least one account before importing transactions.'
-	String get no_accounts_to_import => 'No accounts registered. Please create at least one account before importing transactions.';
-
-	/// en: 'No categories registered. Please create at least one category before importing transactions.'
-	String get no_categories_to_import => 'No categories registered. Please create at least one category before importing transactions.';
-}
-
-// Path: transactions.currency.types
-class TranslationsTransactionsCurrencyTypesEn {
-	TranslationsTransactionsCurrencyTypesEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Real'
-	String get brl => 'Real';
-
-	/// en: 'Dollar'
-	String get usd => 'Dollar';
-
-	/// en: 'Euro'
-	String get eur => 'Euro';
-}
-
-/// Flat map(s) containing all translations.
+/// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
+///
+/// The Dart AOT compiler has issues with very large switch statements,
+/// so the map is split into smaller functions (512 entries each).
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
-		switch (path) {
-			case 'navigation.overview': return 'Overview';
-			case 'navigation.financial_movement': return 'Financial movement';
-			case 'navigation.paid_and_received': return 'Paid and received';
-			case 'navigation.to_pay_and_to_receive': return 'To pay and to receive';
-			case 'navigation.account_statement': return 'Account Statement';
-			case 'navigation.credit_card': return 'Credit Card';
-			case 'navigation.releases': return 'Releases';
-			case 'navigation.register': return 'Register';
-			case 'navigation.categories': return 'Categories';
-			case 'navigation.accounts': return 'Accounts';
-			case 'common.actions.edit': return 'Edit';
-			case 'common.actions.delete': return 'Delete';
-			case 'common.actions.save': return 'Save';
-			case 'common.actions.register': return 'Register';
-			case 'common.actions.filter': return 'Filter';
-			case 'common.actions.pay': return 'Pay';
-			case 'common.actions.unpay': return 'Cancel Payment';
-			case 'common.actions.clone': return 'Clone';
-			case 'common.actions.freeze': return 'Freeze';
-			case 'common.actions.unfreeze': return 'Unfreeze';
-			case 'common.actions.export': return 'Export';
-			case 'common.actions.import': return 'Import';
-			case 'common.actions.choose_file': return 'Choose File';
-			case 'common.actions.download_example': return 'Download Example';
-			case 'common.labels.name': return 'Name';
-			case 'common.labels.type': return 'Type';
-			case 'common.labels.amount': return 'Amount';
-			case 'common.labels.details': return 'Details';
-			case 'common.labels.used': return 'Used';
-			case 'common.labels.available': return 'Available';
-			case 'common.labels.date': return 'Date';
-			case 'common.labels.description': return 'Description';
-			case 'common.labels.account': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Account',
-				other: 'Accounts',
-			);
-			case 'common.labels.category': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Category',
-				other: 'Categories',
-			);
-			case 'common.labels.subcategory': return 'Subcategory';
-			case 'common.labels.transactions': return 'Transactions';
-			case 'common.labels.balance': return 'Balance';
-			case 'common.labels.credit_limit': return 'Credit Limit';
-			case 'common.labels.bill_closing_day': return 'Bill Closing Day';
-			case 'common.labels.first_due_date': return 'First Due Date';
-			case 'common.labels.payment_account': return 'Payment Account';
-			case 'common.labels.available_balance': return 'Available Balance';
-			case 'common.labels.initial_balance_date': return 'Initial Balance Date';
-			case 'common.labels.total': return 'Total';
-			case 'common.labels.icon': return 'Icon';
-			case 'common.labels.coin': return 'Currency';
-			case 'common.labels.status': return 'Status';
-			case 'common.labels.recurrence': return 'Recurrence';
-			case 'common.labels.frequency': return 'Frequency';
-			case 'common.labels.entries': return 'Entries';
-			case 'common.labels.transfers': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Transfer',
-				other: 'Transfers',
-			);
-			case 'common.labels.exits': return 'Exits';
-			case 'common.labels.confirmed': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Confirmed',
-				other: 'Confirmed',
-			);
-			case 'common.labels.projected': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Projected',
-				other: 'Projected',
-			);
-			case 'common.labels.pending': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Pending',
-				other: 'Pending',
-			);
-			case 'common.labels.result': return ({required num n}) => (_root.$meta.cardinalResolver ?? PluralResolvers.cardinal('en'))(n,
-				one: 'Result',
-				other: 'Results',
-			);
-			case 'common.frequency.daily': return 'Daily';
-			case 'common.frequency.weekly': return 'Weekly';
-			case 'common.frequency.monthly': return 'Monthly';
-			case 'common.frequency.yearly': return 'Yearly';
-			case 'common.period_types.daily': return 'Daily';
-			case 'common.period_types.weekly': return 'Weekly';
-			case 'common.period_types.monthly': return 'Monthly';
-			case 'common.period_types.quarterly': return 'Quarterly';
-			case 'common.period_types.semester': return 'Semester';
-			case 'common.period_types.custom': return 'Custom';
-			case 'overview.cash_balance': return 'Cash balance';
-			case 'overview.result_of_the_month': return 'Result of the month';
-			case 'overview.projected_situation': return 'Projected situation';
-			case 'overview.expense_by_category': return 'Expense by category';
-			case 'overview.income_by_category': return 'Income by category';
-			case 'overview.credit_card': return 'Credit Card';
-			case 'past_and_future_releases.period_result': return 'Period result';
-			case 'past_and_future_releases.total_to_pay': return 'Total to pay';
-			case 'past_and_future_releases.total_to_receive': return 'Total to receive';
-			case 'past_and_future_releases.total_received': return 'Total received';
-			case 'past_and_future_releases.total_paid': return 'Total paid';
-			case 'accounts.new_account': return 'New Account';
-			case 'accounts.edit_account': return 'Edit Account';
-			case 'accounts.select_account': return 'Select Account';
-			case 'accounts.origin_account': return 'Origin Account';
-			case 'accounts.destination_account': return 'Destination Account';
-			case 'accounts.show_only_active': return 'Show Only Active Accounts';
-			case 'accounts.no_accounts_found': return 'No accounts found';
-			case 'accounts.types.checking_account': return 'Checking Account';
-			case 'accounts.types.credit_card': return 'Credit Card';
-			case 'accounts.types.money': return 'Cash';
-			case 'accounts.types.others': return 'Others';
-			case 'accounts.validation.name_cannot_be_empty': return 'Account name cannot be empty';
-			case 'accounts.validation.name_min_length_number': return ({required Object number}) => 'Account name must be at least ${number} characters long';
-			case 'accounts.validation.name_max_length_number': return ({required Object number}) => 'Account name must be at most ${number} characters long';
-			case 'accounts.validation.name_already_exists': return 'An account with this name already exists';
-			case 'accounts.validation.currency_code_length_number': return ({required Object number}) => 'Currency code must be exactly ${number} characters long';
-			case 'accounts.validation.currency_code_format': return 'Currency code must contain only capital letters';
-			case 'accounts.validation.balance_invalid_number': return 'Balance must be a valid number';
-			case 'accounts.validation.balance_min_value_number': return ({required Object number}) => 'Balance cannot be less than ${number}';
-			case 'accounts.validation.balance_max_value_number': return ({required Object number}) => 'Balance cannot be greater than ${number}';
-			case 'accounts.validation.bill_closing_day_invalid': return 'Bill closing day must be between 1 and 31';
-			case 'categories.new_category': return 'New Category';
-			case 'categories.edit_category': return 'Edit Category';
-			case 'categories.create_sub_category': return 'Create Subcategory';
-			case 'categories.show_only_active': return 'Show Only Active Categories';
-			case 'categories.export_categories': return 'Export Categories';
-			case 'categories.import_categories': return 'Import Categories';
-			case 'categories.select_category': return 'Select Category';
-			case 'categories.subcategory_of': return 'Subcategory of';
-			case 'categories.no_category': return 'No Category';
-			case 'categories.no_categories_found': return 'No categories found';
-			case 'categories.validation.name_cannot_be_empty': return 'Category name cannot be empty';
-			case 'categories.validation.name_min_length_number': return ({required Object number}) => 'Category name must be at least ${number} characters long';
-			case 'categories.validation.name_max_length_number': return ({required Object number}) => 'Category name must be at most ${number} characters long';
-			case 'categories.validation.parent_id_must_be_positive': return 'Parent category ID must be a positive number';
-			case 'categories.validation.uncategorized_parent': return 'Parent Category Not Defined';
-			case 'categories.validation.category_name_already_exists': return 'A category with this name already exists';
-			case 'transactions.new_transaction': return 'New Transaction';
-			case 'transactions.edit_transaction': return 'Edit Transaction';
-			case 'transactions.export_transactions': return 'Export Transactions';
-			case 'transactions.import_transactions': return 'Import Transactions';
-			case 'transactions.unknown_transfer': return 'Unknown Transfer';
-			case 'transactions.no_transactions_found': return 'No transactions found';
-			case 'transactions.types.income': return 'Income';
-			case 'transactions.types.expense': return 'Expense';
-			case 'transactions.recurrence_type.unique': return 'Unique';
-			case 'transactions.recurrence_type.fixed': return 'Fixed';
-			case 'transactions.status_type.unpaid': return 'Unpaid';
-			case 'transactions.status_type.paid': return 'Paid';
-			case 'transactions.status.to_pay': return 'To Pay';
-			case 'transactions.status.paid': return 'Paid';
-			case 'transactions.currency.types.brl': return 'Real';
-			case 'transactions.currency.types.usd': return 'Dollar';
-			case 'transactions.currency.types.eur': return 'Euro';
-			case 'transactions.validation.amount_invalid_number': return 'Transaction amount must be a valid number';
-			case 'transactions.validation.amount_cannot_be_zero': return 'Transaction amount must be different than zero';
-			case 'transactions.validation.description_max_length_number': return ({required Object number}) => 'Transaction description must be at most ${number} characters long';
-			case 'transactions.validation.account_must_be_selected': return 'Account must be selected';
-			case 'transactions.validation.account_id_must_be_positive': return 'Account ID must be a positive number';
-			case 'transactions.validation.category_must_be_selected': return 'Category must be selected';
-			case 'transactions.validation.category_id_must_be_positive': return 'Category ID must be a positive number';
-			case 'transactions.validation.date_too_far_past_number': return ({required Object number}) => 'Transaction date cannot be more than ${number} years in the past';
-			case 'transactions.validation.date_too_far_future_number': return ({required Object number}) => 'Transaction date cannot be more than ${number} years in the future';
-			case 'credit_card.current_bill': return 'Current Bill';
-			case 'credit_card.closing': return 'Closing';
-			case 'credit_card.due': return 'Due Date';
-			case 'credit_card.close_bill': return 'Close Bill';
-			case 'credit_card.launch_payment': return 'Launch Payment';
-			case 'credit_card.limit': return 'Limit (Total)';
-			case 'credit_card.account_limit': return 'Account Limit';
-			case 'credit_card.previous_balance': return 'Previous Balance';
-			case 'credit_card.total_paid': return 'Total Paid';
-			case 'credit_card.amount_due': return 'Amount Due';
-			case 'settings.additional_settings': return 'Additional Settings';
-			case 'profile.title': return 'Profile';
-			case 'profile.delete_all_data': return 'Delete all data';
-			case 'profile.deleting': return 'Deleting...';
-			case 'profile.delete_success': return 'All data deleted successfully';
-			case 'profile.delete_error': return ({required Object error}) => 'Error deleting data: ${error}';
-			case 'messages.success.export_successfully': return 'Exported successfully!';
-			case 'messages.success.excel_import_successfully': return 'Excel file imported successfully';
-			case 'messages.warnings.no_changes_provided': return 'No changes were provided';
-			case 'messages.errors.export_error': return 'Error while exporting';
-			case 'messages.errors.excel_not_found': return 'Excel file not found';
-			case 'messages.errors.excel_not_valid': return 'Invalid Excel file';
-			case 'messages.errors.no_accounts_to_import': return 'No accounts registered. Please create at least one account before importing transactions.';
-			case 'messages.errors.no_categories_to_import': return 'No categories registered. Please create at least one category before importing transactions.';
-			case 'date.semester_year': return ({required Object semester, required Object date_year}) => '${semester}º Semester ${date_year}';
-			case 'date.semester_year_small': return ({required Object semester, required Object date_year}) => '${semester}º Sem ${date_year}';
-			default: return null;
-		}
+		return switch (path) {
+			'app.name' => 'Financo',
+			'general.loading' => 'Loading...',
+			'general.error' => 'An error occurred',
+			'general.retry' => 'Try again',
+			'general.cancel' => 'Cancel',
+			'general.confirm' => 'Confirm',
+			'general.save' => 'Save',
+			'general.delete' => 'Delete',
+			'general.edit' => 'Edit',
+			'general.add' => 'Add',
+			'general.search' => 'Search',
+			'general.noResults' => 'No results found',
+			'general.success' => 'Success',
+			'general.or' => 'or',
+			'general.update' => 'Update',
+			'general.create' => 'Create',
+			'general.yes' => 'Yes',
+			'general.no' => 'No',
+			'general.all' => 'All',
+			'general.defaultLabel' => 'Default',
+			'validators.required' => 'This field is required.',
+			'validators.emailRequired' => 'Email is required.',
+			'validators.emailInvalid' => 'Enter a valid email.',
+			'validators.passwordRequired' => 'Password is required.',
+			'validators.passwordMinLength' => 'Password must be at least 6 characters.',
+			'validators.amountRequired' => 'Amount is required.',
+			'validators.amountInvalid' => 'Enter a valid amount.',
+			'validators.selectAccount' => 'Select an account',
+			'validators.selectCategory' => 'Select a category',
+			'auth.signIn' => 'Sign In',
+			'auth.signUp' => 'Sign Up',
+			'auth.signOut' => 'Sign Out',
+			'auth.email' => 'Email',
+			'auth.emailHint' => 'your@email.com',
+			'auth.password' => 'Password',
+			'auth.passwordHint' => '••••••••',
+			'auth.name' => 'Name',
+			'auth.nameHint' => 'Your full name',
+			'auth.forgotPassword' => 'Forgot password?',
+			'auth.noAccount' => 'Don\'t have an account? Sign Up',
+			'auth.hasAccount' => 'Already have an account? Sign In',
+			'auth.welcomeBack' => 'Welcome back',
+			'auth.signInSubtitle' => 'Sign in to your account',
+			'auth.createAccount' => 'Create account',
+			'auth.signUpSubtitle' => 'Start managing your finances today',
+			'auth.continueWithGoogle' => 'Continue with Google',
+			'onboarding.tagline' => 'Take control of your personal finances\nwith smart tracking and AI assistance.',
+			'onboarding.step1Title' => 'Track Your Finances',
+			'onboarding.step1Body' => 'Log income and expenses effortlessly. Keep a clear view of where your money goes.',
+			'onboarding.step2Title' => 'AI-Powered Entry',
+			'onboarding.step2Body' => 'Just type naturally — our AI chat extracts transaction data for you automatically.',
+			'onboarding.step3Title' => 'Insightful Reports',
+			'onboarding.step3Body' => 'Beautiful charts and summaries help you understand your spending habits.',
+			'onboarding.getStarted' => 'Get Started',
+			'onboarding.next' => 'Next',
+			'onboarding.skip' => 'Skip',
+			'nav.dashboard' => 'Dashboard',
+			'nav.transactions' => 'Transactions',
+			'nav.chat' => 'Chat',
+			'nav.reports' => 'Reports',
+			'nav.profile' => 'Profile',
+			'dashboard.title' => 'Dashboard',
+			'dashboard.totalBalance' => 'Total Balance',
+			'dashboard.income' => 'Income',
+			'dashboard.expenses' => 'Expenses',
+			'dashboard.netResult' => 'Net Result',
+			'dashboard.recentTransactions' => 'Recent Transactions',
+			'dashboard.seeAll' => 'See all',
+			'dashboard.thisMonth' => 'This month',
+			'dashboard.noTransactionsYet' => 'No transactions yet',
+			'transactions.title' => 'Transactions',
+			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
+			'transactions.addTransaction' => 'New Transaction',
+			'transactions.editTransaction' => 'Edit Transaction',
+			'transactions.transactionDetails' => 'Transaction Details',
+			'transactions.transaction' => 'Transaction',
+			'transactions.transactionNotFound' => 'Transaction not found',
+			'transactions.type' => 'Type',
+			'transactions.income' => 'Income',
+			'transactions.expense' => 'Expense',
+			'transactions.amount' => 'Amount',
+			'transactions.amountLabel' => 'Amount (R\$)',
+			'transactions.amountHint' => '0.00',
+			'transactions.description' => 'Description',
+			'transactions.descriptionHint' => 'e.g. Grocery shopping',
+			'transactions.date' => 'Date',
+			'transactions.category' => 'Category',
+			'transactions.account' => 'Account',
+			'transactions.notes' => 'Notes',
+			'transactions.notesOptional' => 'Notes (optional)',
+			'transactions.notesHint' => 'Additional details...',
+			'transactions.reconciled' => 'Reconciled',
+			'transactions.reconcile' => 'Reconcile',
+			'transactions.unreconcile' => 'Unreconcile',
+			'transactions.deleteTransaction' => 'Delete Transaction',
+			'transactions.deleteConfirm' => 'Are you sure you want to delete this transaction?',
+			'transactions.transactionUpdated' => 'Transaction updated',
+			'transactions.transactionCreated' => 'Transaction created',
+			'transactions.saved' => 'Transaction saved!',
+			'transactions.deleted' => 'Transaction deleted.',
+			'accounts.title' => 'Accounts',
+			'accounts.addAccount' => 'New Account',
+			'accounts.editAccount' => 'Edit Account',
+			'accounts.account' => 'Account',
+			'accounts.accountNotFound' => 'Account not found',
+			'accounts.checking' => 'Checking Account',
+			'accounts.creditCard' => 'Credit Card',
+			'accounts.checkingShort' => 'Checking',
+			'accounts.name' => 'Account Nickname',
+			'accounts.nameHint' => 'e.g. Nubank Gui',
+			'accounts.bank' => 'Bank',
+			'accounts.bankHint' => 'e.g. Nubank',
+			'accounts.balance' => 'Balance',
+			'accounts.currentBalance' => 'Current Balance',
+			'accounts.balanceLabel' => 'Current Balance (R\$)',
+			'accounts.balanceHint' => '0.00',
+			'accounts.creditLimit' => 'Credit Limit',
+			'accounts.creditLimitLabel' => 'Credit Limit (R\$)',
+			'accounts.creditLimitHint' => '0.00',
+			'accounts.closingDay' => 'Closing Day',
+			'accounts.dueDay' => 'Due Day',
+			'accounts.availableCredit' => 'Available Credit',
+			'accounts.currentBill' => 'Current bill',
+			'accounts.type' => 'Type',
+			'accounts.empty' => 'No accounts. Add your first bank account or credit card.',
+			'accounts.emptySubtitle' => 'Add your bank accounts and credit cards.',
+			'accounts.accountUpdated' => 'Account updated',
+			'accounts.accountCreated' => 'Account created',
+			'accounts.saved' => 'Account saved!',
+			'accounts.deleted' => 'Account deleted.',
+			'accounts.deleteConfirm' => 'Are you sure you want to delete this account?',
+			'categories.title' => 'Categories',
+			'categories.addCategory' => 'Add Category',
+			'categories.name' => 'Category name',
+			'categories.incomeType' => 'Income',
+			'categories.expenseType' => 'Expense',
+			'categories.bothType' => 'Both',
+			'categories.empty' => 'No categories. Categories will appear here.',
+			'categories.saved' => 'Category saved!',
+			'categories.deleted' => 'Category deleted.',
+			'categories.deleteConfirm' => 'Are you sure you want to delete this category?',
+			'chat.title' => 'AI Assistant',
+			'chat.placeholder' => 'Type a message...',
+			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
+			'chat.welcomeBody' => 'Tell me about your transactions and I\'ll help you record them.',
+			'chat.confirmPrompt' => 'I detected the following transaction. Does this look correct?',
+			'chat.confirmed' => 'Transaction saved!',
+			'chat.cancelled' => 'Transaction cancelled.',
+			'chat.error' => 'Sorry, I couldn\'t understand that. Could you try again?',
+			'reports.title' => 'Reports',
+			'reports.incomeVsExpenses' => 'Income vs Expenses',
+			'reports.expensesByCategory' => 'Expenses by Category',
+			'reports.income' => 'Income',
+			'reports.expenses' => 'Expenses',
+			'reports.net' => 'Net',
+			'reports.currentMonth' => 'Current month',
+			'reports.lastMonth' => 'Last month',
+			'reports.customRange' => 'Custom range',
+			'reports.categoryBreakdown' => 'Category Breakdown',
+			'reports.monthlyComparison' => 'Monthly Comparison',
+			'reports.balanceEvolution' => 'Balance Evolution',
+			'reports.noData' => 'Not enough data to generate reports.',
+			'profile.title' => 'Profile',
+			'profile.editProfile' => 'Edit Profile',
+			'profile.accounts' => 'Accounts',
+			'profile.categories' => 'Categories',
+			'profile.theme' => 'Theme',
+			'profile.themeLight' => 'Light',
+			'profile.themeDark' => 'Dark',
+			'profile.themeSystem' => 'System',
+			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
+			_ => null,
+		};
 	}
 }
-

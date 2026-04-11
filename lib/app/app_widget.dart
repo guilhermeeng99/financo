@@ -1,36 +1,36 @@
-import 'package:app_widgets/app_widgets.dart';
-import 'package:financo/app/index.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:financo/app/di/injection_container.dart';
+import 'package:financo/app/routes/app_router.dart';
+import 'package:financo/app/theme/app_theme.dart';
+import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-class AppWidget extends StatelessWidget {
-  const AppWidget({super.key});
+class FinancoApp extends StatefulWidget {
+  const FinancoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return TranslationProvider(child: const _ModularApp());
-  }
+  State<FinancoApp> createState() => _FinancoAppState();
 }
 
-class _ModularApp extends StatelessWidget {
-  const _ModularApp();
+class _FinancoAppState extends State<FinancoApp> {
+  late final GoRouter _router = createRouter(sl<AuthBloc>());
 
   @override
   Widget build(BuildContext context) {
-    Modular
-      ..setInitialRoute(ro.loading.route)
-      ..setObservers([]);
-    return ModularApp(
-      module: AppModule(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<AuthBloc>()),
+        BlocProvider.value(value: sl<StartupCubit>()),
+      ],
       child: MaterialApp.router(
-        title: AppConstants.appName,
-        routerConfig: Modular.routerConfig,
-        theme: AppTheme.lightTheme,
-        locale: TranslationProvider.of(context).flutterLocale,
-        supportedLocales: AppLocaleUtils.supportedLocales,
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        title: t.app.name,
         debugShowCheckedModeBanner: false,
-
-        scrollBehavior: const AppScrollBehavior(),
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        routerConfig: _router,
       ),
     );
   }

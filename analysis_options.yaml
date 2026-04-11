@@ -1,14 +1,8 @@
 include: package:very_good_analysis/analysis_options.yaml
 
-analyzer:
-  errors:
-     inference_failure_on_function_invocation: ignore
-     inference_failure_on_instance_creation: ignore
-     lines_longer_than_80_chars: ignore
-     public_member_api_docs: ignore
-     document_ignores: ignore
-     flutter_style_todos: ignore
-
 linter:
-
   rules:
+    public_member_api_docs: false
+    sort_pub_dependencies: false
+    one_member_abstracts: false
+    document_ignores: false

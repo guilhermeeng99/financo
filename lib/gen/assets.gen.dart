@@ -28,40 +28,8 @@ class $LibAppGen {
 class $LibAppAssetsGen {
   const $LibAppAssetsGen();
 
-  /// Directory path: lib/app/assets/fonts
-  $LibAppAssetsFontsGen get fonts => const $LibAppAssetsFontsGen();
-
-  /// Directory path: lib/app/assets/i18n
-  $LibAppAssetsI18nGen get i18n => const $LibAppAssetsI18nGen();
-
   /// Directory path: lib/app/assets/images
   $LibAppAssetsImagesGen get images => const $LibAppAssetsImagesGen();
-}
-
-class $LibAppAssetsFontsGen {
-  const $LibAppAssetsFontsGen();
-
-  /// File path: lib/app/assets/fonts/Inter_Bold.ttf
-  String get interBold => 'lib/app/assets/fonts/Inter_Bold.ttf';
-
-  /// File path: lib/app/assets/fonts/Inter_Regular.ttf
-  String get interRegular => 'lib/app/assets/fonts/Inter_Regular.ttf';
-
-  /// List of all assets
-  List<String> get values => [interBold, interRegular];
-}
-
-class $LibAppAssetsI18nGen {
-  const $LibAppAssetsI18nGen();
-
-  /// File path: lib/app/assets/i18n/strings_en.i18n.json
-  String get stringsEnI18n => 'lib/app/assets/i18n/strings_en.i18n.json';
-
-  /// File path: lib/app/assets/i18n/strings_pt.i18n.json
-  String get stringsPtI18n => 'lib/app/assets/i18n/strings_pt.i18n.json';
-
-  /// List of all assets
-  List<String> get values => [stringsEnI18n, stringsPtI18n];
 }
 
 class $LibAppAssetsImagesGen {
@@ -69,9 +37,6 @@ class $LibAppAssetsImagesGen {
 
   /// Directory path: lib/app/assets/images/banks
   $LibAppAssetsImagesBanksGen get banks => const $LibAppAssetsImagesBanksGen();
-
-  /// Directory path: lib/app/assets/images/flags
-  $LibAppAssetsImagesFlagsGen get flags => const $LibAppAssetsImagesFlagsGen();
 }
 
 class $LibAppAssetsImagesBanksGen {
@@ -87,25 +52,6 @@ class $LibAppAssetsImagesBanksGen {
 
   /// List of all assets
   List<AssetGenImage> get values => [bank, nubank];
-}
-
-class $LibAppAssetsImagesFlagsGen {
-  const $LibAppAssetsImagesFlagsGen();
-
-  /// File path: lib/app/assets/images/flags/brazil.webp
-  AssetGenImage get brazil =>
-      const AssetGenImage('lib/app/assets/images/flags/brazil.webp');
-
-  /// File path: lib/app/assets/images/flags/united_kingdom.webp
-  AssetGenImage get unitedKingdom =>
-      const AssetGenImage('lib/app/assets/images/flags/united_kingdom.webp');
-
-  /// File path: lib/app/assets/images/flags/united_states.webp
-  AssetGenImage get unitedStates =>
-      const AssetGenImage('lib/app/assets/images/flags/united_states.webp');
-
-  /// List of all assets
-  List<AssetGenImage> get values => [brazil, unitedKingdom, unitedStates];
 }
 
 class Assets {
