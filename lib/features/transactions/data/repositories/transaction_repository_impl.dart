@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
+import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/transactions/data/datasources/transaction_remote_datasource.dart';
@@ -10,12 +10,12 @@ import 'package:financo/features/transactions/domain/repositories/transaction_re
 class TransactionRepositoryImpl implements TransactionRepository {
   TransactionRepositoryImpl({
     required TransactionRemoteDataSource remoteDataSource,
-    required AppDataCache cache,
+    required TransactionsDao transactionsDao,
   }) : _remote = remoteDataSource,
-       _cache = cache;
+       _dao = transactionsDao;
 
   final TransactionRemoteDataSource _remote;
-  final AppDataCache _cache;
+  final TransactionsDao _dao;
 
   @override
   Future<Either<Failure, List<TransactionEntity>>> getTransactions({
@@ -27,27 +27,38 @@ class TransactionRepositoryImpl implements TransactionRepository {
     bool forceRefresh = false,
   }) async {
     try {
-      if (!forceRefresh && _cache.transactions != null) {
-        return Right(_cache.transactions!);
+      if (forceRefresh) {
+        final remote = await _remote.getTransactions(
+          userId: userId,
+          startDate: startDate,
+          endDate: endDate,
+          categoryId: categoryId,
+          accountId: accountId,
+        );
+        await _dao.insertAllTransactions(remote);
       }
-      final result = await _remote.getTransactions(
+      final local = await _dao.getTransactions(
         userId: userId,
         startDate: startDate,
         endDate: endDate,
-        categoryId: categoryId,
         accountId: accountId,
+        categoryId: categoryId,
       );
-      _cache.transactions = result;
-      return Right(result);
+      return Right(local);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, TransactionEntity>> getTransaction(String id) async {
+  Future<Either<Failure, TransactionEntity>> getTransaction(
+    String id,
+  ) async {
     try {
+      final local = await _dao.getTransactionById(id);
+      if (local != null) return Right(local);
       final result = await _remote.getTransaction(id);
+      await _dao.upsertTransaction(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -61,7 +72,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       final model = TransactionModel.fromEntity(transaction);
       final result = await _remote.createTransaction(model);
-      _cache.transactions = null;
+      await _dao.upsertTransaction(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -75,7 +86,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
     try {
       final model = TransactionModel.fromEntity(transaction);
       final result = await _remote.updateTransaction(model);
-      _cache.transactions = null;
+      await _dao.upsertTransaction(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -86,7 +97,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<Either<Failure, void>> deleteTransaction(String id) async {
     try {
       await _remote.deleteTransaction(id);
-      _cache.transactions = null;
+      await _dao.deleteTransaction(id);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -96,12 +107,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<Either<Failure, void>> toggleReconciled(String id) async {
     try {
-      final result = await _remote.getTransaction(id);
-      final updated = TransactionModel.fromEntity(
-        result.copyWith(isReconciled: !result.isReconciled),
+      final local = await _dao.getTransactionById(id);
+      if (local == null) {
+        return const Left(
+          ServerFailure('Transaction not found.'),
+        );
+      }
+      final toggled = local.copyWith(
+        isReconciled: !local.isReconciled,
       );
-      await _remote.updateTransaction(updated);
-      _cache.transactions = null;
+      final model = TransactionModel.fromEntity(toggled);
+      await _remote.updateTransaction(model);
+      await _dao.upsertTransaction(toggled);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -118,7 +135,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         fromCategoryId: fromCategoryId,
         toCategoryId: toCategoryId,
       );
-      _cache.transactions = null;
+      // Drift data is now stale for reassigned transactions.
+      // Caller should trigger a forceRefresh to re-sync.
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

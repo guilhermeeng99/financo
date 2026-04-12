@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
+import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
@@ -10,12 +10,12 @@ import 'package:financo/features/categories/domain/repositories/category_reposit
 class CategoryRepositoryImpl implements CategoryRepository {
   CategoryRepositoryImpl({
     required CategoryRemoteDataSource remoteDataSource,
-    required AppDataCache cache,
+    required CategoriesDao categoriesDao,
   }) : _remote = remoteDataSource,
-       _cache = cache;
+       _dao = categoriesDao;
 
   final CategoryRemoteDataSource _remote;
-  final AppDataCache _cache;
+  final CategoriesDao _dao;
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories({
@@ -23,12 +23,16 @@ class CategoryRepositoryImpl implements CategoryRepository {
     bool forceRefresh = false,
   }) async {
     try {
-      if (!forceRefresh && _cache.categories != null) {
-        return Right(_cache.categories!);
+      if (forceRefresh) {
+        final remote = await _remote.getCategories(
+          userId: userId,
+        );
+        await _dao.deleteAllCategories();
+        if (remote.isNotEmpty) {
+          await _dao.insertAllCategories(remote);
+        }
       }
-      final result = await _remote.getCategories(userId: userId);
-      _cache.categories = result;
-      return Right(result);
+      return Right(await _dao.getCategories(userId));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -41,7 +45,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       final model = CategoryModel.fromEntity(category);
       final result = await _remote.createCategory(model);
-      _cache.categories = null;
+      await _dao.upsertCategory(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -55,7 +59,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       final model = CategoryModel.fromEntity(category);
       final result = await _remote.updateCategory(model);
-      _cache.categories = null;
+      await _dao.upsertCategory(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -66,7 +70,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Either<Failure, void>> deleteCategory(String id) async {
     try {
       await _remote.deleteCategory(id);
-      _cache.categories = null;
+      await _dao.deleteCategory(id);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

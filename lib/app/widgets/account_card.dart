@@ -74,7 +74,7 @@ class AccountCard extends StatelessWidget {
                 ),
               ),
               AmountText(
-                amount: account.balance,
+                amount: account.initialBalance,
                 fontSize: 16,
               ),
             ],

@@ -3,15 +3,19 @@ import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
-import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
@@ -87,17 +91,25 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ChatBloc({
     required SendMessageUseCase sendMessage,
     required GetChatHistoryUseCase getChatHistory,
-    required ChatRepository chatRepository,
-    required AccountRepository accountRepository,
-    required CategoryRepository categoryRepository,
-    required TransactionRepository transactionRepository,
+    required SaveChatMessageUseCase saveChatMessage,
+    required CreateAccountUseCase createAccount,
+    required GetAccountsUseCase getAccounts,
+    required DeleteAccountUseCase deleteAccount,
+    required CreateCategoryUseCase createCategory,
+    required GetCategoriesUseCase getCategories,
+    required DeleteCategoryUseCase deleteCategory,
+    required CreateTransactionUseCase createTransaction,
     required String userId,
   }) : _sendMessage = sendMessage,
        _getChatHistory = getChatHistory,
-       _chatRepo = chatRepository,
-       _accountRepo = accountRepository,
-       _categoryRepo = categoryRepository,
-       _transactionRepo = transactionRepository,
+       _saveChatMessage = saveChatMessage,
+       _createAccount = createAccount,
+       _getAccounts = getAccounts,
+       _deleteAccount = deleteAccount,
+       _createCategory = createCategory,
+       _getCategories = getCategories,
+       _deleteCategory = deleteCategory,
+       _createTransaction = createTransaction,
        _userId = userId,
        super(const ChatInitial()) {
     on<ChatLoadRequested>(_onLoadRequested);
@@ -107,10 +119,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   final SendMessageUseCase _sendMessage;
   final GetChatHistoryUseCase _getChatHistory;
-  final ChatRepository _chatRepo;
-  final AccountRepository _accountRepo;
-  final CategoryRepository _categoryRepo;
-  final TransactionRepository _transactionRepo;
+  final SaveChatMessageUseCase _saveChatMessage;
+  final CreateAccountUseCase _createAccount;
+  final GetAccountsUseCase _getAccounts;
+  final DeleteAccountUseCase _deleteAccount;
+  final CreateCategoryUseCase _createCategory;
+  final GetCategoriesUseCase _getCategories;
+  final DeleteCategoryUseCase _deleteCategory;
+  final CreateTransactionUseCase _createTransaction;
   final String _userId;
   static const _uuid = Uuid();
 
@@ -155,7 +171,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
 
     try {
-      await _chatRepo.saveChatMessage(userMessage);
+      await _saveChatMessage(userMessage);
     } on Exception {
       // Persist failure is non-blocking — continue with AI call.
     }
@@ -230,7 +246,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
 
     _messages.add(sysMessage);
-    await _chatRepo.saveChatMessage(sysMessage);
+    await _saveChatMessage(sysMessage);
     emit(
       ChatLoaded(
         messages: List.unmodifiable(_messages),
@@ -256,12 +272,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             ? AccountType.creditCard
             : AccountType.checking,
         bank: bank,
-        balance: (meta['balance'] as num?)?.toDouble() ?? 0,
+        initialBalance: (meta['balance'] as num?)?.toDouble() ?? 0,
         isActive: true,
         createdAt: DateTime.now(),
       );
 
-      final result = await _accountRepo.createAccount(account);
+      final result = await _createAccount(account);
       return result.fold(
         (f) => 'Failed to create account: ${f.message}',
         (a) => 'Account "${a.name}" created successfully!',
@@ -270,7 +286,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     if (action == 'delete') {
       final name = meta['name'] as String? ?? '';
-      final listResult = await _accountRepo.getAccounts(
+      final listResult = await _getAccounts(
         userId: _userId,
       );
       if (listResult.isLeft()) {
@@ -284,7 +300,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (match.isEmpty) {
         return 'No account named "$name" found.';
       }
-      final delResult = await _accountRepo.deleteAccount(match.first.id);
+      final delResult = await _deleteAccount(match.first.id);
       return delResult.fold(
         (f) => 'Failed to delete account: ${f.message}',
         (_) => 'Account "$name" deleted successfully!',
@@ -317,7 +333,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         sortOrder: 99,
       );
 
-      final result = await _categoryRepo.createCategory(category);
+      final result = await _createCategory(category);
       return result.fold(
         (f) => 'Failed to create category: ${f.message}',
         (c) => 'Category "${c.name}" created successfully!',
@@ -326,7 +342,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     if (action == 'delete') {
       final name = meta['name'] as String? ?? '';
-      final listResult = await _categoryRepo.getCategories(
+      final listResult = await _getCategories(
         userId: _userId,
       );
       if (listResult.isLeft()) {
@@ -343,7 +359,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (match.first.isDefault) {
         return 'Cannot delete default category "$name".';
       }
-      final delResult = await _categoryRepo.deleteCategory(match.first.id);
+      final delResult = await _deleteCategory(match.first.id);
       return delResult.fold(
         (f) => 'Failed to delete category: ${f.message}',
         (_) => 'Category "$name" deleted successfully!',
@@ -372,7 +388,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     // Find category by name
     final categoryName = meta['category'] as String? ?? '';
-    final catResult = await _categoryRepo.getCategories(userId: _userId);
+    final catResult = await _getCategories(userId: _userId);
     if (catResult.isLeft()) {
       return 'Failed to load categories.';
     }
@@ -387,7 +403,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
     // Find account by name
     final accountName = meta['account'] as String? ?? '';
-    final accResult = await _accountRepo.getAccounts(userId: _userId);
+    final accResult = await _getAccounts(userId: _userId);
     if (accResult.isLeft()) {
       return 'Failed to load accounts.';
     }
@@ -418,7 +434,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       updatedAt: DateTime.now(),
     );
 
-    final result = await _transactionRepo.createTransaction(transaction);
+    final result = await _createTransaction(transaction);
     return result.fold(
       (f) => 'Failed to create transaction: ${f.message}',
       (t) =>

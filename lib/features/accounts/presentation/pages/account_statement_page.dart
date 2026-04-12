@@ -5,13 +5,11 @@ import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
-import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,15 +46,13 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
 
   void _triggerLoad(AccountEntity account) {
     _account = account;
-    final dashState = context.read<DashboardBloc>().state;
-    final year = dashState is DashboardLoaded
-        ? dashState.selectedYear
-        : DateTime.now().year;
-    final month = dashState is DashboardLoaded
-        ? dashState.selectedMonth
-        : DateTime.now().month;
+    final filter = context.read<DateFilterCubit>().state;
     unawaited(
-      context.read<AccountStatementCubit>().load(account, year, month),
+      context.read<AccountStatementCubit>().load(
+        account,
+        filter.year,
+        filter.month,
+      ),
     );
   }
 
@@ -78,14 +74,14 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
           },
         ),
         // Sidebar month/year changed
-        BlocListener<DashboardBloc, DashboardState>(
-          listener: (context, state) {
-            if (state is DashboardLoaded && _account != null) {
+        BlocListener<DateFilterCubit, DateFilterState>(
+          listener: (context, filter) {
+            if (_account != null) {
               unawaited(
                 context.read<AccountStatementCubit>().load(
                   _account!,
-                  state.selectedYear,
-                  state.selectedMonth,
+                  filter.year,
+                  filter.month,
                 ),
               );
             }
@@ -244,21 +240,18 @@ class _SummaryPanel extends StatelessWidget {
                   _SummaryRow(
                     label: t.accounts.monthIncome,
                     amount: state.totalIncome,
-                    color: colors.income,
                     icon: FontAwesomeIcons.arrowUp,
                   ),
                   const SizedBox(height: 8),
                   _SummaryRow(
                     label: t.accounts.monthExpenses,
-                    amount: state.totalExpenses,
-                    color: colors.expense,
+                    amount: -state.totalExpenses,
                     icon: FontAwesomeIcons.arrowDown,
                   ),
                   const Divider(height: 20),
                   _SummaryRow(
                     label: t.accounts.monthResult,
                     amount: state.result,
-                    color: state.result >= 0 ? colors.income : colors.expense,
                     icon: FontAwesomeIcons.equals,
                     bold: true,
                   ),
@@ -285,11 +278,17 @@ class _SummaryPanel extends StatelessWidget {
                     const SizedBox(height: 12),
                     _DetailRow(
                       label: t.accounts.creditLimit,
-                      value: formatCurrency(account.creditLimit ?? 0),
+                      child: AmountText(
+                        amount: account.creditLimit ?? 0,
+                        fontSize: 14,
+                      ),
                     ),
                     _DetailRow(
                       label: t.accounts.availableCredit,
-                      value: formatCurrency(account.availableCredit),
+                      child: AmountText(
+                        amount: account.availableCredit,
+                        fontSize: 14,
+                      ),
                     ),
                     _DetailRow(
                       label: t.accounts.closingDay,
@@ -361,14 +360,12 @@ class _SummaryRow extends StatelessWidget {
   const _SummaryRow({
     required this.label,
     required this.amount,
-    required this.color,
     required this.icon,
     this.bold = false,
   });
 
   final String label;
   final double amount;
-  final Color color;
   final FaIconData icon;
   final bool bold;
 
@@ -376,7 +373,7 @@ class _SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        FaIcon(icon, size: 14, color: color),
+        FaIcon(icon, size: 14, color: context.appColors.onBackgroundLight),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -386,13 +383,7 @@ class _SummaryRow extends StatelessWidget {
             ),
           ),
         ),
-        Text(
-          formatCurrency(amount),
-          style: context.textTheme.bodyMedium?.copyWith(
-            fontWeight: bold ? FontWeight.bold : FontWeight.w500,
-            color: color,
-          ),
-        ),
+        AmountText(amount: amount, fontSize: 14),
       ],
     );
   }
@@ -400,10 +391,11 @@ class _SummaryRow extends StatelessWidget {
 
 // ─── Detail row ──────────────────────────────────────────────
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+  const _DetailRow({required this.label, this.value, this.child});
 
   final String label;
-  final String value;
+  final String? value;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -418,7 +410,7 @@ class _DetailRow extends StatelessWidget {
               color: context.appColors.onBackgroundLight,
             ),
           ),
-          Text(value, style: context.textTheme.bodyMedium),
+          child ?? Text(value ?? '', style: context.textTheme.bodyMedium),
         ],
       ),
     );

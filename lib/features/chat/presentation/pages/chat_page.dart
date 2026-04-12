@@ -1,17 +1,21 @@
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
 import 'package:financo/features/chat/presentation/bloc/chat_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -32,10 +36,14 @@ class ChatPage extends StatelessWidget {
       create: (_) => ChatBloc(
         sendMessage: GetIt.I<SendMessageUseCase>(),
         getChatHistory: GetIt.I<GetChatHistoryUseCase>(),
-        chatRepository: GetIt.I<ChatRepository>(),
-        accountRepository: GetIt.I<AccountRepository>(),
-        categoryRepository: GetIt.I<CategoryRepository>(),
-        transactionRepository: GetIt.I<TransactionRepository>(),
+        saveChatMessage: GetIt.I<SaveChatMessageUseCase>(),
+        createAccount: GetIt.I<CreateAccountUseCase>(),
+        getAccounts: GetIt.I<GetAccountsUseCase>(),
+        deleteAccount: GetIt.I<DeleteAccountUseCase>(),
+        createCategory: GetIt.I<CreateCategoryUseCase>(),
+        getCategories: GetIt.I<GetCategoriesUseCase>(),
+        deleteCategory: GetIt.I<DeleteCategoryUseCase>(),
+        createTransaction: GetIt.I<CreateTransactionUseCase>(),
         userId: userId,
       ),
       child: const _ChatView(),

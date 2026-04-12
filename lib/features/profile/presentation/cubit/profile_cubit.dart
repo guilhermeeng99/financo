@@ -1,25 +1,25 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
-import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
+import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit({
-    required ProfileRepository profileRepository,
+    required GetProfileUseCase getProfile,
     required String userId,
-  }) : _profileRepo = profileRepository,
+  }) : _getProfile = getProfile,
        _userId = userId,
        super(const ProfileInitial());
 
-  final ProfileRepository _profileRepo;
+  final GetProfileUseCase _getProfile;
   final String _userId;
 
   Future<void> loadProfile({bool forceRefresh = false}) async {
     if (state is ProfileLoaded && !forceRefresh) return;
     emit(const ProfileLoading());
 
-    final result = await _profileRepo.getProfile(_userId);
+    final result = await _getProfile(_userId);
     result.fold(
       (failure) => emit(ProfileError(failure)),
       (user) => emit(ProfileLoaded(user)),

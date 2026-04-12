@@ -22,16 +22,15 @@ import 'package:financo/features/categories/presentation/pages/categories_page.d
 import 'package:financo/features/chat/presentation/pages/chat_page.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
-import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
+import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/features/profile/presentation/pages/profile_page.dart';
 import 'package:financo/features/startup/presentation/pages/startup_page.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/toggle_reconciled_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:flutter/material.dart';
@@ -102,7 +101,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) => TransactionsBloc(
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
                 deleteTransaction: GetIt.I<DeleteTransactionUseCase>(),
-                transactionRepository: GetIt.I<TransactionRepository>(),
+                toggleReconciled: GetIt.I<ToggleReconciledUseCase>(),
                 userId: userId,
               ),
             ),
@@ -128,7 +127,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             ),
             BlocProvider(
               create: (_) => ProfileCubit(
-                profileRepository: GetIt.I<ProfileRepository>(),
+                getProfile: GetIt.I<GetProfileUseCase>(),
                 userId: userId,
               ),
             ),
@@ -169,27 +168,15 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             return AddTransactionPage(existingTransaction: existing);
           },
         ),
-       
+        GoRoute(
+          path: AppRoutes.accounts,
+          builder: (context, state) => const AccountsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.categories,
+          builder: (context, state) => const CategoriesPage(),
+        ),
       ],
-    ),
-    GoRoute(
-      path: AppRoutes.accounts,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
-        final authState = context.read<AuthBloc>().state;
-        final userId = authState is Authenticated ? authState.user.id : '';
-        return BlocProvider(
-          create: (_) {
-            final cubit = AccountsCubit(
-              getAccounts: GetIt.I<GetAccountsUseCase>(),
-              userId: userId,
-            );
-            unawaited(cubit.loadAccounts());
-            return cubit;
-          },
-          child: const AccountsPage(),
-        );
-      },
     ),
     GoRoute(
       path: AppRoutes.addAccount,
@@ -197,25 +184,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       builder: (context, state) {
         final existing = state.extra as AccountEntity?;
         return AddAccountPage(existingAccount: existing);
-      },
-    ),
-    GoRoute(
-      path: AppRoutes.categories,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
-        final authState = context.read<AuthBloc>().state;
-        final userId = authState is Authenticated ? authState.user.id : '';
-        return BlocProvider(
-          create: (_) {
-            final cubit = CategoriesCubit(
-              getCategories: GetIt.I<GetCategoriesUseCase>(),
-              userId: userId,
-            );
-            unawaited(cubit.loadCategories());
-            return cubit;
-          },
-          child: const CategoriesPage(),
-        );
       },
     ),
     GoRoute(
@@ -248,52 +216,18 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-class _ShellWithSidebar extends StatefulWidget {
+class _ShellWithSidebar extends StatelessWidget {
   const _ShellWithSidebar({required this.child});
 
   final Widget child;
-
-  @override
-  State<_ShellWithSidebar> createState() => _ShellWithSidebarState();
-}
-
-class _ShellWithSidebarState extends State<_ShellWithSidebar> {
-  late int _selectedYear;
-  late int _selectedMonth;
-
-  @override
-  void initState() {
-    super.initState();
-    final now = DateTime.now();
-    _selectedYear = now.year;
-    _selectedMonth = now.month;
-  }
-
-  void _onDateChanged(int year, int month) {
-    setState(() {
-      _selectedYear = year;
-      _selectedMonth = month;
-    });
-    context.read<DashboardBloc>().add(
-      DashboardLoadRequested(
-        year: year,
-        month: month,
-        forceRefresh: true,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
         children: [
-          FinancoSidebar(
-            selectedYear: _selectedYear,
-            selectedMonth: _selectedMonth,
-            onDateChanged: _onDateChanged,
-          ),
-          Expanded(child: widget.child),
+          const FinancoSidebar(),
+          Expanded(child: child),
         ],
       ),
     );

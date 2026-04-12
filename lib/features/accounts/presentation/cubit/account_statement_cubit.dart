@@ -79,7 +79,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
     );
 
     // Running balance = seed balance + all income - all expenses
-    var runningBalance = account.balance;
+    var runningBalance = account.initialBalance;
     for (final tx in allTransactions) {
       if (tx.type == TransactionType.income) {
         runningBalance += tx.amount;

@@ -31,6 +31,7 @@
     "passwordMinLength": "Password must be at least 6 characters.",
     "amountRequired": "Amount is required.",
     "amountInvalid": "Enter a valid amount.",
+    "dateInFuture": "Date cannot be in the future.",
     "selectAccount": "Select an account",
     "selectCategory": "Select a category"
   },
@@ -141,7 +142,7 @@
     "linkedAccount": "Linked Checking Account",
     "balance": "Balance",
     "currentBalance": "Current Balance",
-    "balanceLabel": "Current Balance (R\\$)",
+    "balanceLabel": "Initial Balance (R\\$)",
     "balanceHint": "0.00",
     "creditLimit": "Credit Limit",
     "creditLimitLabel": "Credit Limit (R\\$)",

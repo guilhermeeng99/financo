@@ -1,4 +1,4 @@
-import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
+import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
@@ -13,12 +13,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required SignInWithGoogleUseCase signInWithGoogleUseCase,
     required SignUpUseCase signUpUseCase,
     required SignOutUseCase signOutUseCase,
-    required AuthRepository authRepository,
+    required GetCurrentUserUseCase getCurrentUser,
   }) : _signIn = signInUseCase,
        _signInWithGoogle = signInWithGoogleUseCase,
        _signUp = signUpUseCase,
        _signOut = signOutUseCase,
-       _authRepo = authRepository,
+       _getCurrentUser = getCurrentUser,
        super(const AuthInitial()) {
     on<AuthCheckRequested>(_onCheckRequested);
     on<AuthSignInRequested>(_onSignInRequested);
@@ -31,13 +31,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignInWithGoogleUseCase _signInWithGoogle;
   final SignUpUseCase _signUp;
   final SignOutUseCase _signOut;
-  final AuthRepository _authRepo;
+  final GetCurrentUserUseCase _getCurrentUser;
 
   Future<void> _onCheckRequested(
     AuthCheckRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final result = await _authRepo.getCurrentUser();
+    final result = await _getCurrentUser();
     result.fold(
       (failure) => emit(const Unauthenticated()),
       (user) => user != null

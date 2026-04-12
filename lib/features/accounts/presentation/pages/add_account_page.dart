@@ -2,17 +2,19 @@ import 'dart:async';
 
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +36,7 @@ class AddAccountPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => AccountFormCubit(
         createAccount: GetIt.I<CreateAccountUseCase>(),
-        accountRepository: GetIt.I<AccountRepository>(),
+        updateAccount: GetIt.I<UpdateAccountUseCase>(),
         userId: userId,
         existingAccount: existingAccount,
       ),
@@ -100,11 +102,12 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
     if (confirmed != true || !mounted) return;
 
-    final txRepo = GetIt.I<TransactionRepository>();
-    final accountRepo = GetIt.I<AccountRepository>();
+    final getTransactions = GetIt.I<GetTransactionsUseCase>();
+    final deleteTransaction = GetIt.I<DeleteTransactionUseCase>();
+    final deleteAccount = GetIt.I<DeleteAccountUseCase>();
 
     // Delete all transactions belonging to this account
-    final txResult = await txRepo.getTransactions(
+    final txResult = await getTransactions(
       userId: userId,
       accountId: accountId,
     );
@@ -112,15 +115,13 @@ class _AddAccountViewState extends State<_AddAccountView> {
       (_) async {},
       (transactions) async {
         await Future.wait(
-          transactions.map((tx) => txRepo.deleteTransaction(tx.id)),
+          transactions.map((tx) => deleteTransaction(tx.id)),
         );
       },
     );
 
-    await accountRepo.deleteAccount(accountId);
+    await deleteAccount(accountId);
     if (mounted) {
-      // Clear cache so dashboard re-fetches from Firestore
-      GetIt.I<AppDataCache>().clear();
       context.read<DashboardBloc>().add(
         const DashboardRefreshRequested(),
       );
@@ -361,7 +362,7 @@ class _LinkedAccountDropdownState extends State<_LinkedAccountDropdown> {
   }
 
   Future<void> _loadCheckingAccounts() async {
-    final result = await GetIt.I<AccountRepository>().getAccounts(
+    final result = await GetIt.I<GetAccountsUseCase>()(
       userId: widget.userId,
     );
     if (!mounted) return;

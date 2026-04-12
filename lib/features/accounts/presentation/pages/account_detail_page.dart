@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -75,8 +74,8 @@ class AccountDetailPage extends StatelessWidget {
                       ),
                     );
                     if (confirmed == true && context.mounted) {
-                      final repo = GetIt.I<AccountRepository>();
-                      await repo.deleteAccount(currentAccount.id);
+                      final deleteAccount = GetIt.I<DeleteAccountUseCase>();
+                      await deleteAccount(currentAccount.id);
                       if (context.mounted) context.pop(true);
                     }
                   }
@@ -101,7 +100,7 @@ class AccountDetailPage extends StatelessWidget {
               children: [
                 Center(
                   child: AmountText(
-                    amount: account.balance,
+                    amount: account.initialBalance,
                     fontSize: 28,
                   ),
                 ),
@@ -145,11 +144,17 @@ class AccountDetailPage extends StatelessWidget {
                   ],
                   _DetailRow(
                     label: t.accounts.creditLimit,
-                    value: formatCurrency(account.creditLimit ?? 0),
+                    child: AmountText(
+                      amount: account.creditLimit ?? 0,
+                      fontSize: 16,
+                    ),
                   ),
                   _DetailRow(
                     label: t.accounts.availableCredit,
-                    value: formatCurrency(account.availableCredit),
+                    child: AmountText(
+                      amount: account.availableCredit,
+                      fontSize: 16,
+                    ),
                   ),
                   _DetailRow(
                     label: t.accounts.closingDay,
@@ -170,10 +175,11 @@ class AccountDetailPage extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+  const _DetailRow({required this.label, this.value, this.child});
 
   final String label;
-  final String value;
+  final String? value;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +197,8 @@ class _DetailRow extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(value, style: context.textTheme.bodyLarge),
+            child:
+                child ?? Text(value ?? '', style: context.textTheme.bodyLarge),
           ),
         ],
       ),

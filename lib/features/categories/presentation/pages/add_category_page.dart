@@ -7,7 +7,10 @@ import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
-import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/category_form_cubit.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -30,7 +33,8 @@ class AddCategoryPage extends StatelessWidget {
 
     return BlocProvider(
       create: (_) => CategoryFormCubit(
-        categoryRepository: GetIt.I<CategoryRepository>(),
+        createCategory: GetIt.I<CreateCategoryUseCase>(),
+        updateCategory: GetIt.I<UpdateCategoryUseCase>(),
         userId: userId,
         existingCategory: existingCategory,
       ),
@@ -66,12 +70,13 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
   }
 
   Future<void> _confirmDelete(String categoryId) async {
-    final categoryRepo = GetIt.I<CategoryRepository>();
+    final getCategories = GetIt.I<GetCategoriesUseCase>();
+    final deleteCategory = GetIt.I<DeleteCategoryUseCase>();
     final transactionRepo = GetIt.I<TransactionRepository>();
     final cubitState = context.read<CategoryFormCubit>().state;
     final userId = cubitState.userId;
 
-    final categoriesResult = await categoryRepo.getCategories(userId: userId);
+    final categoriesResult = await getCategories(userId: userId);
     if (!mounted) return;
 
     final others = categoriesResult.fold(
@@ -130,7 +135,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
         fromCategoryId: categoryId,
         toCategoryId: targetId!,
       );
-      await categoryRepo.deleteCategory(categoryId);
+      await deleteCategory(categoryId);
       if (mounted) context.pop(true);
     }
   }

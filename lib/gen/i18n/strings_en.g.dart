@@ -162,6 +162,9 @@ class TranslationsValidatorsEn {
 	/// en: 'Enter a valid amount.'
 	String get amountInvalid => 'Enter a valid amount.';
 
+	/// en: 'Date cannot be in the future.'
+	String get dateInFuture => 'Date cannot be in the future.';
+
 	/// en: 'Select an account'
 	String get selectAccount => 'Select an account';
 
@@ -795,6 +798,7 @@ extension on Translations {
 			'validators.passwordMinLength' => 'Password must be at least 6 characters.',
 			'validators.amountRequired' => 'Amount is required.',
 			'validators.amountInvalid' => 'Enter a valid amount.',
+			'validators.dateInFuture' => 'Date cannot be in the future.',
 			'validators.selectAccount' => 'Select an account',
 			'validators.selectCategory' => 'Select a category',
 			'auth.signIn' => 'Sign In',

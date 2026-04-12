@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
@@ -15,16 +14,13 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required TransactionRepository transactionRepository,
     required AccountRepository accountRepository,
     required CategoryRepository categoryRepository,
-    required AppDataCache cache,
   }) : _transactionRepo = transactionRepository,
        _accountRepo = accountRepository,
-       _categoryRepo = categoryRepository,
-       _cache = cache;
+       _categoryRepo = categoryRepository;
 
   final TransactionRepository _transactionRepo;
   final AccountRepository _accountRepo;
   final CategoryRepository _categoryRepo;
-  final AppDataCache _cache;
 
   @override
   Future<Either<Failure, DashboardSummary>> getDashboardSummary({
@@ -32,10 +28,6 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required DateTime month,
     bool forceRefresh = false,
   }) async {
-    if (!forceRefresh && _cache.dashboardSummary != null) {
-      return Right(_cache.dashboardSummary!);
-    }
-
     final accountsResult = await _accountRepo.getAccounts(
       userId: userId,
       forceRefresh: forceRefresh,
@@ -76,12 +68,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
             final adjustedAccounts = accounts.map((a) {
               final adj = accountAdjustments[a.id] ?? 0;
-              return a.copyWith(balance: a.balance + adj);
+              return a.copyWith(initialBalance: a.initialBalance + adj);
             }).toList();
 
             final totalBalance = adjustedAccounts.fold<double>(
               0,
-              (sum, account) => sum + account.balance,
+              (sum, account) => sum + account.initialBalance,
             );
 
             final totalIncome = transactions
@@ -116,7 +108,6 @@ class DashboardRepositoryImpl implements DashboardRepository {
               incomeByCategory: incomeByCategory,
             );
 
-            _cache.dashboardSummary = summary;
             return Right(summary);
           },
         ),

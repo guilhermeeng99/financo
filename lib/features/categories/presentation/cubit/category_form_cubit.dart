@@ -1,16 +1,19 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
-import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoryFormCubit extends Cubit<CategoryFormState> {
   CategoryFormCubit({
-    required CategoryRepository categoryRepository,
+    required CreateCategoryUseCase createCategory,
+    required UpdateCategoryUseCase updateCategory,
     required String userId,
     CategoryEntity? existingCategory,
-  }) : _categoryRepo = categoryRepository,
+  }) : _createCategory = createCategory,
+       _updateCategory = updateCategory,
        super(
          CategoryFormState.initial(
            userId: userId,
@@ -18,7 +21,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
          ),
        );
 
-  final CategoryRepository _categoryRepo;
+  final CreateCategoryUseCase _createCategory;
+  final UpdateCategoryUseCase _updateCategory;
 
   void updateName(String value) => emit(state.copyWith(name: value));
 
@@ -44,8 +48,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     );
 
     (state.isEditing
-            ? await _categoryRepo.updateCategory(category)
-            : await _categoryRepo.createCategory(category))
+            ? await _updateCategory(category)
+            : await _createCategory(category))
         .fold(
           (failure) => emit(
             state.copyWith(

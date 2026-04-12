@@ -123,11 +123,19 @@ class TransactionFormState extends Equatable {
   final Failure? failure;
 
   bool get isEditing => existingId != null;
+
+  bool get _isDateValid {
+    final now = DateTime.now();
+    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    return !date.isAfter(endOfToday);
+  }
+
   bool get isValid =>
       description.isNotEmpty &&
       amount > 0 &&
       accountId.isNotEmpty &&
-      categoryId.isNotEmpty;
+      categoryId.isNotEmpty &&
+      _isDateValid;
 
   TransactionFormState copyWith({
     TransactionType? type,

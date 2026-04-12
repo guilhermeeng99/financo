@@ -1,9 +1,11 @@
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/theme/app_colors.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,16 +14,7 @@ const _expandedWidth = 220.0;
 const _animDuration = Duration(milliseconds: 200);
 
 class FinancoSidebar extends StatefulWidget {
-  const FinancoSidebar({
-    required this.selectedYear,
-    required this.selectedMonth,
-    required this.onDateChanged,
-    super.key,
-  });
-
-  final int selectedYear;
-  final int selectedMonth;
-  final void Function(int year, int month) onDateChanged;
+  const FinancoSidebar({super.key});
 
   @override
   State<FinancoSidebar> createState() => _FinancoSidebarState();
@@ -32,23 +25,11 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
 
   void _toggle() => setState(() => _expanded = !_expanded);
 
-  void _navigateMonth(int delta) {
-    var month = widget.selectedMonth + delta;
-    var year = widget.selectedYear;
-    if (month < 1) {
-      month = 12;
-      year--;
-    } else if (month > 12) {
-      month = 1;
-      year++;
-    }
-    widget.onDateChanged(year, month);
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final location = GoRouterState.of(context).matchedLocation;
+    final dateFilter = context.watch<DateFilterCubit>().state;
 
     return AnimatedContainer(
       duration: _animDuration,
@@ -74,11 +55,12 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
           const SizedBox(height: 4),
           // Date selector
           _DateSelector(
-            year: widget.selectedYear,
-            month: widget.selectedMonth,
+            year: dateFilter.year,
+            month: dateFilter.month,
             expanded: _expanded,
-            onPrevious: () => _navigateMonth(-1),
-            onNext: () => _navigateMonth(1),
+            onPrevious: () =>
+                context.read<DateFilterCubit>().previousMonth(),
+            onNext: () => context.read<DateFilterCubit>().nextMonth(),
             colors: colors,
           ),
           const Divider(height: 16),

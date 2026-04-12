@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
+import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/sync/sync_service.dart';
 import 'package:financo/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
@@ -9,12 +10,15 @@ import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
-    required AppDataCache cache,
+    required UsersDao usersDao,
+    required SyncService syncService,
   }) : _remote = remoteDataSource,
-       _cache = cache;
+       _usersDao = usersDao,
+       _syncService = syncService;
 
   final AuthRemoteDataSource _remote;
-  final AppDataCache _cache;
+  final UsersDao _usersDao;
+  final SyncService _syncService;
 
   @override
   Future<Either<Failure, UserEntity>> signIn({
@@ -22,8 +26,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final user = await _remote.signIn(email: email, password: password);
-      _cache.currentUser = user;
+      final user = await _remote.signIn(
+        email: email,
+        password: password,
+      );
+      await _usersDao.upsertUser(user);
       return Right(user);
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
@@ -36,7 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> signInWithGoogle() async {
     try {
       final user = await _remote.signInWithGoogle();
-      _cache.currentUser = user;
+      await _usersDao.upsertUser(user);
       return Right(user);
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
@@ -57,7 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-      _cache.currentUser = user;
+      await _usersDao.upsertUser(user);
       return Right(user);
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
@@ -70,7 +77,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> signOut() async {
     try {
       await _remote.signOut();
-      _cache.clear();
+      await _syncService.clearLocalData();
       return const Right(null);
     } on Exception {
       return const Left(ServerFailure());
@@ -80,9 +87,8 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
     try {
-      if (_cache.currentUser != null) return Right(_cache.currentUser);
       final user = await _remote.getCurrentUser();
-      _cache.currentUser = user;
+      if (user != null) await _usersDao.upsertUser(user);
       return Right(user);
     } on Exception {
       return const Left(ServerFailure());

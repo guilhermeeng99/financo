@@ -1,7 +1,7 @@
 import 'package:financo/core/utils/date_helpers.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/toggle_reconciled_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,11 +9,11 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   TransactionsBloc({
     required GetTransactionsUseCase getTransactions,
     required DeleteTransactionUseCase deleteTransaction,
-    required TransactionRepository transactionRepository,
+    required ToggleReconciledUseCase toggleReconciled,
     required String userId,
   }) : _getTransactions = getTransactions,
        _deleteTransaction = deleteTransaction,
-       _transactionRepo = transactionRepository,
+       _toggleReconciled = toggleReconciled,
        _userId = userId,
        super(const TransactionsInitial()) {
     on<TransactionsLoadRequested>(_onLoadRequested);
@@ -23,7 +23,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
 
   final GetTransactionsUseCase _getTransactions;
   final DeleteTransactionUseCase _deleteTransaction;
-  final TransactionRepository _transactionRepo;
+  final ToggleReconciledUseCase _toggleReconciled;
   final String _userId;
 
   Future<void> _onLoadRequested(
@@ -88,7 +88,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     Emitter<TransactionsState> emit,
   ) async {
     final current = state;
-    final result = await _transactionRepo.toggleReconciled(event.id);
+    final result = await _toggleReconciled(event.id);
     result.fold(
       (failure) => emit(TransactionsError(failure)),
       (_) {

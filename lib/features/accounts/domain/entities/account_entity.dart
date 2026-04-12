@@ -11,7 +11,7 @@ class AccountEntity extends Equatable {
     required this.name,
     required this.type,
     required this.bank,
-    required this.balance,
+    required this.initialBalance,
     required this.isActive,
     required this.createdAt,
     this.creditLimit,
@@ -25,7 +25,7 @@ class AccountEntity extends Equatable {
   final String name;
   final AccountType type;
   final BankType bank;
-  final double balance;
+  final double initialBalance;
   final double? creditLimit;
   final int? closingDay;
   final int? dueDay;
@@ -34,7 +34,7 @@ class AccountEntity extends Equatable {
   final DateTime createdAt;
 
   double get availableCredit =>
-      creditLimit != null ? creditLimit! - balance : 0;
+      creditLimit != null ? creditLimit! - initialBalance : 0;
 
   String get bankLabel => switch (bank) {
     BankType.nubank => 'Nubank',
@@ -47,7 +47,7 @@ class AccountEntity extends Equatable {
     String? name,
     AccountType? type,
     BankType? bank,
-    double? balance,
+    double? initialBalance,
     double? creditLimit,
     int? closingDay,
     int? dueDay,
@@ -61,7 +61,7 @@ class AccountEntity extends Equatable {
       name: name ?? this.name,
       type: type ?? this.type,
       bank: bank ?? this.bank,
-      balance: balance ?? this.balance,
+      initialBalance: initialBalance ?? this.initialBalance,
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
@@ -78,7 +78,7 @@ class AccountEntity extends Equatable {
     name,
     type,
     bank,
-    balance,
+    initialBalance,
     creditLimit,
     closingDay,
     dueDay,

@@ -1,19 +1,19 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AccountFormCubit extends Cubit<AccountFormState> {
   AccountFormCubit({
     required CreateAccountUseCase createAccount,
-    required AccountRepository accountRepository,
+    required UpdateAccountUseCase updateAccount,
     required String userId,
     AccountEntity? existingAccount,
   }) : _createAccount = createAccount,
-       _accountRepo = accountRepository,
+       _updateAccount = updateAccount,
        super(
          AccountFormState.initial(
            userId: userId,
@@ -22,7 +22,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
        );
 
   final CreateAccountUseCase _createAccount;
-  final AccountRepository _accountRepo;
+  final UpdateAccountUseCase _updateAccount;
 
   void updateName(String value) => emit(state.copyWith(name: value));
 
@@ -57,7 +57,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       name: state.name,
       type: state.type,
       bank: state.bank,
-      balance: state.balance,
+      initialBalance: state.balance,
       creditLimit: state.type == AccountType.creditCard
           ? state.creditLimit
           : null,
@@ -73,7 +73,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
     );
 
     (state.isEditing
-            ? await _accountRepo.updateAccount(account)
+            ? await _updateAccount(account)
             : await _createAccount(account))
         .fold(
           (failure) => emit(
@@ -112,7 +112,7 @@ class AccountFormState extends Equatable {
       name: existing?.name ?? '',
       type: existing?.type ?? AccountType.checking,
       bank: existing?.bank ?? BankType.nubank,
-      balance: existing?.balance ?? 0,
+      balance: existing?.initialBalance ?? 0,
       creditLimit: existing?.creditLimit ?? 0,
       closingDay: existing?.closingDay ?? 1,
       dueDay: existing?.dueDay ?? 10,

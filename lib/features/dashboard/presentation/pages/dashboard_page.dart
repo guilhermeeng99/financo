@@ -2,6 +2,7 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
@@ -25,29 +26,43 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    context.read<DashboardBloc>().add(DashboardLoadRequested());
+    final filter = context.read<DateFilterCubit>().state;
+    context.read<DashboardBloc>().add(
+      DashboardLoadRequested(year: filter.year, month: filter.month),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardBloc, DashboardState>(
-      builder: (context, state) {
-        if (state is DashboardLoading) {
-          return const LoadingShimmer();
-        }
-        if (state is DashboardError) {
-          return ErrorView(
-            message: state.failure.message,
-            onRetry: () => context.read<DashboardBloc>().add(
-              DashboardLoadRequested(forceRefresh: true),
-            ),
-          );
-        }
-        if (state is DashboardLoaded) {
-          return _DashboardContent(state: state);
-        }
-        return const SizedBox.shrink();
+    return BlocListener<DateFilterCubit, DateFilterState>(
+      listener: (context, filter) {
+        context.read<DashboardBloc>().add(
+          DashboardLoadRequested(
+            year: filter.year,
+            month: filter.month,
+            forceRefresh: true,
+          ),
+        );
       },
+      child: BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
+          if (state is DashboardLoading) {
+            return const LoadingShimmer();
+          }
+          if (state is DashboardError) {
+            return ErrorView(
+              message: state.failure.message,
+              onRetry: () => context.read<DashboardBloc>().add(
+                DashboardLoadRequested(forceRefresh: true),
+              ),
+            );
+          }
+          if (state is DashboardLoaded) {
+            return _DashboardContent(state: state);
+          }
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 }
@@ -90,7 +105,7 @@ class _DashboardContent extends StatelessWidget {
               Expanded(
                 child: _ResultCard(
                   label: t.dashboard.expenses,
-                  amount: summary.totalExpenses,
+                  amount: -summary.totalExpenses,
                   color: colors.expense,
                   icon: FontAwesomeIcons.arrowDown,
                 ),
@@ -199,7 +214,7 @@ class _AccountsTable extends StatelessWidget {
                         ),
                       ),
                       AmountText(
-                        amount: account.balance,
+                        amount: account.initialBalance,
                         fontSize: 14,
                       ),
                     ],
@@ -270,12 +285,9 @@ class _ResultCard extends StatelessWidget {
             const SizedBox(height: 8),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                formatCurrency(amount),
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+              child: AmountText(
+                amount: amount,
+                fontSize: 14,
               ),
             ),
           ],
@@ -524,11 +536,9 @@ class _CategoryList extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(
-                  formatCurrency(item.amount),
-                  style: context.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                AmountText(
+                  amount: item.amount,
+                  fontSize: 12,
                 ),
               ],
             ),
@@ -544,12 +554,9 @@ class _CategoryList extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              formatCurrency(total),
-              style: context.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: context.appColors.primary,
-              ),
+            AmountText(
+              amount: total,
+              fontSize: 11,
             ),
           ],
         ),

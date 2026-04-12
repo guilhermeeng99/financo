@@ -48,8 +48,7 @@ class TransactionTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AmountText(
-            amount: transaction.amount,
-            isIncome: isIncome,
+            amount: isIncome ? transaction.amount : -transaction.amount,
             fontSize: 14,
           ),
           if (transaction.isReconciled) ...[

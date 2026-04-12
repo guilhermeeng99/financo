@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:financo/core/cache/app_data_cache.dart';
+import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
@@ -10,12 +10,12 @@ import 'package:financo/features/accounts/domain/repositories/account_repository
 class AccountRepositoryImpl implements AccountRepository {
   AccountRepositoryImpl({
     required AccountRemoteDataSource remoteDataSource,
-    required AppDataCache cache,
+    required AccountsDao accountsDao,
   }) : _remote = remoteDataSource,
-       _cache = cache;
+       _dao = accountsDao;
 
   final AccountRemoteDataSource _remote;
-  final AppDataCache _cache;
+  final AccountsDao _dao;
 
   @override
   Future<Either<Failure, List<AccountEntity>>> getAccounts({
@@ -23,12 +23,14 @@ class AccountRepositoryImpl implements AccountRepository {
     bool forceRefresh = false,
   }) async {
     try {
-      if (!forceRefresh && _cache.accounts != null) {
-        return Right(_cache.accounts!);
+      if (forceRefresh) {
+        final remote = await _remote.getAccounts(userId: userId);
+        await _dao.deleteAllAccounts();
+        if (remote.isNotEmpty) {
+          await _dao.insertAllAccounts(remote);
+        }
       }
-      final result = await _remote.getAccounts(userId: userId);
-      _cache.accounts = result;
-      return Right(result);
+      return Right(await _dao.getActiveAccounts(userId));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -37,7 +39,10 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<Either<Failure, AccountEntity>> getAccount(String id) async {
     try {
+      final local = await _dao.getAccountById(id);
+      if (local != null) return Right(local);
       final result = await _remote.getAccount(id);
+      await _dao.upsertAccount(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -51,7 +56,7 @@ class AccountRepositoryImpl implements AccountRepository {
     try {
       final model = AccountModel.fromEntity(account);
       final result = await _remote.createAccount(model);
-      _cache.accounts = null;
+      await _dao.upsertAccount(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -65,7 +70,7 @@ class AccountRepositoryImpl implements AccountRepository {
     try {
       final model = AccountModel.fromEntity(account);
       final result = await _remote.updateAccount(model);
-      _cache.accounts = null;
+      await _dao.upsertAccount(result);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -76,7 +81,7 @@ class AccountRepositoryImpl implements AccountRepository {
   Future<Either<Failure, void>> deleteAccount(String id) async {
     try {
       await _remote.deleteAccount(id);
-      _cache.accounts = null;
+      await _dao.deleteAccount(id);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

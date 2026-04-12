@@ -2,6 +2,7 @@ import 'package:financo/app/di/injection_container.dart';
 import 'package:financo/app/routes/app_router.dart';
 import 'package:financo/app/theme/app_theme.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -26,6 +27,7 @@ class _FinancoAppState extends State<FinancoApp> {
         BlocProvider.value(value: sl<AuthBloc>()),
         BlocProvider.value(value: sl<StartupCubit>()),
         BlocProvider.value(value: sl<ThemeCubit>()),
+        BlocProvider.value(value: sl<DateFilterCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

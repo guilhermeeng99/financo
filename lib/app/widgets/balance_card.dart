@@ -7,14 +7,12 @@ class BalanceCard extends StatelessWidget {
     required this.label,
     required this.amount,
     this.icon,
-    this.isIncome,
     super.key,
   });
 
   final String label;
   final double amount;
   final IconData? icon;
-  final bool? isIncome;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +43,6 @@ class BalanceCard extends StatelessWidget {
             AmountText(
               amount: amount,
               fontSize: 22,
-              isIncome: isIncome,
             ),
           ],
         ),
