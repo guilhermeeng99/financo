@@ -1,17 +1,49 @@
-# financo
+# Financo
 
-A new Flutter project.
+Personal finance manager with AI-powered data entry (Gemini).
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Dashboard with financial summary by period
+- Account management (checking and credit card)
+- Transaction tracking with categories
+- Cumulative balance per account
+- Global month/year filter
+- AI chat to create transactions, accounts and categories via natural language
+- Reports with category breakdown and monthly evolution charts
+- Firebase sync (Firestore + Auth)
+- Local SQLite cache via Drift
+- Google Sign-In support
 
-A few resources to get you started if this is your first Flutter project:
+## Stack
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- **Flutter** 3.x (Android, iOS, Web)
+- **Firebase** — Auth + Firestore
+- **Drift** — local SQLite cache
+- **flutter_bloc** — state management
+- **get_it** — dependency injection
+- **go_router** — declarative routing
+- **Gemini API** — generative AI for data entry
+- **slang** — type-safe i18n
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Running locally
+
+```bash
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart run slang
+flutter run
+```
+
+## Environment variables
+
+Pass via `--dart-define` when running or building:
+
+| Variable | Description |
+|---|---|
+| `GEMINI_API_KEY` | Google AI Studio API key |
+| `GOOGLE_WEB_CLIENT_ID` | OAuth 2.0 Web Client ID for Google Sign-In |
+
+## Web deploy
+
+Deploy to GitHub Pages is automated via GitHub Actions on every push to `main`.
