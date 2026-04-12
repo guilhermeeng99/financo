@@ -35,8 +35,46 @@ if (!window._flutter) {
 }
 _flutter.buildConfig = {"engineRevision":"425cfb54d01a9472b3e81d9e76fd63a4a44cfbcb","builds":[{"compileTarget":"dart2js","renderer":"canvaskit","mainJsPath":"main.dart.js"},{}]};
 
+
 _flutter.loader.load({
-  serviceWorkerSettings: {
-    serviceWorkerVersion: "3291111723" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */
-  }
+  serviceWorker: {
+    serviceWorkerVersion: "1865573039" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */,
+  },
+  onEntrypointLoaded: async function(engineInitializer) {
+    const appRunner = await engineInitializer.initializeEngine();
+    await appRunner.runApp();
+  },
 });
+
+// Auto-reload when a new service worker version takes control,
+// ensuring users always run the latest deployed build.
+if ('serviceWorker' in navigator) {
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!reloading) {
+      reloading = true;
+      window.location.reload();
+    }
+  });
+
+  const triggerSkipWaiting = (worker) => {
+    if (worker) {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    }
+  };
+
+  navigator.serviceWorker.ready.then((registration) => {
+    // Activate any already-waiting worker immediately
+    triggerSkipWaiting(registration.waiting);
+
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && registration.active) {
+          triggerSkipWaiting(newWorker);
+        }
+      });
+    });
+  });
+}
