@@ -22,26 +22,13 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart run slang
-      - name: Check secrets
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
-        run: |
-          echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}"
-          echo "GOOGLE_WEB_CLIENT_ID length: ${#GOOGLE_WEB_CLIENT_ID}"
-          if [ -z "$GOOGLE_WEB_CLIENT_ID" ]; then
-            echo "ERROR: GOOGLE_WEB_CLIENT_ID is empty — deploy will fail at runtime"
-            exit 1
-          fi
       - name: Build web
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           flutter build web --release --no-tree-shake-icons \
             --base-href /financo/ \
-            --dart-define="GEMINI_API_KEY=$GEMINI_API_KEY" \
-            --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
+            --dart-define="GEMINI_API_KEY=$GEMINI_API_KEY"
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
