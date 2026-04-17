@@ -3,7 +3,8 @@ import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_sign_in/google_sign_in.dart' show GoogleSignIn;
+import 'package:google_sign_in/google_sign_in.dart'
+    show GoogleSignIn, GoogleSignInException;
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signIn({required String email, required String password});
@@ -119,6 +120,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw AuthException(
         e.message ?? 'Google authentication failed.',
       );
+    } on GoogleSignInException catch (e) {
+      throw AuthException(
+        e.description ?? 'Google sign-in was cancelled.',
+      );
     }
   }
 
@@ -154,7 +159,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await _googleSignIn.signOut();
+      try {
+        await _googleSignIn.signOut();
+      } on Exception {
+        // Google sign-out failure is non-fatal — the user may not have
+        // signed in via Google.
+      }
       await _auth.signOut();
     } on Exception catch (e) {
       throw AuthException('Sign out failed: $e');

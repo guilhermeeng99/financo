@@ -79,6 +79,8 @@ class AuthRepositoryImpl implements AuthRepository {
       await _remote.signOut();
       await _syncService.clearLocalData();
       return const Right(null);
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
     } on Exception {
       return const Left(ServerFailure());
     }

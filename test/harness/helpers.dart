@@ -1,7 +1,12 @@
 import 'package:financo/features/accounts/data/models/account_model.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/auth/data/models/user_model.dart';
+import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/categories/data/models/category_model.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
+import 'package:financo/features/chat/data/models/chat_message_model.dart';
+import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
+import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:mocktail/mocktail.dart';
@@ -79,6 +84,60 @@ void registerTransactionFallbackValues() {
       date: DateTime(2024),
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
+    ),
+  );
+}
+
+void registerChatFallbackValues() {
+  registerFallbackValue(
+    ChatMessageEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      role: ChatRole.user,
+      content: 'fallback',
+      createdAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    ChatMessageModel(
+      id: 'fallback',
+      userId: 'fallback',
+      role: ChatRole.user,
+      content: 'fallback',
+      createdAt: DateTime(2024),
+    ),
+  );
+}
+
+void registerDashboardFallbackValues() {
+  registerFallbackValue(
+    const DashboardSummary(
+      totalBalance: 0,
+      totalIncome: 0,
+      totalExpenses: 0,
+      netResult: 0,
+      accounts: [],
+      expensesByCategory: [],
+      incomeByCategory: [],
+    ),
+  );
+}
+
+void registerAuthFallbackValues() {
+  registerFallbackValue(
+    UserEntity(
+      id: 'fallback',
+      name: 'fallback',
+      email: 'fallback@test.com',
+      createdAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    UserModel(
+      id: 'fallback',
+      name: 'fallback',
+      email: 'fallback@test.com',
+      createdAt: DateTime(2024),
     ),
   );
 }

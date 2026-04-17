@@ -246,7 +246,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
 
     _messages.add(sysMessage);
-    await _saveChatMessage(sysMessage);
+    try {
+      await _saveChatMessage(sysMessage);
+    } on Exception {
+      // Persist failure is non-blocking — state is still emitted.
+    }
     emit(
       ChatLoaded(
         messages: List.unmodifiable(_messages),
@@ -263,16 +267,41 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (action == 'create') {
       final bankStr = (meta['bank'] as String?)?.toLowerCase() ?? 'others';
       final bank = bankStr == 'nubank' ? BankType.nubank : BankType.others;
+      final type = (meta['type'] as String?) == 'creditCard'
+          ? AccountType.creditCard
+          : AccountType.checking;
+
+      String? linkedAccountId;
+      if (type == AccountType.creditCard &&
+          meta['linkedAccountName'] != null) {
+        final linkedName = meta['linkedAccountName'] as String;
+        final accResult = await _getAccounts(userId: _userId);
+        if (accResult.isRight()) {
+          final accounts = accResult.getOrElse(() => []);
+          final linked = accounts
+              .where(
+                (a) =>
+                    a.name.toLowerCase() ==
+                    linkedName.toLowerCase(),
+              )
+              .toList();
+          if (linked.isNotEmpty) {
+            linkedAccountId = linked.first.id;
+          }
+        }
+      }
 
       final account = AccountEntity(
         id: '',
         userId: _userId,
         name: meta['name'] as String? ?? 'Account',
-        type: (meta['type'] as String?) == 'creditCard'
-            ? AccountType.creditCard
-            : AccountType.checking,
+        type: type,
         bank: bank,
         initialBalance: (meta['balance'] as num?)?.toDouble() ?? 0,
+        creditLimit: (meta['creditLimit'] as num?)?.toDouble(),
+        closingDay: meta['closingDay'] as int?,
+        dueDay: meta['dueDay'] as int?,
+        linkedAccountId: linkedAccountId,
         createdAt: DateTime.now(),
       );
 
