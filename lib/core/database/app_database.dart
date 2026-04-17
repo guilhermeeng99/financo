@@ -19,7 +19,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -44,6 +44,11 @@ class AppDatabase extends _$AppDatabase {
         // Remove isReconciled, add linkedTransactionId to local_transactions.
         await customStatement('DROP TABLE IF EXISTS local_transactions');
         await migrator.createTable(localTransactions);
+      }
+      if (from < 6) {
+        await customStatement(
+          'ALTER TABLE local_categories ADD COLUMN parent_id TEXT',
+        );
       }
     },
   );

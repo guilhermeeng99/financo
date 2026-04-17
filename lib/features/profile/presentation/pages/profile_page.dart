@@ -9,11 +9,13 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
+import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -24,6 +26,40 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  Future<void> _clearAccountData(String userId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.profile.clearData),
+        content: Text(t.profile.clearDataConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(t.general.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(t.general.delete),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final result = await GetIt.I<ClearAccountDataUseCase>()(userId);
+    if (!mounted) return;
+
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failure.message)),
+      ),
+      (_) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t.profile.clearDataSuccess)),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -86,6 +122,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const Divider(),
                 _ThemeSelector(),
+                const Divider(),
+                ListTile(
+                  leading: const FaIcon(
+                    FontAwesomeIcons.triangleExclamation,
+                    color: Colors.red,
+                  ),
+                  title: Text(
+                    t.profile.clearData,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  subtitle: Text(t.profile.clearDataDescription),
+                  onTap: () => _clearAccountData(user.id),
+                ),
                 const Divider(),
                 const SizedBox(height: 24),
                 FinancoButton(

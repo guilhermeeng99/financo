@@ -24,13 +24,12 @@ void main() {
     mockUpdate = MockUpdateCategoryUseCase();
   });
 
-  CategoryFormCubit buildCubit({CategoryEntity? existing}) =>
-      CategoryFormCubit(
-        createCategory: mockCreate,
-        updateCategory: mockUpdate,
-        userId: userId,
-        existingCategory: existing,
-      );
+  CategoryFormCubit buildCubit({CategoryEntity? existing}) => CategoryFormCubit(
+    createCategory: mockCreate,
+    updateCategory: mockUpdate,
+    userId: userId,
+    existingCategory: existing,
+  );
 
   group('CategoryFormCubit', () {
     group('initial state', () {
@@ -49,15 +48,17 @@ void main() {
       });
 
       test('populates from existing category in edit mode', () {
-        final existing = CategoryFactory.expense(
+        final existing = CategoryFactory.subcategory(
           id: 'existing-1',
+          parentId: 'parent-1',
         );
         final cubit = buildCubit(existing: existing);
         final state = cubit.state;
 
-        expect(state.name, 'Food');
+        expect(state.name, 'Restaurants');
         expect(state.type, CategoryType.expense);
         expect(state.existingId, 'existing-1');
+        expect(state.parentId, 'parent-1');
         expect(state.isEditing, isTrue);
         expect(state.isValid, isTrue);
 
@@ -82,8 +83,11 @@ void main() {
         build: buildCubit,
         act: (cubit) => cubit.updateType(CategoryType.income),
         expect: () => [
-          isA<CategoryFormState>()
-              .having((s) => s.type, 'type', CategoryType.income),
+          isA<CategoryFormState>().having(
+            (s) => s.type,
+            'type',
+            CategoryType.income,
+          ),
         ],
       );
 
@@ -104,6 +108,33 @@ void main() {
           isA<CategoryFormState>().having((s) => s.color, 'color', 4294940672),
         ],
       );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateParentId emits state with selected parent',
+        build: buildCubit,
+        act: (cubit) => cubit.updateParentId('parent-1'),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.parentId,
+            'parentId',
+            'parent-1',
+          ),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateType resets parentId when type changes',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          parentId: 'parent-1',
+        ),
+        act: (cubit) => cubit.updateType(CategoryType.income),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.type, 'type', CategoryType.income)
+              .having((s) => s.parentId, 'parentId', isNull),
+        ],
+      );
     });
 
     group('submit', () {
@@ -121,8 +152,9 @@ void main() {
       blocTest<CategoryFormCubit, CategoryFormState>(
         'creates category when valid and not editing',
         setUp: () {
-          when(() => mockCreate(any()))
-              .thenAnswer((_) async => Right(CategoryFactory.expense()));
+          when(
+            () => mockCreate(any()),
+          ).thenAnswer((_) async => Right(CategoryFactory.expense()));
         },
         build: buildCubit,
         seed: () => CategoryFormState.initial(userId: userId).copyWith(
@@ -130,13 +162,27 @@ void main() {
         ),
         act: (cubit) async => cubit.submit(),
         expect: () => [
-          isA<CategoryFormState>()
-              .having((s) => s.status, 'status', FormStatus.submitting),
-          isA<CategoryFormState>()
-              .having((s) => s.status, 'status', FormStatus.success),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
         ],
         verify: (_) {
-          verify(() => mockCreate(any())).called(1);
+          verify(
+            () => mockCreate(
+              any(
+                that: isA<CategoryEntity>()
+                    .having((c) => c.name, 'name', 'Food')
+                    .having((c) => c.parentId, 'parentId', isNull),
+              ),
+            ),
+          ).called(1);
           verifyNever(() => mockUpdate(any()));
         },
       );
@@ -144,21 +190,39 @@ void main() {
       blocTest<CategoryFormCubit, CategoryFormState>(
         'updates category when valid and editing',
         setUp: () {
-          when(() => mockUpdate(any()))
-              .thenAnswer((_) async => Right(CategoryFactory.expense()));
+          when(
+            () => mockUpdate(any()),
+          ).thenAnswer((_) async => Right(CategoryFactory.expense()));
         },
         build: () => buildCubit(
-          existing: CategoryFactory.expense(id: 'existing-1'),
+          existing: CategoryFactory.subcategory(
+            id: 'existing-1',
+            parentId: 'parent-1',
+          ),
         ),
         act: (cubit) async => cubit.submit(),
         expect: () => [
-          isA<CategoryFormState>()
-              .having((s) => s.status, 'status', FormStatus.submitting),
-          isA<CategoryFormState>()
-              .having((s) => s.status, 'status', FormStatus.success),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
         ],
         verify: (_) {
-          verify(() => mockUpdate(any())).called(1);
+          verify(
+            () => mockUpdate(
+              any(
+                that: isA<CategoryEntity>()
+                    .having((c) => c.id, 'id', 'existing-1')
+                    .having((c) => c.parentId, 'parentId', 'parent-1'),
+              ),
+            ),
+          ).called(1);
           verifyNever(() => mockCreate(any()));
         },
       );
@@ -176,8 +240,11 @@ void main() {
         ),
         act: (cubit) async => cubit.submit(),
         expect: () => [
-          isA<CategoryFormState>()
-              .having((s) => s.status, 'status', FormStatus.submitting),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
           isA<CategoryFormState>()
               .having((s) => s.status, 'status', FormStatus.failure)
               .having((s) => s.failure, 'failure', isA<ServerFailure>()),

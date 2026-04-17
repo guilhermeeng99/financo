@@ -647,6 +647,30 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Select color'
 	String get selectColor => 'Select color';
+
+	/// en: 'Parent category'
+	String get parentCategory => 'Parent category';
+
+	/// en: 'No parent'
+	String get noParent => 'No parent';
+
+	/// en: 'Subcategory'
+	String get subcategoryLabel => 'Subcategory';
+
+	/// en: 'Import CSV'
+	String get importCsv => 'Import CSV';
+
+	/// en: 'Imported $count categories.'
+	String importSuccess({required Object count}) => 'Imported ${count} categories.';
+
+	/// en: 'Review import: $arg new items will be created.'
+	String importReview({required Object arg}) => 'Review import: ${arg} new items will be created.';
+
+	/// en: '$arg duplicate items will be skipped.'
+	String importDuplicates({required Object arg}) => '${arg} duplicate items will be skipped.';
+
+	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
+	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
 }
 
 // Path: chat
@@ -764,6 +788,18 @@ class TranslationsProfileEn {
 
 	/// en: 'Are you sure you want to sign out?'
 	String get signOutConfirm => 'Are you sure you want to sign out?';
+
+	/// en: 'Clear all my data'
+	String get clearData => 'Clear all my data';
+
+	/// en: 'Delete transactions, chat, categories and accounts'
+	String get clearDataDescription => 'Delete transactions, chat, categories and accounts';
+
+	/// en: 'This will permanently delete all data from your account. Continue?'
+	String get clearDataConfirm => 'This will permanently delete all data from your account. Continue?';
+
+	/// en: 'Your account data was cleared.'
+	String get clearDataSuccess => 'Your account data was cleared.';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -942,6 +978,14 @@ extension on Translations {
 			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
+			'categories.parentCategory' => 'Parent category',
+			'categories.noParent' => 'No parent',
+			'categories.subcategoryLabel' => 'Subcategory',
+			'categories.importCsv' => 'Import CSV',
+			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
+			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
+			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
+			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
 			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
@@ -972,6 +1016,10 @@ extension on Translations {
 			'profile.themeDark' => 'Dark',
 			'profile.themeSystem' => 'System',
 			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
+			'profile.clearData' => 'Clear all my data',
+			'profile.clearDataDescription' => 'Delete transactions, chat, categories and accounts',
+			'profile.clearDataConfirm' => 'This will permanently delete all data from your account. Continue?',
+			'profile.clearDataSuccess' => 'Your account data was cleared.',
 			_ => null,
 		};
 	}

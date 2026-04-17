@@ -25,6 +25,24 @@ void main() {
         expect(model.type, entity.type);
       });
 
+      test('should preserve parentId for subcategory entity', () {
+        const entity = CategoryEntity(
+          id: 'cat-1',
+          userId: 'user-1',
+          name: 'Restaurants',
+          icon: 58746,
+          color: 4294198070,
+          type: CategoryType.expense,
+          parentId: 'parent-1',
+        );
+
+        final model = CategoryModel.fromEntity(entity);
+
+        expect(model.parentId, 'parent-1');
+        expect(model.isSubcategory, isTrue);
+        expect(model.canBeParent, isFalse);
+      });
+
       test('should handle null userId', () {
         const entity = CategoryEntity(
           id: 'cat-default',
@@ -76,6 +94,22 @@ void main() {
 
         expect(json['type'], 'income');
       });
+
+      test('should include parentId when serializing subcategory', () {
+        const model = CategoryModel(
+          id: 'cat-1',
+          userId: 'user-1',
+          name: 'Restaurants',
+          icon: 58746,
+          color: 4294198070,
+          type: CategoryType.expense,
+          parentId: 'parent-1',
+        );
+
+        final json = model.toJson();
+
+        expect(json['parentId'], 'parent-1');
+      });
     });
 
     group('fromMap', () {
@@ -112,6 +146,23 @@ void main() {
         );
 
         expect(model.type, CategoryType.income);
+      });
+
+      test('should deserialize parentId when present', () {
+        final model = CategoryModel.fromMap(
+          id: 'cat-2',
+          data: const {
+            'userId': 'user-1',
+            'name': 'Restaurants',
+            'icon': 58746,
+            'color': 4294198070,
+            'type': 'expense',
+            'parentId': 'parent-1',
+          },
+        );
+
+        expect(model.parentId, 'parent-1');
+        expect(model.isSubcategory, isTrue);
       });
 
       test('should default to expense for unknown type', () {

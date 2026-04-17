@@ -69,6 +69,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<Either<Failure, void>> deleteCategory(String id) async {
     try {
+      final children = await _dao.getChildCategories(id);
+      if (children.isNotEmpty) {
+        return const Left(
+          ValidationFailure(
+            'Cannot delete a category that has subcategories.',
+          ),
+        );
+      }
       await _remote.deleteCategory(id);
       await _dao.deleteCategory(id);
       return const Right(null);

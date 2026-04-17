@@ -21,6 +21,7 @@ import 'package:financo/features/categories/domain/repositories/category_reposit
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
@@ -73,6 +74,9 @@ class MockUpdateCategoryUseCase extends Mock implements UpdateCategoryUseCase {}
 
 class MockDeleteCategoryUseCase extends Mock implements DeleteCategoryUseCase {}
 
+class MockImportCategoriesCsvUseCase extends Mock
+    implements ImportCategoriesCsvUseCase {}
+
 // ── Use Cases: Accounts ──
 class MockGetAccountsUseCase extends Mock implements GetAccountsUseCase {}
 
@@ -95,8 +99,7 @@ class MockUpdateTransactionUseCase extends Mock
 class MockDeleteTransactionUseCase extends Mock
     implements DeleteTransactionUseCase {}
 
-class MockCreateTransferUseCase extends Mock
-    implements CreateTransferUseCase {}
+class MockCreateTransferUseCase extends Mock implements CreateTransferUseCase {}
 
 // ── Repositories: Auth ──
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -133,14 +136,12 @@ class MockChatRepository extends Mock implements ChatRepository {}
 // ── Data Sources: Chat ──
 class MockGeminiDataSource extends Mock implements GeminiDataSource {}
 
-class MockChatRemoteDataSource extends Mock
-    implements ChatRemoteDataSource {}
+class MockChatRemoteDataSource extends Mock implements ChatRemoteDataSource {}
 
 // ── Use Cases: Chat ──
 class MockSendMessageUseCase extends Mock implements SendMessageUseCase {}
 
-class MockGetChatHistoryUseCase extends Mock
-    implements GetChatHistoryUseCase {}
+class MockGetChatHistoryUseCase extends Mock implements GetChatHistoryUseCase {}
 
 class MockSaveChatMessageUseCase extends Mock
     implements SaveChatMessageUseCase {}

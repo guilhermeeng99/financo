@@ -1,18 +1,23 @@
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoriesCubit extends Cubit<CategoriesState> {
   CategoriesCubit({
     required GetCategoriesUseCase getCategories,
+    required ImportCategoriesCsvUseCase importCategoriesCsv,
     required String userId,
   }) : _getCategories = getCategories,
+       _importCategoriesCsv = importCategoriesCsv,
        _userId = userId,
        super(const CategoriesInitial());
 
   final GetCategoriesUseCase _getCategories;
+  final ImportCategoriesCsvUseCase _importCategoriesCsv;
   final String _userId;
 
   Future<void> loadCategories({bool forceRefresh = false}) async {
@@ -27,6 +32,44 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     result.fold(
       (failure) => emit(CategoriesError(failure)),
       (categories) => emit(CategoriesLoaded(categories)),
+    );
+  }
+
+  Future<Either<Failure, CategoryImportPreview>> previewCsv(
+    String csvContent,
+  ) {
+    return _importCategoriesCsv.preview(
+      csvContent: csvContent,
+      userId: _userId,
+    );
+  }
+
+  Future<void> importCsv(String csvContent) async {
+    emit(const CategoriesLoading());
+
+    final result = await _importCategoriesCsv(
+      csvContent: csvContent,
+      userId: _userId,
+    );
+
+    await result.fold(
+      (failure) async => emit(CategoriesError(failure)),
+      (importResult) async {
+        final refreshResult = await _getCategories(
+          userId: _userId,
+          forceRefresh: true,
+        );
+        refreshResult.fold(
+          (failure) => emit(CategoriesError(failure)),
+          (categories) => emit(
+            CategoriesImported(
+              categories: categories,
+              importedCount: importResult.importedCount,
+              duplicateCount: importResult.duplicateCount,
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -62,4 +105,19 @@ final class CategoriesError extends CategoriesState {
 
   @override
   List<Object> get props => [failure];
+}
+
+final class CategoriesImported extends CategoriesState {
+  const CategoriesImported({
+    required this.categories,
+    required this.importedCount,
+    required this.duplicateCount,
+  });
+
+  final List<CategoryEntity> categories;
+  final int importedCount;
+  final int duplicateCount;
+
+  @override
+  List<Object> get props => [categories, importedCount, duplicateCount];
 }

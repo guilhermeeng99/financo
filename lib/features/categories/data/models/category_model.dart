@@ -16,6 +16,7 @@ class CategoryModel extends CategoryEntity {
     required super.color,
     required super.type,
     super.userId,
+    super.parentId,
   });
 
   factory CategoryModel.fromFirestore(DocumentSnapshot doc) {
@@ -36,6 +37,7 @@ class CategoryModel extends CategoryEntity {
       icon: data['icon'] as int,
       color: data['color'] as int,
       type: _parseCategoryType(data['type'] as String),
+      parentId: data['parentId'] as String?,
     );
   }
 
@@ -47,6 +49,7 @@ class CategoryModel extends CategoryEntity {
       icon: entity.icon,
       color: entity.color,
       type: entity.type,
+      parentId: entity.parentId,
     );
   }
 
@@ -57,6 +60,7 @@ class CategoryModel extends CategoryEntity {
       'icon': icon,
       'color': color,
       'type': type.name,
+      if (parentId != null) 'parentId': parentId,
     };
   }
 }

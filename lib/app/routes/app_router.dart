@@ -16,6 +16,7 @@ import 'package:financo/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/pages/add_category_page.dart';
 import 'package:financo/features/categories/presentation/pages/categories_page.dart';
@@ -117,6 +118,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = CategoriesCubit(
                   getCategories: GetIt.I<GetCategoriesUseCase>(),
+                  importCategoriesCsv: GetIt.I<ImportCategoriesCsvUseCase>(),
                   userId: userId,
                 );
                 unawaited(cubit.loadCategories());

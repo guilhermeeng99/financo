@@ -1801,8 +1801,27 @@ class $LocalCategoriesTable extends LocalCategories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _parentIdMeta = const VerificationMeta(
+    'parentId',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, userId, name, icon, color, type];
+  late final GeneratedColumn<String> parentId = GeneratedColumn<String>(
+    'parent_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    name,
+    icon,
+    color,
+    type,
+    parentId,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1858,6 +1877,12 @@ class $LocalCategoriesTable extends LocalCategories
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
+    if (data.containsKey('parent_id')) {
+      context.handle(
+        _parentIdMeta,
+        parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
+      );
+    }
     return context;
   }
 
@@ -1891,6 +1916,10 @@ class $LocalCategoriesTable extends LocalCategories
         DriftSqlType.string,
         data['${effectivePrefix}type'],
       )!,
+      parentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_id'],
+      ),
     );
   }
 
@@ -1907,6 +1936,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
   final int icon;
   final int color;
   final String type;
+  final String? parentId;
   const LocalCategory({
     required this.id,
     this.userId,
@@ -1914,6 +1944,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     required this.icon,
     required this.color,
     required this.type,
+    this.parentId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1926,6 +1957,9 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     map['icon'] = Variable<int>(icon);
     map['color'] = Variable<int>(color);
     map['type'] = Variable<String>(type);
+    if (!nullToAbsent || parentId != null) {
+      map['parent_id'] = Variable<String>(parentId);
+    }
     return map;
   }
 
@@ -1939,6 +1973,9 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: Value(icon),
       color: Value(color),
       type: Value(type),
+      parentId: parentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentId),
     );
   }
 
@@ -1954,6 +1991,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: serializer.fromJson<int>(json['icon']),
       color: serializer.fromJson<int>(json['color']),
       type: serializer.fromJson<String>(json['type']),
+      parentId: serializer.fromJson<String?>(json['parentId']),
     );
   }
   @override
@@ -1966,6 +2004,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       'icon': serializer.toJson<int>(icon),
       'color': serializer.toJson<int>(color),
       'type': serializer.toJson<String>(type),
+      'parentId': serializer.toJson<String?>(parentId),
     };
   }
 
@@ -1976,6 +2015,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     int? icon,
     int? color,
     String? type,
+    Value<String?> parentId = const Value.absent(),
   }) => LocalCategory(
     id: id ?? this.id,
     userId: userId.present ? userId.value : this.userId,
@@ -1983,6 +2023,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     icon: icon ?? this.icon,
     color: color ?? this.color,
     type: type ?? this.type,
+    parentId: parentId.present ? parentId.value : this.parentId,
   );
   LocalCategory copyWithCompanion(LocalCategoriesCompanion data) {
     return LocalCategory(
@@ -1992,6 +2033,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: data.icon.present ? data.icon.value : this.icon,
       color: data.color.present ? data.color.value : this.color,
       type: data.type.present ? data.type.value : this.type,
+      parentId: data.parentId.present ? data.parentId.value : this.parentId,
     );
   }
 
@@ -2003,13 +2045,15 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('color: $color, ')
-          ..write('type: $type')
+          ..write('type: $type, ')
+          ..write('parentId: $parentId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, userId, name, icon, color, type);
+  int get hashCode =>
+      Object.hash(id, userId, name, icon, color, type, parentId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2019,7 +2063,8 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           other.name == this.name &&
           other.icon == this.icon &&
           other.color == this.color &&
-          other.type == this.type);
+          other.type == this.type &&
+          other.parentId == this.parentId);
 }
 
 class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
@@ -2029,6 +2074,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
   final Value<int> icon;
   final Value<int> color;
   final Value<String> type;
+  final Value<String?> parentId;
   final Value<int> rowid;
   const LocalCategoriesCompanion({
     this.id = const Value.absent(),
@@ -2037,6 +2083,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     this.icon = const Value.absent(),
     this.color = const Value.absent(),
     this.type = const Value.absent(),
+    this.parentId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalCategoriesCompanion.insert({
@@ -2046,6 +2093,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     required int icon,
     required int color,
     required String type,
+    this.parentId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2059,6 +2107,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Expression<int>? icon,
     Expression<int>? color,
     Expression<String>? type,
+    Expression<String>? parentId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2068,6 +2117,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       if (icon != null) 'icon': icon,
       if (color != null) 'color': color,
       if (type != null) 'type': type,
+      if (parentId != null) 'parent_id': parentId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2079,6 +2129,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Value<int>? icon,
     Value<int>? color,
     Value<String>? type,
+    Value<String?>? parentId,
     Value<int>? rowid,
   }) {
     return LocalCategoriesCompanion(
@@ -2088,6 +2139,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       type: type ?? this.type,
+      parentId: parentId ?? this.parentId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2113,6 +2165,9 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     if (type.present) {
       map['type'] = Variable<String>(type.value);
     }
+    if (parentId.present) {
+      map['parent_id'] = Variable<String>(parentId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2128,6 +2183,7 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
           ..write('icon: $icon, ')
           ..write('color: $color, ')
           ..write('type: $type, ')
+          ..write('parentId: $parentId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3041,6 +3097,7 @@ typedef $$LocalCategoriesTableCreateCompanionBuilder =
       required int icon,
       required int color,
       required String type,
+      Value<String?> parentId,
       Value<int> rowid,
     });
 typedef $$LocalCategoriesTableUpdateCompanionBuilder =
@@ -3051,6 +3108,7 @@ typedef $$LocalCategoriesTableUpdateCompanionBuilder =
       Value<int> icon,
       Value<int> color,
       Value<String> type,
+      Value<String?> parentId,
       Value<int> rowid,
     });
 
@@ -3090,6 +3148,11 @@ class $$LocalCategoriesTableFilterComposer
 
   ColumnFilters<String> get type => $composableBuilder(
     column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentId => $composableBuilder(
+    column: $table.parentId,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3132,6 +3195,11 @@ class $$LocalCategoriesTableOrderingComposer
     column: $table.type,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalCategoriesTableAnnotationComposer
@@ -3160,6 +3228,9 @@ class $$LocalCategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get parentId =>
+      $composableBuilder(column: $table.parentId, builder: (column) => column);
 }
 
 class $$LocalCategoriesTableTableManager
@@ -3201,6 +3272,7 @@ class $$LocalCategoriesTableTableManager
                 Value<int> icon = const Value.absent(),
                 Value<int> color = const Value.absent(),
                 Value<String> type = const Value.absent(),
+                Value<String?> parentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion(
                 id: id,
@@ -3209,6 +3281,7 @@ class $$LocalCategoriesTableTableManager
                 icon: icon,
                 color: color,
                 type: type,
+                parentId: parentId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3219,6 +3292,7 @@ class $$LocalCategoriesTableTableManager
                 required int icon,
                 required int color,
                 required String type,
+                Value<String?> parentId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion.insert(
                 id: id,
@@ -3227,6 +3301,7 @@ class $$LocalCategoriesTableTableManager
                 icon: icon,
                 color: color,
                 type: type,
+                parentId: parentId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

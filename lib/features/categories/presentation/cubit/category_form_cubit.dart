@@ -26,11 +26,19 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   void updateName(String value) => emit(state.copyWith(name: value));
 
-  void updateType(CategoryType type) => emit(state.copyWith(type: type));
+  void updateType(CategoryType type) => emit(
+    state.copyWith(type: type, clearParentId: true),
+  );
 
   void updateIcon(int icon) => emit(state.copyWith(icon: icon));
 
   void updateColor(int color) => emit(state.copyWith(color: color));
+
+  void updateParentId(String? parentId) => emit(
+    parentId == null
+        ? state.copyWith(clearParentId: true)
+        : state.copyWith(parentId: parentId),
+  );
 
   Future<void> submit() async {
     if (!state.isValid) return;
@@ -43,6 +51,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
       icon: state.icon,
       color: state.color,
       type: state.type,
+      parentId: state.parentId,
     );
 
     (state.isEditing
@@ -69,6 +78,7 @@ class CategoryFormState extends Equatable {
     required this.color,
     required this.status,
     this.existingId,
+    this.parentId,
     this.failure,
   });
 
@@ -84,6 +94,7 @@ class CategoryFormState extends Equatable {
       color: existing?.color ?? 4280391411,
       status: FormStatus.initial,
       existingId: existing?.id,
+      parentId: existing?.parentId,
     );
   }
 
@@ -94,6 +105,7 @@ class CategoryFormState extends Equatable {
   final int color;
   final FormStatus status;
   final String? existingId;
+  final String? parentId;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
@@ -105,6 +117,8 @@ class CategoryFormState extends Equatable {
     int? icon,
     int? color,
     FormStatus? status,
+    String? parentId,
+    bool clearParentId = false,
     Failure? failure,
   }) {
     return CategoryFormState(
@@ -115,6 +129,7 @@ class CategoryFormState extends Equatable {
       color: color ?? this.color,
       status: status ?? this.status,
       existingId: existingId,
+      parentId: clearParentId ? null : (parentId ?? this.parentId),
       failure: failure ?? this.failure,
     );
   }
@@ -128,6 +143,7 @@ class CategoryFormState extends Equatable {
     color,
     status,
     existingId,
+    parentId,
     failure,
   ];
 }

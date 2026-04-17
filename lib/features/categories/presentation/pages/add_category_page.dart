@@ -53,6 +53,7 @@ class _AddCategoryView extends StatefulWidget {
 class _AddCategoryViewState extends State<_AddCategoryView> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  List<CategoryEntity> _rootCategories = [];
 
   @override
   void initState() {
@@ -60,6 +61,21 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     final state = context.read<CategoryFormCubit>().state;
     if (state.isEditing) {
       _nameController.text = state.name;
+    }
+    unawaited(_loadRootCategories());
+  }
+
+  Future<void> _loadRootCategories() async {
+    final getCategories = GetIt.I<GetCategoriesUseCase>();
+    final cubitState = context.read<CategoryFormCubit>().state;
+    final result = await getCategories(userId: cubitState.userId);
+    if (mounted) {
+      setState(() {
+        _rootCategories = result.fold(
+          (_) => [],
+          (cats) => cats.where((c) => c.canBeParent).toList(),
+        );
+      });
     }
   }
 
@@ -214,12 +230,39 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                         ),
                       ],
                       selected: {state.type},
-                      onSelectionChanged: state.isEditing
+                      onSelectionChanged:
+                          state.isEditing || state.parentId != null
                           ? null
                           : (selected) => context
                                 .read<CategoryFormCubit>()
                                 .updateType(selected.first),
                     ),
+                    if (!state.isEditing) ...[
+                      const SizedBox(height: 24),
+                      DropdownButtonFormField<String>(
+                        initialValue: state.parentId,
+                        decoration: InputDecoration(
+                          labelText: t.categories.parentCategory,
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: [
+                          DropdownMenuItem<String>(
+                            child: Text(t.categories.noParent),
+                          ),
+                          ..._rootCategories
+                              .where((c) => c.type == state.type)
+                              .map(
+                                (c) => DropdownMenuItem(
+                                  value: c.id,
+                                  child: Text(c.name),
+                                ),
+                              ),
+                        ],
+                        onChanged: (value) => context
+                            .read<CategoryFormCubit>()
+                            .updateParentId(value),
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     FinancoTextField(
                       controller: _nameController,

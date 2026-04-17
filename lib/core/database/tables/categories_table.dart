@@ -7,6 +7,7 @@ class LocalCategories extends Table {
   IntColumn get icon => integer()();
   IntColumn get color => integer()();
   TextColumn get type => text()();
+  TextColumn get parentId => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

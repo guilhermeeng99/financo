@@ -37,6 +37,26 @@ class CategoryFactory {
     );
   }
 
+  static CategoryEntity subcategory({
+    String id = 'cat-sub-1',
+    String? userId = 'user-1',
+    String name = 'Restaurants',
+    int icon = 58746,
+    int color = 4294198070,
+    CategoryType type = CategoryType.expense,
+    String parentId = 'cat-expense-1',
+  }) {
+    return CategoryEntity(
+      id: id,
+      userId: userId,
+      name: name,
+      icon: icon,
+      color: color,
+      type: type,
+      parentId: parentId,
+    );
+  }
+
   static List<CategoryEntity> list() {
     return [
       expense(),

@@ -19,3 +19,7 @@ final class CacheFailure extends Failure {
 final class AiFailure extends Failure {
   const AiFailure([super.message = 'AI service error occurred.']);
 }
+
+final class ValidationFailure extends Failure {
+  const ValidationFailure([super.message = 'Validation error.']);
+}

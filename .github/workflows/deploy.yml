@@ -22,6 +22,7 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart run slang
+      - run: flutter test
       - name: Download Drift web assets
         run: |
           curl -L -o web/sqlite3.wasm \

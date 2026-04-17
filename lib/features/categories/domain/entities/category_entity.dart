@@ -10,6 +10,7 @@ class CategoryEntity extends Equatable {
     required this.color,
     required this.type,
     this.userId,
+    this.parentId,
   });
 
   final String id;
@@ -18,6 +19,10 @@ class CategoryEntity extends Equatable {
   final int icon;
   final int color;
   final CategoryType type;
+  final String? parentId;
+
+  bool get canBeParent => parentId == null;
+  bool get isSubcategory => parentId != null;
 
   CategoryEntity copyWith({
     String? id,
@@ -26,6 +31,7 @@ class CategoryEntity extends Equatable {
     int? icon,
     int? color,
     CategoryType? type,
+    String? parentId,
   }) {
     return CategoryEntity(
       id: id ?? this.id,
@@ -34,6 +40,7 @@ class CategoryEntity extends Equatable {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       type: type ?? this.type,
+      parentId: parentId ?? this.parentId,
     );
   }
 
@@ -45,5 +52,6 @@ class CategoryEntity extends Equatable {
     icon,
     color,
     type,
+    parentId,
   ];
 }

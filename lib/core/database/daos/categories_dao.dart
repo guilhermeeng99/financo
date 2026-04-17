@@ -43,6 +43,15 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> deleteAllCategories() => delete(localCategories).go();
 
+  Future<List<CategoryEntity>> getChildCategories(String parentId) async {
+    final rows =
+        await (select(localCategories)
+              ..where((t) => t.parentId.equals(parentId))
+              ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+            .get();
+    return rows.map(_toEntity).toList();
+  }
+
   LocalCategoriesCompanion _toCompanion(CategoryEntity e) =>
       LocalCategoriesCompanion.insert(
         id: e.id,
@@ -51,6 +60,7 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
         icon: e.icon,
         color: e.color,
         type: e.type.name,
+        parentId: Value(e.parentId),
       );
 
   CategoryEntity _toEntity(LocalCategory row) => CategoryEntity(
@@ -60,5 +70,6 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     icon: row.icon,
     color: row.color,
     type: CategoryType.values.byName(row.type),
+    parentId: row.parentId,
   );
 }

@@ -33,6 +33,7 @@ import 'package:financo/features/categories/domain/repositories/category_reposit
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 // Chat
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
@@ -48,6 +49,7 @@ import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary
 // Profile
 import 'package:financo/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
+import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 // Startup
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
@@ -225,6 +227,9 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(
       () => DeleteCategoryUseCase(sl()),
     )
+    ..registerLazySingleton(
+      () => ImportCategoriesCsvUseCase(sl()),
+    )
     ..registerLazySingleton(() => SendMessageUseCase(sl()))
     ..registerLazySingleton(
       () => GetChatHistoryUseCase(sl()),
@@ -236,6 +241,9 @@ Future<void> initDependencies() async {
       () => GetDashboardSummaryUseCase(sl()),
     )
     ..registerLazySingleton(() => GetProfileUseCase(sl()))
+    ..registerLazySingleton(
+      () => ClearAccountDataUseCase(firestore: sl(), database: sl()),
+    )
     // ─── Blocs / Cubits (global singletons) ─────────────────
     ..registerLazySingleton(
       () => AuthBloc(
