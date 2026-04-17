@@ -126,21 +126,19 @@ class _CategoryList extends StatelessWidget {
 
         return Card(
           child: InkWell(
-            onTap: category.isDefault
-                ? null
-                : () async {
-                    final result = await context.push(
-                      AppRoutes.editCategory,
-                      extra: category,
-                    );
-                    if (result == true && context.mounted) {
-                      unawaited(
-                        context.read<CategoriesCubit>().loadCategories(
-                          forceRefresh: true,
-                        ),
-                      );
-                    }
-                  },
+            onTap: () async {
+              final result = await context.push(
+                AppRoutes.editCategory,
+                extra: category,
+              );
+              if (result == true && context.mounted) {
+                unawaited(
+                  context.read<CategoriesCubit>().loadCategories(
+                    forceRefresh: true,
+                  ),
+                );
+              }
+            },
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -176,17 +174,11 @@ class _CategoryList extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (category.isDefault)
-                    Chip(
-                      label: Text(t.general.defaultLabel),
-                      labelStyle: context.textTheme.labelSmall,
-                    )
-                  else
-                    FaIcon(
-                      FontAwesomeIcons.chevronRight,
-                      size: 14,
-                      color: colors.onBackgroundLight,
-                    ),
+                  FaIcon(
+                    FontAwesomeIcons.chevronRight,
+                    size: 14,
+                    color: colors.onBackgroundLight,
+                  ),
                 ],
               ),
             ),

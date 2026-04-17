@@ -12,10 +12,10 @@ class TransactionEntity extends Equatable {
     required this.amount,
     required this.description,
     required this.date,
-    required this.isReconciled,
     required this.createdAt,
     required this.updatedAt,
     this.notes,
+    this.linkedTransactionId,
   });
 
   final String id;
@@ -27,9 +27,11 @@ class TransactionEntity extends Equatable {
   final String description;
   final DateTime date;
   final String? notes;
-  final bool isReconciled;
+  final String? linkedTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  bool get isTransfer => linkedTransactionId != null;
 
   TransactionEntity copyWith({
     String? id,
@@ -41,7 +43,7 @@ class TransactionEntity extends Equatable {
     String? description,
     DateTime? date,
     String? notes,
-    bool? isReconciled,
+    String? linkedTransactionId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -55,7 +57,7 @@ class TransactionEntity extends Equatable {
       description: description ?? this.description,
       date: date ?? this.date,
       notes: notes ?? this.notes,
-      isReconciled: isReconciled ?? this.isReconciled,
+      linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -72,7 +74,7 @@ class TransactionEntity extends Equatable {
     description,
     date,
     notes,
-    isReconciled,
+    linkedTransactionId,
     createdAt,
     updatedAt,
   ];

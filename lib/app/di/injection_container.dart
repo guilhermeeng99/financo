@@ -56,9 +56,9 @@ import 'package:financo/features/transactions/data/datasources/transaction_remot
 import 'package:financo/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
-import 'package:financo/features/transactions/domain/usecases/toggle_reconciled_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -201,7 +201,7 @@ Future<void> initDependencies() async {
       () => DeleteTransactionUseCase(sl()),
     )
     ..registerLazySingleton(
-      () => ToggleReconciledUseCase(sl()),
+      () => CreateTransferUseCase(sl()),
     )
     ..registerLazySingleton(() => GetAccountsUseCase(sl()))
     ..registerLazySingleton(

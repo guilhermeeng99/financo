@@ -1,0 +1,84 @@
+import 'package:financo/features/accounts/data/models/account_model.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/categories/data/models/category_model.dart';
+import 'package:financo/features/categories/domain/entities/category_entity.dart';
+import 'package:financo/features/transactions/data/models/transaction_model.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:mocktail/mocktail.dart';
+
+void registerCategoryFallbackValues() {
+  registerFallbackValue(
+    const CategoryEntity(
+      id: 'fallback',
+      name: 'fallback',
+      icon: 58332,
+      color: 4280391411,
+      type: CategoryType.expense,
+    ),
+  );
+  registerFallbackValue(
+    const CategoryModel(
+      id: 'fallback',
+      name: 'fallback',
+      icon: 58332,
+      color: 4280391411,
+      type: CategoryType.expense,
+    ),
+  );
+}
+
+void registerAccountFallbackValues() {
+  registerFallbackValue(
+    AccountEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      name: 'fallback',
+      type: AccountType.checking,
+      bank: BankType.nubank,
+      initialBalance: 0,
+      createdAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    AccountModel(
+      id: 'fallback',
+      userId: 'fallback',
+      name: 'fallback',
+      type: AccountType.checking,
+      bank: BankType.nubank,
+      initialBalance: 0,
+      createdAt: DateTime(2024),
+    ),
+  );
+}
+
+void registerTransactionFallbackValues() {
+  registerFallbackValue(
+    TransactionEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      accountId: 'fallback',
+      categoryId: 'fallback',
+      type: TransactionType.expense,
+      amount: 1,
+      description: 'fallback',
+      date: DateTime(2024),
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    TransactionModel(
+      id: 'fallback',
+      userId: 'fallback',
+      accountId: 'fallback',
+      categoryId: 'fallback',
+      type: TransactionType.expense,
+      amount: 1,
+      description: 'fallback',
+      date: DateTime(2024),
+      createdAt: DateTime(2024),
+      updatedAt: DateTime(2024),
+    ),
+  );
+}

@@ -10,7 +10,7 @@ class LocalTransactions extends Table {
   TextColumn get description => text()();
   DateTimeColumn get date => dateTime()();
   TextColumn get notes => text().nullable()();
-  BoolColumn get isReconciled => boolean()();
+  TextColumn get linkedTransactionId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

@@ -20,22 +20,12 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories({required String userId}) async {
     try {
-      final defaultSnapshot = await _collection
-          .where('isDefault', isEqualTo: true)
-          .orderBy('sortOrder')
-          .get();
-
-      final userSnapshot = await _collection
+      final snapshot = await _collection
           .where('userId', isEqualTo: userId)
-          .orderBy('sortOrder')
+          .orderBy('name')
           .get();
 
-      final results = <CategoryModel>{
-        ...defaultSnapshot.docs.map(CategoryModel.fromFirestore),
-        ...userSnapshot.docs.map(CategoryModel.fromFirestore),
-      };
-
-      return results.toList();
+      return snapshot.docs.map(CategoryModel.fromFirestore).toList();
     } on Exception {
       throw const ServerException('Failed to fetch categories.');
     }

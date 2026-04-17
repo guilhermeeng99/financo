@@ -11,16 +11,25 @@ class TransactionModel extends TransactionEntity {
     required super.amount,
     required super.description,
     required super.date,
-    required super.isReconciled,
     required super.createdAt,
     required super.updatedAt,
     super.notes,
+    super.linkedTransactionId,
   });
 
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data()! as Map<String, dynamic>;
-    return TransactionModel(
+    return TransactionModel.fromMap(
       id: doc.id,
+      data: doc.data()! as Map<String, dynamic>,
+    );
+  }
+
+  factory TransactionModel.fromMap({
+    required String id,
+    required Map<String, dynamic> data,
+  }) {
+    return TransactionModel(
+      id: id,
       userId: data['userId'] as String,
       accountId: data['accountId'] as String,
       categoryId: data['categoryId'] as String,
@@ -29,7 +38,7 @@ class TransactionModel extends TransactionEntity {
       description: data['description'] as String,
       date: (data['date'] as Timestamp).toDate(),
       notes: data['notes'] as String?,
-      isReconciled: data['isReconciled'] as bool,
+      linkedTransactionId: data['linkedTransactionId'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -46,7 +55,7 @@ class TransactionModel extends TransactionEntity {
       description: entity.description,
       date: entity.date,
       notes: entity.notes,
-      isReconciled: entity.isReconciled,
+      linkedTransactionId: entity.linkedTransactionId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -62,7 +71,7 @@ class TransactionModel extends TransactionEntity {
       'description': description,
       'date': Timestamp.fromDate(date),
       'notes': notes,
-      'isReconciled': isReconciled,
+      'linkedTransactionId': linkedTransactionId,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

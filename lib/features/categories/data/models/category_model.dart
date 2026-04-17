@@ -15,22 +15,27 @@ class CategoryModel extends CategoryEntity {
     required super.icon,
     required super.color,
     required super.type,
-    required super.isDefault,
-    required super.sortOrder,
     super.userId,
   });
 
   factory CategoryModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data()! as Map<String, dynamic>;
-    return CategoryModel(
+    return CategoryModel.fromMap(
       id: doc.id,
+      data: doc.data()! as Map<String, dynamic>,
+    );
+  }
+
+  factory CategoryModel.fromMap({
+    required String id,
+    required Map<String, dynamic> data,
+  }) {
+    return CategoryModel(
+      id: id,
       userId: data['userId'] as String?,
       name: data['name'] as String,
       icon: data['icon'] as int,
       color: data['color'] as int,
       type: _parseCategoryType(data['type'] as String),
-      isDefault: data['isDefault'] as bool,
-      sortOrder: data['sortOrder'] as int,
     );
   }
 
@@ -42,8 +47,6 @@ class CategoryModel extends CategoryEntity {
       icon: entity.icon,
       color: entity.color,
       type: entity.type,
-      isDefault: entity.isDefault,
-      sortOrder: entity.sortOrder,
     );
   }
 
@@ -54,8 +57,6 @@ class CategoryModel extends CategoryEntity {
       'icon': icon,
       'color': color,
       'type': type.name,
-      'isDefault': isDefault,
-      'sortOrder': sortOrder,
     };
   }
 }

@@ -16,6 +16,10 @@ abstract class TransactionRemoteDataSource {
   Future<TransactionModel> createTransaction(TransactionModel model);
   Future<TransactionModel> updateTransaction(TransactionModel model);
   Future<void> deleteTransaction(String id);
+  Future<List<TransactionModel>> createTransfer({
+    required TransactionModel expense,
+    required TransactionModel income,
+  });
   Future<void> reassignTransactions({
     required String fromCategoryId,
     required String toCategoryId,
@@ -113,6 +117,32 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
       await _collection.doc(id).delete();
     } on Exception {
       throw const ServerException('Failed to delete transaction.');
+    }
+  }
+
+  @override
+  Future<List<TransactionModel>> createTransfer({
+    required TransactionModel expense,
+    required TransactionModel income,
+  }) async {
+    try {
+      // Create both documents to get their IDs, then link them.
+      final expenseRef = await _collection.add(expense.toJson());
+      final incomeRef = await _collection.add(income.toJson());
+
+      // Link each transaction to the other.
+      await expenseRef.update({'linkedTransactionId': incomeRef.id});
+      await incomeRef.update({'linkedTransactionId': expenseRef.id});
+
+      final expenseDoc = await expenseRef.get();
+      final incomeDoc = await incomeRef.get();
+
+      return [
+        TransactionModel.fromFirestore(expenseDoc),
+        TransactionModel.fromFirestore(incomeDoc),
+      ];
+    } on Exception {
+      throw const ServerException('Failed to create transfer.');
     }
   }
 

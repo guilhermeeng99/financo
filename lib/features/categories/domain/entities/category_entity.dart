@@ -9,8 +9,6 @@ class CategoryEntity extends Equatable {
     required this.icon,
     required this.color,
     required this.type,
-    required this.isDefault,
-    required this.sortOrder,
     this.userId,
   });
 
@@ -20,8 +18,6 @@ class CategoryEntity extends Equatable {
   final int icon;
   final int color;
   final CategoryType type;
-  final bool isDefault;
-  final int sortOrder;
 
   CategoryEntity copyWith({
     String? id,
@@ -30,8 +26,6 @@ class CategoryEntity extends Equatable {
     int? icon,
     int? color,
     CategoryType? type,
-    bool? isDefault,
-    int? sortOrder,
   }) {
     return CategoryEntity(
       id: id ?? this.id,
@@ -40,8 +34,6 @@ class CategoryEntity extends Equatable {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       type: type ?? this.type,
-      isDefault: isDefault ?? this.isDefault,
-      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -53,7 +45,5 @@ class CategoryEntity extends Equatable {
     icon,
     color,
     type,
-    isDefault,
-    sortOrder,
   ];
 }

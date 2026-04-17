@@ -196,9 +196,11 @@ class _AddAccountViewState extends State<_AddAccountView> {
                         ),
                       ],
                       selected: {state.type},
-                      onSelectionChanged: (selected) => context
-                          .read<AccountFormCubit>()
-                          .updateType(selected.first),
+                      onSelectionChanged: state.isEditing
+                          ? null
+                          : (selected) => context
+                                .read<AccountFormCubit>()
+                                .updateType(selected.first),
                     ),
                     const SizedBox(height: 24),
                     FinancoTextField(

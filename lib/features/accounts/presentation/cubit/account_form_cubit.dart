@@ -68,7 +68,6 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       linkedAccountId: state.type == AccountType.creditCard
           ? state.linkedAccountId
           : null,
-      isActive: true,
       createdAt: DateTime.now(),
     );
 

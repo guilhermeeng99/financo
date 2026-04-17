@@ -100,7 +100,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         description: e.description,
         date: e.date,
         notes: Value(e.notes),
-        isReconciled: e.isReconciled,
+        linkedTransactionId: Value(e.linkedTransactionId),
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       );
@@ -115,7 +115,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     description: row.description,
     date: row.date,
     notes: row.notes,
-    isReconciled: row.isReconciled,
+    linkedTransactionId: row.linkedTransactionId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

@@ -34,15 +34,6 @@ final class TransactionDeleteRequested extends TransactionsEvent {
   List<Object> get props => [id];
 }
 
-final class TransactionReconcileToggled extends TransactionsEvent {
-  const TransactionReconcileToggled(this.id);
-
-  final String id;
-
-  @override
-  List<Object> get props => [id];
-}
-
 sealed class TransactionsState extends Equatable {
   const TransactionsState();
 

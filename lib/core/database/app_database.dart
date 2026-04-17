@@ -19,16 +19,31 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (migrator, from, to) async {
       if (from < 2) {
-        // Rename balance → initial_balance in local_accounts.
         await customStatement(
           'ALTER TABLE local_accounts RENAME COLUMN balance TO initial_balance',
         );
+      }
+      if (from < 3) {
+        // Remove isDefault and sortOrder columns from local_categories.
+        // Recreate the table since SQLite doesn't always support DROP COLUMN.
+        await customStatement('DROP TABLE IF EXISTS local_categories');
+        await migrator.createTable(localCategories);
+      }
+      if (from < 4) {
+        // Remove isActive column from local_accounts.
+        await customStatement('DROP TABLE IF EXISTS local_accounts');
+        await migrator.createTable(localAccounts);
+      }
+      if (from < 5) {
+        // Remove isReconciled, add linkedTransactionId to local_transactions.
+        await customStatement('DROP TABLE IF EXISTS local_transactions');
+        await migrator.createTable(localTransactions);
       }
     },
   );

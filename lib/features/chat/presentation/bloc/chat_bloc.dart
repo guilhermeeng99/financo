@@ -273,7 +273,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             : AccountType.checking,
         bank: bank,
         initialBalance: (meta['balance'] as num?)?.toDouble() ?? 0,
-        isActive: true,
         createdAt: DateTime.now(),
       );
 
@@ -329,8 +328,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         icon: meta['icon'] as int? ?? 58332,
         color: meta['color'] as int? ?? 4280391411,
         type: type,
-        isDefault: false,
-        sortOrder: 99,
       );
 
       final result = await _createCategory(category);
@@ -355,9 +352,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           .toList();
       if (match.isEmpty) {
         return 'No category named "$name" found.';
-      }
-      if (match.first.isDefault) {
-        return 'Cannot delete default category "$name".';
       }
       final delResult = await _deleteCategory(match.first.id);
       return delResult.fold(
@@ -429,7 +423,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       amount: amount,
       description: description,
       date: date,
-      isReconciled: false,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

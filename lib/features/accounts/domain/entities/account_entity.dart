@@ -12,7 +12,6 @@ class AccountEntity extends Equatable {
     required this.type,
     required this.bank,
     required this.initialBalance,
-    required this.isActive,
     required this.createdAt,
     this.creditLimit,
     this.closingDay,
@@ -30,7 +29,6 @@ class AccountEntity extends Equatable {
   final int? closingDay;
   final int? dueDay;
   final String? linkedAccountId;
-  final bool isActive;
   final DateTime createdAt;
 
   double get availableCredit =>
@@ -52,7 +50,6 @@ class AccountEntity extends Equatable {
     int? closingDay,
     int? dueDay,
     String? linkedAccountId,
-    bool? isActive,
     DateTime? createdAt,
   }) {
     return AccountEntity(
@@ -66,7 +63,6 @@ class AccountEntity extends Equatable {
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -83,7 +79,6 @@ class AccountEntity extends Equatable {
     closingDay,
     dueDay,
     linkedAccountId,
-    isActive,
     createdAt,
   ];
 }

@@ -177,7 +177,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
           actions: [
             BlocBuilder<CategoryFormCubit, CategoryFormState>(
               builder: (context, state) {
-                if (!state.isEditing || state.isDefault) {
+                if (!state.isEditing) {
                   return const SizedBox.shrink();
                 }
                 return IconButton(
@@ -214,9 +214,11 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                         ),
                       ],
                       selected: {state.type},
-                      onSelectionChanged: (selected) => context
-                          .read<CategoryFormCubit>()
-                          .updateType(selected.first),
+                      onSelectionChanged: state.isEditing
+                          ? null
+                          : (selected) => context
+                                .read<CategoryFormCubit>()
+                                .updateType(selected.first),
                     ),
                     const SizedBox(height: 24),
                     FinancoTextField(

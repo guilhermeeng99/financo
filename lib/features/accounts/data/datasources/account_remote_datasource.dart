@@ -23,7 +23,6 @@ class AccountRemoteDataSourceImpl implements AccountRemoteDataSource {
     try {
       final snapshot = await _collection
           .where('userId', isEqualTo: userId)
-          .where('isActive', isEqualTo: true)
           .orderBy('createdAt')
           .get();
       return snapshot.docs.map(AccountModel.fromFirestore).toList();

@@ -429,14 +429,17 @@ class TranslationsTransactionsEn {
 	/// en: 'Additional details...'
 	String get notesHint => 'Additional details...';
 
-	/// en: 'Reconciled'
-	String get reconciled => 'Reconciled';
+	/// en: 'Transfer'
+	String get transfer => 'Transfer';
 
-	/// en: 'Reconcile'
-	String get reconcile => 'Reconcile';
+	/// en: 'Source account'
+	String get sourceAccount => 'Source account';
 
-	/// en: 'Unreconcile'
-	String get unreconcile => 'Unreconcile';
+	/// en: 'Destination account'
+	String get destinationAccount => 'Destination account';
+
+	/// en: 'Transfer created'
+	String get transferCreated => 'Transfer created';
 
 	/// en: 'Delete Transaction'
 	String get deleteTransaction => 'Delete Transaction';
@@ -872,9 +875,10 @@ extension on Translations {
 			'transactions.notes' => 'Notes',
 			'transactions.notesOptional' => 'Notes (optional)',
 			'transactions.notesHint' => 'Additional details...',
-			'transactions.reconciled' => 'Reconciled',
-			'transactions.reconcile' => 'Reconcile',
-			'transactions.unreconcile' => 'Unreconcile',
+			'transactions.transfer' => 'Transfer',
+			'transactions.sourceAccount' => 'Source account',
+			'transactions.destinationAccount' => 'Destination account',
+			'transactions.transferCreated' => 'Transfer created',
 			'transactions.deleteTransaction' => 'Delete Transaction',
 			'transactions.deleteConfirm' => 'Are you sure you want to delete this transaction?',
 			'transactions.transactionUpdated' => 'Transaction updated',

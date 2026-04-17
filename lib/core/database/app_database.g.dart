@@ -460,20 +460,6 @@ class $LocalAccountsTable extends LocalAccounts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _isActiveMeta = const VerificationMeta(
-    'isActive',
-  );
-  @override
-  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
-    'is_active',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_active" IN (0, 1))',
-    ),
-  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -497,7 +483,6 @@ class $LocalAccountsTable extends LocalAccounts
     closingDay,
     dueDay,
     linkedAccountId,
-    isActive,
     createdAt,
   ];
   @override
@@ -590,14 +575,6 @@ class $LocalAccountsTable extends LocalAccounts
         ),
       );
     }
-    if (data.containsKey('is_active')) {
-      context.handle(
-        _isActiveMeta,
-        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_isActiveMeta);
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -655,10 +632,6 @@ class $LocalAccountsTable extends LocalAccounts
         DriftSqlType.string,
         data['${effectivePrefix}linked_account_id'],
       ),
-      isActive: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_active'],
-      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -683,7 +656,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
   final int? closingDay;
   final int? dueDay;
   final String? linkedAccountId;
-  final bool isActive;
   final DateTime createdAt;
   const LocalAccount({
     required this.id,
@@ -696,7 +668,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     this.closingDay,
     this.dueDay,
     this.linkedAccountId,
-    required this.isActive,
     required this.createdAt,
   });
   @override
@@ -720,7 +691,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     if (!nullToAbsent || linkedAccountId != null) {
       map['linked_account_id'] = Variable<String>(linkedAccountId);
     }
-    map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -745,7 +715,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       linkedAccountId: linkedAccountId == null && nullToAbsent
           ? const Value.absent()
           : Value(linkedAccountId),
-      isActive: Value(isActive),
       createdAt: Value(createdAt),
     );
   }
@@ -766,7 +735,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       closingDay: serializer.fromJson<int?>(json['closingDay']),
       dueDay: serializer.fromJson<int?>(json['dueDay']),
       linkedAccountId: serializer.fromJson<String?>(json['linkedAccountId']),
-      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -784,7 +752,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       'closingDay': serializer.toJson<int?>(closingDay),
       'dueDay': serializer.toJson<int?>(dueDay),
       'linkedAccountId': serializer.toJson<String?>(linkedAccountId),
-      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -800,7 +767,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     Value<int?> closingDay = const Value.absent(),
     Value<int?> dueDay = const Value.absent(),
     Value<String?> linkedAccountId = const Value.absent(),
-    bool? isActive,
     DateTime? createdAt,
   }) => LocalAccount(
     id: id ?? this.id,
@@ -815,7 +781,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     linkedAccountId: linkedAccountId.present
         ? linkedAccountId.value
         : this.linkedAccountId,
-    isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
   );
   LocalAccount copyWithCompanion(LocalAccountsCompanion data) {
@@ -838,7 +803,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       linkedAccountId: data.linkedAccountId.present
           ? data.linkedAccountId.value
           : this.linkedAccountId,
-      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -856,7 +820,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
           ..write('closingDay: $closingDay, ')
           ..write('dueDay: $dueDay, ')
           ..write('linkedAccountId: $linkedAccountId, ')
-          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -874,7 +837,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     closingDay,
     dueDay,
     linkedAccountId,
-    isActive,
     createdAt,
   );
   @override
@@ -891,7 +853,6 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
           other.closingDay == this.closingDay &&
           other.dueDay == this.dueDay &&
           other.linkedAccountId == this.linkedAccountId &&
-          other.isActive == this.isActive &&
           other.createdAt == this.createdAt);
 }
 
@@ -906,7 +867,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
   final Value<int?> closingDay;
   final Value<int?> dueDay;
   final Value<String?> linkedAccountId;
-  final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const LocalAccountsCompanion({
@@ -920,7 +880,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     this.closingDay = const Value.absent(),
     this.dueDay = const Value.absent(),
     this.linkedAccountId = const Value.absent(),
-    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -935,7 +894,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     this.closingDay = const Value.absent(),
     this.dueDay = const Value.absent(),
     this.linkedAccountId = const Value.absent(),
-    required bool isActive,
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -944,7 +902,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
        type = Value(type),
        bank = Value(bank),
        initialBalance = Value(initialBalance),
-       isActive = Value(isActive),
        createdAt = Value(createdAt);
   static Insertable<LocalAccount> custom({
     Expression<String>? id,
@@ -957,7 +914,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     Expression<int>? closingDay,
     Expression<int>? dueDay,
     Expression<String>? linkedAccountId,
-    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -972,7 +928,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
       if (closingDay != null) 'closing_day': closingDay,
       if (dueDay != null) 'due_day': dueDay,
       if (linkedAccountId != null) 'linked_account_id': linkedAccountId,
-      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -989,7 +944,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     Value<int?>? closingDay,
     Value<int?>? dueDay,
     Value<String?>? linkedAccountId,
-    Value<bool>? isActive,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -1004,7 +958,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1043,9 +996,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     if (linkedAccountId.present) {
       map['linked_account_id'] = Variable<String>(linkedAccountId.value);
     }
-    if (isActive.present) {
-      map['is_active'] = Variable<bool>(isActive.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1068,7 +1018,6 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
           ..write('closingDay: $closingDay, ')
           ..write('dueDay: $dueDay, ')
           ..write('linkedAccountId: $linkedAccountId, ')
-          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1169,20 +1118,17 @@ class $LocalTransactionsTable extends LocalTransactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _isReconciledMeta = const VerificationMeta(
-    'isReconciled',
-  );
+  static const VerificationMeta _linkedTransactionIdMeta =
+      const VerificationMeta('linkedTransactionId');
   @override
-  late final GeneratedColumn<bool> isReconciled = GeneratedColumn<bool>(
-    'is_reconciled',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_reconciled" IN (0, 1))',
-    ),
-  );
+  late final GeneratedColumn<String> linkedTransactionId =
+      GeneratedColumn<String>(
+        'linked_transaction_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1216,7 +1162,7 @@ class $LocalTransactionsTable extends LocalTransactions
     description,
     date,
     notes,
-    isReconciled,
+    linkedTransactionId,
     createdAt,
     updatedAt,
   ];
@@ -1302,16 +1248,14 @@ class $LocalTransactionsTable extends LocalTransactions
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('is_reconciled')) {
+    if (data.containsKey('linked_transaction_id')) {
       context.handle(
-        _isReconciledMeta,
-        isReconciled.isAcceptableOrUnknown(
-          data['is_reconciled']!,
-          _isReconciledMeta,
+        _linkedTransactionIdMeta,
+        linkedTransactionId.isAcceptableOrUnknown(
+          data['linked_transaction_id']!,
+          _linkedTransactionIdMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_isReconciledMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -1374,10 +1318,10 @@ class $LocalTransactionsTable extends LocalTransactions
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      isReconciled: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_reconciled'],
-      )!,
+      linkedTransactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_transaction_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1406,7 +1350,7 @@ class LocalTransaction extends DataClass
   final String description;
   final DateTime date;
   final String? notes;
-  final bool isReconciled;
+  final String? linkedTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
   const LocalTransaction({
@@ -1419,7 +1363,7 @@ class LocalTransaction extends DataClass
     required this.description,
     required this.date,
     this.notes,
-    required this.isReconciled,
+    this.linkedTransactionId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1437,7 +1381,9 @@ class LocalTransaction extends DataClass
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    map['is_reconciled'] = Variable<bool>(isReconciled);
+    if (!nullToAbsent || linkedTransactionId != null) {
+      map['linked_transaction_id'] = Variable<String>(linkedTransactionId);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1456,7 +1402,9 @@ class LocalTransaction extends DataClass
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      isReconciled: Value(isReconciled),
+      linkedTransactionId: linkedTransactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedTransactionId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1477,7 +1425,9 @@ class LocalTransaction extends DataClass
       description: serializer.fromJson<String>(json['description']),
       date: serializer.fromJson<DateTime>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
-      isReconciled: serializer.fromJson<bool>(json['isReconciled']),
+      linkedTransactionId: serializer.fromJson<String?>(
+        json['linkedTransactionId'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1495,7 +1445,7 @@ class LocalTransaction extends DataClass
       'description': serializer.toJson<String>(description),
       'date': serializer.toJson<DateTime>(date),
       'notes': serializer.toJson<String?>(notes),
-      'isReconciled': serializer.toJson<bool>(isReconciled),
+      'linkedTransactionId': serializer.toJson<String?>(linkedTransactionId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1511,7 +1461,7 @@ class LocalTransaction extends DataClass
     String? description,
     DateTime? date,
     Value<String?> notes = const Value.absent(),
-    bool? isReconciled,
+    Value<String?> linkedTransactionId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => LocalTransaction(
@@ -1524,7 +1474,9 @@ class LocalTransaction extends DataClass
     description: description ?? this.description,
     date: date ?? this.date,
     notes: notes.present ? notes.value : this.notes,
-    isReconciled: isReconciled ?? this.isReconciled,
+    linkedTransactionId: linkedTransactionId.present
+        ? linkedTransactionId.value
+        : this.linkedTransactionId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -1543,9 +1495,9 @@ class LocalTransaction extends DataClass
           : this.description,
       date: data.date.present ? data.date.value : this.date,
       notes: data.notes.present ? data.notes.value : this.notes,
-      isReconciled: data.isReconciled.present
-          ? data.isReconciled.value
-          : this.isReconciled,
+      linkedTransactionId: data.linkedTransactionId.present
+          ? data.linkedTransactionId.value
+          : this.linkedTransactionId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1563,7 +1515,7 @@ class LocalTransaction extends DataClass
           ..write('description: $description, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
-          ..write('isReconciled: $isReconciled, ')
+          ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1581,7 +1533,7 @@ class LocalTransaction extends DataClass
     description,
     date,
     notes,
-    isReconciled,
+    linkedTransactionId,
     createdAt,
     updatedAt,
   );
@@ -1598,7 +1550,7 @@ class LocalTransaction extends DataClass
           other.description == this.description &&
           other.date == this.date &&
           other.notes == this.notes &&
-          other.isReconciled == this.isReconciled &&
+          other.linkedTransactionId == this.linkedTransactionId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1613,7 +1565,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
   final Value<String> description;
   final Value<DateTime> date;
   final Value<String?> notes;
-  final Value<bool> isReconciled;
+  final Value<String?> linkedTransactionId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1627,7 +1579,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.description = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
-    this.isReconciled = const Value.absent(),
+    this.linkedTransactionId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1642,7 +1594,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     required String description,
     required DateTime date,
     this.notes = const Value.absent(),
-    required bool isReconciled,
+    this.linkedTransactionId = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -1654,7 +1606,6 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
        amount = Value(amount),
        description = Value(description),
        date = Value(date),
-       isReconciled = Value(isReconciled),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<LocalTransaction> custom({
@@ -1667,7 +1618,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Expression<String>? description,
     Expression<DateTime>? date,
     Expression<String>? notes,
-    Expression<bool>? isReconciled,
+    Expression<String>? linkedTransactionId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1682,7 +1633,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       if (description != null) 'description': description,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
-      if (isReconciled != null) 'is_reconciled': isReconciled,
+      if (linkedTransactionId != null)
+        'linked_transaction_id': linkedTransactionId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1699,7 +1651,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Value<String>? description,
     Value<DateTime>? date,
     Value<String?>? notes,
-    Value<bool>? isReconciled,
+    Value<String?>? linkedTransactionId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -1714,7 +1666,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       description: description ?? this.description,
       date: date ?? this.date,
       notes: notes ?? this.notes,
-      isReconciled: isReconciled ?? this.isReconciled,
+      linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1751,8 +1703,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (isReconciled.present) {
-      map['is_reconciled'] = Variable<bool>(isReconciled.value);
+    if (linkedTransactionId.present) {
+      map['linked_transaction_id'] = Variable<String>(
+        linkedTransactionId.value,
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1778,7 +1732,7 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
           ..write('description: $description, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
-          ..write('isReconciled: $isReconciled, ')
+          ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1847,42 +1801,8 @@ class $LocalCategoriesTable extends LocalCategories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
-    'isDefault',
-  );
   @override
-  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
-    'is_default',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_default" IN (0, 1))',
-    ),
-  );
-  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
-    'sortOrder',
-  );
-  @override
-  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
-    'sort_order',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    userId,
-    name,
-    icon,
-    color,
-    type,
-    isDefault,
-    sortOrder,
-  ];
+  List<GeneratedColumn> get $columns => [id, userId, name, icon, color, type];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1938,22 +1858,6 @@ class $LocalCategoriesTable extends LocalCategories
     } else if (isInserting) {
       context.missing(_typeMeta);
     }
-    if (data.containsKey('is_default')) {
-      context.handle(
-        _isDefaultMeta,
-        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_isDefaultMeta);
-    }
-    if (data.containsKey('sort_order')) {
-      context.handle(
-        _sortOrderMeta,
-        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_sortOrderMeta);
-    }
     return context;
   }
 
@@ -1987,14 +1891,6 @@ class $LocalCategoriesTable extends LocalCategories
         DriftSqlType.string,
         data['${effectivePrefix}type'],
       )!,
-      isDefault: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_default'],
-      )!,
-      sortOrder: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}sort_order'],
-      )!,
     );
   }
 
@@ -2011,8 +1907,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
   final int icon;
   final int color;
   final String type;
-  final bool isDefault;
-  final int sortOrder;
   const LocalCategory({
     required this.id,
     this.userId,
@@ -2020,8 +1914,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     required this.icon,
     required this.color,
     required this.type,
-    required this.isDefault,
-    required this.sortOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2034,8 +1926,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     map['icon'] = Variable<int>(icon);
     map['color'] = Variable<int>(color);
     map['type'] = Variable<String>(type);
-    map['is_default'] = Variable<bool>(isDefault);
-    map['sort_order'] = Variable<int>(sortOrder);
     return map;
   }
 
@@ -2049,8 +1939,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: Value(icon),
       color: Value(color),
       type: Value(type),
-      isDefault: Value(isDefault),
-      sortOrder: Value(sortOrder),
     );
   }
 
@@ -2066,8 +1954,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: serializer.fromJson<int>(json['icon']),
       color: serializer.fromJson<int>(json['color']),
       type: serializer.fromJson<String>(json['type']),
-      isDefault: serializer.fromJson<bool>(json['isDefault']),
-      sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
   @override
@@ -2080,8 +1966,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       'icon': serializer.toJson<int>(icon),
       'color': serializer.toJson<int>(color),
       'type': serializer.toJson<String>(type),
-      'isDefault': serializer.toJson<bool>(isDefault),
-      'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
 
@@ -2092,8 +1976,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     int? icon,
     int? color,
     String? type,
-    bool? isDefault,
-    int? sortOrder,
   }) => LocalCategory(
     id: id ?? this.id,
     userId: userId.present ? userId.value : this.userId,
@@ -2101,8 +1983,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     icon: icon ?? this.icon,
     color: color ?? this.color,
     type: type ?? this.type,
-    isDefault: isDefault ?? this.isDefault,
-    sortOrder: sortOrder ?? this.sortOrder,
   );
   LocalCategory copyWithCompanion(LocalCategoriesCompanion data) {
     return LocalCategory(
@@ -2112,8 +1992,6 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       icon: data.icon.present ? data.icon.value : this.icon,
       color: data.color.present ? data.color.value : this.color,
       type: data.type.present ? data.type.value : this.type,
-      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
-      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
   }
 
@@ -2125,16 +2003,13 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('color: $color, ')
-          ..write('type: $type, ')
-          ..write('isDefault: $isDefault, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, name, icon, color, type, isDefault, sortOrder);
+  int get hashCode => Object.hash(id, userId, name, icon, color, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2144,9 +2019,7 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           other.name == this.name &&
           other.icon == this.icon &&
           other.color == this.color &&
-          other.type == this.type &&
-          other.isDefault == this.isDefault &&
-          other.sortOrder == this.sortOrder);
+          other.type == this.type);
 }
 
 class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
@@ -2156,8 +2029,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
   final Value<int> icon;
   final Value<int> color;
   final Value<String> type;
-  final Value<bool> isDefault;
-  final Value<int> sortOrder;
   final Value<int> rowid;
   const LocalCategoriesCompanion({
     this.id = const Value.absent(),
@@ -2166,8 +2037,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     this.icon = const Value.absent(),
     this.color = const Value.absent(),
     this.type = const Value.absent(),
-    this.isDefault = const Value.absent(),
-    this.sortOrder = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalCategoriesCompanion.insert({
@@ -2177,16 +2046,12 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     required int icon,
     required int color,
     required String type,
-    required bool isDefault,
-    required int sortOrder,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
        icon = Value(icon),
        color = Value(color),
-       type = Value(type),
-       isDefault = Value(isDefault),
-       sortOrder = Value(sortOrder);
+       type = Value(type);
   static Insertable<LocalCategory> custom({
     Expression<String>? id,
     Expression<String>? userId,
@@ -2194,8 +2059,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Expression<int>? icon,
     Expression<int>? color,
     Expression<String>? type,
-    Expression<bool>? isDefault,
-    Expression<int>? sortOrder,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2205,8 +2068,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       if (icon != null) 'icon': icon,
       if (color != null) 'color': color,
       if (type != null) 'type': type,
-      if (isDefault != null) 'is_default': isDefault,
-      if (sortOrder != null) 'sort_order': sortOrder,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2218,8 +2079,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Value<int>? icon,
     Value<int>? color,
     Value<String>? type,
-    Value<bool>? isDefault,
-    Value<int>? sortOrder,
     Value<int>? rowid,
   }) {
     return LocalCategoriesCompanion(
@@ -2229,8 +2088,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       type: type ?? this.type,
-      isDefault: isDefault ?? this.isDefault,
-      sortOrder: sortOrder ?? this.sortOrder,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2256,12 +2113,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     if (type.present) {
       map['type'] = Variable<String>(type.value);
     }
-    if (isDefault.present) {
-      map['is_default'] = Variable<bool>(isDefault.value);
-    }
-    if (sortOrder.present) {
-      map['sort_order'] = Variable<int>(sortOrder.value);
-    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2277,8 +2128,6 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
           ..write('icon: $icon, ')
           ..write('color: $color, ')
           ..write('type: $type, ')
-          ..write('isDefault: $isDefault, ')
-          ..write('sortOrder: $sortOrder, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2522,7 +2371,6 @@ typedef $$LocalAccountsTableCreateCompanionBuilder =
       Value<int?> closingDay,
       Value<int?> dueDay,
       Value<String?> linkedAccountId,
-      required bool isActive,
       required DateTime createdAt,
       Value<int> rowid,
     });
@@ -2538,7 +2386,6 @@ typedef $$LocalAccountsTableUpdateCompanionBuilder =
       Value<int?> closingDay,
       Value<int?> dueDay,
       Value<String?> linkedAccountId,
-      Value<bool> isActive,
       Value<DateTime> createdAt,
       Value<int> rowid,
     });
@@ -2599,11 +2446,6 @@ class $$LocalAccountsTableFilterComposer
 
   ColumnFilters<String> get linkedAccountId => $composableBuilder(
     column: $table.linkedAccountId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2672,11 +2514,6 @@ class $$LocalAccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get isActive => $composableBuilder(
-    column: $table.isActive,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -2730,9 +2567,6 @@ class $$LocalAccountsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<bool> get isActive =>
-      $composableBuilder(column: $table.isActive, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 }
@@ -2778,7 +2612,6 @@ class $$LocalAccountsTableTableManager
                 Value<int?> closingDay = const Value.absent(),
                 Value<int?> dueDay = const Value.absent(),
                 Value<String?> linkedAccountId = const Value.absent(),
-                Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalAccountsCompanion(
@@ -2792,7 +2625,6 @@ class $$LocalAccountsTableTableManager
                 closingDay: closingDay,
                 dueDay: dueDay,
                 linkedAccountId: linkedAccountId,
-                isActive: isActive,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -2808,7 +2640,6 @@ class $$LocalAccountsTableTableManager
                 Value<int?> closingDay = const Value.absent(),
                 Value<int?> dueDay = const Value.absent(),
                 Value<String?> linkedAccountId = const Value.absent(),
-                required bool isActive,
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => LocalAccountsCompanion.insert(
@@ -2822,7 +2653,6 @@ class $$LocalAccountsTableTableManager
                 closingDay: closingDay,
                 dueDay: dueDay,
                 linkedAccountId: linkedAccountId,
-                isActive: isActive,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -2862,7 +2692,7 @@ typedef $$LocalTransactionsTableCreateCompanionBuilder =
       required String description,
       required DateTime date,
       Value<String?> notes,
-      required bool isReconciled,
+      Value<String?> linkedTransactionId,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -2878,7 +2708,7 @@ typedef $$LocalTransactionsTableUpdateCompanionBuilder =
       Value<String> description,
       Value<DateTime> date,
       Value<String?> notes,
-      Value<bool> isReconciled,
+      Value<String?> linkedTransactionId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -2938,8 +2768,8 @@ class $$LocalTransactionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get isReconciled => $composableBuilder(
-    column: $table.isReconciled,
+  ColumnFilters<String> get linkedTransactionId => $composableBuilder(
+    column: $table.linkedTransactionId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3008,8 +2838,8 @@ class $$LocalTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get isReconciled => $composableBuilder(
-    column: $table.isReconciled,
+  ColumnOrderings<String> get linkedTransactionId => $composableBuilder(
+    column: $table.linkedTransactionId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3064,8 +2894,8 @@ class $$LocalTransactionsTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
-  GeneratedColumn<bool> get isReconciled => $composableBuilder(
-    column: $table.isReconciled,
+  GeneratedColumn<String> get linkedTransactionId => $composableBuilder(
+    column: $table.linkedTransactionId,
     builder: (column) => column,
   );
 
@@ -3125,7 +2955,7 @@ class $$LocalTransactionsTableTableManager
                 Value<String> description = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<bool> isReconciled = const Value.absent(),
+                Value<String?> linkedTransactionId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3139,7 +2969,7 @@ class $$LocalTransactionsTableTableManager
                 description: description,
                 date: date,
                 notes: notes,
-                isReconciled: isReconciled,
+                linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3155,7 +2985,7 @@ class $$LocalTransactionsTableTableManager
                 required String description,
                 required DateTime date,
                 Value<String?> notes = const Value.absent(),
-                required bool isReconciled,
+                Value<String?> linkedTransactionId = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -3169,7 +2999,7 @@ class $$LocalTransactionsTableTableManager
                 description: description,
                 date: date,
                 notes: notes,
-                isReconciled: isReconciled,
+                linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3211,8 +3041,6 @@ typedef $$LocalCategoriesTableCreateCompanionBuilder =
       required int icon,
       required int color,
       required String type,
-      required bool isDefault,
-      required int sortOrder,
       Value<int> rowid,
     });
 typedef $$LocalCategoriesTableUpdateCompanionBuilder =
@@ -3223,8 +3051,6 @@ typedef $$LocalCategoriesTableUpdateCompanionBuilder =
       Value<int> icon,
       Value<int> color,
       Value<String> type,
-      Value<bool> isDefault,
-      Value<int> sortOrder,
       Value<int> rowid,
     });
 
@@ -3264,16 +3090,6 @@ class $$LocalCategoriesTableFilterComposer
 
   ColumnFilters<String> get type => $composableBuilder(
     column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isDefault => $composableBuilder(
-    column: $table.isDefault,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get sortOrder => $composableBuilder(
-    column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3316,16 +3132,6 @@ class $$LocalCategoriesTableOrderingComposer
     column: $table.type,
     builder: (column) => ColumnOrderings(column),
   );
-
-  ColumnOrderings<bool> get isDefault => $composableBuilder(
-    column: $table.isDefault,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get sortOrder => $composableBuilder(
-    column: $table.sortOrder,
-    builder: (column) => ColumnOrderings(column),
-  );
 }
 
 class $$LocalCategoriesTableAnnotationComposer
@@ -3354,12 +3160,6 @@ class $$LocalCategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
-
-  GeneratedColumn<bool> get isDefault =>
-      $composableBuilder(column: $table.isDefault, builder: (column) => column);
-
-  GeneratedColumn<int> get sortOrder =>
-      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
 }
 
 class $$LocalCategoriesTableTableManager
@@ -3401,8 +3201,6 @@ class $$LocalCategoriesTableTableManager
                 Value<int> icon = const Value.absent(),
                 Value<int> color = const Value.absent(),
                 Value<String> type = const Value.absent(),
-                Value<bool> isDefault = const Value.absent(),
-                Value<int> sortOrder = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion(
                 id: id,
@@ -3411,8 +3209,6 @@ class $$LocalCategoriesTableTableManager
                 icon: icon,
                 color: color,
                 type: type,
-                isDefault: isDefault,
-                sortOrder: sortOrder,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3423,8 +3219,6 @@ class $$LocalCategoriesTableTableManager
                 required int icon,
                 required int color,
                 required String type,
-                required bool isDefault,
-                required int sortOrder,
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion.insert(
                 id: id,
@@ -3433,8 +3227,6 @@ class $$LocalCategoriesTableTableManager
                 icon: icon,
                 color: color,
                 type: type,
-                isDefault: isDefault,
-                sortOrder: sortOrder,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

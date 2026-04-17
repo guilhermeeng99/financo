@@ -96,6 +96,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<Either<Failure, void>> deleteTransaction(String id) async {
     try {
+      // Check if this is part of a transfer — delete both sides.
+      final local = await _dao.getTransactionById(id);
+      if (local != null && local.linkedTransactionId != null) {
+        final linkedId = local.linkedTransactionId!;
+        await _remote.deleteTransaction(linkedId);
+        await _dao.deleteTransaction(linkedId);
+      }
       await _remote.deleteTransaction(id);
       await _dao.deleteTransaction(id);
       return const Right(null);
@@ -105,21 +112,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<Either<Failure, void>> toggleReconciled(String id) async {
+  Future<Either<Failure, List<TransactionEntity>>> createTransfer({
+    required TransactionEntity expense,
+    required TransactionEntity income,
+  }) async {
     try {
-      final local = await _dao.getTransactionById(id);
-      if (local == null) {
-        return const Left(
-          ServerFailure('Transaction not found.'),
-        );
-      }
-      final toggled = local.copyWith(
-        isReconciled: !local.isReconciled,
+      final expenseModel = TransactionModel.fromEntity(expense);
+      final incomeModel = TransactionModel.fromEntity(income);
+      final results = await _remote.createTransfer(
+        expense: expenseModel,
+        income: incomeModel,
       );
-      final model = TransactionModel.fromEntity(toggled);
-      await _remote.updateTransaction(model);
-      await _dao.upsertTransaction(toggled);
-      return const Right(null);
+      await _dao.upsertTransaction(results[0]);
+      await _dao.upsertTransaction(results[1]);
+      return Right(results);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -135,8 +141,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
         fromCategoryId: fromCategoryId,
         toCategoryId: toCategoryId,
       );
-      // Drift data is now stale for reassigned transactions.
-      // Caller should trigger a forceRefresh to re-sync.
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

@@ -30,7 +30,7 @@ class AccountRepositoryImpl implements AccountRepository {
           await _dao.insertAllAccounts(remote);
         }
       }
-      return Right(await _dao.getActiveAccounts(userId));
+      return Right(await _dao.getAccounts(userId));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }

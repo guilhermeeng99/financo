@@ -11,7 +11,6 @@ class LocalAccounts extends Table {
   IntColumn get closingDay => integer().nullable()();
   IntColumn get dueDay => integer().nullable()();
   TextColumn get linkedAccountId => text().nullable()();
-  BoolColumn get isActive => boolean()();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

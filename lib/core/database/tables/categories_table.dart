@@ -7,8 +7,6 @@ class LocalCategories extends Table {
   IntColumn get icon => integer()();
   IntColumn get color => integer()();
   TextColumn get type => text()();
-  BoolColumn get isDefault => boolean()();
-  IntColumn get sortOrder => integer()();
 
   @override
   Set<Column> get primaryKey => {id};

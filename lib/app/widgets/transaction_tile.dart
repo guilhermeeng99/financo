@@ -23,12 +23,22 @@ class TransactionTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: isIncome
+        backgroundColor: transaction.isTransfer
+            ? colors.primary.withValues(alpha: 0.1)
+            : isIncome
             ? colors.income.withValues(alpha: 0.1)
             : colors.expense.withValues(alpha: 0.1),
         child: FaIcon(
-          isIncome ? FontAwesomeIcons.arrowDown : FontAwesomeIcons.arrowUp,
-          color: isIncome ? colors.income : colors.expense,
+          transaction.isTransfer
+              ? FontAwesomeIcons.arrowRightArrowLeft
+              : isIncome
+              ? FontAwesomeIcons.arrowDown
+              : FontAwesomeIcons.arrowUp,
+          color: transaction.isTransfer
+              ? colors.primary
+              : isIncome
+              ? colors.income
+              : colors.expense,
           size: 20,
         ),
       ),
@@ -44,22 +54,9 @@ class TransactionTile extends StatelessWidget {
           color: colors.onBackgroundLight,
         ),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AmountText(
-            amount: isIncome ? transaction.amount : -transaction.amount,
-            fontSize: 14,
-          ),
-          if (transaction.isReconciled) ...[
-            const SizedBox(width: 4),
-            FaIcon(
-              FontAwesomeIcons.solidCircleCheck,
-              size: 16,
-              color: colors.success,
-            ),
-          ],
-        ],
+      trailing: AmountText(
+        amount: isIncome ? transaction.amount : -transaction.amount,
+        fontSize: 14,
       ),
     );
   }

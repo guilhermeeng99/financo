@@ -4,13 +4,13 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
@@ -36,6 +36,7 @@ class AddTransactionPage extends StatelessWidget {
       create: (_) => TransactionFormCubit(
         createTransaction: GetIt.I<CreateTransactionUseCase>(),
         updateTransaction: GetIt.I<UpdateTransactionUseCase>(),
+        createTransfer: GetIt.I<CreateTransferUseCase>(),
         userId: userId,
         existingTransaction: existingTransaction,
       ),
@@ -84,7 +85,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                state.isEditing
+                state.isTransfer && !state.isEditing
+                    ? t.transactions.transferCreated
+                    : state.isEditing
                     ? t.transactions.transactionUpdated
                     : t.transactions.transactionCreated,
               ),
@@ -159,36 +162,54 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
             key: _formKey,
             child: BlocBuilder<TransactionFormCubit, TransactionFormState>(
               builder: (context, state) {
+                final cubit = context.read<TransactionFormCubit>();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SegmentedButton<TransactionType>(
+                    SegmentedButton<_TransactionMode>(
                       segments: [
                         ButtonSegment(
-                          value: TransactionType.expense,
+                          value: _TransactionMode.expense,
                           label: Text(t.transactions.expense),
                           icon: const FaIcon(FontAwesomeIcons.arrowDown),
                         ),
                         ButtonSegment(
-                          value: TransactionType.income,
+                          value: _TransactionMode.income,
                           label: Text(t.transactions.income),
                           icon: const FaIcon(FontAwesomeIcons.arrowUp),
                         ),
+                        ButtonSegment(
+                          value: _TransactionMode.transfer,
+                          label: Text(t.transactions.transfer),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowRightArrowLeft,
+                          ),
+                        ),
                       ],
-                      selected: {state.type},
-                      onSelectionChanged: (selected) => context
-                          .read<TransactionFormCubit>()
-                          .updateType(selected.first),
+                      selected: {_modeFromState(state)},
+                      onSelectionChanged: state.isEditing
+                          ? null
+                          : (selected) {
+                              final mode = selected.first;
+                              if (mode == _TransactionMode.transfer) {
+                                cubit.setTransferMode(enabled: true);
+                              } else {
+                                cubit
+                                  ..setTransferMode(enabled: false)
+                                  ..updateType(
+                                    mode == _TransactionMode.income
+                                        ? TransactionType.income
+                                        : TransactionType.expense,
+                                  );
+                              }
+                            },
                     ),
                     const SizedBox(height: 24),
                     FinancoTextField(
                       controller: _descriptionController,
                       label: t.transactions.description,
                       hintText: t.transactions.descriptionHint,
-                      validator: Validators.requiredField,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateDescription,
+                      onChanged: cubit.updateDescription,
                     ),
                     const SizedBox(height: 16),
                     FinancoTextField(
@@ -198,32 +219,37 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      validator: Validators.amount,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateAmount,
+                      onChanged: cubit.updateAmount,
                     ),
                     const SizedBox(height: 16),
-                    _AccountDropdown(
-                      selectedId: state.accountId,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateAccountId,
-                    ),
-                    const SizedBox(height: 16),
-                    _CategoryDropdown(
-                      selectedId: state.categoryId,
-                      transactionType: state.type,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateCategoryId,
-                    ),
+                    if (state.isTransfer) ...[
+                      _AccountDropdown(
+                        selectedId: state.accountId,
+                        label: t.transactions.sourceAccount,
+                        onChanged: cubit.updateAccountId,
+                      ),
+                      const SizedBox(height: 16),
+                      _AccountDropdown(
+                        selectedId: state.destinationAccountId,
+                        label: t.transactions.destinationAccount,
+                        onChanged: cubit.updateDestinationAccountId,
+                      ),
+                    ] else ...[
+                      _AccountDropdown(
+                        selectedId: state.accountId,
+                        onChanged: cubit.updateAccountId,
+                      ),
+                      const SizedBox(height: 16),
+                      _CategoryDropdown(
+                        selectedId: state.categoryId,
+                        transactionType: state.type,
+                        onChanged: cubit.updateCategoryId,
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     _DatePicker(
                       date: state.date,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateDate,
+                      onChanged: cubit.updateDate,
                     ),
                     const SizedBox(height: 16),
                     FinancoTextField(
@@ -231,9 +257,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                       label: t.transactions.notesOptional,
                       hintText: t.transactions.notesHint,
                       maxLines: 3,
-                      onChanged: context
-                          .read<TransactionFormCubit>()
-                          .updateNotes,
+                      onChanged: cubit.updateNotes,
                     ),
                     const SizedBox(height: 32),
                     FinancoButton(
@@ -242,9 +266,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                           : t.general.save,
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
-                          unawaited(
-                            context.read<TransactionFormCubit>().submit(),
-                          );
+                          unawaited(cubit.submit());
                         }
                       },
                       isLoading: state.status == FormStatus.submitting,
@@ -260,14 +282,24 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   }
 }
 
+enum _TransactionMode { expense, income, transfer }
+
+_TransactionMode _modeFromState(TransactionFormState state) {
+  if (state.isTransfer) return _TransactionMode.transfer;
+  if (state.type == TransactionType.income) return _TransactionMode.income;
+  return _TransactionMode.expense;
+}
+
 class _AccountDropdown extends StatelessWidget {
   const _AccountDropdown({
     required this.selectedId,
     required this.onChanged,
+    this.label,
   });
 
   final String selectedId;
   final ValueChanged<String> onChanged;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +310,9 @@ class _AccountDropdown extends StatelessWidget {
         }
         return DropdownButtonFormField<String>(
           initialValue: selectedId.isNotEmpty ? selectedId : null,
-          decoration: InputDecoration(labelText: t.transactions.account),
+          decoration: InputDecoration(
+            labelText: label ?? t.transactions.account,
+          ),
           items: state.accounts
               .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
               .toList(),

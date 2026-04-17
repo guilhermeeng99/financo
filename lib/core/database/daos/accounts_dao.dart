@@ -22,18 +22,7 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
   Future<void> upsertAccount(AccountEntity account) =>
       into(localAccounts).insertOnConflictUpdate(_toCompanion(account));
 
-  Future<List<AccountEntity>> getActiveAccounts(String userId) async {
-    final rows =
-        await (select(localAccounts)
-              ..where(
-                (t) => t.userId.equals(userId) & t.isActive.equals(true),
-              )
-              ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-            .get();
-    return rows.map(_toEntity).toList();
-  }
-
-  Future<List<AccountEntity>> getAllAccounts(String userId) async {
+  Future<List<AccountEntity>> getAccounts(String userId) async {
     final rows =
         await (select(localAccounts)
               ..where((t) => t.userId.equals(userId))
@@ -66,7 +55,6 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
         closingDay: Value(e.closingDay),
         dueDay: Value(e.dueDay),
         linkedAccountId: Value(e.linkedAccountId),
-        isActive: e.isActive,
         createdAt: e.createdAt,
       );
 
@@ -81,7 +69,6 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
     closingDay: row.closingDay,
     dueDay: row.dueDay,
     linkedAccountId: row.linkedAccountId,
-    isActive: row.isActive,
     createdAt: row.createdAt,
   );
 }

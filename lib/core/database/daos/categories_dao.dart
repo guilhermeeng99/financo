@@ -25,10 +25,8 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
   Future<List<CategoryEntity>> getCategories(String userId) async {
     final rows =
         await (select(localCategories)
-              ..where(
-                (t) => t.userId.equals(userId) | t.isDefault.equals(true),
-              )
-              ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+              ..where((t) => t.userId.equals(userId))
+              ..orderBy([(t) => OrderingTerm.asc(t.name)]))
             .get();
     return rows.map(_toEntity).toList();
   }
@@ -53,8 +51,6 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
         icon: e.icon,
         color: e.color,
         type: e.type.name,
-        isDefault: e.isDefault,
-        sortOrder: e.sortOrder,
       );
 
   CategoryEntity _toEntity(LocalCategory row) => CategoryEntity(
@@ -64,7 +60,5 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     icon: row.icon,
     color: row.color,
     type: CategoryType.values.byName(row.type),
-    isDefault: row.isDefault,
-    sortOrder: row.sortOrder,
   );
 }

@@ -9,7 +9,6 @@ class AccountModel extends AccountEntity {
     required super.type,
     required super.bank,
     required super.initialBalance,
-    required super.isActive,
     required super.createdAt,
     super.creditLimit,
     super.closingDay,
@@ -18,13 +17,22 @@ class AccountModel extends AccountEntity {
   });
 
   factory AccountModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data()! as Map<String, dynamic>;
+    return AccountModel.fromMap(
+      id: doc.id,
+      data: doc.data()! as Map<String, dynamic>,
+    );
+  }
+
+  factory AccountModel.fromMap({
+    required String id,
+    required Map<String, dynamic> data,
+  }) {
     final bankStr = data['bank'] as String? ?? 'others';
     final bankType =
         BankType.values.where((b) => b.name == bankStr).firstOrNull ??
         BankType.others;
     return AccountModel(
-      id: doc.id,
+      id: id,
       userId: data['userId'] as String,
       name: data['name'] as String,
       type: AccountType.values.byName(data['type'] as String),
@@ -34,7 +42,6 @@ class AccountModel extends AccountEntity {
       closingDay: data['closingDay'] as int?,
       dueDay: data['dueDay'] as int?,
       linkedAccountId: data['linkedAccountId'] as String?,
-      isActive: data['isActive'] as bool,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
@@ -51,7 +58,6 @@ class AccountModel extends AccountEntity {
       closingDay: entity.closingDay,
       dueDay: entity.dueDay,
       linkedAccountId: entity.linkedAccountId,
-      isActive: entity.isActive,
       createdAt: entity.createdAt,
     );
   }
@@ -67,7 +73,6 @@ class AccountModel extends AccountEntity {
       'closingDay': closingDay,
       'dueDay': dueDay,
       'linkedAccountId': linkedAccountId,
-      'isActive': isActive,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
