@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
@@ -62,10 +61,8 @@ void main() {
         final cubit = StartupCubit(
           authBloc: mockAuthBloc,
           syncService: mockSyncService,
-        )..initialize();
-
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
+        );
+        await cubit.initialize();
 
         expect(cubit.state, isA<StartupAuthenticated>());
         verify(
@@ -94,10 +91,8 @@ void main() {
         final cubit = StartupCubit(
           authBloc: mockAuthBloc,
           syncService: mockSyncService,
-        )..initialize();
-
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
+        );
+        await cubit.initialize();
 
         expect(cubit.state, isA<StartupError>());
         addTearDown(cubit.close);
@@ -106,7 +101,7 @@ void main() {
 
     test(
       'initialize emits Unauthenticated when unauthenticated',
-      () {
+      () async {
         whenListen<AuthState>(
           mockAuthBloc,
           const Stream<AuthState>.empty(),
@@ -116,14 +111,15 @@ void main() {
         final cubit = StartupCubit(
           authBloc: mockAuthBloc,
           syncService: mockSyncService,
-        )..initialize();
+        );
+        await cubit.initialize();
 
         expect(cubit.state, isA<StartupUnauthenticated>());
         addTearDown(cubit.close);
       },
     );
 
-    test('responds to auth stream Authenticated event', () async {
+    test('waits for auth stream and syncs on Authenticated', () async {
       final user = UserFactory.entity();
       final controller = StreamController<AuthState>();
 
@@ -143,11 +139,10 @@ void main() {
         authBloc: mockAuthBloc,
         syncService: mockSyncService,
       );
+      final future = cubit.initialize();
       controller.add(Authenticated(user));
 
-      await Future<void>.delayed(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
-      await Future<void>.delayed(Duration.zero);
+      await future;
 
       expect(cubit.state, isA<StartupAuthenticated>());
       addTearDown(() async {
@@ -156,7 +151,7 @@ void main() {
       });
     });
 
-    test('responds to auth stream Unauthenticated event', () async {
+    test('waits for auth stream and emits Unauthenticated', () async {
       final controller = StreamController<AuthState>();
 
       whenListen<AuthState>(
@@ -169,9 +164,10 @@ void main() {
         authBloc: mockAuthBloc,
         syncService: mockSyncService,
       );
+      final future = cubit.initialize();
       controller.add(const Unauthenticated());
 
-      await Future<void>.delayed(Duration.zero);
+      await future;
 
       expect(cubit.state, isA<StartupUnauthenticated>());
       addTearDown(() async {
@@ -203,11 +199,7 @@ void main() {
           syncService: mockSyncService,
         );
         cubit.stream.listen(states.add);
-        cubit.initialize();
-
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
+        await cubit.initialize();
 
         expect(states.length, greaterThanOrEqualTo(2));
         final checkingState = states.first;
@@ -245,11 +237,7 @@ void main() {
           syncService: mockSyncService,
         );
         cubit.stream.listen(states.add);
-        cubit.initialize();
-
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
-        await Future<void>.delayed(Duration.zero);
+        await cubit.initialize();
 
         final syncState = states.whereType<StartupLoading>().where(
           (s) => s.step == 'Syncing data...',
@@ -261,74 +249,26 @@ void main() {
       },
     );
 
-    test('ignores AuthLoading state from stream', () async {
-      final controller = StreamController<AuthState>();
-
-      whenListen<AuthState>(
-        mockAuthBloc,
-        controller.stream,
-        initialState: const AuthInitial(),
-      );
-
-      final cubit = StartupCubit(
-        authBloc: mockAuthBloc,
-        syncService: mockSyncService,
-      );
-      controller.add(const AuthLoading());
-
-      await Future<void>.delayed(Duration.zero);
-
-      expect(cubit.state, isA<StartupInitial>());
-      verifyNever(
-        () => mockSyncService.fullSync(
-          userId: any(named: 'userId'),
-          user: any(named: 'user'),
-        ),
-      );
-      addTearDown(() async {
-        await cubit.close();
-        await controller.close();
-      });
-    });
-
-    test('ignores AuthError state from stream', () async {
-      final controller = StreamController<AuthState>();
-
-      whenListen<AuthState>(
-        mockAuthBloc,
-        controller.stream,
-        initialState: const AuthInitial(),
-      );
-
-      final cubit = StartupCubit(
-        authBloc: mockAuthBloc,
-        syncService: mockSyncService,
-      );
-      controller.add(const AuthError(ServerFailure('error')));
-
-      await Future<void>.delayed(Duration.zero);
-
-      expect(cubit.state, isA<StartupInitial>());
-      addTearDown(() async {
-        await cubit.close();
-        await controller.close();
-      });
-    });
-
     test(
-      'initialize does nothing when state is AuthInitial (waits for stream)',
-      () {
+      'initialize waits when state is AuthInitial',
+      () async {
+        final controller = StreamController<AuthState>();
+
         whenListen<AuthState>(
           mockAuthBloc,
-          const Stream<AuthState>.empty(),
+          controller.stream,
           initialState: const AuthInitial(),
         );
 
         final cubit = StartupCubit(
           authBloc: mockAuthBloc,
           syncService: mockSyncService,
-        )..initialize();
+        );
+        // ignore: unawaited_futures
+        cubit.initialize();
 
+        // Should be loading while waiting for auth
+        await Future<void>.delayed(Duration.zero);
         expect(cubit.state, isA<StartupLoading>());
         verifyNever(
           () => mockSyncService.fullSync(
@@ -336,7 +276,17 @@ void main() {
             user: any(named: 'user'),
           ),
         );
-        addTearDown(cubit.close);
+
+        // Resolve auth
+        controller.add(const Unauthenticated());
+        await Future<void>.delayed(Duration.zero);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state, isA<StartupUnauthenticated>());
+        addTearDown(() async {
+          await cubit.close();
+          await controller.close();
+        });
       },
     );
   });

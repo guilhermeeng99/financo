@@ -52,15 +52,24 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         state.matchedLocation == AppRoutes.signIn ||
         state.matchedLocation == AppRoutes.signUp;
 
+    // Startup is always accessible.
     if (isOnStartup) return null;
 
+    // While auth is still resolving, redirect to startup to wait.
+    if (authState is AuthInitial || authState is AuthLoading) {
+      return AppRoutes.startup;
+    }
+
+    // Unauthenticated users can stay on auth/onboarding pages.
     if (authState is Unauthenticated) {
       if (isOnAuth || isOnOnboarding) return null;
       return AppRoutes.signIn;
     }
 
+    // Authenticated users on auth/onboarding pages go through startup
+    // so the data sync happens before entering the app.
     if (authState is Authenticated && (isOnAuth || isOnOnboarding)) {
-      return AppRoutes.dashboard;
+      return AppRoutes.startup;
     }
 
     return null;

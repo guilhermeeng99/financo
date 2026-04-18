@@ -12,15 +12,12 @@ class StartupCubit extends Cubit<StartupState> {
     required SyncService syncService,
   }) : _authBloc = authBloc,
        _syncService = syncService,
-       super(const StartupInitial()) {
-    _authSubscription = _authBloc.stream.listen(_onAuthStateChanged);
-  }
+       super(const StartupInitial());
 
   final AuthBloc _authBloc;
   final SyncService _syncService;
-  late final StreamSubscription<dynamic> _authSubscription;
 
-  void initialize() {
+  Future<void> initialize() async {
     emit(
       const StartupLoading(
         step: 'Checking authentication...',
@@ -28,40 +25,49 @@ class StartupCubit extends Cubit<StartupState> {
       ),
     );
 
-    if (_authBloc.state is Authenticated) {
-      unawaited(_onAuthStateChanged(_authBloc.state));
-    } else if (_authBloc.state is Unauthenticated) {
-      emit(const StartupUnauthenticated());
-    }
-    // Otherwise wait for auth stream.
-  }
+    final isAuthenticated = await _waitForAuth();
 
-  Future<void> _onAuthStateChanged(dynamic authState) async {
-    if (authState is Authenticated) {
-      emit(
-        const StartupLoading(
-          step: 'Syncing data...',
-          progress: 0.3,
-        ),
+    if (!isAuthenticated) {
+      emit(const StartupUnauthenticated());
+      return;
+    }
+
+    final authState = _authBloc.state as Authenticated;
+
+    emit(
+      const StartupLoading(
+        step: 'Syncing data...',
+        progress: 0.3,
+      ),
+    );
+
+    try {
+      await _syncService.fullSync(
+        userId: authState.user.id,
+        user: authState.user,
       );
-      try {
-        await _syncService.fullSync(
-          userId: authState.user.id,
-          user: authState.user,
-        );
-        emit(StartupAuthenticated(userId: authState.user.id));
-      } on Exception catch (e) {
-        emit(StartupError(e.toString()));
-      }
-    } else if (authState is Unauthenticated) {
-      emit(const StartupUnauthenticated());
+      emit(StartupAuthenticated(userId: authState.user.id));
+    } on Exception catch (e) {
+      emit(StartupError(e.toString()));
     }
   }
 
-  @override
-  Future<void> close() {
-    unawaited(_authSubscription.cancel());
-    return super.close();
+  Future<bool> _waitForAuth() async {
+    if (_authBloc.state is Authenticated) return true;
+    if (_authBloc.state is Unauthenticated) return false;
+
+    final completer = Completer<bool>();
+    final subscription = _authBloc.stream.listen((state) {
+      if (state is Authenticated) {
+        if (!completer.isCompleted) completer.complete(true);
+      } else if (state is Unauthenticated || state is AuthError) {
+        if (!completer.isCompleted) completer.complete(false);
+      }
+    });
+
+    final result = await completer.future;
+    await subscription.cancel();
+    return result;
   }
 }
 
