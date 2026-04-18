@@ -11,8 +11,6 @@ import 'package:financo/features/accounts/domain/usecases/update_account_usecase
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -122,9 +120,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
 
     await deleteAccount(accountId);
     if (mounted) {
-      context.read<DashboardBloc>().add(
-        const DashboardRefreshRequested(),
-      );
       context.pop(true);
     }
   }

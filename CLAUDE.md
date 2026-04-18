@@ -28,7 +28,7 @@ Each feature follows:
 | **Routing** | go_router (declarative, path-based, shell route) |
 | **Database** | Drift (local SQLite cache) + Firebase Firestore (remote) |
 | **Auth** | Firebase Auth + Google Sign-In |
-| **AI Chat** | Google Gemini (`google_generative_ai`) |
+| **AI Chat** | Firebase AI Logic (`firebase_ai`, Vertex AI backend) |
 | **Error handling** | dartz Either<Failure, T> pattern |
 | **Linting** | very_good_analysis (strict) |
 | **i18n** | slang (generated in `lib/gen/`) |

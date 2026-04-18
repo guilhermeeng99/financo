@@ -21,8 +21,9 @@ class CategoriesCubit extends Cubit<CategoriesState> {
   final String _userId;
 
   Future<void> loadCategories({bool forceRefresh = false}) async {
-    if (state is CategoriesLoaded && !forceRefresh) return;
-    emit(const CategoriesLoading());
+    if (forceRefresh || state is! CategoriesLoaded) {
+      emit(const CategoriesLoading());
+    }
 
     final result = await _getCategories(
       userId: _userId,

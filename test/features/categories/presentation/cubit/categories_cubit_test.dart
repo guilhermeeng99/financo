@@ -67,7 +67,7 @@ void main() {
     );
 
     blocTest<CategoriesCubit, CategoriesState>(
-      'does not reload when already loaded and forceRefresh is false',
+      'silently re-reads cache when already loaded and forceRefresh is false',
       setUp: () {
         when(
           () => mockGetCategories(userId: userId),
@@ -78,7 +78,7 @@ void main() {
       act: (cubit) async => cubit.loadCategories(),
       expect: () => <CategoriesState>[],
       verify: (_) {
-        verifyNever(() => mockGetCategories(userId: any(named: 'userId')));
+        verify(() => mockGetCategories(userId: userId)).called(1);
       },
     );
 

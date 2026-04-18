@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,17 +13,20 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockGetTransactionsUseCase mockGetTransactions;
   late MockDeleteTransactionUseCase mockDeleteTransaction;
+  late MockImportTransactionsCsvUseCase mockImportTransactionsCsv;
 
   const userId = 'user-1';
 
   setUp(() {
     mockGetTransactions = MockGetTransactionsUseCase();
     mockDeleteTransaction = MockDeleteTransactionUseCase();
+    mockImportTransactionsCsv = MockImportTransactionsCsvUseCase();
   });
 
   TransactionsBloc buildBloc() => TransactionsBloc(
     getTransactions: mockGetTransactions,
     deleteTransaction: mockDeleteTransaction,
+    importTransactionsCsv: mockImportTransactionsCsv,
     userId: userId,
   );
 
@@ -230,6 +234,85 @@ void main() {
           ),
         ],
       );
+    });
+
+    group('TransactionsImportCsvRequested', () {
+      blocTest<TransactionsBloc, TransactionsState>(
+        'emits [Loading, Imported] on successful import',
+        setUp: () {
+          when(
+            () => mockImportTransactionsCsv(
+              csvContent: any(named: 'csvContent'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenAnswer(
+            (_) async => const Right(
+              TransactionImportResult(importedCount: 5, skippedCount: 1),
+            ),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) =>
+            bloc.add(const TransactionsImportCsvRequested('csv-data')),
+        expect: () => [
+          isA<TransactionsLoading>(),
+          isA<TransactionsImported>()
+              .having((s) => s.importedCount, 'importedCount', 5)
+              .having((s) => s.skippedCount, 'skippedCount', 1),
+        ],
+      );
+
+      blocTest<TransactionsBloc, TransactionsState>(
+        'emits [Loading, Error] on import failure',
+        setUp: () {
+          when(
+            () => mockImportTransactionsCsv(
+              csvContent: any(named: 'csvContent'),
+              userId: any(named: 'userId'),
+            ),
+          ).thenAnswer(
+            (_) async => const Left(ValidationFailure('Missing categories')),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) =>
+            bloc.add(const TransactionsImportCsvRequested('csv-data')),
+        expect: () => [
+          isA<TransactionsLoading>(),
+          isA<TransactionsError>().having(
+            (s) => s.failure.message,
+            'message',
+            'Missing categories',
+          ),
+        ],
+      );
+
+      test('previewCsv delegates to use case', () async {
+        const preview = TransactionImportPreview(
+          rows: [],
+          missingCategories: [],
+          missingAccounts: [],
+          skippedRows: 0,
+        );
+        when(
+          () => mockImportTransactionsCsv.preview(
+            csvContent: any(named: 'csvContent'),
+            userId: any(named: 'userId'),
+          ),
+        ).thenAnswer((_) async => const Right(preview));
+
+        final bloc = buildBloc();
+        final result = await bloc.previewCsv('csv-data');
+        addTearDown(bloc.close);
+
+        expect(result, const Right<Failure, TransactionImportPreview>(preview));
+        verify(
+          () => mockImportTransactionsCsv.preview(
+            csvContent: 'csv-data',
+            userId: userId,
+          ),
+        ).called(1);
+      });
     });
   });
 }

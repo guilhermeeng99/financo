@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/errors/exceptions.dart' as app;
 import 'package:financo/features/chat/data/models/chat_message_model.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:uuid/uuid.dart';
 
 const geminiSystemPrompt = '''
@@ -101,13 +101,8 @@ class GeminiDataSourceImpl implements GeminiDataSource {
   }) async {
     try {
       final chatHistory = <Content>[
-        // System prompt as first user turn + model ack to satisfy
-        // the required user→model alternation in the history.
-        Content.text(geminiSystemPrompt),
-        Content('model', [
-          TextPart('Understood. I will follow these guidelines.'),
-        ]),
-        // Inject current date so the model never uses stale training dates.
+        // Inject current date so the model never uses stale training
+        // dates. System prompt is already set via systemInstruction.
         Content.text(
           'Current date (today): '
           '${DateTime.now().toIso8601String().split('T').first}. '
@@ -115,7 +110,9 @@ class GeminiDataSourceImpl implements GeminiDataSource {
           '"hoje", "today", or similar.',
         ),
         Content('model', [
-          TextPart('Got it. I will use this date for all date references.'),
+          const TextPart(
+            'Got it. I will use this date for all date references.',
+          ),
         ]),
         ...history.map((msg) {
           return Content(

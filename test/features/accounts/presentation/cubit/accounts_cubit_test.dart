@@ -63,7 +63,7 @@ void main() {
     );
 
     blocTest<AccountsCubit, AccountsState>(
-      'does not reload when already loaded and forceRefresh is false',
+      'silently re-reads cache when already loaded and forceRefresh is false',
       setUp: () {
         when(
           () => mockGetAccounts(userId: userId),
@@ -74,9 +74,7 @@ void main() {
       act: (cubit) async => cubit.loadAccounts(),
       expect: () => <AccountsState>[],
       verify: (_) {
-        verifyNever(
-          () => mockGetAccounts(userId: any(named: 'userId')),
-        );
+        verify(() => mockGetAccounts(userId: userId)).called(1);
       },
     );
 

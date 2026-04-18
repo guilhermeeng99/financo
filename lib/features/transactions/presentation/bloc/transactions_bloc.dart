@@ -1,6 +1,9 @@
+import 'package:dartz/dartz.dart';
+import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,18 +11,31 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   TransactionsBloc({
     required GetTransactionsUseCase getTransactions,
     required DeleteTransactionUseCase deleteTransaction,
+    required ImportTransactionsCsvUseCase importTransactionsCsv,
     required String userId,
   }) : _getTransactions = getTransactions,
        _deleteTransaction = deleteTransaction,
+       _importTransactionsCsv = importTransactionsCsv,
        _userId = userId,
        super(const TransactionsInitial()) {
     on<TransactionsLoadRequested>(_onLoadRequested);
     on<TransactionDeleteRequested>(_onDeleteRequested);
+    on<TransactionsImportCsvRequested>(_onImportCsvRequested);
   }
 
   final GetTransactionsUseCase _getTransactions;
   final DeleteTransactionUseCase _deleteTransaction;
+  final ImportTransactionsCsvUseCase _importTransactionsCsv;
   final String _userId;
+
+  Future<Either<Failure, TransactionImportPreview>> previewCsv(
+    String csvContent,
+  ) {
+    return _importTransactionsCsv.preview(
+      csvContent: csvContent,
+      userId: _userId,
+    );
+  }
 
   Future<void> _onLoadRequested(
     TransactionsLoadRequested event,
@@ -75,6 +91,28 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
           add(TransactionsLoadRequested(forceRefresh: true));
         }
       },
+    );
+  }
+
+  Future<void> _onImportCsvRequested(
+    TransactionsImportCsvRequested event,
+    Emitter<TransactionsState> emit,
+  ) async {
+    emit(const TransactionsLoading());
+
+    final result = await _importTransactionsCsv(
+      csvContent: event.csvContent,
+      userId: _userId,
+    );
+
+    result.fold(
+      (failure) => emit(TransactionsError(failure)),
+      (importResult) => emit(
+        TransactionsImported(
+          importedCount: importResult.importedCount,
+          skippedCount: importResult.skippedCount,
+        ),
+      ),
     );
   }
 }

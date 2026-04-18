@@ -175,6 +175,78 @@ submit():
 - **Filter combinations** — all filter params are optional and additive (AND logic).
 - **Transfer with same source/destination** — blocked by validation.
 
+## CSV Import
+
+### CSV Format
+
+Header: `Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência`
+
+| Column | Description | Format |
+|---|---|---|
+| Tipo | Transaction kind | `Despesa` (expense), `Receita` (income), `Transferência` (transfer), `Pagamento` (credit card payment → transfer) |
+| Data | Date | `DD/MM/YYYY` |
+| Valor | Amount | Brazilian format: `"-9,99"` or `"-1.234,56"` (quoted, negative, comma decimal) |
+| Descrição | Description | Free text, may be empty |
+| Categoria | Category | `ParentName/SubcategoryName` or `CategoryName`. Ignored for Transferência/Pagamento |
+| Conta | Source account | Account name (must exist) |
+| Conta transferência | Destination account | Only for Transferência/Pagamento (must exist) |
+
+### Parsing Rules
+
+16. **Category notation** — `"Saúde/Plano de saúde"` means parent category "Saúde" and subcategory "Plano de saúde". Split on first `/`, trim both parts.
+17. **Amount is always stored positive** — `abs()` of parsed value. Type is determined by the `Tipo` column.
+18. **Brazilian number format** — remove quotes, replace `.` (thousands separator) with empty, replace `,` (decimal separator) with `.`, then `double.parse`.
+19. **Date format** — `DD/MM/YYYY` parsed to `DateTime`.
+20. **Pagamento = transfer** — creates a linked expense+income pair, same as Transferência.
+21. **Transfers have empty categoryId** — the `Categoria` column is ignored for Transferência and Pagamento rows.
+22. **Category and account matching is case-insensitive**.
+
+### Validation Rules
+
+23. **Entire import is blocked** if ANY referenced category, subcategory, or account does not exist — no partial imports.
+24. **Malformed rows** (fewer than 7 columns) are skipped silently.
+25. **CSV must have at least one valid data row** after the header — otherwise `ValidationFailure`.
+
+### Import Flow
+
+26. **Preview step** — parses CSV, fetches existing categories and accounts, returns `TransactionImportPreview` with: parsed rows, missing categories, missing accounts, skipped row count, and a `canImport` flag.
+27. **Import step** — validates via preview; if `!canImport`, returns `ValidationFailure` listing missing items. Otherwise creates each transaction/transfer via repository.
+
+### Use Case Contract
+
+```dart
+class ImportTransactionsCsvUseCase {
+  ImportTransactionsCsvUseCase(
+    TransactionRepository transactionRepository,
+    CategoryRepository categoryRepository,
+    AccountRepository accountRepository,
+  );
+
+  Future<Either<Failure, TransactionImportPreview>> preview({
+    required String csvContent,
+    required String userId,
+  });
+
+  Future<Either<Failure, TransactionImportResult>> call({
+    required String csvContent,
+    required String userId,
+  });
+}
+```
+
+### State Machine (Bloc integration)
+
+```
+Events:
+  TransactionsImportCsvRequested { csvContent }
+
+States:
+  → Loading → TransactionsImported { importedCount, skippedCount }
+           → Error { failure }
+```
+
+Public method on bloc: `previewCsv(String csvContent)` — delegates to use case `preview()`, returns `Either` directly (same pattern as `CategoriesCubit.previewCsv`).
+
 ## Firestore
 
 **Collection:** `transactions/{id}`

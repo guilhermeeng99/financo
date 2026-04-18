@@ -1,6 +1,6 @@
 # Chat Feature Spec
 
-AI-powered financial assistant using Google Gemini. Users interact via natural language to create transactions, accounts, and categories.
+AI-powered financial assistant using Firebase AI Logic with the Vertex AI Gemini API backend. Users interact via natural language to create transactions, accounts, and categories.
 
 ## Entity: ChatMessageEntity
 
@@ -43,8 +43,9 @@ sendMessage(userId, content, history) → Future<ChatMessageModel>
 
 ### GeminiDataSourceImpl
 
-- **Model**: `gemini-2.5-flash` via `google_generative_ai`.
-- **History construction**: system prompt → model ack → date injection → model ack → previous messages (alternating user/model roles).
+- **Model**: `gemini-2.5-flash` via Firebase AI Logic (`firebase_ai` package, `FirebaseAI.vertexAI()` backend).
+- **System instruction**: configured at model creation time via `systemInstruction` parameter.
+- **History construction**: date injection → model ack → previous messages (alternating user/model roles).
 - **Action extraction**: regex patterns extract metadata from response:
   - `[TRANSACTION_DATA]...[/TRANSACTION_DATA]` → `actionType: 'transaction'`
   - `[ACCOUNT_ACTION]...[/ACCOUNT_ACTION]` → `actionType: 'account'`

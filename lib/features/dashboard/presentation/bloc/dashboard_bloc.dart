@@ -25,14 +25,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardLoadRequested event,
     Emitter<DashboardState> emit,
   ) async {
-    if (state is DashboardLoaded && !event.forceRefresh) {
-      final loaded = state as DashboardLoaded;
-      if (loaded.selectedYear == event.year &&
-          loaded.selectedMonth == event.month) {
-        return;
-      }
+    if (event.forceRefresh || state is! DashboardLoaded) {
+      emit(const DashboardLoading());
     }
-    emit(const DashboardLoading());
     await _loadDashboard(
       emit,
       year: event.year,

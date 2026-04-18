@@ -34,63 +34,87 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: FinancoAppBar(title: t.transactions.title),
-      body: BlocListener<DateFilterCubit, DateFilterState>(
-        listener: (context, filter) {
-          context.read<TransactionsBloc>().add(
-            TransactionsLoadRequested(
-              year: filter.year,
-              month: filter.month,
-              forceRefresh: true,
-            ),
-          );
-        },
-        child: BlocBuilder<TransactionsBloc, TransactionsState>(
-          builder: (context, state) {
-            if (state is TransactionsLoading) {
-              return const LoadingShimmer();
-            }
-            if (state is TransactionsError) {
-              return ErrorView(
-                message: state.failure.message,
-                onRetry: () => context.read<TransactionsBloc>().add(
-                  TransactionsLoadRequested(forceRefresh: true),
+      body: BlocListener<TransactionsBloc, TransactionsState>(
+        listener: (context, state) {
+          if (state is TransactionsImported) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  t.transactions.importSuccess(
+                    imported: state.importedCount,
+                    skipped: state.skippedCount,
+                  ),
                 ),
-              );
-            }
-            if (state is TransactionsLoaded) {
-              if (state.transactions.isEmpty) {
-                return EmptyState(
-                  icon: FontAwesomeIcons.receipt,
-                  message: t.transactions.empty,
+              ),
+            );
+            final filter = context.read<DateFilterCubit>().state;
+            context.read<TransactionsBloc>().add(
+              TransactionsLoadRequested(
+                year: filter.year,
+                month: filter.month,
+                forceRefresh: true,
+              ),
+            );
+          }
+        },
+        child: BlocListener<DateFilterCubit, DateFilterState>(
+          listener: (context, filter) {
+            context.read<TransactionsBloc>().add(
+              TransactionsLoadRequested(
+                year: filter.year,
+                month: filter.month,
+                forceRefresh: true,
+              ),
+            );
+          },
+          child: BlocBuilder<TransactionsBloc, TransactionsState>(
+            builder: (context, state) {
+              if (state is TransactionsLoading) {
+                return const LoadingShimmer();
+              }
+              if (state is TransactionsError) {
+                return ErrorView(
+                  message: state.failure.message,
+                  onRetry: () => context.read<TransactionsBloc>().add(
+                    TransactionsLoadRequested(forceRefresh: true),
+                  ),
                 );
               }
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<TransactionsBloc>().add(
-                    TransactionsLoadRequested(
-                      forceRefresh: true,
-                      year: state.selectedYear,
-                      month: state.selectedMonth,
-                    ),
+              if (state is TransactionsLoaded) {
+                if (state.transactions.isEmpty) {
+                  return EmptyState(
+                    icon: FontAwesomeIcons.receipt,
+                    message: t.transactions.empty,
                   );
-                },
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: state.transactions.length,
-                  itemBuilder: (context, index) {
-                    final transaction = state.transactions[index];
-                    return TransactionTile(
-                      transaction: transaction,
-                      onTap: () => context.push(
-                        AppRoutes.transactionById(transaction.id),
+                }
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<TransactionsBloc>().add(
+                      TransactionsLoadRequested(
+                        forceRefresh: true,
+                        year: state.selectedYear,
+                        month: state.selectedMonth,
                       ),
                     );
                   },
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: state.transactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction = state.transactions[index];
+                      return TransactionTile(
+                        transaction: transaction,
+                        onTap: () => context.push(
+                          AppRoutes.transactionById(transaction.id),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

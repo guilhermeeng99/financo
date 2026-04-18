@@ -461,6 +461,36 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Transaction deleted.'
 	String get deleted => 'Transaction deleted.';
+
+	/// en: 'Import CSV'
+	String get importCsv => 'Import CSV';
+
+	/// en: 'Review import: $count transactions will be created.'
+	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
+
+	/// en: 'Missing categories:'
+	String get importMissingCategories => 'Missing categories:';
+
+	/// en: 'Missing accounts:'
+	String get importMissingAccounts => 'Missing accounts:';
+
+	/// en: '$count rows were skipped (invalid format).'
+	String importSkippedRows({required Object count}) => '${count} rows were skipped (invalid format).';
+
+	/// en: 'Imported $imported transactions. Skipped $skipped rows.'
+	String importSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.';
+
+	/// en: 'Cannot import: some categories or accounts were not found.'
+	String get importBlocked => 'Cannot import: some categories or accounts were not found.';
+
+	/// en: '$count transfers'
+	String importTransfers({required Object count}) => '${count} transfers';
+
+	/// en: '$count expenses'
+	String importExpenses({required Object count}) => '${count} expenses';
+
+	/// en: '$count incomes'
+	String importIncomes({required Object count}) => '${count} incomes';
 }
 
 // Path: accounts
@@ -925,6 +955,16 @@ extension on Translations {
 			'transactions.transactionCreated' => 'Transaction created',
 			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
+			'transactions.importCsv' => 'Import CSV',
+			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
+			'transactions.importMissingCategories' => 'Missing categories:',
+			'transactions.importMissingAccounts' => 'Missing accounts:',
+			'transactions.importSkippedRows' => ({required Object count}) => '${count} rows were skipped (invalid format).',
+			'transactions.importSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.',
+			'transactions.importBlocked' => 'Cannot import: some categories or accounts were not found.',
+			'transactions.importTransfers' => ({required Object count}) => '${count} transfers',
+			'transactions.importExpenses' => ({required Object count}) => '${count} expenses',
+			'transactions.importIncomes' => ({required Object count}) => '${count} incomes',
 			'accounts.title' => 'Accounts',
 			'accounts.addAccount' => 'New Account',
 			'accounts.editAccount' => 'Edit Account',

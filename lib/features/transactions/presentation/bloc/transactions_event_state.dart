@@ -34,6 +34,15 @@ final class TransactionDeleteRequested extends TransactionsEvent {
   List<Object> get props => [id];
 }
 
+final class TransactionsImportCsvRequested extends TransactionsEvent {
+  const TransactionsImportCsvRequested(this.csvContent);
+
+  final String csvContent;
+
+  @override
+  List<Object> get props => [csvContent];
+}
+
 sealed class TransactionsState extends Equatable {
   const TransactionsState();
 
@@ -71,4 +80,17 @@ final class TransactionsError extends TransactionsState {
 
   @override
   List<Object> get props => [failure];
+}
+
+final class TransactionsImported extends TransactionsState {
+  const TransactionsImported({
+    required this.importedCount,
+    required this.skippedCount,
+  });
+
+  final int importedCount;
+  final int skippedCount;
+
+  @override
+  List<Object> get props => [importedCount, skippedCount];
 }

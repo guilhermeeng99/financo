@@ -172,12 +172,12 @@ void main() {
     );
 
     blocTest<DashboardBloc, DashboardState>(
-      'no-op when same year/month already loaded',
+      'silently re-reads cache when same year/month already loaded',
       build: buildBloc,
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        recentTransactions: TransactionFactory.list(),
         selectedYear: 2024,
         selectedMonth: 6,
       ),
@@ -185,6 +185,15 @@ void main() {
         DashboardLoadRequested(year: 2024, month: 6),
       ),
       expect: () => <DashboardState>[],
+      verify: (_) {
+        verify(
+          () => mockGetSummary(
+            userId: any(named: 'userId'),
+            month: any(named: 'month'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).called(1);
+      },
     );
 
     blocTest<DashboardBloc, DashboardState>(
@@ -211,7 +220,7 @@ void main() {
     );
 
     blocTest<DashboardBloc, DashboardState>(
-      'loads when different month',
+      'loads when different month without showing loading',
       build: buildBloc,
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
@@ -224,7 +233,6 @@ void main() {
         DashboardLoadRequested(year: 2024, month: 7),
       ),
       expect: () => [
-        const DashboardLoading(),
         isA<DashboardLoaded>().having(
           (s) => s.selectedMonth,
           'selectedMonth',

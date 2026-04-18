@@ -26,8 +26,8 @@ dependencies:
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
 
-  # AI Chat
-  google_generative_ai: ^0.4.7
+  # AI Chat (Firebase AI Logic)
+  firebase_ai: ^3.11.0
 
   # Error Handling
   dartz: ^0.10.1

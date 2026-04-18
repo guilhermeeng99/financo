@@ -38,6 +38,7 @@ import 'package:financo/features/transactions/domain/usecases/create_transaction
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -100,6 +101,9 @@ class MockDeleteTransactionUseCase extends Mock
     implements DeleteTransactionUseCase {}
 
 class MockCreateTransferUseCase extends Mock implements CreateTransferUseCase {}
+
+class MockImportTransactionsCsvUseCase extends Mock
+    implements ImportTransactionsCsvUseCase {}
 
 // ── Repositories: Auth ──
 class MockAuthRepository extends Mock implements AuthRepository {}

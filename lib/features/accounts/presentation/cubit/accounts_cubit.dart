@@ -16,8 +16,9 @@ class AccountsCubit extends Cubit<AccountsState> {
   final String _userId;
 
   Future<void> loadAccounts({bool forceRefresh = false}) async {
-    if (state is AccountsLoaded && !forceRefresh) return;
-    emit(const AccountsLoading());
+    if (forceRefresh || state is! AccountsLoaded) {
+      emit(const AccountsLoading());
+    }
 
     final result = await _getAccounts(
       userId: _userId,

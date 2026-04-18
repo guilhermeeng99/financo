@@ -61,17 +61,16 @@ import 'package:financo/features/transactions/domain/usecases/create_transaction
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final GetIt sl = GetIt.instance;
-
-const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
 
 Future<void> initDependencies() async {
   final prefs = await SharedPreferences.getInstance();
@@ -89,9 +88,12 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => FirebaseAuth.instance)
     ..registerLazySingleton(() => FirebaseFirestore.instance)
     ..registerLazySingleton(
-      () => GenerativeModel(
+      () => FirebaseAI.vertexAI(auth: sl<FirebaseAuth>()).generativeModel(
         model: 'gemini-2.5-flash',
-        apiKey: _geminiApiKey,
+        systemInstruction: Content(
+          'system',
+          [const TextPart(geminiSystemPrompt)],
+        ),
       ),
     )
     ..registerLazySingleton(() => prefs)
@@ -205,6 +207,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => CreateTransferUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => ImportTransactionsCsvUseCase(sl(), sl(), sl()),
     )
     ..registerLazySingleton(() => GetAccountsUseCase(sl()))
     ..registerLazySingleton(

@@ -125,7 +125,17 @@
     "transactionUpdated": "Transaction updated",
     "transactionCreated": "Transaction created",
     "saved": "Transaction saved!",
-    "deleted": "Transaction deleted."
+    "deleted": "Transaction deleted.",
+    "importCsv": "Import CSV",
+    "importReview": "Review import: $count transactions will be created.",
+    "importMissingCategories": "Missing categories:",
+    "importMissingAccounts": "Missing accounts:",
+    "importSkippedRows": "$count rows were skipped (invalid format).",
+    "importSuccess": "Imported $imported transactions. Skipped $skipped rows.",
+    "importBlocked": "Cannot import: some categories or accounts were not found.",
+    "importTransfers": "$count transfers",
+    "importExpenses": "$count expenses",
+    "importIncomes": "$count incomes"
   },
   "accounts": {
     "title": "Accounts",
