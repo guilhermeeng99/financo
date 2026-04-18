@@ -9,4 +9,6 @@ class GetCurrentUserUseCase {
   final AuthRepository _repository;
 
   Future<Either<Failure, UserEntity?>> call() => _repository.getCurrentUser();
+
+  Stream<UserEntity?> get authStateChanges => _repository.authStateChanges;
 }

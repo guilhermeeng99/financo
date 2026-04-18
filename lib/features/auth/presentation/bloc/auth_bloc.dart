@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
@@ -25,6 +28,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthGoogleSignInRequested>(_onGoogleSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
     on<AuthSignOutRequested>(_onSignOutRequested);
+    on<AuthUserChanged>(_onUserChanged);
+
+    _authSubscription = _getCurrentUser.authStateChanges.listen(
+      (user) => add(AuthUserChanged(user)),
+    );
   }
 
   final SignInUseCase _signIn;
@@ -32,6 +40,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUpUseCase _signUp;
   final SignOutUseCase _signOut;
   final GetCurrentUserUseCase _getCurrentUser;
+  StreamSubscription<UserEntity?>? _authSubscription;
 
   Future<void> _onCheckRequested(
     AuthCheckRequested event,
@@ -95,5 +104,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthError(failure)),
       (_) => emit(const Unauthenticated()),
     );
+  }
+
+  void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
+    if (event.user != null) {
+      emit(Authenticated(event.user!));
+    } else {
+      emit(const Unauthenticated());
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await _authSubscription?.cancel();
+    return super.close();
   }
 }

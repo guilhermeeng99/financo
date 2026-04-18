@@ -58,12 +58,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final User? firebaseUser;
 
       if (kIsWeb) {
-        // Web: use redirect flow to avoid Cross-Origin-Opener-Policy
-        // issues that block popup communication.
-        final provider = GoogleAuthProvider();
-        await _auth.signInWithRedirect(provider);
-        // Page navigates to Google — unreachable after redirect.
-        throw const AuthException('Redirecting to Google sign-in.');
+        // Web: use Firebase popup.
+        final result = await _auth.signInWithPopup(GoogleAuthProvider());
+        firebaseUser = result.user;
       } else {
         // Mobile: use google_sign_in to get credential then sign in.
         final googleUser = await _googleSignIn.authenticate();
@@ -179,23 +176,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel?> getCurrentUser() async {
     try {
-      var user = _auth.currentUser;
-
-      // On web, a Google sign-in redirect may have just completed.
-      // getRedirectResult() resolves the pending credential so that
-      // currentUser becomes available.
-      if (kIsWeb && user == null) {
-        final redirectResult = await _auth.getRedirectResult();
-        user = redirectResult.user;
-      }
-
+      final user = _auth.currentUser;
       if (user == null) return null;
 
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (doc.exists) return UserModel.fromFirestore(doc);
 
       // Authenticated user without Firestore profile (e.g. first-time
-      // Google sign-in via redirect on web) — create it now.
+      // Google sign-in) — create it now.
       final model = UserModel(
         id: user.uid,
         name: user.displayName ?? 'User',
@@ -218,12 +206,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         if (user == null) return null;
         try {
           final doc = await _firestore.collection('users').doc(user.uid).get();
-          if (!doc.exists) return null;
-          return UserModel.fromFirestore(doc);
+          if (doc.exists) return UserModel.fromFirestore(doc);
         } on Exception {
-          // Firestore unavailable — return null so listeners treat it
-          // as unauthenticated rather than crashing the stream.
-          return null;
+          // Firestore unavailable — fall through to minimal profile.
         }
+        // Return a minimal profile from Firebase Auth data so
+        // the stream never emits null for an authenticated user.
+        return UserModel(
+          id: user.uid,
+          name: user.displayName ?? 'User',
+          email: user.email ?? '',
+          photoUrl: user.photoURL,
+          createdAt: DateTime.now(),
+        );
       });
 }

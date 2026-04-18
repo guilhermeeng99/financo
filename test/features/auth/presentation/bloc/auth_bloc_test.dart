@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
@@ -16,6 +19,7 @@ void main() {
   late MockSignInWithGoogleUseCase mockSignInWithGoogle;
   late MockSignOutUseCase mockSignOut;
   late MockGetCurrentUserUseCase mockGetCurrentUser;
+  late StreamController<UserEntity?> authStreamController;
 
   setUp(() {
     mockSignIn = MockSignInUseCase();
@@ -23,7 +27,14 @@ void main() {
     mockSignInWithGoogle = MockSignInWithGoogleUseCase();
     mockSignOut = MockSignOutUseCase();
     mockGetCurrentUser = MockGetCurrentUserUseCase();
+    authStreamController = StreamController<UserEntity?>.broadcast();
+
+    when(
+      () => mockGetCurrentUser.authStateChanges,
+    ).thenAnswer((_) => authStreamController.stream);
   });
+
+  tearDown(() => authStreamController.close());
 
   AuthBloc buildBloc() => AuthBloc(
     signInUseCase: mockSignIn,
@@ -241,6 +252,32 @@ void main() {
         build: buildBloc,
         act: (bloc) => bloc.add(const AuthSignOutRequested()),
         expect: () => [isA<AuthError>()],
+      );
+    });
+
+    group('AuthUserChanged', () {
+      blocTest<AuthBloc, AuthState>(
+        'emits [Authenticated] when user is not null',
+        build: buildBloc,
+        act: (bloc) => bloc.add(AuthUserChanged(UserFactory.entity())),
+        expect: () => [isA<Authenticated>()],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [Unauthenticated] when user is null',
+        build: buildBloc,
+        act: (bloc) => bloc.add(const AuthUserChanged(null)),
+        expect: () => [isA<Unauthenticated>()],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'reacts to authStateChanges stream',
+        build: buildBloc,
+        act: (bloc) async {
+          authStreamController.add(UserFactory.entity());
+          await Future<void>.delayed(Duration.zero);
+        },
+        expect: () => [isA<Authenticated>()],
       );
     });
   });

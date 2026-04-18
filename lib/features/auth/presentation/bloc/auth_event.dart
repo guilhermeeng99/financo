@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/features/auth/domain/entities/user_entity.dart';
 
 sealed class AuthEvent extends Equatable {
   const AuthEvent();
@@ -42,4 +43,13 @@ final class AuthSignOutRequested extends AuthEvent {
 
 final class AuthGoogleSignInRequested extends AuthEvent {
   const AuthGoogleSignInRequested();
+}
+
+final class AuthUserChanged extends AuthEvent {
+  const AuthUserChanged(this.user);
+
+  final UserEntity? user;
+
+  @override
+  List<Object?> get props => [user];
 }
