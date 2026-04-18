@@ -265,5 +265,104 @@ void main() {
         addTearDown(cubit.close);
       });
     });
+
+    group('defaults', () {
+      test('default icon value is 58332', () {
+        final cubit = buildCubit();
+        expect(cubit.state.icon, 58332);
+        addTearDown(cubit.close);
+      });
+
+      test('default color value is 4280391411', () {
+        final cubit = buildCubit();
+        expect(cubit.state.color, 4280391411);
+        addTearDown(cubit.close);
+      });
+
+      test('default type is expense', () {
+        final cubit = buildCubit();
+        expect(cubit.state.type, CategoryType.expense);
+        addTearDown(cubit.close);
+      });
+
+      test('parentId is null by default', () {
+        final cubit = buildCubit();
+        expect(cubit.state.parentId, isNull);
+        addTearDown(cubit.close);
+      });
+    });
+
+    group('parentId management', () {
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateParentId with null clears parentId',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          parentId: 'parent-1',
+        ),
+        act: (cubit) => cubit.updateParentId(null),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.parentId,
+            'parentId',
+            isNull,
+          ),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'submit includes parentId for subcategory',
+        setUp: () {
+          when(
+            () => mockCreate(any()),
+          ).thenAnswer((_) async => Right(CategoryFactory.subcategory()));
+        },
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          name: 'Restaurants',
+          parentId: 'parent-1',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          final captured = verify(() => mockCreate(captureAny())).captured;
+          final category = captured.first as CategoryEntity;
+          expect(category.parentId, 'parent-1');
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'emits failure status when update fails',
+        setUp: () {
+          when(() => mockUpdate(any())).thenAnswer(
+            (_) async => const Left(ServerFailure('Update failed')),
+          );
+        },
+        build: () => buildCubit(
+          existing: CategoryFactory.expense(id: 'existing-1'),
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having((s) => s.failure, 'failure', isA<ServerFailure>()),
+        ],
+      );
+    });
   });
 }

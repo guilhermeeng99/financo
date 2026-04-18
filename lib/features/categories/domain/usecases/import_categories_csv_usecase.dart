@@ -179,6 +179,7 @@ class ImportCategoriesCsvUseCase {
     }
 
     final items = <CategoryImportPreviewItem>[];
+    final seenRoots = <String>{};
     for (final row in rows.skip(1)) {
       if (row.length < 3) continue;
 
@@ -192,7 +193,10 @@ class ImportCategoriesCsvUseCase {
           ? CategoryType.income
           : CategoryType.expense;
 
-      items.add(CategoryImportPreviewItem(name: category, type: type));
+      final rootKey = '${type.name}:${category.toLowerCase()}';
+      if (seenRoots.add(rootKey)) {
+        items.add(CategoryImportPreviewItem(name: category, type: type));
+      }
 
       if (subcategory.isNotEmpty) {
         items.add(

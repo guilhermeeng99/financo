@@ -7,8 +7,10 @@ import 'package:financo/app/widgets/financo_app_bar.dart';
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
+import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -54,9 +56,17 @@ class _ProfilePageState extends State<ProfilePage> {
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(failure.message)),
       ),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.profile.clearDataSuccess)),
-      ),
+      (_) {
+        unawaited(
+          context.read<CategoriesCubit>().loadCategories(forceRefresh: true),
+        );
+        unawaited(
+          context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.profile.clearDataSuccess)),
+        );
+      },
     );
   }
 

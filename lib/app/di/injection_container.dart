@@ -72,14 +72,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 final GetIt sl = GetIt.instance;
 
 const _geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
-const _googleWebClientId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
 
 Future<void> initDependencies() async {
   final prefs = await SharedPreferences.getInstance();
 
-  if (kIsWeb) {
-    await GoogleSignIn.instance.initialize(clientId: _googleWebClientId);
-  } else {
+  // Only initialize GoogleSignIn on mobile.
+  // On web, Firebase Auth's signInWithPopup handles Google auth directly.
+  // Calling GoogleSignIn.initialize() on web conflicts with Firebase's
+  // internal Google Identity Services initialisation (GSI).
+  if (!kIsWeb) {
     await GoogleSignIn.instance.initialize();
   }
 

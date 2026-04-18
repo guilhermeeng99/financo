@@ -355,5 +355,164 @@ void main() {
 
       expect(result, isA<Left<Failure, DashboardSummary>>());
     });
+
+    test(
+      'should compute cumulative balance for multiple accounts',
+      () async {
+        final accounts = [
+          AccountEntity(
+            id: 'acc-1',
+            userId: userId,
+            name: 'Nubank',
+            type: AccountType.checking,
+            bank: BankType.nubank,
+            initialBalance: 1000,
+            createdAt: DateTime(2024),
+          ),
+          AccountEntity(
+            id: 'acc-2',
+            userId: userId,
+            name: 'Other Bank',
+            type: AccountType.checking,
+            bank: BankType.others,
+            initialBalance: 2000,
+            createdAt: DateTime(2024),
+          ),
+        ];
+
+        final transactions = [
+          TransactionEntity(
+            id: 'tx-1',
+            userId: userId,
+            accountId: 'acc-1',
+            categoryId: 'cat-1',
+            type: TransactionType.income,
+            amount: 500,
+            description: 'Income acc-1',
+            date: DateTime(2024, 3, 5),
+            createdAt: DateTime(2024, 3, 5),
+            updatedAt: DateTime(2024, 3, 5),
+          ),
+          TransactionEntity(
+            id: 'tx-2',
+            userId: userId,
+            accountId: 'acc-2',
+            categoryId: 'cat-1',
+            type: TransactionType.expense,
+            amount: 300,
+            description: 'Expense acc-2',
+            date: DateTime(2024, 3, 10),
+            createdAt: DateTime(2024, 3, 10),
+            updatedAt: DateTime(2024, 3, 10),
+          ),
+        ];
+
+        stubAccounts(accounts);
+        stubTransactions(transactions);
+        stubCategories(const [
+          CategoryEntity(
+            id: 'cat-1',
+            name: 'General',
+            icon: 58332,
+            color: 4280391411,
+            type: CategoryType.expense,
+          ),
+        ]);
+
+        final result = await repository.getDashboardSummary(
+          userId: userId,
+          month: month,
+        );
+
+        result.fold(
+          (_) => fail('Expected Right'),
+          (summary) {
+            // acc-1: 1000 + 500 = 1500
+            // acc-2: 2000 - 300 = 1700
+            // Total: 3200
+            expect(summary.totalBalance, 3200);
+            expect(summary.accounts.length, 2);
+
+            final acc1 = summary.accounts.firstWhere(
+              (a) => a.id == 'acc-1',
+            );
+            final acc2 = summary.accounts.firstWhere(
+              (a) => a.id == 'acc-2',
+            );
+            expect(acc1.initialBalance, 1500);
+            expect(acc2.initialBalance, 1700);
+          },
+        );
+      },
+    );
+
+    test(
+      'should not include prior month transactions in period totals',
+      () async {
+        final account = AccountEntity(
+          id: 'acc-1',
+          userId: userId,
+          name: 'Nubank',
+          type: AccountType.checking,
+          bank: BankType.nubank,
+          initialBalance: 0,
+          createdAt: DateTime(2024),
+        );
+
+        final transactions = [
+          TransactionEntity(
+            id: 'tx-feb',
+            userId: userId,
+            accountId: 'acc-1',
+            categoryId: 'cat-1',
+            type: TransactionType.income,
+            amount: 1000,
+            description: 'Feb income',
+            date: DateTime(2024, 2, 15),
+            createdAt: DateTime(2024, 2, 15),
+            updatedAt: DateTime(2024, 2, 15),
+          ),
+          TransactionEntity(
+            id: 'tx-mar',
+            userId: userId,
+            accountId: 'acc-1',
+            categoryId: 'cat-1',
+            type: TransactionType.income,
+            amount: 500,
+            description: 'Mar income',
+            date: DateTime(2024, 3, 5),
+            createdAt: DateTime(2024, 3, 5),
+            updatedAt: DateTime(2024, 3, 5),
+          ),
+        ];
+
+        stubAccounts([account]);
+        stubTransactions(transactions);
+        stubCategories(const [
+          CategoryEntity(
+            id: 'cat-1',
+            name: 'Salary',
+            icon: 58332,
+            color: 4280391411,
+            type: CategoryType.income,
+          ),
+        ]);
+
+        final result = await repository.getDashboardSummary(
+          userId: userId,
+          month: month,
+        );
+
+        result.fold(
+          (_) => fail('Expected Right'),
+          (summary) {
+            // Period income only March: 500
+            expect(summary.totalIncome, 500);
+            // Cumulative balance: 0 + 1000 + 500 = 1500
+            expect(summary.totalBalance, 1500);
+          },
+        );
+      },
+    );
   });
 }

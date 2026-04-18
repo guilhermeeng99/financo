@@ -299,6 +299,133 @@ void main() {
               .having((s) => s.failure, 'failure', isA<ServerFailure>()),
         ],
       );
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'strips credit card fields when submitting checking account',
+        setUp: () {
+          when(() => mockCreate(any())).thenAnswer(
+            (_) async => Right(AccountFactory.checking()),
+          );
+        },
+        build: buildCubit,
+        seed: () => AccountFormState.initial(userId: userId).copyWith(
+          name: 'Checking',
+          type: AccountType.checking,
+          creditLimit: 5000,
+          closingDay: 5,
+          dueDay: 15,
+          linkedAccountId: 'acc-linked',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<AccountFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<AccountFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          final captured = verify(() => mockCreate(captureAny())).captured;
+          final account = captured.first as AccountEntity;
+          expect(account.creditLimit, isNull);
+          expect(account.closingDay, isNull);
+          expect(account.dueDay, isNull);
+          expect(account.linkedAccountId, isNull);
+        },
+      );
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'includes credit card fields when submitting credit card account',
+        setUp: () {
+          when(() => mockCreate(any())).thenAnswer(
+            (_) async => Right(AccountFactory.creditCard()),
+          );
+        },
+        build: buildCubit,
+        seed: () => AccountFormState.initial(userId: userId).copyWith(
+          name: 'CC',
+          type: AccountType.creditCard,
+          creditLimit: 5000,
+          closingDay: 5,
+          dueDay: 15,
+          linkedAccountId: 'acc-linked',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<AccountFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<AccountFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          final captured = verify(() => mockCreate(captureAny())).captured;
+          final account = captured.first as AccountEntity;
+          expect(account.creditLimit, 5000);
+          expect(account.closingDay, 5);
+          expect(account.dueDay, 15);
+          expect(account.linkedAccountId, 'acc-linked');
+        },
+      );
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'emits failure status when update fails',
+        setUp: () {
+          when(() => mockUpdate(any())).thenAnswer(
+            (_) async => const Left(ServerFailure('Update failed')),
+          );
+        },
+        build: () => buildCubit(
+          existing: AccountFactory.checking(id: 'existing-1'),
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<AccountFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<AccountFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having((s) => s.failure, 'failure', isA<ServerFailure>()),
+        ],
+      );
+    });
+
+    group('defaults', () {
+      test('closingDay defaults to 1', () {
+        final cubit = buildCubit();
+        expect(cubit.state.closingDay, 1);
+        addTearDown(cubit.close);
+      });
+
+      test('dueDay defaults to 10', () {
+        final cubit = buildCubit();
+        expect(cubit.state.dueDay, 10);
+        addTearDown(cubit.close);
+      });
+
+      test('bank defaults to nubank', () {
+        final cubit = buildCubit();
+        expect(cubit.state.bank, BankType.nubank);
+        addTearDown(cubit.close);
+      });
+
+      test('balance defaults to 0', () {
+        final cubit = buildCubit();
+        expect(cubit.state.balance, 0);
+        addTearDown(cubit.close);
+      });
     });
   });
 }

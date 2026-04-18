@@ -50,7 +50,7 @@ Salary,,Income
       expect(
         result,
         const Right<Failure, CategoryImportResult>(
-          CategoryImportResult(importedCount: 4, duplicateCount: 1),
+          CategoryImportResult(importedCount: 4, duplicateCount: 0),
         ),
       );
       verify(() => mockRepository.createCategory(any())).called(4);

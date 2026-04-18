@@ -49,9 +49,21 @@ class _SignInPageState extends State<SignInPage> {
         if (state is Authenticated) {
           context.go(AppRoutes.dashboard);
         } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.failure.message)),
-          );
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(state.failure.message),
+                backgroundColor: context.colorScheme.error,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 6),
+                action: SnackBarAction(
+                  label: t.general.ok,
+                  textColor: context.colorScheme.onError,
+                  onPressed: () {},
+                ),
+              ),
+            );
         }
       },
       child: Scaffold(
@@ -127,18 +139,33 @@ class _SignInPageState extends State<SignInPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  OutlinedButton.icon(
-                    onPressed: () => context.read<AuthBloc>().add(
-                      const AuthGoogleSignInRequested(),
-                    ),
-                    icon: const FaIcon(FontAwesomeIcons.google, size: 20),
-                    label: Text(t.auth.continueWithGoogle),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      final isLoading = state is AuthLoading;
+                      return OutlinedButton.icon(
+                        onPressed: isLoading
+                            ? null
+                            : () => context.read<AuthBloc>().add(
+                                const AuthGoogleSignInRequested(),
+                              ),
+                        icon: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const FaIcon(FontAwesomeIcons.google, size: 20),
+                        label: Text(t.auth.continueWithGoogle),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextButton(

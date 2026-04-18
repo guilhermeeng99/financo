@@ -74,15 +74,13 @@ class _CategoriesPageState extends State<CategoriesPage>
                   t.categories.importReview(arg: preview!.toCreate.length),
                 ),
                 const SizedBox(height: 12),
-                ...preview!.toCreate
-                    .take(12)
-                    .map(
-                      (item) => Text(
-                        item.parentName == null
-                            ? '• ${item.name}'
-                            : '• ${item.parentName} → ${item.name}',
-                      ),
-                    ),
+                ...preview!.toCreate.map(
+                  (item) => Text(
+                    item.parentName == null
+                        ? '• ${item.name}'
+                        : '• ${item.parentName} → ${item.name}',
+                  ),
+                ),
                 if (preview!.duplicates.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Text(
@@ -91,6 +89,17 @@ class _CategoriesPageState extends State<CategoriesPage>
                     ),
                     style: TextStyle(
                       color: context.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...preview!.duplicates.map(
+                    (item) => Text(
+                      item.parentName == null
+                          ? '• ${item.name}'
+                          : '• ${item.parentName} → ${item.name}',
+                      style: TextStyle(
+                        color: context.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
@@ -138,7 +147,7 @@ class _CategoriesPageState extends State<CategoriesPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     unawaited(context.read<CategoriesCubit>().loadCategories());
   }
 
@@ -163,7 +172,6 @@ class _CategoriesPageState extends State<CategoriesPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: t.general.all),
             Tab(text: t.categories.incomeType),
             Tab(text: t.categories.expenseType),
           ],
@@ -207,9 +215,6 @@ class _CategoriesPageState extends State<CategoriesPage>
             return TabBarView(
               controller: _tabController,
               children: [
-                _CategoryList(
-                  categories: organizeCategoriesForDisplay(categories),
-                ),
                 _CategoryList(
                   categories: organizeCategoriesForDisplay(
                     categories

@@ -339,5 +339,65 @@ void main() {
       act: (bloc) => bloc.add(const DashboardRefreshRequested()),
       expect: () => [isA<DashboardError>()],
     );
+
+    blocTest<DashboardBloc, DashboardState>(
+      'uses DateTime.now fallback when not loaded',
+      build: buildBloc,
+      setUp: stubSuccess,
+      act: (bloc) => bloc.add(const DashboardRefreshRequested()),
+      expect: () => [
+        isA<DashboardLoaded>()
+            .having(
+              (s) => s.selectedYear,
+              'selectedYear',
+              DateTime.now().year,
+            )
+            .having(
+              (s) => s.selectedMonth,
+              'selectedMonth',
+              DateTime.now().month,
+            ),
+      ],
+    );
+
+    blocTest<DashboardBloc, DashboardState>(
+      'emits Error when transactions fail during refresh',
+      build: buildBloc,
+      seed: () => DashboardLoaded(
+        summary: DashboardFactory.summary(),
+        recentTransactions: const [],
+        selectedYear: 2024,
+        selectedMonth: 6,
+      ),
+      setUp: () {
+        when(
+          () => mockGetSummary(
+            userId: any(named: 'userId'),
+            month: any(named: 'month'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).thenAnswer(
+          (_) async => Right<Failure, DashboardSummary>(
+            DashboardFactory.summary(),
+          ),
+        );
+        when(
+          () => mockGetTransactions(
+            userId: any(named: 'userId'),
+            startDate: any(named: 'startDate'),
+            endDate: any(named: 'endDate'),
+            categoryId: any(named: 'categoryId'),
+            accountId: any(named: 'accountId'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).thenAnswer(
+          (_) async => const Left<Failure, List<TransactionEntity>>(
+            ServerFailure(),
+          ),
+        );
+      },
+      act: (bloc) => bloc.add(const DashboardRefreshRequested()),
+      expect: () => [isA<DashboardError>()],
+    );
   });
 }

@@ -114,6 +114,9 @@ class TranslationsGeneralEn {
 	/// en: 'or'
 	String get or => 'or';
 
+	/// en: 'OK'
+	String get ok => 'OK';
+
 	/// en: 'Update'
 	String get update => 'Update';
 
@@ -824,6 +827,7 @@ extension on Translations {
 			'general.noResults' => 'No results found',
 			'general.success' => 'Success',
 			'general.or' => 'or',
+			'general.ok' => 'OK',
 			'general.update' => 'Update',
 			'general.create' => 'Create',
 			'general.yes' => 'Yes',

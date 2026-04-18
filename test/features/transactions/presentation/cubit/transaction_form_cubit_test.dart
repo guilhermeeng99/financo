@@ -513,6 +513,218 @@ void main() {
               .having((s) => s.failure, 'failure', isA<ServerFailure>()),
         ],
       );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'emits failure status when transfer fails',
+        setUp: () {
+          when(
+            () => mockTransfer(
+              expense: any(named: 'expense'),
+              income: any(named: 'income'),
+            ),
+          ).thenAnswer(
+            (_) async => const Left(ServerFailure('Transfer failed')),
+          );
+        },
+        build: buildCubit,
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 500,
+          description: 'Transfer',
+          date: DateTime(2024, 3, 20),
+          accountId: 'acc-1',
+          categoryId: '',
+          destinationAccountId: 'acc-2',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: true,
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having((s) => s.failure, 'failure', isA<ServerFailure>()),
+        ],
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'editing a transfer submits as regular transaction (not transfer)',
+        setUp: () {
+          when(
+            () => mockUpdate(any()),
+          ).thenAnswer(
+            (_) async => Right(TransactionFactory.expense()),
+          );
+        },
+        build: () {
+          final transfer = TransactionFactory.transfer();
+          return buildCubit(existing: transfer.expense);
+        },
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 500,
+          description: 'Transfer',
+          date: DateTime(2024, 3, 20),
+          accountId: 'acc-1',
+          categoryId: '',
+          destinationAccountId: 'acc-2',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: true,
+          existingId: 'tx-transfer-exp',
+          linkedTransactionId: 'tx-transfer-inc',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          verify(() => mockUpdate(any())).called(1);
+          verifyNever(
+            () => mockTransfer(
+              expense: any(named: 'expense'),
+              income: any(named: 'income'),
+            ),
+          );
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'emits failure status when update fails',
+        setUp: () {
+          when(
+            () => mockUpdate(any()),
+          ).thenAnswer(
+            (_) async => const Left(ServerFailure('Update failed')),
+          );
+        },
+        build: () => buildCubit(
+          existing: TransactionFactory.expense(id: 'tx-edit'),
+        ),
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 100,
+          description: 'Updated',
+          date: DateTime(2024, 3, 15),
+          accountId: 'acc-1',
+          categoryId: 'cat-1',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: false,
+          existingId: 'tx-edit',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having((s) => s.failure, 'failure', isA<ServerFailure>()),
+        ],
+      );
+    });
+
+    group('date validation', () {
+      test('future date makes form invalid', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..updateCategoryId('cat-1')
+          ..updateDate(DateTime.now().add(const Duration(days: 2)));
+        expect(cubit.state.isValid, isFalse);
+        addTearDown(cubit.close);
+      });
+
+      test('today date is valid', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..updateCategoryId('cat-1')
+          ..updateDate(DateTime.now());
+        expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
+
+      test('past date is valid', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..updateCategoryId('cat-1')
+          ..updateDate(DateTime(2024, 3, 15));
+        expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
+    });
+
+    group('amount validation', () {
+      test('zero amount makes form invalid', () {
+        final cubit = buildCubit()
+          ..updateAmount('0')
+          ..updateAccountId('acc-1')
+          ..updateCategoryId('cat-1');
+        expect(cubit.state.isValid, isFalse);
+        addTearDown(cubit.close);
+      });
+
+      test('negative amount makes form invalid', () {
+        final cubit = buildCubit()
+          ..updateAmount('-10')
+          ..updateAccountId('acc-1')
+          ..updateCategoryId('cat-1');
+        expect(cubit.state.isValid, isFalse);
+        addTearDown(cubit.close);
+      });
+    });
+
+    group('transfer-specific validation', () {
+      test('same source and destination is invalid', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..setTransferMode(enabled: true)
+          ..updateDestinationAccountId('acc-1');
+        expect(cubit.state.isValid, isFalse);
+        addTearDown(cubit.close);
+      });
+
+      test('empty destination is invalid for transfer', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..setTransferMode(enabled: true);
+        expect(cubit.state.isValid, isFalse);
+        addTearDown(cubit.close);
+      });
+
+      test('transfer does not require categoryId', () {
+        final cubit = buildCubit()
+          ..updateAmount('100')
+          ..updateAccountId('acc-1')
+          ..setTransferMode(enabled: true)
+          ..updateDestinationAccountId('acc-2');
+        expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
     });
   });
 }

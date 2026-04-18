@@ -124,6 +124,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw AuthException(
         e.description ?? 'Google sign-in was cancelled.',
       );
+    } on AuthException {
+      rethrow;
+    } on Exception catch (e) {
+      throw AuthException('Google sign-in failed: $e');
     }
   }
 

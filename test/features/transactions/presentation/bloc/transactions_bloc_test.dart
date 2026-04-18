@@ -203,6 +203,33 @@ void main() {
           verify(() => mockDeleteTransaction('tx-1')).called(1);
         },
       );
+
+      blocTest<TransactionsBloc, TransactionsState>(
+        'uses current date when deleting from Initial state',
+        setUp: () {
+          when(
+            () => mockDeleteTransaction(any()),
+          ).thenAnswer((_) async => const Right(null));
+          when(
+            () => mockGetTransactions(
+              userId: userId,
+              startDate: any(named: 'startDate'),
+              endDate: any(named: 'endDate'),
+              forceRefresh: true,
+            ),
+          ).thenAnswer((_) async => const Right([]));
+        },
+        build: buildBloc,
+        act: (bloc) => bloc.add(const TransactionDeleteRequested('tx-1')),
+        expect: () => [
+          isA<TransactionsLoading>(),
+          isA<TransactionsLoaded>().having(
+            (s) => s.selectedYear,
+            'selectedYear',
+            DateTime.now().year,
+          ),
+        ],
+      );
     });
   });
 }
