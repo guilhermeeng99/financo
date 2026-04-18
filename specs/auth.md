@@ -17,13 +17,13 @@ No computed properties. Equatable by all fields.
 ## Business Rules
 
 1. **Email/password sign-in** — authenticates via Firebase Auth, fetches Firestore profile, upserts local DB.
-2. **Google sign-in** — platform-specific: popup on web, `google_sign_in` on mobile. First-time users get a Firestore profile created automatically.
+2. **Google sign-in** — platform-specific: redirect flow on web (avoids COOP popup issues), `google_sign_in` on mobile. First-time users get a Firestore profile created automatically.
 3. **Google sign-in resilience** — if Firestore is unavailable after Firebase Auth succeeds, returns a minimal profile from Firebase Auth data (non-fatal).
 4. **Google sign-in cancellation** — if user cancels the dialog on mobile, `GoogleSignInException` is caught and mapped to `AuthFailure`.
 5. **Sign-up** — creates Firebase Auth account, creates Firestore profile, upserts local DB.
 6. **Sign-out** — Google sign-out is non-fatal (failure doesn't block Firebase sign-out). Firebase sign-out always executes. On success, clears all local data via `SyncService.clearLocalData()`.
 7. **Sign-out error handling** — result is folded: failure emits `AuthError`, success emits `Unauthenticated`.
-8. **getCurrentUser** — checks Firebase Auth session, fetches Firestore profile, upserts local if found.
+8. **getCurrentUser** — checks Firebase Auth session, fetches Firestore profile, upserts local if found. If authenticated user has no Firestore profile (e.g. first-time Google redirect on web), creates the profile automatically.
 9. **authStateChanges** — stream from Firebase Auth mapped to Firestore profile fetch. Returns null on Firestore error (non-fatal).
 10. **Error mapping** — `AuthException` → `AuthFailure`, generic `Exception` → `ServerFailure`. Applied consistently across all repository methods.
 11. **Local persistence** — all sign-in/sign-up paths upsert the user to local Drift DB via `UsersDao`.
@@ -172,6 +172,7 @@ Loaded ──loadProfile(forceRefresh: true)──→ Loading → ...
 - **Google sign-out failure** — non-fatal, Firebase sign-out still proceeds.
 - **Firestore unavailable during Google sign-in** — returns minimal profile from Firebase Auth data.
 - **getCurrentUser with no session** — returns `Right(null)`, no DAO call.
+- **getCurrentUser with session but no Firestore doc** — creates profile from Firebase Auth data (handles Google redirect on web).
 - **authStateChanges Firestore error** — returns null (stream doesn't crash).
 - **Profile local cache hit** — Firestore not called at all.
 - **Empty profile fields** — name defaults to `'User'`, email to `''` from Firebase Auth.

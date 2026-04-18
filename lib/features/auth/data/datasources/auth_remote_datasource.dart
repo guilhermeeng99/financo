@@ -58,11 +58,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final User? firebaseUser;
 
       if (kIsWeb) {
-        // Web: use Firebase popup — google_sign_in_web doesn't support
-        // authenticate().
+        // Web: use redirect flow to avoid Cross-Origin-Opener-Policy
+        // issues that block popup communication.
         final provider = GoogleAuthProvider();
-        final result = await _auth.signInWithPopup(provider);
-        firebaseUser = result.user;
+        await _auth.signInWithRedirect(provider);
+        // Page navigates to Google — unreachable after redirect.
+        throw const AuthException('Redirecting to Google sign-in.');
       } else {
         // Mobile: use google_sign_in to get credential then sign in.
         final googleUser = await _googleSignIn.authenticate();
@@ -90,7 +91,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           return UserModel.fromFirestore(doc);
         }
 
-        // First-time Google user — create profile.
+        // First-time Google user (mobile) — create profile.
         final model = UserModel(
           id: firebaseUser.uid,
           name: firebaseUser.displayName ?? 'User',
@@ -182,8 +183,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (user == null) return null;
 
       final doc = await _firestore.collection('users').doc(user.uid).get();
-      if (!doc.exists) return null;
-      return UserModel.fromFirestore(doc);
+      if (doc.exists) return UserModel.fromFirestore(doc);
+
+      // Authenticated user without Firestore profile (e.g. first-time
+      // Google sign-in via redirect on web) — create it now.
+      final model = UserModel(
+        id: user.uid,
+        name: user.displayName ?? 'User',
+        email: user.email ?? '',
+        photoUrl: user.photoURL,
+        createdAt: DateTime.now(),
+      );
+      await _firestore.collection('users').doc(user.uid).set(model.toJson());
+      return model;
     } on FirebaseAuthException catch (e) {
       throw AuthException(e.message ?? 'Failed to get current user.');
     } on Exception catch (e) {
