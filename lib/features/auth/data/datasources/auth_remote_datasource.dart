@@ -179,7 +179,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel?> getCurrentUser() async {
     try {
-      final user = _auth.currentUser;
+      var user = _auth.currentUser;
+
+      // On web, a Google sign-in redirect may have just completed.
+      // getRedirectResult() resolves the pending credential so that
+      // currentUser becomes available.
+      if (kIsWeb && user == null) {
+        final redirectResult = await _auth.getRedirectResult();
+        user = redirectResult.user;
+      }
+
       if (user == null) return null;
 
       final doc = await _firestore.collection('users').doc(user.uid).get();
