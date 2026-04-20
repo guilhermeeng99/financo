@@ -273,9 +273,9 @@ void main() {
         addTearDown(cubit.close);
       });
 
-      test('default color value is 4280391411', () {
+      test('default color is first palette color', () {
         final cubit = buildCubit();
-        expect(cubit.state.color, 4280391411);
+        expect(cubit.state.color, 4294198070);
         addTearDown(cubit.close);
       });
 

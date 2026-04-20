@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +17,7 @@ class _StartupPageState extends State<StartupPage> {
   @override
   void initState() {
     super.initState();
-    context.read<StartupCubit>().initialize();
+    unawaited(context.read<StartupCubit>().initialize());
   }
 
   @override

@@ -348,6 +348,12 @@ class TranslationsDashboardEn {
 	/// en: 'No accounts registered yet'
 	String get noAccountsYet => 'No accounts registered yet';
 
+	/// en: 'Credit Card Balance'
+	String get creditCardBalance => 'Credit Card Balance';
+
+	/// en: 'No credit cards registered yet'
+	String get noCreditCardsYet => 'No credit cards registered yet';
+
 	/// en: 'No expenses this month'
 	String get noExpensesYet => 'No expenses this month';
 
@@ -920,6 +926,8 @@ extension on Translations {
 			'dashboard.expensesByCategory' => 'Expenses by Category',
 			'dashboard.incomeByCategory' => 'Income by Category',
 			'dashboard.noAccountsYet' => 'No accounts registered yet',
+			'dashboard.creditCardBalance' => 'Credit Card Balance',
+			'dashboard.noCreditCardsYet' => 'No credit cards registered yet',
 			'dashboard.noExpensesYet' => 'No expenses this month',
 			'dashboard.noIncomeYet' => 'No income this month',
 			'dashboard.totalExpenses' => 'Total Expenses',

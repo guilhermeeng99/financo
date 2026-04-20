@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
@@ -12,12 +13,14 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     required UpdateCategoryUseCase updateCategory,
     required String userId,
     CategoryEntity? existingCategory,
+    int existingCategoryCount = 0,
   }) : _createCategory = createCategory,
        _updateCategory = updateCategory,
        super(
          CategoryFormState.initial(
            userId: userId,
            existing: existingCategory,
+           existingCategoryCount: existingCategoryCount,
          ),
        );
 
@@ -85,13 +88,14 @@ class CategoryFormState extends Equatable {
   factory CategoryFormState.initial({
     required String userId,
     CategoryEntity? existing,
+    int existingCategoryCount = 0,
   }) {
     return CategoryFormState(
       userId: userId,
       name: existing?.name ?? '',
       type: existing?.type ?? CategoryType.expense,
       icon: existing?.icon ?? 58332,
-      color: existing?.color ?? 4280391411,
+      color: existing?.color ?? CategoryColors.forIndex(existingCategoryCount),
       status: FormStatus.initial,
       existingId: existing?.id,
       parentId: existing?.parentId,

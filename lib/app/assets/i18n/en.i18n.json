@@ -89,6 +89,8 @@
     "expensesByCategory": "Expenses by Category",
     "incomeByCategory": "Income by Category",
     "noAccountsYet": "No accounts registered yet",
+    "creditCardBalance": "Credit Card Balance",
+    "noCreditCardsYet": "No credit cards registered yet",
     "noExpensesYet": "No expenses this month",
     "noIncomeYet": "No income this month",
     "totalExpenses": "Total Expenses",

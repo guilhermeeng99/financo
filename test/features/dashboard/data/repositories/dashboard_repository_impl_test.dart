@@ -514,5 +514,81 @@ void main() {
         );
       },
     );
+
+    test(
+      'should exclude transfers from totals and category breakdowns',
+      () async {
+        final accounts = [
+          AccountEntity(
+            id: 'acc-1',
+            userId: userId,
+            name: 'Nubank',
+            type: AccountType.checking,
+            bank: BankType.nubank,
+            initialBalance: 5000,
+            createdAt: DateTime(2024),
+          ),
+          AccountEntity(
+            id: 'acc-2',
+            userId: userId,
+            name: 'Inter',
+            type: AccountType.checking,
+            bank: BankType.others,
+            initialBalance: 1000,
+            createdAt: DateTime(2024),
+          ),
+        ];
+
+        final transfer = TransactionFactory.transfer(
+          amount: 2000,
+          date: DateTime(2024, 3, 15),
+        );
+
+        final transactions = [
+          TransactionFactory.expense(
+            id: 'tx-real-expense',
+            categoryId: 'cat-food',
+            amount: 300,
+            date: DateTime(2024, 3, 10),
+          ),
+          transfer.expense,
+          transfer.income,
+        ];
+
+        stubAccounts(accounts);
+        stubTransactions(transactions);
+        stubCategories(const [
+          CategoryEntity(
+            id: 'cat-food',
+            name: 'Food',
+            icon: 58332,
+            color: 4294198070,
+            type: CategoryType.expense,
+          ),
+        ]);
+
+        final result = await repository.getDashboardSummary(
+          userId: userId,
+          month: month,
+        );
+
+        result.fold(
+          (_) => fail('Expected Right'),
+          (summary) {
+            // Only real expense counts, not transfer
+            expect(summary.totalExpenses, 300);
+            expect(summary.totalIncome, 0);
+            expect(summary.netResult, -300);
+            // Category breakdown: only food expense, no "Sem categoria"
+            expect(summary.expensesByCategory.length, 1);
+            expect(
+              summary.expensesByCategory.first.categoryName,
+              'Food',
+            );
+            expect(summary.incomeByCategory, isEmpty);
+          },
+        );
+      },
+    );
   });
 }

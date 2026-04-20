@@ -21,24 +21,54 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
-class AddCategoryPage extends StatelessWidget {
+class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key, this.existingCategory});
 
   final CategoryEntity? existingCategory;
 
   @override
-  Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+  State<AddCategoryPage> createState() => _AddCategoryPageState();
+}
 
-    return BlocProvider(
-      create: (_) => CategoryFormCubit(
-        createCategory: GetIt.I<CreateCategoryUseCase>(),
-        updateCategory: GetIt.I<UpdateCategoryUseCase>(),
-        userId: userId,
-        existingCategory: existingCategory,
-      ),
-      child: const _AddCategoryView(),
+class _AddCategoryPageState extends State<AddCategoryPage> {
+  late final Future<int> _categoryCountFuture;
+  late final String _userId;
+
+  @override
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+    _userId = authState is Authenticated ? authState.user.id : '';
+    _categoryCountFuture = _fetchCategoryCount();
+  }
+
+  Future<int> _fetchCategoryCount() async {
+    final result = await GetIt.I<GetCategoriesUseCase>()(userId: _userId);
+    return result.fold((_) => 0, (categories) => categories.length);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<int>(
+      future: _categoryCountFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return BlocProvider(
+          create: (_) => CategoryFormCubit(
+            createCategory: GetIt.I<CreateCategoryUseCase>(),
+            updateCategory: GetIt.I<UpdateCategoryUseCase>(),
+            userId: _userId,
+            existingCategory: widget.existingCategory,
+            existingCategoryCount: snapshot.data!,
+          ),
+          child: const _AddCategoryView(),
+        );
+      },
     );
   }
 }
@@ -273,16 +303,6 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      t.categories.selectColor,
-                      style: context.textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    _ColorSelector(
-                      selectedColor: state.color,
-                      onChanged: context.read<CategoryFormCubit>().updateColor,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
                       t.categories.selectIcon,
                       style: context.textTheme.titleSmall,
                     ),
@@ -313,63 +333,6 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
           ),
         ),
       ),
-    );
-  }
-}
-
-const _availableColors = <int>[
-  4294198070, // red
-  4294940672, // orange
-  4294961979, // yellow
-  4283215696, // green
-  4280391411, // blue
-  4284955975, // purple
-  4288585374, // pink
-  4278228616, // teal
-  4280191205, // indigo
-  4284513675, // deep purple
-  4293467747, // deep orange
-  4281559326, // cyan
-  4285132974, // brown
-  4288585374, // rose / pink
-  4284790262, // blue grey
-  4278238420, // light green
-];
-
-class _ColorSelector extends StatelessWidget {
-  const _ColorSelector({
-    required this.selectedColor,
-    required this.onChanged,
-  });
-
-  final int selectedColor;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: _availableColors.map((color) {
-        final isSelected = color == selectedColor;
-        return GestureDetector(
-          onTap: () => onChanged(color),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Color(color),
-              shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(
-                      color: context.colorScheme.onSurface,
-                      width: 3,
-                    )
-                  : null,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
@@ -272,17 +273,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           : AccountType.checking;
 
       String? linkedAccountId;
-      if (type == AccountType.creditCard &&
-          meta['linkedAccountName'] != null) {
+      if (type == AccountType.creditCard && meta['linkedAccountName'] != null) {
         final linkedName = meta['linkedAccountName'] as String;
         final accResult = await _getAccounts(userId: _userId);
         if (accResult.isRight()) {
           final accounts = accResult.getOrElse(() => []);
           final linked = accounts
               .where(
-                (a) =>
-                    a.name.toLowerCase() ==
-                    linkedName.toLowerCase(),
+                (a) => a.name.toLowerCase() == linkedName.toLowerCase(),
               )
               .toList();
           if (linked.isNotEmpty) {
@@ -350,12 +348,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         _ => CategoryType.expense,
       };
 
+      final existingResult = await _getCategories(userId: _userId);
+      final existingCount = existingResult.fold(
+        (_) => 0,
+        (categories) => categories.length,
+      );
+
       final category = CategoryEntity(
         id: '',
         userId: _userId,
         name: meta['name'] as String? ?? 'Category',
         icon: meta['icon'] as int? ?? 58332,
-        color: meta['color'] as int? ?? 4280391411,
+        color: CategoryColors.forIndex(existingCount),
         type: type,
       );
 

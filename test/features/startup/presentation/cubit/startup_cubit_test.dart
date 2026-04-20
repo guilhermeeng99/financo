@@ -260,12 +260,13 @@ void main() {
           initialState: const AuthInitial(),
         );
 
-        final cubit = StartupCubit(
-          authBloc: mockAuthBloc,
-          syncService: mockSyncService,
-        );
-        // ignore: unawaited_futures
-        cubit.initialize();
+        final cubit =
+            StartupCubit(
+                authBloc: mockAuthBloc,
+                syncService: mockSyncService,
+              )
+              // ignore: unawaited_futures
+              ..initialize();
 
         // Should be loading while waiting for auth
         await Future<void>.delayed(Duration.zero);

@@ -44,17 +44,18 @@ Extends `Equatable`.
 3. Compute cumulative account adjustments from ALL transactions (income adds, expense subtracts)
 4. Adjust each account's `initialBalance` with cumulative adjustment via `copyWith`
 5. Filter transactions to selected month only (period = startOfMonth to endOfMonth)
-6. Compute `totalBalance` (sum of adjusted accounts), `totalIncome`, `totalExpenses` from period transactions
+6. Compute `totalBalance` (sum of adjusted accounts), `totalIncome`, `totalExpenses` from period transactions — **excluding transfers**
 7. Compute `netResult = totalIncome - totalExpenses`
-8. Aggregate expenses and income by category (sorted descending by amount)
+8. Aggregate expenses and income by category (sorted descending by amount) — **excluding transfers**
 9. Return Right(DashboardSummary)
 
 ### Business Rules
 
 1. **Cumulative balance**: Account balances reflect ALL transactions up to the end of the selected month, not just the selected month's transactions. This gives the "running balance" at that point in time.
 2. **Period income/expenses**: Only transactions within the selected month (startOfMonth..endOfMonth) count toward income and expense totals.
-3. **Category aggregation**: Transactions grouped by categoryId, summed. Sorted descending by amount. Missing categories use fallback name "Sem categoria" and color 0xFF9E9E9E.
-4. **Error propagation**: Triple-nested fold — any upstream failure short-circuits to Left.
+3. **Transfer exclusion**: Transfers (`isTransfer = true`, i.e. `linkedTransactionId != null`) are excluded from `totalIncome`, `totalExpenses`, `netResult`, and all category aggregations. They still contribute to cumulative account balance adjustments.
+4. **Category aggregation**: Transactions grouped by categoryId, summed. Sorted descending by amount. Missing categories use fallback name "Sem categoria" and color 0xFF9E9E9E.
+5. **Error propagation**: Triple-nested fold — any upstream failure short-circuits to Left.
 
 ## Use Case
 

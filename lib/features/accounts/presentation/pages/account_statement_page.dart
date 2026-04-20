@@ -10,6 +10,8 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/categories/domain/entities/category_entity.dart';
+import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -325,6 +327,10 @@ class _TransactionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final categoriesState = context.watch<CategoriesCubit>().state;
+    final categoryMap = categoriesState is CategoriesLoaded
+        ? {for (final c in categoriesState.categories) c.id: c}
+        : <String, CategoryEntity>{};
 
     if (state.transactions.isEmpty) {
       return Center(
@@ -343,8 +349,10 @@ class _TransactionsPanel extends StatelessWidget {
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final tx = state.transactions[index];
+        final categoryLabel = _categoryLabel(categoryMap, tx.categoryId);
         return TransactionTile(
           transaction: tx,
+          categoryLabel: categoryLabel,
           onTap: () => context.go(
             AppRoutes.addTransaction,
             extra: tx,
@@ -352,6 +360,23 @@ class _TransactionsPanel extends StatelessWidget {
         );
       },
     );
+  }
+
+  String? _categoryLabel(
+    Map<String, CategoryEntity> categoryMap,
+    String categoryId,
+  ) {
+    if (categoryId.isEmpty) return null;
+
+    final category = categoryMap[categoryId];
+    if (category == null) return null;
+
+    if (category.parentId != null) {
+      final parent = categoryMap[category.parentId];
+      if (parent != null) return '${parent.name} › ${category.name}';
+    }
+
+    return category.name;
   }
 }
 

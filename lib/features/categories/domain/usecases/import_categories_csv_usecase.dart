@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 
@@ -113,6 +114,7 @@ class ImportCategoriesCsvUseCase {
     }
 
     var importedCount = 0;
+    var colorIndex = existingCategories!.length;
     final rootsToCreate = previewData.toCreate.where(
       (item) => !item.isSubcategory,
     );
@@ -127,7 +129,7 @@ class ImportCategoriesCsvUseCase {
           userId: userId,
           name: item.name,
           icon: 58332,
-          color: 4280391411,
+          color: CategoryColors.forIndex(colorIndex++),
           type: item.type,
         ),
       );
@@ -152,7 +154,7 @@ class ImportCategoriesCsvUseCase {
           userId: userId,
           name: item.name,
           icon: 58332,
-          color: 4280391411,
+          color: CategoryColors.forIndex(colorIndex++),
           type: item.type,
           parentId: parentId,
         ),

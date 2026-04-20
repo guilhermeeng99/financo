@@ -77,11 +77,15 @@ class DashboardRepositoryImpl implements DashboardRepository {
             );
 
             final totalIncome = transactions
-                .where((t) => t.type == TransactionType.income)
+                .where(
+                  (t) => t.type == TransactionType.income && !t.isTransfer,
+                )
                 .fold<double>(0, (sum, t) => sum + t.amount);
 
             final totalExpenses = transactions
-                .where((t) => t.type == TransactionType.expense)
+                .where(
+                  (t) => t.type == TransactionType.expense && !t.isTransfer,
+                )
                 .fold<double>(0, (sum, t) => sum + t.amount);
 
             final categoryMap = <String, CategoryEntity>{
@@ -89,12 +93,16 @@ class DashboardRepositoryImpl implements DashboardRepository {
             };
 
             final expensesByCategory = _aggregateByCategory(
-              transactions.where((t) => t.type == TransactionType.expense),
+              transactions.where(
+                (t) => t.type == TransactionType.expense && !t.isTransfer,
+              ),
               categoryMap,
             );
 
             final incomeByCategory = _aggregateByCategory(
-              transactions.where((t) => t.type == TransactionType.income),
+              transactions.where(
+                (t) => t.type == TransactionType.income && !t.isTransfer,
+              ),
               categoryMap,
             );
 
@@ -121,7 +129,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
   ) {
     final amounts = <String, double>{};
     for (final t in transactions) {
-      amounts[t.categoryId] = (amounts[t.categoryId] ?? 0) + t.amount;
+      final cat = categoryMap[t.categoryId];
+      // Resolve to parent category if this is a subcategory
+      final rootId = cat?.parentId ?? t.categoryId;
+      amounts[rootId] = (amounts[rootId] ?? 0) + t.amount;
     }
     return amounts.entries.map((e) {
       final cat = categoryMap[e.key];

@@ -56,9 +56,9 @@ To delete an account (ask user to confirm by nickname):
 [/ACCOUNT_ACTION]
 
 === CATEGORIES ===
-To create a category:
+To create a category, choose the best matching icon from the available list below. Do NOT ask the user about icon or color — just pick the most appropriate icon yourself. The color is assigned automatically by the app.
 [CATEGORY_ACTION]
-{"action": "create", "name": "Groceries", "type": "expense|income", "color": 4294198070, "icon": 58332}
+{"action": "create", "name": "Groceries", "type": "expense|income", "icon": 58835}
 [/CATEGORY_ACTION]
 
 To delete a category (ask user to confirm by name):
@@ -67,8 +67,6 @@ To delete a category (ask user to confirm by name):
 [/CATEGORY_ACTION]
 
 Available Material icon codes: 59470 (account_balance), 59473 (account_balance_wallet), 58332 (shopping_cart), 58746 (restaurant), 58715 (directions_car), 58288 (home), 59545 (fitness_center), 58714 (local_hospital), 59494 (school), 58726 (flight), 58261 (work), 59560 (pets), 58818 (local_cafe), 58835 (local_grocery_store), 59690 (sports_bar), 59502 (self_improvement), 58404 (card_giftcard), 59472 (attach_money), 58947 (movie), 58810 (local_bar), 58694 (beach_access), 58736 (local_gas_station), 58889 (menu_book), 59411 (savings), 58682 (child_care), 59588 (brush).
-
-Available colors (as int): 4294198070 (red), 4294940672 (orange), 4294961979 (yellow), 4283215696 (green), 4280391411 (blue), 4284955975 (purple), 4288585374 (pink), 4278228616 (teal), 4280191205 (indigo), 4293467747 (deep orange), 4281559326 (cyan), 4285132974 (brown), 4284790262 (blue grey), 4278238420 (light green).
 
 After each action block, add a friendly confirmation message asking the user to confirm.
 ''';

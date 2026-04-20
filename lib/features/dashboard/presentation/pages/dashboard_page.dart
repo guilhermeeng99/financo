@@ -5,6 +5,7 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -138,6 +139,13 @@ class _DashboardContent extends StatelessWidget {
     final colors = context.appColors;
     final isCompactAction = MediaQuery.sizeOf(context).width < 900;
 
+    final checkingAccounts = summary.accounts
+        .where((a) => a.type == AccountType.checking)
+        .toList();
+    final creditCardAccounts = summary.accounts
+        .where((a) => a.type == AccountType.creditCard)
+        .toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -148,10 +156,22 @@ class _DashboardContent extends StatelessWidget {
             child: TransactionsImportCsvButton(compact: isCompactAction),
           ),
           const SizedBox(height: 20),
-          // ─── Saldo das contas ──────────────────────────────
+          // ─── Saldo das contas correntes ────────────────────
           _SectionTitle(title: t.dashboard.accountBalances),
           const SizedBox(height: 8),
-          _AccountsTable(summary: summary, colors: colors),
+          _AccountsTable(
+            accounts: checkingAccounts,
+            emptyMessage: t.dashboard.noAccountsYet,
+          ),
+          const SizedBox(height: 24),
+
+          // ─── Saldo dos cartões de crédito ──────────────────
+          _SectionTitle(title: t.dashboard.creditCardBalance),
+          const SizedBox(height: 8),
+          _AccountsTable(
+            accounts: creditCardAccounts,
+            emptyMessage: t.dashboard.noCreditCardsYet,
+          ),
           const SizedBox(height: 24),
 
           // ─── Resultado do mês ──────────────────────────────
@@ -233,19 +253,23 @@ class _SectionTitle extends StatelessWidget {
 
 // ─── Accounts table ─────────────────────────────────────────
 class _AccountsTable extends StatelessWidget {
-  const _AccountsTable({required this.summary, required this.colors});
-  final DashboardSummary summary;
-  final dynamic colors;
+  const _AccountsTable({
+    required this.accounts,
+    required this.emptyMessage,
+  });
+
+  final List<AccountEntity> accounts;
+  final String emptyMessage;
 
   @override
   Widget build(BuildContext context) {
-    if (summary.accounts.isEmpty) {
+    if (accounts.isEmpty) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Center(
             child: Text(
-              t.dashboard.noAccountsYet,
+              emptyMessage,
               style: context.textTheme.bodyMedium?.copyWith(
                 color: context.appColors.onBackgroundLight,
               ),
@@ -255,14 +279,21 @@ class _AccountsTable extends StatelessWidget {
       );
     }
 
+    final total = accounts.fold<double>(
+      0,
+      (sum, a) => sum + a.initialBalance,
+    );
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            ...summary.accounts.map(
+            ...accounts.map(
               (account) => InkWell(
-                onTap: () => context.go(AppRoutes.accountById(account.id)),
+                onTap: () => context.go(
+                  AppRoutes.accountById(account.id),
+                ),
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -299,7 +330,7 @@ class _AccountsTable extends StatelessWidget {
                   ),
                 ),
                 AmountText(
-                  amount: summary.totalBalance,
+                  amount: total,
                   fontSize: 16,
                 ),
               ],
@@ -458,6 +489,7 @@ class _ExpensesBarChart extends StatelessWidget {
               data: data,
               total: total,
               totalLabel: t.dashboard.totalExpenses,
+              isExpense: true,
             ),
           ],
         ),
@@ -500,20 +532,7 @@ class _IncomeDonutChart extends StatelessWidget {
                       PieChartData(
                         sectionsSpace: 2,
                         centerSpaceRadius: 44,
-                        sections: data.map((item) {
-                          final pct = item.amount / total * 100;
-                          return PieChartSectionData(
-                            value: item.amount,
-                            color: Color(item.categoryColor),
-                            radius: 44,
-                            title: '${pct.toStringAsFixed(0)}%',
-                            titleStyle: context.textTheme.labelSmall!.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          );
-                        }).toList(),
+                        sections: _buildSections(context, total),
                       ),
                     ),
                   ),
@@ -522,31 +541,34 @@ class _IncomeDonutChart extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: data.map((item) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: Color(item.categoryColor),
-                                  shape: BoxShape.circle,
+                      children: [
+                        for (var i = 0; i < data.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Color(
+                                      data[i].categoryColor,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  item.categoryName,
-                                  style: context.textTheme.bodySmall,
-                                  overflow: TextOverflow.ellipsis,
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    data[i].categoryName,
+                                    style: context.textTheme.bodySmall,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                      ],
                     ),
                   ),
                 ],
@@ -563,6 +585,26 @@ class _IncomeDonutChart extends StatelessWidget {
       ),
     );
   }
+
+  List<PieChartSectionData> _buildSections(
+    BuildContext context,
+    double total,
+  ) {
+    return [
+      for (var i = 0; i < data.length; i++)
+        PieChartSectionData(
+          value: data[i].amount,
+          color: Color(data[i].categoryColor),
+          radius: 44,
+          title: '${(data[i].amount / total * 100).toStringAsFixed(0)}%',
+          titleStyle: context.textTheme.labelSmall!.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
+        ),
+    ];
+  }
 }
 
 // ─── Category list with total ────────────────────────────────
@@ -571,18 +613,20 @@ class _CategoryList extends StatelessWidget {
     required this.data,
     required this.total,
     required this.totalLabel,
+    this.isExpense = false,
   });
 
   final List<CategoryAmount> data;
   final double total;
   final String totalLabel;
+  final bool isExpense;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ...data.map(
-          (item) => Padding(
+        for (var i = 0; i < data.length; i++)
+          Padding(
             padding: const EdgeInsets.symmetric(vertical: 5),
             child: Row(
               children: [
@@ -590,26 +634,25 @@ class _CategoryList extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: Color(item.categoryColor),
+                    color: Color(data[i].categoryColor),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    item.categoryName,
+                    data[i].categoryName,
                     style: context.textTheme.bodySmall,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 AmountText(
-                  amount: item.amount,
+                  amount: isExpense ? -data[i].amount : data[i].amount,
                   fontSize: 12,
                 ),
               ],
             ),
           ),
-        ),
         const Divider(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -621,7 +664,7 @@ class _CategoryList extends StatelessWidget {
               ),
             ),
             AmountText(
-              amount: total,
+              amount: isExpense ? -total : total,
               fontSize: 11,
             ),
           ],

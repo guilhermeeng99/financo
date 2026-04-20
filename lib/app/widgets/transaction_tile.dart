@@ -8,11 +8,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class TransactionTile extends StatelessWidget {
   const TransactionTile({
     required this.transaction,
+    this.categoryLabel,
     this.onTap,
     super.key,
   });
 
   final TransactionEntity transaction;
+  final String? categoryLabel;
   final VoidCallback? onTap;
 
   @override
@@ -49,7 +51,9 @@ class TransactionTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        formatDate(transaction.date),
+        categoryLabel != null
+            ? '${formatDate(transaction.date)} • $categoryLabel'
+            : formatDate(transaction.date),
         style: context.textTheme.bodySmall?.copyWith(
           color: colors.onBackgroundLight,
         ),

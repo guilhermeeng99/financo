@@ -400,6 +400,14 @@ void main() {
         build: buildBloc,
         setUp: () {
           when(
+            () => mockGetCategories(
+              userId: any(named: 'userId'),
+              forceRefresh: any(named: 'forceRefresh'),
+            ),
+          ).thenAnswer(
+            (_) async => const Right<Failure, List<CategoryEntity>>([]),
+          );
+          when(
             () => mockCreateCategory(any()),
           ).thenAnswer(
             (_) async => const Right<Failure, CategoryEntity>(
@@ -408,7 +416,7 @@ void main() {
                 userId: userId,
                 name: 'Groceries',
                 icon: 58332,
-                color: 4280391411,
+                color: 4294198070,
                 type: CategoryType.expense,
               ),
             ),
@@ -913,6 +921,14 @@ void main() {
         'returns error when createCategory fails',
         build: buildBloc,
         setUp: () {
+          when(
+            () => mockGetCategories(
+              userId: any(named: 'userId'),
+              forceRefresh: any(named: 'forceRefresh'),
+            ),
+          ).thenAnswer(
+            (_) async => const Right<Failure, List<CategoryEntity>>([]),
+          );
           when(
             () => mockCreateCategory(any()),
           ).thenAnswer(
