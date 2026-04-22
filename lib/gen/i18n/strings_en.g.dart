@@ -468,8 +468,26 @@ class TranslationsTransactionsEn {
 	/// en: 'Transaction deleted.'
 	String get deleted => 'Transaction deleted.';
 
-	/// en: 'Import CSV'
-	String get importCsv => 'Import CSV';
+	/// en: 'Import transactions'
+	String get importCsv => 'Import transactions';
+
+	/// en: 'Import transactions from CSV'
+	String get importCsvIntroTitle => 'Import transactions from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
 
 	/// en: 'Review import: $count transactions will be created.'
 	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
@@ -696,8 +714,26 @@ class TranslationsCategoriesEn {
 	/// en: 'Subcategory'
 	String get subcategoryLabel => 'Subcategory';
 
-	/// en: 'Import CSV'
-	String get importCsv => 'Import CSV';
+	/// en: 'Import categories'
+	String get importCsv => 'Import categories';
+
+	/// en: 'Import categories from CSV'
+	String get importCsvIntroTitle => 'Import categories from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
 
 	/// en: 'Imported $count categories.'
 	String importSuccess({required Object count}) => 'Imported ${count} categories.';
@@ -963,7 +999,13 @@ extension on Translations {
 			'transactions.transactionCreated' => 'Transaction created',
 			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
-			'transactions.importCsv' => 'Import CSV',
+			'transactions.importCsv' => 'Import transactions',
+			'transactions.importCsvIntroTitle' => 'Import transactions from CSV',
+			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.',
+			'transactions.importCsvDownloadExample' => 'Download example',
+			'transactions.importCsvSelectFile' => 'Select file',
+			'transactions.importCsvExampleDownloaded' => 'Example saved.',
+			'transactions.importCsvExampleFailed' => 'Couldn\'t save the example file.',
 			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
 			'transactions.importMissingCategories' => 'Missing categories:',
 			'transactions.importMissingAccounts' => 'Missing accounts:',
@@ -1033,7 +1075,13 @@ extension on Translations {
 			'categories.parentCategory' => 'Parent category',
 			'categories.noParent' => 'No parent',
 			'categories.subcategoryLabel' => 'Subcategory',
-			'categories.importCsv' => 'Import CSV',
+			'categories.importCsv' => 'Import categories',
+			'categories.importCsvIntroTitle' => 'Import categories from CSV',
+			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.',
+			'categories.importCsvDownloadExample' => 'Download example',
+			'categories.importCsvSelectFile' => 'Select file',
+			'categories.importCsvExampleDownloaded' => 'Example saved.',
+			'categories.importCsvExampleFailed' => 'Couldn\'t save the example file.',
 			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
 			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
 			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',

@@ -52,6 +52,7 @@ dependencies:
   drift_flutter: ^0.3.0
   csv: ^8.0.0
   file_picker: ^11.0.2
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -69,3 +70,4 @@ flutter:
 
   assets:
     - lib/app/assets/images/banks/
+    - lib/app/assets/samples/

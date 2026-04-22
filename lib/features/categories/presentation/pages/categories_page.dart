@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
-import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
-import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
+import 'package:financo/features/categories/presentation/widgets/categories_csv_import_dialog.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,121 +25,6 @@ class CategoriesPage extends StatefulWidget {
 class _CategoriesPageState extends State<CategoriesPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-
-  Future<void> _importCsv() async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-      withData: true,
-    );
-
-    final bytes = result?.files.single.bytes;
-    if (bytes == null || !mounted) return;
-
-    final csvContent = utf8.decode(bytes);
-    final previewResult = await context.read<CategoriesCubit>().previewCsv(
-      csvContent,
-    );
-    if (!mounted) return;
-
-    Failure? previewFailure;
-    CategoryImportPreview? preview;
-    previewResult.fold<void>(
-      (failure) => previewFailure = failure,
-      (value) => preview = value,
-    );
-
-    if (previewFailure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(previewFailure!.message)),
-      );
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(t.categories.importCsv),
-        content: SizedBox(
-          width: 480,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  t.categories.importReview(arg: preview!.toCreate.length),
-                ),
-                const SizedBox(height: 12),
-                ...preview!.toCreate.map(
-                  (item) => Text(
-                    item.parentName == null
-                        ? '• ${item.name}'
-                        : '• ${item.parentName} → ${item.name}',
-                  ),
-                ),
-                if (preview!.duplicates.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    t.categories.importDuplicates(
-                      arg: preview!.duplicates.length,
-                    ),
-                    style: TextStyle(
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...preview!.duplicates.map(
-                    (item) => Text(
-                      item.parentName == null
-                          ? '• ${item.name}'
-                          : '• ${item.parentName} → ${item.name}',
-                      style: TextStyle(
-                        color: context.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t.general.confirm),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    await context.read<CategoriesCubit>().importCsv(csvContent);
-    if (!mounted) return;
-
-    final newState = context.read<CategoriesCubit>().state;
-    if (newState is CategoriesImported) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            t.categories.importSuccessDetailed(
-              imported: newState.importedCount,
-              duplicates: newState.duplicateCount,
-            ),
-          ),
-        ),
-      );
-    } else if (newState is CategoriesError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(newState.failure.message)),
-      );
-    }
-  }
 
   @override
   void initState() {
@@ -165,7 +47,7 @@ class _CategoriesPageState extends State<CategoriesPage>
         actions: [
           IconButton(
             tooltip: t.categories.importCsv,
-            onPressed: _importCsv,
+            onPressed: () => showCategoriesCsvImportDialog(context),
             icon: const Icon(Icons.upload_file),
           ),
         ],

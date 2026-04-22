@@ -10,9 +10,6 @@ import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
-import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
-import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
-import 'package:financo/features/transactions/presentation/widgets/transactions_import_csv_button.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -41,44 +38,6 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<TransactionsBloc, TransactionsState>(
-          listener: (context, state) {
-            if (state is TransactionsImported) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    t.transactions.importSuccess(
-                      imported: state.importedCount,
-                      skipped: state.skippedCount,
-                    ),
-                  ),
-                ),
-              );
-
-              final filter = context.read<DateFilterCubit>().state;
-              context.read<DashboardBloc>().add(
-                DashboardLoadRequested(
-                  year: filter.year,
-                  month: filter.month,
-                  forceRefresh: true,
-                ),
-              );
-              context.read<TransactionsBloc>().add(
-                TransactionsLoadRequested(
-                  year: filter.year,
-                  month: filter.month,
-                  forceRefresh: true,
-                ),
-              );
-            }
-
-            if (state is TransactionsError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.failure.message)),
-              );
-            }
-          },
-        ),
         BlocListener<DateFilterCubit, DateFilterState>(
           listener: (context, filter) {
             context.read<DashboardBloc>().add(
@@ -137,7 +96,6 @@ class _DashboardContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final summary = state.summary;
     final colors = context.appColors;
-    final isCompactAction = MediaQuery.sizeOf(context).width < 900;
 
     final checkingAccounts = summary.accounts
         .where((a) => a.type == AccountType.checking)
@@ -151,11 +109,6 @@ class _DashboardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: TransactionsImportCsvButton(compact: isCompactAction),
-          ),
-          const SizedBox(height: 20),
           // ─── Saldo das contas correntes ────────────────────
           _SectionTitle(title: t.dashboard.accountBalances),
           const SizedBox(height: 8),

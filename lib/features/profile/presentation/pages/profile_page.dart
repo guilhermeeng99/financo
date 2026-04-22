@@ -6,13 +6,19 @@ import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_app_bar.dart';
 import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
+import 'package:financo/features/transactions/presentation/widgets/transactions_csv_import_dialog.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,6 +76,10 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Future<void> _importCsv() async {
+    await showTransactionsCsvImportDialog(context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -80,85 +90,131 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: FinancoAppBar(title: t.profile.title),
-      body: BlocBuilder<ProfileCubit, ProfileState>(
-        builder: (context, state) {
-          if (state is ProfileLoading) return const LoadingShimmer();
-          if (state is ProfileError) {
-            return ErrorView(
-              message: state.failure.message,
-              onRetry: () =>
-                  context.read<ProfileCubit>().loadProfile(forceRefresh: true),
+      body: BlocListener<TransactionsBloc, TransactionsState>(
+        listener: (context, state) {
+          if (state is TransactionsImported) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  t.transactions.importSuccess(
+                    imported: state.importedCount,
+                    skipped: state.skippedCount,
+                  ),
+                ),
+              ),
+            );
+
+            final filter = context.read<DateFilterCubit>().state;
+            context.read<DashboardBloc>().add(
+              DashboardLoadRequested(
+                year: filter.year,
+                month: filter.month,
+                forceRefresh: true,
+              ),
+            );
+            context.read<TransactionsBloc>().add(
+              TransactionsLoadRequested(
+                year: filter.year,
+                month: filter.month,
+                forceRefresh: true,
+              ),
             );
           }
-          if (state is ProfileLoaded) {
-            final user = state.user;
-            return ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Center(
-                  child: _ProfileAvatar(
-                    name: user.name,
-                    photoUrl: user.photoUrl,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    user.name,
-                    style: context.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    user.email,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                const Divider(),
-                _ProfileTile(
-                  icon: FontAwesomeIcons.buildingColumns,
-                  title: t.profile.accounts,
-                  onTap: () => context.push(AppRoutes.accounts),
-                ),
-                _ProfileTile(
-                  icon: FontAwesomeIcons.tags,
-                  title: t.profile.categories,
-                  onTap: () => context.push(AppRoutes.categories),
-                ),
-                const Divider(),
-                _ThemeSelector(),
-                const Divider(),
-                ListTile(
-                  leading: const FaIcon(
-                    FontAwesomeIcons.triangleExclamation,
-                    color: Colors.red,
-                  ),
-                  title: Text(
-                    t.profile.clearData,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  subtitle: Text(t.profile.clearDataDescription),
-                  onTap: () => _clearAccountData(user.id),
-                ),
-                const Divider(),
-                const SizedBox(height: 24),
-                FinancoButton(
-                  label: t.auth.signOut,
-                  isOutlined: true,
-                  onPressed: () {
-                    context.read<AuthBloc>().add(const AuthSignOutRequested());
-                  },
-                ),
-              ],
+
+          if (state is TransactionsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.failure.message)),
             );
           }
-          return const SizedBox.shrink();
         },
+        child: BlocBuilder<ProfileCubit, ProfileState>(
+          builder: (context, state) {
+            if (state is ProfileLoading) return const LoadingShimmer();
+            if (state is ProfileError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () => context.read<ProfileCubit>().loadProfile(
+                  forceRefresh: true,
+                ),
+              );
+            }
+            if (state is ProfileLoaded) {
+              final user = state.user;
+              return ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  Center(
+                    child: _ProfileAvatar(
+                      name: user.name,
+                      photoUrl: user.photoUrl,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      user.name,
+                      style: context.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      user.email,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: context.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  _ProfileTile(
+                    icon: FontAwesomeIcons.buildingColumns,
+                    title: t.profile.accounts,
+                    onTap: () => context.push(AppRoutes.accounts),
+                  ),
+                  _ProfileTile(
+                    icon: FontAwesomeIcons.tags,
+                    title: t.profile.categories,
+                    onTap: () => context.push(AppRoutes.categories),
+                  ),
+                  _ProfileTile(
+                    icon: FontAwesomeIcons.fileArrowUp,
+                    title: t.transactions.importCsv,
+                    onTap: _importCsv,
+                  ),
+                  const Divider(),
+                  _ThemeSelector(),
+                  const Divider(),
+                  ListTile(
+                    leading: const FaIcon(
+                      FontAwesomeIcons.triangleExclamation,
+                      color: Colors.red,
+                    ),
+                    title: Text(
+                      t.profile.clearData,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    subtitle: Text(t.profile.clearDataDescription),
+                    onTap: () => _clearAccountData(user.id),
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 24),
+                  FinancoButton(
+                    label: t.auth.signOut,
+                    isOutlined: true,
+                    onPressed: () {
+                      context.read<AuthBloc>().add(
+                        const AuthSignOutRequested(),
+                      );
+                    },
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
