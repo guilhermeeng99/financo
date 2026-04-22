@@ -1,0 +1,18 @@
+Category,Subcategory,Type
+Alimentação,,Expense
+Alimentação,Mercado,Expense
+Alimentação,Restaurante,Expense
+Moradia,Aluguel,Expense
+Moradia,Condomínio,Expense
+Moradia,Internet,Expense
+Moradia,Luz,Expense
+Saúde,Plano de saúde,Expense
+Saúde,Academia,Expense
+Transporte,,Expense
+Lazer,,Expense
+Educação,,Expense
+Salário,,Income
+Dividendos,,Income
+Reembolso,,Income
+Investimentos,CDB,Income
+Investimentos,Ações,Income
