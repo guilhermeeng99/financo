@@ -365,6 +365,21 @@ class TranslationsDashboardEn {
 
 	/// en: 'Total Income'
 	String get totalIncome => 'Total Income';
+
+	/// en: 'Transaction list'
+	String get transactionList => 'Transaction list';
+
+	/// en: 'Subcategories'
+	String get subcategories => 'Subcategories';
+
+	/// en: 'No subcategories'
+	String get noSubcategories => 'No subcategories';
+
+	/// en: 'Total'
+	String get total => 'Total';
+
+	/// en: 'Close'
+	String get close => 'Close';
 }
 
 // Path: transactions
@@ -968,6 +983,11 @@ extension on Translations {
 			'dashboard.noIncomeYet' => 'No income this month',
 			'dashboard.totalExpenses' => 'Total Expenses',
 			'dashboard.totalIncome' => 'Total Income',
+			'dashboard.transactionList' => 'Transaction list',
+			'dashboard.subcategories' => 'Subcategories',
+			'dashboard.noSubcategories' => 'No subcategories',
+			'dashboard.total' => 'Total',
+			'dashboard.close' => 'Close',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',

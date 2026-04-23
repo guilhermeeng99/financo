@@ -177,7 +177,7 @@ void main() {
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: TransactionFactory.list(),
+        periodTransactions: TransactionFactory.list(),
         selectedYear: 2024,
         selectedMonth: 6,
       ),
@@ -202,7 +202,7 @@ void main() {
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        periodTransactions: const [],
         selectedYear: 2024,
         selectedMonth: 6,
       ),
@@ -225,7 +225,7 @@ void main() {
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        periodTransactions: const [],
         selectedYear: 2024,
         selectedMonth: 6,
       ),
@@ -242,7 +242,7 @@ void main() {
     );
 
     blocTest<DashboardBloc, DashboardState>(
-      'limits recent transactions to 5',
+      'exposes all period transactions in the loaded state',
       build: buildBloc,
       setUp: () {
         when(
@@ -256,7 +256,6 @@ void main() {
             DashboardFactory.summary(),
           ),
         );
-        // Return 10 transactions
         when(
           () => mockGetTransactions(
             userId: any(named: 'userId'),
@@ -281,9 +280,9 @@ void main() {
       expect: () => [
         const DashboardLoading(),
         isA<DashboardLoaded>().having(
-          (s) => s.recentTransactions.length,
-          'recentTransactions.length',
-          5,
+          (s) => s.periodTransactions.length,
+          'periodTransactions.length',
+          10,
         ),
       ],
     );
@@ -296,7 +295,7 @@ void main() {
       setUp: stubSuccess,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        periodTransactions: const [],
         selectedYear: 2024,
         selectedMonth: 3,
       ),
@@ -315,7 +314,7 @@ void main() {
       build: buildBloc,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        periodTransactions: const [],
         selectedYear: 2024,
         selectedMonth: 6,
       ),
@@ -373,7 +372,7 @@ void main() {
       build: buildBloc,
       seed: () => DashboardLoaded(
         summary: DashboardFactory.summary(),
-        recentTransactions: const [],
+        periodTransactions: const [],
         selectedYear: 2024,
         selectedMonth: 6,
       ),

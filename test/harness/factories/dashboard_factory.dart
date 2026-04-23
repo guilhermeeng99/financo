@@ -5,11 +5,13 @@ class DashboardFactory {
   const DashboardFactory._();
 
   static CategoryAmount categoryAmount({
+    String categoryId = 'cat-1',
     String categoryName = 'Food',
     int categoryColor = 4280391411,
     double amount = 150,
   }) {
     return CategoryAmount(
+      categoryId: categoryId,
       categoryName: categoryName,
       categoryColor: categoryColor,
       amount: amount,
@@ -47,11 +49,13 @@ class DashboardFactory {
           expensesByCategory ??
           [
             const CategoryAmount(
+              categoryId: 'cat-food',
               categoryName: 'Food',
               categoryColor: 4280391411,
               amount: 1200,
             ),
             const CategoryAmount(
+              categoryId: 'cat-transport',
               categoryName: 'Transport',
               categoryColor: 4294198070,
               amount: 800,
@@ -61,6 +65,7 @@ class DashboardFactory {
           incomeByCategory ??
           [
             const CategoryAmount(
+              categoryId: 'cat-salary',
               categoryName: 'Salary',
               categoryColor: 4283215696,
               amount: 3000,

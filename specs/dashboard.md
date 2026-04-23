@@ -8,6 +8,7 @@ Monthly financial summary view. Aggregates account balances, income/expenses, an
 
 | Field | Type | Notes |
 |-------|------|-------|
+| categoryId | String | Aggregation key (parent category id, or original id when category is missing) |
 | categoryName | String | Display name, fallback: "No Category" |
 | categoryColor | int | Material color int, fallback: 0xFF9E9E9E |
 | amount | double | Aggregated total |
@@ -76,7 +77,7 @@ Extends `Equatable`.
 |-------|--------|
 | DashboardInitial | — |
 | DashboardLoading | — |
-| DashboardLoaded | summary, recentTransactions (max 5), selectedYear, selectedMonth |
+| DashboardLoaded | summary, periodTransactions (full list for the selected month), selectedYear, selectedMonth |
 | DashboardError | failure |
 
 ### Transitions
@@ -88,7 +89,7 @@ Extends `Equatable`.
 4. Call `getTransactions(userId, startDate, endDate, forceRefresh)` for period
 5. If summary fails → emit `DashboardError`
 6. If transactions fail → emit `DashboardError`
-7. Otherwise → emit `DashboardLoaded` with first 5 transactions as recentTransactions
+7. Otherwise → emit `DashboardLoaded` with the full list of period transactions (used by the per-category drill-down dialog)
 
 **DashboardRefreshRequested:**
 1. Use current year/month if loaded, else DateTime.now()
@@ -101,5 +102,13 @@ Extends `Equatable`.
 2. **Empty transactions**: all totals = 0, no category breakdowns.
 3. **Missing category**: uses "Sem categoria" fallback with grey color.
 4. **Same month no-op**: DashboardLoadRequested with same year/month skipped unless forceRefresh.
-5. **First 5 transactions**: recentTransactions is `transactions.take(5)`, fewer than 5 is fine.
-6. **Account with no transactions**: adjustment = 0, balance stays as initialBalance.
+5. **Account with no transactions**: adjustment = 0, balance stays as initialBalance.
+
+## Category drill-down dialog
+
+Tapping a row in the **Expenses by Category** list opens a modal dialog scoped to that parent category. The dialog has two tabs:
+
+- **Lista de lançamentos** — every period transaction whose `categoryId` equals the parent category id, OR whose category's `parentId` equals the parent category id. Sorted by date descending. Transfers are excluded. A `Total` row aggregates the listed amounts.
+- **Subcategorias** — subcategory bar chart + list with per-subcategory percentage. Aggregation key is each transaction's `categoryId`. Transactions booked directly on the parent category are intentionally skipped (they only appear in the transactions tab).
+
+The dialog title displays `<categoryName> (<percentage of totalExpenses>%)`. The dialog reads category metadata from `CategoriesCubit` and account names from `AccountsCubit`.

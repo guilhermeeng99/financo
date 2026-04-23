@@ -3,17 +3,19 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 class CategoryAmount extends Equatable {
   const CategoryAmount({
+    required this.categoryId,
     required this.categoryName,
     required this.categoryColor,
     required this.amount,
   });
 
+  final String categoryId;
   final String categoryName;
   final int categoryColor;
   final double amount;
 
   @override
-  List<Object> get props => [categoryName, categoryColor, amount];
+  List<Object> get props => [categoryId, categoryName, categoryColor, amount];
 }
 
 class DashboardSummary extends Equatable {

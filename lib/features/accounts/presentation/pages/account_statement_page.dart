@@ -12,6 +12,7 @@ import 'package:financo/features/accounts/presentation/cubit/account_statement_c
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -332,6 +333,11 @@ class _TransactionsPanel extends StatelessWidget {
         ? {for (final c in categoriesState.categories) c.id: c}
         : <String, CategoryEntity>{};
 
+    final accountsState = context.watch<AccountsCubit>().state;
+    final accountMap = accountsState is AccountsLoaded
+        ? {for (final a in accountsState.accounts) a.id: a}
+        : <String, AccountEntity>{};
+
     if (state.transactions.isEmpty) {
       return Center(
         child: Text(
@@ -349,10 +355,12 @@ class _TransactionsPanel extends StatelessWidget {
       separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final tx = state.transactions[index];
-        final categoryLabel = _categoryLabel(categoryMap, tx.categoryId);
+        final label = tx.isTransfer
+            ? _transferLabel(tx, accountMap)
+            : _categoryLabel(categoryMap, tx.categoryId);
         return TransactionTile(
           transaction: tx,
-          categoryLabel: categoryLabel,
+          categoryLabel: label,
           onTap: () => context.go(
             AppRoutes.addTransaction,
             extra: tx,
@@ -377,6 +385,24 @@ class _TransactionsPanel extends StatelessWidget {
     }
 
     return category.name;
+  }
+
+  String? _transferLabel(
+    TransactionEntity tx,
+    Map<String, AccountEntity> accountMap,
+  ) {
+    final thisAccount = accountMap[tx.accountId];
+    final otherAccountId = state.transferCounterpartAccountIds[tx.id];
+    final otherAccount =
+        otherAccountId != null ? accountMap[otherAccountId] : null;
+
+    if (thisAccount == null || otherAccount == null) return null;
+
+    // Income into this account → money came FROM the other account.
+    // Expense from this account → money went TO the other account.
+    return tx.type == TransactionType.income
+        ? '${otherAccount.name} → ${thisAccount.name}'
+        : '${thisAccount.name} → ${otherAccount.name}';
   }
 }
 

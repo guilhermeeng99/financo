@@ -7,6 +7,8 @@ import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -50,28 +52,25 @@ class _AccountsPageState extends State<AccountsPage> {
                 message: t.accounts.empty,
               );
             }
-            return ListView.builder(
+            final checkings = state.accounts
+                .where((a) => a.type == AccountType.checking)
+                .toList();
+            final creditCards = state.accounts
+                .where((a) => a.type == AccountType.creditCard)
+                .toList();
+            return ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: state.accounts.length,
-              itemBuilder: (context, index) {
-                final account = state.accounts[index];
-                return AccountCard(
-                  account: account,
-                  onTap: () async {
-                    final result = await context.push(
-                      AppRoutes.addAccount,
-                      extra: account,
-                    );
-                    if (result == true && context.mounted) {
-                      unawaited(
-                        context.read<AccountsCubit>().loadAccounts(
-                          forceRefresh: true,
-                        ),
-                      );
-                    }
-                  },
-                );
-              },
+              children: [
+                if (checkings.isNotEmpty) ...[
+                  _SectionHeader(title: t.accounts.checking),
+                  ...checkings.map((a) => _AccountTile(account: a)),
+                ],
+                if (creditCards.isNotEmpty) ...[
+                  if (checkings.isNotEmpty) const SizedBox(height: 16),
+                  _SectionHeader(title: t.accounts.creditCard),
+                  ...creditCards.map((a) => _AccountTile(account: a)),
+                ],
+              ],
             );
           }
           return const SizedBox.shrink();
@@ -91,6 +90,50 @@ class _AccountsPageState extends State<AccountsPage> {
         },
         child: const FaIcon(FontAwesomeIcons.plus),
       ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      child: Text(
+        title,
+        style: context.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: context.appColors.onBackgroundLight,
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountTile extends StatelessWidget {
+  const _AccountTile({required this.account});
+
+  final AccountEntity account;
+
+  @override
+  Widget build(BuildContext context) {
+    return AccountCard(
+      account: account,
+      onTap: () async {
+        final result = await context.push(
+          AppRoutes.addAccount,
+          extra: account,
+        );
+        if (result == true && context.mounted) {
+          unawaited(
+            context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
+          );
+        }
+      },
     );
   }
 }

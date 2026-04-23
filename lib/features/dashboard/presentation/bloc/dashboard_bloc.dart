@@ -76,11 +76,10 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       (summary) => transactionsResult.fold(
         (failure) => emit(DashboardError(failure)),
         (transactions) {
-          final recent = transactions.take(5).toList();
           emit(
             DashboardLoaded(
               summary: summary,
-              recentTransactions: recent,
+              periodTransactions: transactions,
               selectedYear: year,
               selectedMonth: month,
             ),

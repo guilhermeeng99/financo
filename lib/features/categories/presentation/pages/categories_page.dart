@@ -41,6 +41,19 @@ class _CategoriesPageState extends State<CategoriesPage>
 
   @override
   Widget build(BuildContext context) {
+    final categoriesState = context.watch<CategoriesCubit>().state;
+    final categories = switch (categoriesState) {
+      CategoriesLoaded(:final categories) => categories,
+      CategoriesImported(:final categories) => categories,
+      _ => const <CategoryEntity>[],
+    };
+    final incomeCount = categories
+        .where((c) => c.type == CategoryType.income)
+        .length;
+    final expenseCount = categories
+        .where((c) => c.type == CategoryType.expense)
+        .length;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(t.categories.title),
@@ -54,8 +67,8 @@ class _CategoriesPageState extends State<CategoriesPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: t.categories.incomeType),
-            Tab(text: t.categories.expenseType),
+            Tab(text: '${t.categories.incomeType} ($incomeCount)'),
+            Tab(text: '${t.categories.expenseType} ($expenseCount)'),
           ],
         ),
       ),

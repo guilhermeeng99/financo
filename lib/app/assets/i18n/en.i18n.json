@@ -94,7 +94,12 @@
     "noExpensesYet": "No expenses this month",
     "noIncomeYet": "No income this month",
     "totalExpenses": "Total Expenses",
-    "totalIncome": "Total Income"
+    "totalIncome": "Total Income",
+    "transactionList": "Transaction list",
+    "subcategories": "Subcategories",
+    "noSubcategories": "No subcategories",
+    "total": "Total",
+    "close": "Close"
   },
   "transactions": {
     "title": "Transactions",

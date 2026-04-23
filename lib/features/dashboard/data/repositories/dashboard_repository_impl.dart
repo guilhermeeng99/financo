@@ -137,6 +137,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     return amounts.entries.map((e) {
       final cat = categoryMap[e.key];
       return CategoryAmount(
+        categoryId: e.key,
         categoryName: cat?.name ?? 'Sem categoria',
         categoryColor: cat?.color ?? 0xFF9E9E9E,
         amount: e.value,

@@ -30,6 +30,7 @@ import 'package:financo/features/profile/presentation/pages/profile_page.dart';
 import 'package:financo/features/startup/presentation/pages/startup_page.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
@@ -166,6 +167,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             return BlocProvider(
               create: (_) => AccountStatementCubit(
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
+                getTransaction: GetIt.I<GetTransactionUseCase>(),
                 accountId: id,
               ),
               child: AccountStatementPage(accountId: id),

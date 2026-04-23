@@ -60,6 +60,7 @@ import 'package:financo/features/transactions/domain/repositories/transaction_re
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
@@ -195,6 +196,9 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => GetCurrentUserUseCase(sl()))
     ..registerLazySingleton(
       () => GetTransactionsUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => GetTransactionUseCase(sl()),
     )
     ..registerLazySingleton(
       () => CreateTransactionUseCase(sl()),

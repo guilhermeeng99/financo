@@ -225,7 +225,16 @@ class _ThemeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, themeMode) {
-        final isDark = themeMode == ThemeMode.dark;
+        // ThemeMode.system follows the OS, so resolve it to the actual
+        // brightness — otherwise the switch can appear "off" while the app
+        // is already rendering in dark mode, making the first toggle look
+        // like a no-op.
+        final isDark = switch (themeMode) {
+          ThemeMode.dark => true,
+          ThemeMode.light => false,
+          ThemeMode.system =>
+            MediaQuery.platformBrightnessOf(context) == Brightness.dark,
+        };
         return SwitchListTile(
           secondary: FaIcon(
             isDark ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,

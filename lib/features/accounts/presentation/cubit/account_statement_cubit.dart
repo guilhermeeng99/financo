@@ -4,18 +4,22 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AccountStatementCubit extends Cubit<AccountStatementState> {
   AccountStatementCubit({
     required GetTransactionsUseCase getTransactions,
+    required GetTransactionUseCase getTransaction,
     required String accountId,
   }) : _getTransactions = getTransactions,
+       _getTransaction = getTransaction,
        _accountId = accountId,
        super(const AccountStatementInitial());
 
   final GetTransactionsUseCase _getTransactions;
+  final GetTransactionUseCase _getTransaction;
   final String _accountId;
 
   Future<void> load(AccountEntity account, int year, int month) async {
@@ -102,6 +106,26 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
       }
     }
 
+    // Resolve the other side of each transfer so the view can render
+    // "SourceAccount → DestinationAccount" labels. A failed lookup is
+    // skipped silently — the tile just falls back to no label.
+    final transferCounterpartAccountIds = <String, String>{};
+    final transfers = sorted.where((tx) => tx.isTransfer).toList();
+    if (transfers.isNotEmpty) {
+      final results = await Future.wait(
+        transfers.map(
+          (tx) => _getTransaction(tx.linkedTransactionId!),
+        ),
+      );
+      for (var i = 0; i < transfers.length; i++) {
+        results[i].fold(
+          (_) {},
+          (linked) =>
+              transferCounterpartAccountIds[transfers[i].id] = linked.accountId,
+        );
+      }
+    }
+
     emit(
       AccountStatementLoaded(
         account: account,
@@ -111,6 +135,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
         totalExpenses: totalExpenses,
         year: year,
         month: month,
+        transferCounterpartAccountIds: transferCounterpartAccountIds,
       ),
     );
   }
@@ -140,6 +165,7 @@ final class AccountStatementLoaded extends AccountStatementState {
     required this.totalExpenses,
     required this.year,
     required this.month,
+    this.transferCounterpartAccountIds = const {},
   });
 
   final AccountEntity account;
@@ -149,6 +175,9 @@ final class AccountStatementLoaded extends AccountStatementState {
   final double totalExpenses;
   final int year;
   final int month;
+
+  // transfer transaction id → accountId of the linked (other side) transaction
+  final Map<String, String> transferCounterpartAccountIds;
 
   double get result => totalIncome - totalExpenses;
 
@@ -161,6 +190,7 @@ final class AccountStatementLoaded extends AccountStatementState {
     totalExpenses,
     year,
     month,
+    transferCounterpartAccountIds,
   ];
 }
 

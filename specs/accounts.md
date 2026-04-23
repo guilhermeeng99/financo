@@ -134,8 +134,14 @@ Initial ──load(account, year, month)──→ Loading
     runningBalance = initialBalance + Σ(income) − Σ(expense)  [all time]
     totalIncome    = Σ(income)  [period]
     totalExpenses  = Σ(expense) [period]
+    → for each transfer in period: fetch linked transaction to resolve
+      its accountId (the "other side"). Build
+      transferCounterpartAccountIds: Map<transactionId, linkedAccountId>.
+      A failed lookup leaves the entry absent — the view falls back to
+      no label.
     → Loaded { account, runningBalance, transactions (sorted desc by date),
-               totalIncome, totalExpenses, year, month }
+               totalIncome, totalExpenses, year, month,
+               transferCounterpartAccountIds }
 ```
 
 ## Edge Cases

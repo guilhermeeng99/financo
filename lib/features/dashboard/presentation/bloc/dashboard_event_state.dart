@@ -48,20 +48,20 @@ final class DashboardLoading extends DashboardState {
 final class DashboardLoaded extends DashboardState {
   const DashboardLoaded({
     required this.summary,
-    required this.recentTransactions,
+    required this.periodTransactions,
     required this.selectedYear,
     required this.selectedMonth,
   });
 
   final DashboardSummary summary;
-  final List<TransactionEntity> recentTransactions;
+  final List<TransactionEntity> periodTransactions;
   final int selectedYear;
   final int selectedMonth;
 
   @override
   List<Object> get props => [
     summary,
-    recentTransactions,
+    periodTransactions,
     selectedYear,
     selectedMonth,
   ];
