@@ -893,6 +893,12 @@ class TranslationsProfileEn {
 
 	/// en: 'Your account data was cleared.'
 	String get clearDataSuccess => 'Your account data was cleared.';
+
+	/// en: 'Download Android app'
+	String get downloadApk => 'Download Android app';
+
+	/// en: 'Install the mobile version on your Android device'
+	String get downloadApkDescription => 'Install the mobile version on your Android device';
 }
 
 // Path: chat.audio
@@ -1213,6 +1219,8 @@ extension on Translations {
 			'profile.clearDataDescription' => 'Delete transactions, chat, categories and accounts',
 			'profile.clearDataConfirm' => 'This will permanently delete all data from your account. Continue?',
 			'profile.clearDataSuccess' => 'Your account data was cleared.',
+			'profile.downloadApk' => 'Download Android app',
+			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',
 			_ => null,
 		};
 	}

@@ -19,3 +19,14 @@ void triggerBrowserDownload(Uint8List bytes, String fileName, String mimeType) {
     ..remove();
   web.URL.revokeObjectURL(url);
 }
+
+void triggerBrowserUrlDownload(String url, String fileName) {
+  final anchor = web.HTMLAnchorElement()
+    ..href = url
+    ..download = fileName
+    ..style.display = 'none';
+  web.document.body!.append(anchor);
+  anchor
+    ..click()
+    ..remove();
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/app/widgets/financo_mobile_nav.dart';
 import 'package:financo/app/widgets/financo_sidebar.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
@@ -234,8 +235,20 @@ class _ShellWithSidebar extends StatelessWidget {
 
   final Widget child;
 
+  static const double _mobileBreakpoint = 600;
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < _mobileBreakpoint;
+
+    if (isMobile) {
+      return Scaffold(
+        appBar: const FinancoMobileAppBar(),
+        body: child,
+        bottomNavigationBar: const FinancoBottomBar(),
+      );
+    }
+
     return Scaffold(
       body: Row(
         children: [

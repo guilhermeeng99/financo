@@ -280,6 +280,8 @@
     "clearData": "Clear all my data",
     "clearDataDescription": "Delete transactions, chat, categories and accounts",
     "clearDataConfirm": "This will permanently delete all data from your account. Continue?",
-    "clearDataSuccess": "Your account data was cleared."
+    "clearDataSuccess": "Your account data was cleared.",
+    "downloadApk": "Download Android app",
+    "downloadApkDescription": "Install the mobile version on your Android device"
   }
 }

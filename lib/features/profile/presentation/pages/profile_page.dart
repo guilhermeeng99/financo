@@ -8,6 +8,9 @@ import 'package:financo/app/widgets/financo_button.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/web_file_download.dart'
+    if (dart.library.js_interop)
+        'package:financo/core/utils/web_file_download_web.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
@@ -20,6 +23,7 @@ import 'package:financo/features/transactions/presentation/bloc/transactions_blo
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/features/transactions/presentation/widgets/transactions_csv_import_dialog.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -78,6 +82,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _importCsv() async {
     await showTransactionsCsvImportDialog(context);
+  }
+
+  void _downloadApk() {
+    triggerBrowserUrlDownload('financo.apk', 'financo.apk');
   }
 
   @override
@@ -183,6 +191,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     title: t.transactions.importCsv,
                     onTap: _importCsv,
                   ),
+                  if (kIsWeb)
+                    ListTile(
+                      leading: const FaIcon(FontAwesomeIcons.android),
+                      title: Text(t.profile.downloadApk),
+                      subtitle: Text(t.profile.downloadApkDescription),
+                      trailing: const FaIcon(FontAwesomeIcons.download),
+                      onTap: _downloadApk,
+                    ),
                   const Divider(),
                   _ThemeSelector(),
                   const Divider(),
