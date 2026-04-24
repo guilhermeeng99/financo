@@ -49,7 +49,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
-          flutter build apk --release \
+          flutter build apk --release --no-tree-shake-icons \
             --dart-define="GEMINI_API_KEY=$GEMINI_API_KEY" \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
