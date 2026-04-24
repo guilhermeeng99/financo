@@ -3,17 +3,18 @@ import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/data/models/chat_message_model.dart';
+import 'package:financo/features/chat/domain/entities/chat_image_attachment.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
   ChatRepositoryImpl({
-    required GeminiDataSource geminiDataSource,
+    required ChatBackendDataSource chatBackendDataSource,
     required ChatRemoteDataSource chatRemoteDataSource,
-  }) : _gemini = geminiDataSource,
+  }) : _backend = chatBackendDataSource,
        _chatRemote = chatRemoteDataSource;
 
-  final GeminiDataSource _gemini;
+  final ChatBackendDataSource _backend;
   final ChatRemoteDataSource _chatRemote;
 
   @override
@@ -21,15 +22,15 @@ class ChatRepositoryImpl implements ChatRepository {
     required String userId,
     required String content,
     required List<ChatMessageEntity> history,
+    ChatImageAttachment? image,
   }) async {
     try {
-      final response = await _gemini.sendMessage(
+      final response = await _backend.sendMessage(
         userId: userId,
         content: content,
         history: history,
+        image: image,
       );
-
-      await _chatRemote.saveChatMessage(response);
       return Right(response);
     } on AiException catch (e) {
       return Left(AiFailure(e.message));
@@ -60,6 +61,22 @@ class ChatRepositoryImpl implements ChatRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> transcribeAudio({
+    required String base64Data,
+    required String mimeType,
+  }) async {
+    try {
+      final transcript = await _backend.transcribeAudio(
+        base64Data: base64Data,
+        mimeType: mimeType,
+      );
+      return Right(transcript);
+    } on AiException catch (e) {
+      return Left(AiFailure(e.message));
     }
   }
 }

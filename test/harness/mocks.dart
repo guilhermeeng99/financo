@@ -28,6 +28,7 @@ import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
@@ -141,7 +142,8 @@ class MockGetProfileUseCase extends Mock implements GetProfileUseCase {}
 class MockChatRepository extends Mock implements ChatRepository {}
 
 // ── Data Sources: Chat ──
-class MockGeminiDataSource extends Mock implements GeminiDataSource {}
+class MockChatBackendDataSource extends Mock
+    implements ChatBackendDataSource {}
 
 class MockChatRemoteDataSource extends Mock implements ChatRemoteDataSource {}
 
@@ -152,6 +154,9 @@ class MockGetChatHistoryUseCase extends Mock implements GetChatHistoryUseCase {}
 
 class MockSaveChatMessageUseCase extends Mock
     implements SaveChatMessageUseCase {}
+
+class MockTranscribeAudioUseCase extends Mock
+    implements TranscribeAudioUseCase {}
 
 // ── Repositories: Dashboard ──
 class MockDashboardRepository extends Mock implements DashboardRepository {}

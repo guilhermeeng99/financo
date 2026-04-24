@@ -18,6 +18,7 @@ void main() {
   late MockSendMessageUseCase mockSendMessage;
   late MockGetChatHistoryUseCase mockGetChatHistory;
   late MockSaveChatMessageUseCase mockSaveChatMessage;
+  late MockTranscribeAudioUseCase mockTranscribeAudio;
   late MockCreateAccountUseCase mockCreateAccount;
   late MockGetAccountsUseCase mockGetAccounts;
   late MockDeleteAccountUseCase mockDeleteAccount;
@@ -39,6 +40,7 @@ void main() {
     mockSendMessage = MockSendMessageUseCase();
     mockGetChatHistory = MockGetChatHistoryUseCase();
     mockSaveChatMessage = MockSaveChatMessageUseCase();
+    mockTranscribeAudio = MockTranscribeAudioUseCase();
     mockCreateAccount = MockCreateAccountUseCase();
     mockGetAccounts = MockGetAccountsUseCase();
     mockDeleteAccount = MockDeleteAccountUseCase();
@@ -52,6 +54,7 @@ void main() {
     sendMessage: mockSendMessage,
     getChatHistory: mockGetChatHistory,
     saveChatMessage: mockSaveChatMessage,
+    transcribeAudio: mockTranscribeAudio,
     createAccount: mockCreateAccount,
     getAccounts: mockGetAccounts,
     deleteAccount: mockDeleteAccount,

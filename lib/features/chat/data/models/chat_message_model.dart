@@ -7,17 +7,23 @@ class ChatMessageModel extends ChatMessageEntity {
     required super.userId,
     required super.role,
     required super.content,
-    required super.createdAt, super.metadata,
+    required super.createdAt,
+    super.metadata,
+    super.channel,
   });
 
   factory ChatMessageModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data()! as Map<String, dynamic>;
+    final rawChannel = data['channel'] as String?;
     return ChatMessageModel(
       id: doc.id,
       userId: data['userId'] as String,
       role: ChatRole.values.byName(data['role'] as String),
       content: data['content'] as String,
       metadata: data['metadata'] as Map<String, dynamic>?,
+      channel: rawChannel != null
+          ? ChatChannel.values.byName(rawChannel)
+          : ChatChannel.app,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
     );
   }
@@ -29,6 +35,7 @@ class ChatMessageModel extends ChatMessageEntity {
       role: entity.role,
       content: entity.content,
       metadata: entity.metadata,
+      channel: entity.channel,
       createdAt: entity.createdAt,
     );
   }
@@ -39,6 +46,7 @@ class ChatMessageModel extends ChatMessageEntity {
       'role': role.name,
       'content': content,
       'metadata': metadata,
+      'channel': channel.name,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

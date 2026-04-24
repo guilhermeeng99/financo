@@ -794,6 +794,9 @@ class TranslationsChatEn {
 
 	/// en: 'Sorry, I couldn't understand that. Could you try again?'
 	String get error => 'Sorry, I couldn\'t understand that. Could you try again?';
+
+	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
+	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
 }
 
 // Path: reports
@@ -890,6 +893,63 @@ class TranslationsProfileEn {
 
 	/// en: 'Your account data was cleared.'
 	String get clearDataSuccess => 'Your account data was cleared.';
+}
+
+// Path: chat.audio
+class TranslationsChatAudioEn {
+	TranslationsChatAudioEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Record voice message'
+	String get start => 'Record voice message';
+
+	/// en: 'Stop recording'
+	String get stop => 'Stop recording';
+
+	/// en: 'Cancel'
+	String get cancel => 'Cancel';
+
+	/// en: 'Recording'
+	String get recording => 'Recording';
+
+	/// en: 'Transcribing...'
+	String get transcribing => 'Transcribing...';
+
+	/// en: 'Review transcript and send'
+	String get reviewHint => 'Review transcript and send';
+
+	/// en: 'Microphone permission required to record voice.'
+	String get permissionDenied => 'Microphone permission required to record voice.';
+
+	/// en: 'Failed to record audio'
+	String get recordError => 'Failed to record audio';
+}
+
+// Path: chat.image
+class TranslationsChatImageEn {
+	TranslationsChatImageEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Attach image'
+	String get attach => 'Attach image';
+
+	/// en: 'Take photo'
+	String get takePhoto => 'Take photo';
+
+	/// en: 'Choose from gallery'
+	String get fromGallery => 'Choose from gallery';
+
+	/// en: 'Remove image'
+	String get remove => 'Remove image';
+
+	/// en: 'Could not pick image'
+	String get pickError => 'Could not pick image';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -1114,6 +1174,19 @@ extension on Translations {
 			'chat.confirmed' => 'Transaction saved!',
 			'chat.cancelled' => 'Transaction cancelled.',
 			'chat.error' => 'Sorry, I couldn\'t understand that. Could you try again?',
+			'chat.audio.start' => 'Record voice message',
+			'chat.audio.stop' => 'Stop recording',
+			'chat.audio.cancel' => 'Cancel',
+			'chat.audio.recording' => 'Recording',
+			'chat.audio.transcribing' => 'Transcribing...',
+			'chat.audio.reviewHint' => 'Review transcript and send',
+			'chat.audio.permissionDenied' => 'Microphone permission required to record voice.',
+			'chat.audio.recordError' => 'Failed to record audio',
+			'chat.image.attach' => 'Attach image',
+			'chat.image.takePhoto' => 'Take photo',
+			'chat.image.fromGallery' => 'Choose from gallery',
+			'chat.image.remove' => 'Remove image',
+			'chat.image.pickError' => 'Could not pick image',
 			'reports.title' => 'Reports',
 			'reports.incomeVsExpenses' => 'Income vs Expenses',
 			'reports.expensesByCategory' => 'Expenses by Category',

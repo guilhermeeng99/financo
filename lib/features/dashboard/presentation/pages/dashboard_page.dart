@@ -359,6 +359,52 @@ class _ResultCard extends StatelessWidget {
   }
 }
 
+// ─── Mobile breakpoint ──────────────────────────────────────
+const double _mobileBreakpoint = 600;
+
+// ─── Category donut (mobile) ────────────────────────────────
+class _CategoryDonut extends StatelessWidget {
+  const _CategoryDonut({required this.data, required this.total});
+
+  final List<CategoryAmount> data;
+  final double total;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      child: Center(
+        child: SizedBox(
+          height: 180,
+          width: 180,
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 44,
+              sections: [
+                for (var i = 0; i < data.length; i++)
+                  PieChartSectionData(
+                    value: data[i].amount,
+                    color: Color(data[i].categoryColor),
+                    radius: 44,
+                    title: total > 0
+                        ? '${(data[i].amount / total * 100).toStringAsFixed(0)}%'
+                        : '',
+                    titleStyle: context.textTheme.labelSmall!.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ─── Expenses bar chart ─────────────────────────────────────
 class _ExpensesBarChart extends StatelessWidget {
   const _ExpensesBarChart({
@@ -378,6 +424,7 @@ class _ExpensesBarChart extends StatelessWidget {
 
     final maxAmount = data.map((e) => e.amount).reduce((a, b) => a > b ? a : b);
     final total = data.fold<double>(0, (s, e) => s + e.amount);
+    final isMobile = MediaQuery.of(context).size.width < _mobileBreakpoint;
 
     return Card(
       child: Padding(
@@ -385,57 +432,60 @@ class _ExpensesBarChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: maxAmount * 1.15,
-                  barTouchData: BarTouchData(
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipItem: (group, groupIdx, rod, rodIdx) {
-                        return BarTooltipItem(
-                          '${data[group.x].categoryName}\n',
-                          context.textTheme.labelSmall!,
-                          children: [
-                            TextSpan(
-                              text: formatCurrency(data[group.x].amount),
-                              style: context.textTheme.labelSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
+            if (isMobile)
+              _CategoryDonut(data: data, total: total)
+            else
+              SizedBox(
+                height: 200,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: maxAmount * 1.15,
+                    barTouchData: BarTouchData(
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipItem: (group, groupIdx, rod, rodIdx) {
+                          return BarTooltipItem(
+                            '${data[group.x].categoryName}\n',
+                            context.textTheme.labelSmall!,
+                            children: [
+                              TextSpan(
+                                text: formatCurrency(data[group.x].amount),
+                                style: context.textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
+                            ],
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  titlesData: const FlTitlesData(
-                    bottomTitles: AxisTitles(),
-                    leftTitles: AxisTitles(),
-                    rightTitles: AxisTitles(),
-                    topTitles: AxisTitles(),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  gridData: const FlGridData(show: false),
-                  barGroups: List.generate(data.length, (i) {
-                    return BarChartGroupData(
-                      x: i,
-                      barRods: [
-                        BarChartRodData(
-                          toY: data[i].amount,
-                          color: Color(data[i].categoryColor),
-                          width: 100,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(6),
-                            topRight: Radius.circular(6),
+                    titlesData: const FlTitlesData(
+                      bottomTitles: AxisTitles(),
+                      leftTitles: AxisTitles(),
+                      rightTitles: AxisTitles(),
+                      topTitles: AxisTitles(),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    gridData: const FlGridData(show: false),
+                    barGroups: List.generate(data.length, (i) {
+                      return BarChartGroupData(
+                        x: i,
+                        barRods: [
+                          BarChartRodData(
+                            toY: data[i].amount,
+                            color: Color(data[i].categoryColor),
+                            width: 100,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(6),
+                              topRight: Radius.circular(6),
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  }),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
               ),
-            ),
             const Divider(height: 24),
             _CategoryList(
               data: data,

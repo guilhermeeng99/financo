@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -8,10 +12,12 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/chat/domain/entities/chat_image_attachment.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/chat/presentation/bloc/chat_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
@@ -19,10 +25,15 @@ import 'package:financo/features/transactions/domain/usecases/create_transaction
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -37,6 +48,7 @@ class ChatPage extends StatelessWidget {
         sendMessage: GetIt.I<SendMessageUseCase>(),
         getChatHistory: GetIt.I<GetChatHistoryUseCase>(),
         saveChatMessage: GetIt.I<SaveChatMessageUseCase>(),
+        transcribeAudio: GetIt.I<TranscribeAudioUseCase>(),
         createAccount: GetIt.I<CreateAccountUseCase>(),
         getAccounts: GetIt.I<GetAccountsUseCase>(),
         deleteAccount: GetIt.I<DeleteAccountUseCase>(),
@@ -61,6 +73,7 @@ class _ChatView extends StatefulWidget {
 class _ChatViewState extends State<_ChatView> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  String? _appliedTranscript;
 
   @override
   void initState() {
@@ -79,11 +92,14 @@ class _ChatViewState extends State<_ChatView> {
     super.dispose();
   }
 
-  void _sendMessage() {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    context.read<ChatBloc>().add(ChatMessageSent(text));
+  void _onMessageSent() {
+    _appliedTranscript = null;
+  }
+
+  void _cancelTranscript() {
     _controller.clear();
+    _appliedTranscript = null;
+    context.read<ChatBloc>().add(const ChatTranscriptCancelled());
   }
 
   @override
@@ -106,6 +122,17 @@ class _ChatViewState extends State<_ChatView> {
                     context.read<DashboardBloc>().add(
                       const DashboardRefreshRequested(),
                     );
+                  }
+                  final transcript = state.pendingTranscript;
+                  if (transcript != null && transcript != _appliedTranscript) {
+                    _controller.text = transcript;
+                    _controller.selection = TextSelection.collapsed(
+                      offset: transcript.length,
+                    );
+                    _appliedTranscript = transcript;
+                  }
+                  if (transcript == null && _appliedTranscript != null) {
+                    _appliedTranscript = null;
                   }
                 }
               },
@@ -164,7 +191,8 @@ class _ChatViewState extends State<_ChatView> {
           ),
           _MessageInput(
             controller: _controller,
-            onSend: _sendMessage,
+            onAfterSend: _onMessageSent,
+            onCancelTranscript: _cancelTranscript,
           ),
         ],
       ),
@@ -273,49 +301,422 @@ class _TypingIndicator extends StatelessWidget {
   }
 }
 
-class _MessageInput extends StatelessWidget {
+class _PickedImage {
+  const _PickedImage({
+    required this.base64Data,
+    required this.mimeType,
+    required this.bytes,
+  });
+
+  final String base64Data;
+  final String mimeType;
+  final Uint8List bytes;
+}
+
+class _MessageInput extends StatefulWidget {
   const _MessageInput({
     required this.controller,
-    required this.onSend,
+    required this.onAfterSend,
+    required this.onCancelTranscript,
   });
 
   final TextEditingController controller;
-  final VoidCallback onSend;
+  final VoidCallback onAfterSend;
+  final VoidCallback onCancelTranscript;
+
+  @override
+  State<_MessageInput> createState() => _MessageInputState();
+}
+
+class _MessageInputState extends State<_MessageInput> {
+  final _recorder = AudioRecorder();
+  final _imagePicker = ImagePicker();
+  bool _isRecording = false;
+  Duration _elapsed = Duration.zero;
+  Timer? _tickTimer;
+  String? _currentRecordingPath;
+  _PickedImage? _pickedImage;
+
+  @override
+  void dispose() {
+    _tickTimer?.cancel();
+    unawaited(_recorder.dispose());
+    super.dispose();
+  }
+
+  void _handleSend() {
+    final text = widget.controller.text.trim();
+    final picked = _pickedImage;
+    if (text.isEmpty && picked == null) return;
+
+    context.read<ChatBloc>().add(
+      ChatMessageSent(
+        text,
+        image: picked != null
+            ? ChatImageAttachment(
+                base64Data: picked.base64Data,
+                mimeType: picked.mimeType,
+              )
+            : null,
+      ),
+    );
+    widget.controller.clear();
+    setState(() => _pickedImage = null);
+    widget.onAfterSend();
+  }
+
+  Future<void> _pickFromSource(ImageSource source) async {
+    try {
+      final xfile = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 75,
+        maxWidth: 1920,
+      );
+      if (xfile == null || !mounted) return;
+      final bytes = await xfile.readAsBytes();
+      final mime = _mimeTypeFromName(xfile.name);
+      setState(() {
+        _pickedImage = _PickedImage(
+          base64Data: base64Encode(bytes),
+          mimeType: mime,
+          bytes: bytes,
+        );
+      });
+    } on Exception catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${t.chat.image.pickError}: $e')),
+      );
+    }
+  }
+
+  String _mimeTypeFromName(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.heic') || lower.endsWith('.heif')) {
+      return 'image/heic';
+    }
+    return 'image/jpeg';
+  }
+
+  Future<void> _showAttachMenu() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.camera),
+                title: Text(t.chat.image.takePhoto),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  unawaited(_pickFromSource(ImageSource.camera));
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.image),
+                title: Text(t.chat.image.fromGallery),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  unawaited(_pickFromSource(ImageSource.gallery));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      if (!await _recorder.hasPermission()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(t.chat.audio.permissionDenied)),
+        );
+        return;
+      }
+      // On web, `path` is ignored by record_web (stop() returns a blob URL).
+      // On mobile/desktop we write to a temp file.
+      final path = kIsWeb
+          ? ''
+          : '${(await getTemporaryDirectory()).path}'
+                '/chat_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _recorder.start(
+        const RecordConfig(
+          bitRate: 96000,
+          numChannels: 1,
+        ),
+        path: path,
+      );
+      _currentRecordingPath = path;
+      _elapsed = Duration.zero;
+      _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) {
+          setState(() => _elapsed += const Duration(seconds: 1));
+        }
+      });
+      setState(() => _isRecording = true);
+    } on Exception catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${t.chat.audio.recordError}: $e')),
+      );
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    _tickTimer?.cancel();
+    _tickTimer = null;
+    final stoppedPath = await _recorder.stop() ?? _currentRecordingPath;
+    setState(() => _isRecording = false);
+    if (stoppedPath == null || stoppedPath.isEmpty) return;
+
+    try {
+      late final List<int> bytes;
+      late final String mimeType;
+      if (kIsWeb) {
+        // record_web returns a blob URL. Fetch the bytes via http.get.
+        // The browser resolves the blob URL to the recorded audio.
+        final response = await http.get(Uri.parse(stoppedPath));
+        bytes = response.bodyBytes;
+        mimeType = 'audio/webm';
+      } else {
+        final file = File(stoppedPath);
+        bytes = await file.readAsBytes();
+        unawaited(file.delete().catchError((_) => file));
+        mimeType = 'audio/mp4';
+      }
+      final base64Data = base64Encode(bytes);
+      if (!mounted) return;
+      context.read<ChatBloc>().add(
+        ChatAudioTranscriptionRequested(
+          base64Data: base64Data,
+          mimeType: mimeType,
+        ),
+      );
+    } on Exception catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${t.chat.audio.recordError}: $e')),
+      );
+    }
+  }
+
+  Future<void> _cancelRecording() async {
+    _tickTimer?.cancel();
+    _tickTimer = null;
+    final path = await _recorder.stop() ?? _currentRecordingPath;
+    if (!kIsWeb && path != null && path.isNotEmpty) {
+      final file = File(path);
+      unawaited(file.delete().catchError((_) => file));
+    }
+    if (mounted) {
+      setState(() => _isRecording = false);
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.toString().padLeft(2, '0');
+    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 8,
-        top: 8,
-        bottom: MediaQuery.of(context).padding.bottom + 8,
-      ),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: context.colorScheme.outlineVariant),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: t.chat.placeholder,
-                border: InputBorder.none,
-              ),
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => onSend(),
+    return BlocBuilder<ChatBloc, ChatState>(
+      builder: (context, state) {
+        final isTranscribing = state is ChatLoaded && state.isTranscribing;
+        final hasPendingTranscript =
+            state is ChatLoaded && state.pendingTranscript != null;
+
+        return Container(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 8,
+            top: 8,
+            bottom: MediaQuery.of(context).padding.bottom + 8,
+          ),
+          decoration: BoxDecoration(
+            color: context.colorScheme.surface,
+            border: Border(
+              top: BorderSide(color: context.colorScheme.outlineVariant),
             ),
           ),
-          IconButton(
-            icon: FaIcon(
-              FontAwesomeIcons.paperPlane,
-              color: context.colorScheme.primary,
+          child: _isRecording
+              ? _buildRecordingRow(context)
+              : isTranscribing
+                  ? _buildTranscribingRow(context)
+                  : _buildDefaultRow(
+                      context,
+                      hasPendingTranscript: hasPendingTranscript,
+                    ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecordingRow(BuildContext context) {
+    return Row(
+      children: [
+        IconButton(
+          icon: FaIcon(
+            FontAwesomeIcons.xmark,
+            color: context.colorScheme.error,
+          ),
+          onPressed: _cancelRecording,
+          tooltip: t.chat.audio.cancel,
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              FaIcon(
+                FontAwesomeIcons.solidCircle,
+                size: 12,
+                color: context.colorScheme.error,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${t.chat.audio.recording} ${_formatDuration(_elapsed)}',
+                style: context.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: FaIcon(
+            FontAwesomeIcons.stop,
+            color: context.colorScheme.primary,
+          ),
+          onPressed: _stopRecording,
+          tooltip: t.chat.audio.stop,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTranscribingRow(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: context.colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            t.chat.audio.transcribing,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
             ),
-            onPressed: onSend,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDefaultRow(
+    BuildContext context, {
+    required bool hasPendingTranscript,
+  }) {
+    final picked = _pickedImage;
+    final hasImage = picked != null;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasImage) _buildImagePreview(context, picked),
+        Row(
+          children: [
+            if (hasPendingTranscript)
+              IconButton(
+                icon: FaIcon(
+                  FontAwesomeIcons.xmark,
+                  color: context.colorScheme.error,
+                ),
+                onPressed: widget.onCancelTranscript,
+                tooltip: t.chat.audio.cancel,
+              ),
+            if (!hasPendingTranscript && !hasImage)
+              IconButton(
+                icon: FaIcon(
+                  FontAwesomeIcons.paperclip,
+                  color: context.colorScheme.primary,
+                ),
+                onPressed: () => unawaited(_showAttachMenu()),
+                tooltip: t.chat.image.attach,
+              ),
+            Expanded(
+              child: TextField(
+                controller: widget.controller,
+                decoration: InputDecoration(
+                  hintText: hasPendingTranscript
+                      ? t.chat.audio.reviewHint
+                      : t.chat.placeholder,
+                  border: InputBorder.none,
+                ),
+                minLines: 1,
+                maxLines: 4,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _handleSend(),
+              ),
+            ),
+            if (!hasPendingTranscript && !hasImage)
+              IconButton(
+                icon: FaIcon(
+                  FontAwesomeIcons.microphone,
+                  color: context.colorScheme.primary,
+                ),
+                onPressed: _startRecording,
+                tooltip: t.chat.audio.start,
+              ),
+            IconButton(
+              icon: FaIcon(
+                FontAwesomeIcons.paperPlane,
+                color: context.colorScheme.primary,
+              ),
+              onPressed: _handleSend,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePreview(BuildContext context, _PickedImage picked) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.memory(
+              picked.bytes,
+              width: 96,
+              height: 96,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: -8,
+            right: -8,
+            child: IconButton(
+              icon: FaIcon(
+                FontAwesomeIcons.circleXmark,
+                color: context.colorScheme.error,
+                size: 22,
+              ),
+              onPressed: () => setState(() => _pickedImage = null),
+              tooltip: t.chat.image.remove,
+            ),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
@@ -42,6 +43,7 @@ import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 // Dashboard
 import 'package:financo/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
@@ -64,7 +66,6 @@ import 'package:financo/features/transactions/domain/usecases/get_transaction_us
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
-import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -88,15 +89,7 @@ Future<void> initDependencies() async {
     // ─── External ────────────────────────────────────────────
     ..registerLazySingleton(() => FirebaseAuth.instance)
     ..registerLazySingleton(() => FirebaseFirestore.instance)
-    ..registerLazySingleton(
-      () => FirebaseAI.vertexAI(auth: sl<FirebaseAuth>()).generativeModel(
-        model: 'gemini-2.5-flash',
-        systemInstruction: Content(
-          'system',
-          [const TextPart(geminiSystemPrompt)],
-        ),
-      ),
-    )
+    ..registerLazySingleton(() => FirebaseFunctions.instance)
     ..registerLazySingleton(() => prefs)
     ..registerLazySingleton(() => GoogleSignIn.instance)
     // ─── Local Database ─────────────────────────────────────
@@ -135,8 +128,8 @@ Future<void> initDependencies() async {
     ..registerLazySingleton<CategoryRemoteDataSource>(
       () => CategoryRemoteDataSourceImpl(firestore: sl()),
     )
-    ..registerLazySingleton<GeminiDataSource>(
-      () => GeminiDataSourceImpl(model: sl()),
+    ..registerLazySingleton<ChatBackendDataSource>(
+      () => ChatBackendDataSourceImpl(functions: sl()),
     )
     ..registerLazySingleton<ChatRemoteDataSource>(
       () => ChatRemoteDataSourceImpl(firestore: sl()),
@@ -169,7 +162,7 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<ChatRepository>(
       () => ChatRepositoryImpl(
-        geminiDataSource: sl(),
+        chatBackendDataSource: sl(),
         chatRemoteDataSource: sl(),
       ),
     )
@@ -246,6 +239,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => SaveChatMessageUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => TranscribeAudioUseCase(sl()),
     )
     ..registerLazySingleton(
       () => GetDashboardSummaryUseCase(sl()),

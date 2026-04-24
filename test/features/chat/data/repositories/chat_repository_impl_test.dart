@@ -11,17 +11,17 @@ import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
 
 void main() {
-  late MockGeminiDataSource mockGemini;
+  late MockChatBackendDataSource mockBackend;
   late MockChatRemoteDataSource mockRemote;
   late ChatRepositoryImpl repository;
 
   setUpAll(registerChatFallbackValues);
 
   setUp(() {
-    mockGemini = MockGeminiDataSource();
+    mockBackend = MockChatBackendDataSource();
     mockRemote = MockChatRemoteDataSource();
     repository = ChatRepositoryImpl(
-      geminiDataSource: mockGemini,
+      chatBackendDataSource: mockBackend,
       chatRemoteDataSource: mockRemote,
     );
   });
@@ -31,36 +31,37 @@ void main() {
   group('sendMessage', () {
     const content = 'Add expense';
 
-    test('should call Gemini, persist response, and return Right', () async {
-      final response = ChatMessageFactory.model(
-        id: 'resp-1',
-        role: ChatRole.assistant,
-        content: 'Done!',
-      );
-      when(
-        () => mockGemini.sendMessage(
-          userId: any(named: 'userId'),
-          content: any(named: 'content'),
-          history: any(named: 'history'),
-        ),
-      ).thenAnswer((_) async => response);
-      when(
-        () => mockRemote.saveChatMessage(any()),
-      ).thenAnswer((_) async {});
+    test(
+      'should call backend and return Right without re-saving '
+      '(backend already persisted)',
+      () async {
+        final response = ChatMessageFactory.model(
+          id: 'resp-1',
+          role: ChatRole.assistant,
+          content: 'Done!',
+        );
+        when(
+          () => mockBackend.sendMessage(
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            history: any(named: 'history'),
+          ),
+        ).thenAnswer((_) async => response);
 
-      final result = await repository.sendMessage(
-        userId: userId,
-        content: content,
-        history: const [],
-      );
+        final result = await repository.sendMessage(
+          userId: userId,
+          content: content,
+          history: const [],
+        );
 
-      expect(result, Right<Failure, ChatMessageEntity>(response));
-      verify(() => mockRemote.saveChatMessage(response)).called(1);
-    });
+        expect(result, Right<Failure, ChatMessageEntity>(response));
+        verifyNever(() => mockRemote.saveChatMessage(any()));
+      },
+    );
 
     test('should return AiFailure on AiException', () async {
       when(
-        () => mockGemini.sendMessage(
+        () => mockBackend.sendMessage(
           userId: any(named: 'userId'),
           content: any(named: 'content'),
           history: any(named: 'history'),
@@ -76,32 +77,6 @@ void main() {
       expect(result, isA<Left<Failure, ChatMessageEntity>>());
       result.fold(
         (f) => expect(f, isA<AiFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-
-    test('should return ServerFailure on ServerException', () async {
-      final response = ChatMessageFactory.model();
-      when(
-        () => mockGemini.sendMessage(
-          userId: any(named: 'userId'),
-          content: any(named: 'content'),
-          history: any(named: 'history'),
-        ),
-      ).thenAnswer((_) async => response);
-      when(
-        () => mockRemote.saveChatMessage(any()),
-      ).thenThrow(const ServerException('Save failed'));
-
-      final result = await repository.sendMessage(
-        userId: userId,
-        content: content,
-        history: const [],
-      );
-
-      expect(result, isA<Left<Failure, ChatMessageEntity>>());
-      result.fold(
-        (f) => expect(f, isA<ServerFailure>()),
         (_) => fail('Expected Left'),
       );
     });

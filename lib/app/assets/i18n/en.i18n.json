@@ -233,7 +233,24 @@
     "confirmPrompt": "I detected the following transaction. Does this look correct?",
     "confirmed": "Transaction saved!",
     "cancelled": "Transaction cancelled.",
-    "error": "Sorry, I couldn't understand that. Could you try again?"
+    "error": "Sorry, I couldn't understand that. Could you try again?",
+    "audio": {
+      "start": "Record voice message",
+      "stop": "Stop recording",
+      "cancel": "Cancel",
+      "recording": "Recording",
+      "transcribing": "Transcribing...",
+      "reviewHint": "Review transcript and send",
+      "permissionDenied": "Microphone permission required to record voice.",
+      "recordError": "Failed to record audio"
+    },
+    "image": {
+      "attach": "Attach image",
+      "takePhoto": "Take photo",
+      "fromGallery": "Choose from gallery",
+      "remove": "Remove image",
+      "pickError": "Could not pick image"
+    }
   },
   "reports": {
     "title": "Reports",

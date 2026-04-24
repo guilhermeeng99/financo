@@ -11,10 +11,12 @@ import 'package:financo/features/categories/domain/entities/category_entity.dart
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/chat/domain/entities/chat_image_attachment.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
+import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,12 +34,13 @@ final class ChatLoadRequested extends ChatEvent {
 }
 
 final class ChatMessageSent extends ChatEvent {
-  const ChatMessageSent(this.content);
+  const ChatMessageSent(this.content, {this.image});
 
   final String content;
+  final ChatImageAttachment? image;
 
   @override
-  List<Object> get props => [content];
+  List<Object?> get props => [content, image];
 }
 
 final class ChatActionConfirmed extends ChatEvent {
@@ -47,6 +50,23 @@ final class ChatActionConfirmed extends ChatEvent {
 
   @override
   List<Object> get props => [metadata];
+}
+
+final class ChatAudioTranscriptionRequested extends ChatEvent {
+  const ChatAudioTranscriptionRequested({
+    required this.base64Data,
+    required this.mimeType,
+  });
+
+  final String base64Data;
+  final String mimeType;
+
+  @override
+  List<Object> get props => [base64Data, mimeType];
+}
+
+final class ChatTranscriptCancelled extends ChatEvent {
+  const ChatTranscriptCancelled();
 }
 
 sealed class ChatState extends Equatable {
@@ -69,14 +89,24 @@ final class ChatLoaded extends ChatState {
     required this.messages,
     this.isTyping = false,
     this.shouldRefreshTransactions = false,
+    this.isTranscribing = false,
+    this.pendingTranscript,
   });
 
   final List<ChatMessageEntity> messages;
   final bool isTyping;
   final bool shouldRefreshTransactions;
+  final bool isTranscribing;
+  final String? pendingTranscript;
 
   @override
-  List<Object> get props => [messages, isTyping, shouldRefreshTransactions];
+  List<Object?> get props => [
+    messages,
+    isTyping,
+    shouldRefreshTransactions,
+    isTranscribing,
+    pendingTranscript,
+  ];
 }
 
 final class ChatError extends ChatState {
@@ -93,6 +123,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required SendMessageUseCase sendMessage,
     required GetChatHistoryUseCase getChatHistory,
     required SaveChatMessageUseCase saveChatMessage,
+    required TranscribeAudioUseCase transcribeAudio,
     required CreateAccountUseCase createAccount,
     required GetAccountsUseCase getAccounts,
     required DeleteAccountUseCase deleteAccount,
@@ -104,6 +135,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }) : _sendMessage = sendMessage,
        _getChatHistory = getChatHistory,
        _saveChatMessage = saveChatMessage,
+       _transcribeAudio = transcribeAudio,
        _createAccount = createAccount,
        _getAccounts = getAccounts,
        _deleteAccount = deleteAccount,
@@ -116,11 +148,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatLoadRequested>(_onLoadRequested);
     on<ChatMessageSent>(_onMessageSent);
     on<ChatActionConfirmed>(_onActionConfirmed);
+    on<ChatAudioTranscriptionRequested>(_onAudioTranscriptionRequested);
+    on<ChatTranscriptCancelled>(_onTranscriptCancelled);
   }
 
   final SendMessageUseCase _sendMessage;
   final GetChatHistoryUseCase _getChatHistory;
   final SaveChatMessageUseCase _saveChatMessage;
+  final TranscribeAudioUseCase _transcribeAudio;
   final CreateAccountUseCase _createAccount;
   final GetAccountsUseCase _getAccounts;
   final DeleteAccountUseCase _deleteAccount;
@@ -155,11 +190,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatMessageSent event,
     Emitter<ChatState> emit,
   ) async {
+    final hasImage = event.image != null;
+    final displayContent = event.content.trim().isNotEmpty
+        ? event.content
+        : hasImage
+            ? '📷 Imagem anexada'
+            : event.content;
+
     final userMessage = ChatMessageEntity(
       id: _uuid.v4(),
       userId: _userId,
       role: ChatRole.user,
-      content: event.content,
+      content: displayContent,
       createdAt: DateTime.now(),
     );
 
@@ -185,6 +227,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       userId: _userId,
       content: event.content,
       history: historyBeforeCurrent,
+      image: event.image,
     );
 
     result.fold(
@@ -258,6 +301,49 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         shouldRefreshTransactions: actionType == 'transaction',
       ),
     );
+  }
+
+  Future<void> _onAudioTranscriptionRequested(
+    ChatAudioTranscriptionRequested event,
+    Emitter<ChatState> emit,
+  ) async {
+    emit(
+      ChatLoaded(
+        messages: List.unmodifiable(_messages),
+        isTranscribing: true,
+      ),
+    );
+
+    final result = await _transcribeAudio(
+      base64Data: event.base64Data,
+      mimeType: event.mimeType,
+    );
+
+    result.fold(
+      (failure) {
+        log(
+          'ChatBloc: transcription failed — ${failure.message}',
+          name: 'ChatBloc',
+          error: failure,
+        );
+        emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+      },
+      (transcript) {
+        emit(
+          ChatLoaded(
+            messages: List.unmodifiable(_messages),
+            pendingTranscript: transcript,
+          ),
+        );
+      },
+    );
+  }
+
+  void _onTranscriptCancelled(
+    ChatTranscriptCancelled event,
+    Emitter<ChatState> emit,
+  ) {
+    emit(ChatLoaded(messages: List.unmodifiable(_messages)));
   }
 
   Future<String> _handleAccountAction(

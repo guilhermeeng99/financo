@@ -1,1 +1,47 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"flutter":{"platforms":{"android":{"default":{"projectId":"financo-app-2026","appId":"1:356891758869:android:028ae37486c30b8f4dd91c","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"financo-app-2026","configurations":{"android":"1:356891758869:android:028ae37486c30b8f4dd91c","ios":"1:356891758869:ios:328b46c5194e20d14dd91c","web":"1:356891758869:web:877c4a777ad7e8314dd91c"}}}}}}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local",
+        "test",
+        "**/*.test.ts"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "financo-app-2026",
+          "appId": "1:356891758869:android:028ae37486c30b8f4dd91c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "financo-app-2026",
+          "configurations": {
+            "android": "1:356891758869:android:028ae37486c30b8f4dd91c",
+            "ios": "1:356891758869:ios:328b46c5194e20d14dd91c",
+            "web": "1:356891758869:web:877c4a777ad7e8314dd91c"
+          }
+        }
+      }
+    }
+  }
+}
