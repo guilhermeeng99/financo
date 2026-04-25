@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
+import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
@@ -268,6 +269,8 @@ class _AccountsTable extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      BankAvatar(bank: account.bank, size: 24),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           account.name,

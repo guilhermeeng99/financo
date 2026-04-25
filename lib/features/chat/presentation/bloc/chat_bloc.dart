@@ -194,7 +194,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final displayContent = event.content.trim().isNotEmpty
         ? event.content
         : hasImage
-            ? '📷 Imagem anexada'
+            ? '📷 Image attached.'
             : event.content;
 
     final userMessage = ChatMessageEntity(

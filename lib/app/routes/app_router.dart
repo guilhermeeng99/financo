@@ -242,8 +242,14 @@ class _ShellWithSidebar extends StatelessWidget {
     final isMobile = MediaQuery.of(context).size.width < _mobileBreakpoint;
 
     if (isMobile) {
+      // The month filter only makes sense on routes that show data scoped to
+      // a month (dashboard). Chat and Profile have no monthly context and
+      // already render their own AppBar, so we skip the shell AppBar there.
+      final location = GoRouterState.of(context).matchedLocation;
+      final showMonthFilter = location == AppRoutes.dashboard;
+
       return Scaffold(
-        appBar: const FinancoMobileAppBar(),
+        appBar: showMonthFilter ? const FinancoMobileAppBar() : null,
         body: child,
         bottomNavigationBar: const FinancoBottomBar(),
       );

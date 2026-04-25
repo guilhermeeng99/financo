@@ -661,7 +661,25 @@ class _MessageInputState extends State<_MessageInput> {
                   hintText: hasPendingTranscript
                       ? t.chat.audio.reviewHint
                       : t.chat.placeholder,
-                  border: InputBorder.none,
+                  filled: true,
+                  fillColor: context.colorScheme.surfaceContainerHighest,
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 minLines: 1,
                 maxLines: 4,

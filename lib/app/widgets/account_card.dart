@@ -1,7 +1,7 @@
 import 'package:financo/app/widgets/amount_text.dart';
+import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 
@@ -14,13 +14,6 @@ class AccountCard extends StatelessWidget {
 
   final AccountEntity account;
   final VoidCallback? onTap;
-
-  String get _bankIconPath {
-    if (account.bank == BankType.nubank) {
-      return Assets.lib.app.assets.images.banks.nubank.path;
-    }
-    return Assets.lib.app.assets.images.banks.bank.path;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,24 +30,7 @@ class AccountCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              ClipOval(
-                child: Image.asset(
-                  _bankIconPath,
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stack) => Container(
-                    width: 40,
-                    height: 40,
-                    color: colors.surfaceVariant,
-                    child: Icon(
-                      Icons.account_balance,
-                      size: 20,
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                ),
-              ),
+              BankAvatar(bank: account.bank),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
