@@ -42,7 +42,16 @@
       "Bash(firebase functions:log --only chatSend --lines 30)",
       "Read(//c/Users/guiga/AppData/Local/Google/Cloud SDK/google-cloud-sdk/bin/**)",
       "Read(//c/Program Files/Google/Cloud SDK/google-cloud-sdk/bin/**)",
-      "Bash(firebase functions:log --only chatSend --lines 15)"
+      "Bash(firebase functions:log --only chatSend --lines 15)",
+      "Bash(gh run *)",
+      "PowerShell(gh run list --workflow=deploy.yml --limit 5)",
+      "Bash(git fetch *)",
+      "Bash(git ls-tree *)",
+      "Bash(keytool -help)",
+      "PowerShell($java = Get-Command keytool -ErrorAction SilentlyContinue; if \\($java\\) { Write-Output \"Found: $\\($java.Source\\)\" } else { Write-Output \"NOT FOUND in PATH\"; if \\($env:JAVA_HOME\\) { Write-Output \"JAVA_HOME=$env:JAVA_HOME\"; if \\(Test-Path \"$env:JAVA_HOME\\\\bin\\\\keytool.exe\"\\) { Write-Output \"EXISTS at JAVA_HOME\\\\bin\\\\keytool.exe\" } } else { Write-Output \"JAVA_HOME not set\" } })",
+      "PowerShell($keytool = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\keytool.exe\"; & $keytool -list -v -keystore \"android\\\\app\\\\upload-keystore.jks\" -alias upload -storepass 'Y1lOxlaMnd@#Blals8EEpja^+JCI' 2>&1 | Select-String -Pattern 'SHA1|SHA-1|SHA256|SHA-256|Valid')",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"android\\\\app\\\\upload-keystore.jks\"\\); $b64 = [Convert]::ToBase64String\\($bytes\\); Set-Content -Path \"android\\\\app\\\\upload-keystore.jks.base64.txt\" -Value $b64 -Encoding ascii -NoNewline; Write-Output \"Base64 length: $\\($b64.Length\\) chars, written to android\\\\app\\\\upload-keystore.jks.base64.txt\")",
+      "Bash(git check-ignore *)"
     ]
   }
 }
