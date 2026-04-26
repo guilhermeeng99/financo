@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/core/notifications/notification_service.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
@@ -17,11 +18,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required SignUpUseCase signUpUseCase,
     required SignOutUseCase signOutUseCase,
     required GetCurrentUserUseCase getCurrentUser,
+    NotificationService? notificationService,
   }) : _signIn = signInUseCase,
        _signInWithGoogle = signInWithGoogleUseCase,
        _signUp = signUpUseCase,
        _signOut = signOutUseCase,
        _getCurrentUser = getCurrentUser,
+       _notifications = notificationService,
        super(const AuthInitial()) {
     on<AuthCheckRequested>(_onCheckRequested);
     on<AuthSignInRequested>(_onSignInRequested);
@@ -40,7 +43,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUpUseCase _signUp;
   final SignOutUseCase _signOut;
   final GetCurrentUserUseCase _getCurrentUser;
+  final NotificationService? _notifications;
   StreamSubscription<UserEntity?>? _authSubscription;
+  String? _lastKnownUserId;
 
   Future<void> _onCheckRequested(
     AuthCheckRequested event,
@@ -107,9 +112,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onUserChanged(AuthUserChanged event, Emitter<AuthState> emit) {
-    if (event.user != null) {
-      emit(Authenticated(event.user!));
+    final user = event.user;
+    if (user != null) {
+      emit(Authenticated(user));
+      // Persist FCM token under the new user. Idempotent — safe on repeated
+      // auth state notifications.
+      if (_notifications != null) {
+        unawaited(_notifications.saveToken(user.id));
+      }
+      _lastKnownUserId = user.id;
     } else {
+      // On sign-out, drop the FCM token tied to the previous user so they
+      // stop receiving pushes after logging out.
+      final previous = _lastKnownUserId;
+      if (previous != null && _notifications != null) {
+        unawaited(_notifications.removeTokenOnSignOut(previous));
+      }
+      _lastKnownUserId = null;
       emit(const Unauthenticated());
     }
   }

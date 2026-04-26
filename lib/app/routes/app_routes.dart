@@ -18,6 +18,9 @@ class AppRoutes {
   static const categories = '/categories';
   static const addCategory = '/category/add';
   static const editCategory = '/category/edit';
+  static const bills = '/bills';
+  static const addBill = '/bill/add';
+  static const editBill = '/bill/edit';
 
   static String transactionById(String id) => '/transaction/$id';
   static String accountById(String id) => '/account/$id';

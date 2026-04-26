@@ -9,6 +9,13 @@ import 'package:financo/features/accounts/domain/usecases/delete_account_usecase
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
@@ -56,6 +63,11 @@ class ChatPage extends StatelessWidget {
         getCategories: GetIt.I<GetCategoriesUseCase>(),
         deleteCategory: GetIt.I<DeleteCategoryUseCase>(),
         createTransaction: GetIt.I<CreateTransactionUseCase>(),
+        getBills: GetIt.I<GetBillsUseCase>(),
+        createBill: GetIt.I<CreateBillUseCase>(),
+        updateBill: GetIt.I<UpdateBillUseCase>(),
+        deleteBill: GetIt.I<DeleteBillUseCase>(),
+        payBill: GetIt.I<PayBillUseCase>(),
         userId: userId,
       ),
       child: const _ChatView(),
@@ -121,6 +133,11 @@ class _ChatViewState extends State<_ChatView> {
                     );
                     context.read<DashboardBloc>().add(
                       const DashboardRefreshRequested(),
+                    );
+                  }
+                  if (state.shouldRefreshBills) {
+                    context.read<BillsBloc>().add(
+                      const BillsLoadRequested(forceRefresh: true),
                     );
                   }
                   final transcript = state.pendingTranscript;

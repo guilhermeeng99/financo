@@ -1,0 +1,194 @@
+import 'package:equatable/equatable.dart';
+import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+enum BillFormStatus { initial, submitting, success, failure }
+
+class BillFormCubit extends Cubit<BillFormState> {
+  BillFormCubit({
+    required CreateBillUseCase createBill,
+    required UpdateBillUseCase updateBill,
+    required String userId,
+    BillEntity? existingBill,
+  }) : _createBill = createBill,
+       _updateBill = updateBill,
+       super(BillFormState.initial(userId: userId, existing: existingBill));
+
+  final CreateBillUseCase _createBill;
+  final UpdateBillUseCase _updateBill;
+
+  void updateDescription(String value) =>
+      emit(state.copyWith(description: value));
+
+  void updateAmount(String value) {
+    final amount = double.tryParse(value) ?? 0;
+    emit(state.copyWith(amount: amount));
+  }
+
+  void updateDueDate(DateTime date) {
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    emit(state.copyWith(dueDate: dateOnly));
+  }
+
+  void updateRecurrence(BillRecurrence recurrence) {
+    if (state.isEditing) return; // immutable after creation
+    emit(state.copyWith(recurrence: recurrence));
+  }
+
+  void updateCategoryId(String? id) =>
+      emit(state.copyWith(categoryId: id, clearCategory: id == null));
+
+  void updateNotes(String value) => emit(state.copyWith(notes: value));
+
+  Future<void> submit() async {
+    if (!state.isValid) return;
+    emit(state.copyWith(status: BillFormStatus.submitting));
+
+    final now = DateTime.now();
+    final bill = BillEntity(
+      id: state.existingId ?? '',
+      userId: state.userId,
+      description: state.description.trim(),
+      amount: state.amount,
+      dueDate: state.dueDate,
+      status: state.existingStatus ?? BillStatus.pending,
+      recurrence: state.recurrence,
+      categoryId: state.categoryId,
+      notes: state.notes.isEmpty ? null : state.notes,
+      paidAt: state.existingPaidAt,
+      paidTransactionId: state.existingPaidTransactionId,
+      parentBillId: state.existingParentBillId,
+      createdAt: state.existingCreatedAt ?? now,
+      updatedAt: now,
+    );
+
+    (state.isEditing ? await _updateBill(bill) : await _createBill(bill)).fold(
+      (failure) => emit(
+        state.copyWith(status: BillFormStatus.failure, failure: failure),
+      ),
+      (_) => emit(state.copyWith(status: BillFormStatus.success)),
+    );
+  }
+}
+
+class BillFormState extends Equatable {
+  const BillFormState({
+    required this.userId,
+    required this.description,
+    required this.amount,
+    required this.dueDate,
+    required this.recurrence,
+    required this.notes,
+    required this.status,
+    this.categoryId,
+    this.existingId,
+    this.existingStatus,
+    this.existingPaidAt,
+    this.existingPaidTransactionId,
+    this.existingParentBillId,
+    this.existingCreatedAt,
+    this.failure,
+  });
+
+  factory BillFormState.initial({
+    required String userId,
+    BillEntity? existing,
+  }) {
+    final today = DateTime.now();
+    return BillFormState(
+      userId: userId,
+      description: existing?.description ?? '',
+      amount: existing?.amount ?? 0,
+      dueDate:
+          existing?.dueDate ?? DateTime(today.year, today.month, today.day),
+      recurrence: existing?.recurrence ?? BillRecurrence.oneShot,
+      notes: existing?.notes ?? '',
+      categoryId: existing?.categoryId,
+      status: BillFormStatus.initial,
+      existingId: existing?.id,
+      existingStatus: existing?.status,
+      existingPaidAt: existing?.paidAt,
+      existingPaidTransactionId: existing?.paidTransactionId,
+      existingParentBillId: existing?.parentBillId,
+      existingCreatedAt: existing?.createdAt,
+    );
+  }
+
+  final String userId;
+  final String description;
+  final double amount;
+  final DateTime dueDate;
+  final BillRecurrence recurrence;
+  final String? categoryId;
+  final String notes;
+  final BillFormStatus status;
+  final String? existingId;
+  final BillStatus? existingStatus;
+  final DateTime? existingPaidAt;
+  final String? existingPaidTransactionId;
+  final String? existingParentBillId;
+  final DateTime? existingCreatedAt;
+  final Failure? failure;
+
+  bool get isEditing => existingId != null;
+  bool get isPaid => existingStatus == BillStatus.paid;
+
+  bool get isValid {
+    if (description.trim().isEmpty) return false;
+    if (amount <= 0) return false;
+    if (isEditing && isPaid) return false;
+    return true;
+  }
+
+  BillFormState copyWith({
+    String? description,
+    double? amount,
+    DateTime? dueDate,
+    BillRecurrence? recurrence,
+    String? categoryId,
+    bool clearCategory = false,
+    String? notes,
+    BillFormStatus? status,
+    Failure? failure,
+  }) {
+    return BillFormState(
+      userId: userId,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      dueDate: dueDate ?? this.dueDate,
+      recurrence: recurrence ?? this.recurrence,
+      categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      existingId: existingId,
+      existingStatus: existingStatus,
+      existingPaidAt: existingPaidAt,
+      existingPaidTransactionId: existingPaidTransactionId,
+      existingParentBillId: existingParentBillId,
+      existingCreatedAt: existingCreatedAt,
+      failure: failure ?? this.failure,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    userId,
+    description,
+    amount,
+    dueDate,
+    recurrence,
+    categoryId,
+    notes,
+    status,
+    existingId,
+    existingStatus,
+    existingPaidAt,
+    existingPaidTransactionId,
+    existingParentBillId,
+    existingCreatedAt,
+    failure,
+  ];
+}

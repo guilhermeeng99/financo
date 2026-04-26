@@ -51,7 +51,8 @@
       "PowerShell($java = Get-Command keytool -ErrorAction SilentlyContinue; if \\($java\\) { Write-Output \"Found: $\\($java.Source\\)\" } else { Write-Output \"NOT FOUND in PATH\"; if \\($env:JAVA_HOME\\) { Write-Output \"JAVA_HOME=$env:JAVA_HOME\"; if \\(Test-Path \"$env:JAVA_HOME\\\\bin\\\\keytool.exe\"\\) { Write-Output \"EXISTS at JAVA_HOME\\\\bin\\\\keytool.exe\" } } else { Write-Output \"JAVA_HOME not set\" } })",
       "PowerShell($keytool = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\keytool.exe\"; & $keytool -list -v -keystore \"android\\\\app\\\\upload-keystore.jks\" -alias upload -storepass 'Y1lOxlaMnd@#Blals8EEpja^+JCI' 2>&1 | Select-String -Pattern 'SHA1|SHA-1|SHA256|SHA-256|Valid')",
       "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"android\\\\app\\\\upload-keystore.jks\"\\); $b64 = [Convert]::ToBase64String\\($bytes\\); Set-Content -Path \"android\\\\app\\\\upload-keystore.jks.base64.txt\" -Value $b64 -Encoding ascii -NoNewline; Write-Output \"Base64 length: $\\($b64.Length\\) chars, written to android\\\\app\\\\upload-keystore.jks.base64.txt\")",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(grep -E \"\\\\.dart$\")"
     ]
   }
 }

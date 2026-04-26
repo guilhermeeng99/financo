@@ -18,10 +18,14 @@ const ACTIONS: ActionDefinition[] = [
     type: 'category',
     pattern: /\[CATEGORY_ACTION\]\s*([\s\S]*?)\s*\[\/CATEGORY_ACTION\]/,
   },
+  {
+    type: 'bill',
+    pattern: /\[BILL_ACTION\]\s*([\s\S]*?)\s*\[\/BILL_ACTION\]/,
+  },
 ];
 
 const STRIP_PATTERN =
-  /\[(TRANSACTION_DATA|ACCOUNT_ACTION|CATEGORY_ACTION)\][\s\S]*?\[\/\1\]/g;
+  /\[(TRANSACTION_DATA|ACCOUNT_ACTION|CATEGORY_ACTION|BILL_ACTION)\][\s\S]*?\[\/\1\]/g;
 
 export interface ExtractionResult {
   cleanText: string;

@@ -15,6 +15,13 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
+import 'package:financo/features/bills/presentation/pages/add_bill_page.dart';
+import 'package:financo/features/bills/presentation/pages/bills_page.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
@@ -144,6 +151,14 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 userId: userId,
               ),
             ),
+            BlocProvider(
+              create: (_) => BillsBloc(
+                getBills: GetIt.I<GetBillsUseCase>(),
+                deleteBill: GetIt.I<DeleteBillUseCase>(),
+                payBill: GetIt.I<PayBillUseCase>(),
+                userId: userId,
+              ),
+            ),
           ],
           child: _ShellWithSidebar(child: child),
         );
@@ -189,6 +204,24 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.categories,
           builder: (context, state) => const CategoriesPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.bills,
+          builder: (context, state) => const BillsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.addBill,
+          builder: (context, state) {
+            final existing = state.extra as BillEntity?;
+            return AddBillPage(existingBill: existing);
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.editBill,
+          builder: (context, state) {
+            final existing = state.extra as BillEntity?;
+            return AddBillPage(existingBill: existing);
+          },
         ),
       ],
     ),

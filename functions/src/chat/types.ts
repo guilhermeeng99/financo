@@ -22,4 +22,4 @@ export interface AssistantReply {
   metadata: Record<string, any> | null;
 }
 
-export type ActionType = 'transaction' | 'account' | 'category';
+export type ActionType = 'transaction' | 'account' | 'category' | 'bill';

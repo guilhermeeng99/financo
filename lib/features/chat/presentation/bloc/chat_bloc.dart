@@ -6,6 +6,12 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
@@ -89,6 +95,7 @@ final class ChatLoaded extends ChatState {
     required this.messages,
     this.isTyping = false,
     this.shouldRefreshTransactions = false,
+    this.shouldRefreshBills = false,
     this.isTranscribing = false,
     this.pendingTranscript,
   });
@@ -96,6 +103,7 @@ final class ChatLoaded extends ChatState {
   final List<ChatMessageEntity> messages;
   final bool isTyping;
   final bool shouldRefreshTransactions;
+  final bool shouldRefreshBills;
   final bool isTranscribing;
   final String? pendingTranscript;
 
@@ -104,6 +112,7 @@ final class ChatLoaded extends ChatState {
     messages,
     isTyping,
     shouldRefreshTransactions,
+    shouldRefreshBills,
     isTranscribing,
     pendingTranscript,
   ];
@@ -131,6 +140,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required GetCategoriesUseCase getCategories,
     required DeleteCategoryUseCase deleteCategory,
     required CreateTransactionUseCase createTransaction,
+    required GetBillsUseCase getBills,
+    required CreateBillUseCase createBill,
+    required UpdateBillUseCase updateBill,
+    required DeleteBillUseCase deleteBill,
+    required PayBillUseCase payBill,
     required String userId,
   }) : _sendMessage = sendMessage,
        _getChatHistory = getChatHistory,
@@ -143,6 +157,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
        _getCategories = getCategories,
        _deleteCategory = deleteCategory,
        _createTransaction = createTransaction,
+       _getBills = getBills,
+       _createBill = createBill,
+       _updateBill = updateBill,
+       _deleteBill = deleteBill,
+       _payBill = payBill,
        _userId = userId,
        super(const ChatInitial()) {
     on<ChatLoadRequested>(_onLoadRequested);
@@ -163,6 +182,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final GetCategoriesUseCase _getCategories;
   final DeleteCategoryUseCase _deleteCategory;
   final CreateTransactionUseCase _createTransaction;
+  final GetBillsUseCase _getBills;
+  final CreateBillUseCase _createBill;
+  final UpdateBillUseCase _updateBill;
+  final DeleteBillUseCase _deleteBill;
+  final PayBillUseCase _payBill;
   final String _userId;
   static const _uuid = Uuid();
 
@@ -277,6 +301,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         resultText = await _handleCategoryAction(meta);
       case 'transaction':
         resultText = await _handleTransactionAction(meta);
+      case 'bill':
+        resultText = await _handleBillAction(meta);
       default:
         resultText = 'Unknown action type.';
     }
@@ -298,7 +324,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(
       ChatLoaded(
         messages: List.unmodifiable(_messages),
-        shouldRefreshTransactions: actionType == 'transaction',
+        shouldRefreshTransactions:
+            actionType == 'transaction' || actionType == 'bill',
+        shouldRefreshBills: actionType == 'bill',
       ),
     );
   }
@@ -554,4 +582,164 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           'R\$ ${t.amount.toStringAsFixed(2)} created successfully!',
     );
   }
+
+  Future<String> _handleBillAction(Map<String, dynamic> meta) async {
+    final action = meta['action'] as String?;
+
+    if (action == 'create') {
+      final description = (meta['description'] as String? ?? '').trim();
+      if (description.isEmpty) return 'Bill description is required.';
+      final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+      if (amount <= 0) return 'Invalid bill amount.';
+      final dueStr = meta['dueDate'] as String?;
+      final dueDate = dueStr != null
+          ? DateTime.tryParse(dueStr) ?? DateTime.now()
+          : DateTime.now();
+      final recurrenceStr = meta['recurrence'] as String? ?? 'oneShot';
+      final recurrence = recurrenceStr == 'monthly'
+          ? BillRecurrence.monthly
+          : BillRecurrence.oneShot;
+
+      String? categoryId;
+      final categoryName = meta['category'] as String?;
+      if (categoryName != null && categoryName.isNotEmpty) {
+        final catResult = await _getCategories(userId: _userId);
+        final categories = catResult.getOrElse(() => []);
+        final match = categories
+            .where((c) => c.name.toLowerCase() == categoryName.toLowerCase())
+            .toList();
+        if (match.isNotEmpty) categoryId = match.first.id;
+      }
+
+      final now = DateTime.now();
+      final bill = BillEntity(
+        id: '',
+        userId: _userId,
+        description: description,
+        amount: amount,
+        dueDate: DateTime(dueDate.year, dueDate.month, dueDate.day),
+        status: BillStatus.pending,
+        recurrence: recurrence,
+        categoryId: categoryId,
+        notes: meta['notes'] as String?,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final result = await _createBill(bill);
+      return result.fold(
+        (f) => 'Failed to create bill: ${f.message}',
+        (b) =>
+            'Bill "${b.description}" of '
+            'R\$ ${b.amount.toStringAsFixed(2)} scheduled for '
+            '${_formatDateOnly(b.dueDate)}.',
+      );
+    }
+
+    if (action == 'update') {
+      final billId = meta['billId'] as String?;
+      if (billId == null || billId.isEmpty) return 'Bill id required.';
+      final billsResult = await _getBills(userId: _userId);
+      final bills = billsResult.getOrElse(() => []);
+      final existing = bills.where((b) => b.id == billId).toList();
+      if (existing.isEmpty) return 'Bill not found.';
+      final current = existing.first;
+      if (current.status == BillStatus.paid) {
+        return 'Bill is already paid and cannot be edited.';
+      }
+
+      final newAmount = (meta['amount'] as num?)?.toDouble() ?? current.amount;
+      final newDueStr = meta['dueDate'] as String?;
+      final newDue = newDueStr != null
+          ? DateTime.tryParse(newDueStr) ?? current.dueDate
+          : current.dueDate;
+      final newDescription =
+          (meta['description'] as String?)?.trim() ?? current.description;
+
+      final updated = current.copyWith(
+        description: newDescription,
+        amount: newAmount,
+        dueDate: DateTime(newDue.year, newDue.month, newDue.day),
+        notes: meta['notes'] as String? ?? current.notes,
+        updatedAt: DateTime.now(),
+      );
+
+      final result = await _updateBill(updated);
+      return result.fold(
+        (f) => 'Failed to update bill: ${f.message}',
+        (b) => 'Bill "${b.description}" updated.',
+      );
+    }
+
+    if (action == 'markPaid') {
+      final billId = meta['billId'] as String?;
+      if (billId == null || billId.isEmpty) return 'Bill id required.';
+      final billsResult = await _getBills(userId: _userId);
+      final bills = billsResult.getOrElse(() => []);
+      final existing = bills.where((b) => b.id == billId).toList();
+      if (existing.isEmpty) return 'Bill not found.';
+      final bill = existing.first;
+      if (bill.status == BillStatus.paid) return 'Bill is already paid.';
+
+      // Default to first checking account + bill's category (or first expense
+      // category) so the chat can mark-as-paid without follow-up dialogs. The
+      // user can always edit the resulting transaction later.
+      final accResult = await _getAccounts(userId: _userId);
+      final accounts = accResult.getOrElse(() => []);
+      final checking = accounts
+          .where((a) => a.type == AccountType.checking)
+          .toList();
+      if (checking.isEmpty) {
+        return 'No checking account available to register the payment.';
+      }
+
+      var categoryId = bill.categoryId;
+      if (categoryId == null) {
+        final catResult = await _getCategories(userId: _userId);
+        final cats = catResult.getOrElse(() => []);
+        final expenseCats = cats
+            .where((c) => c.type == CategoryType.expense)
+            .toList();
+        if (expenseCats.isEmpty) {
+          return 'No expense category available to register the payment.';
+        }
+        categoryId = expenseCats.first.id;
+      }
+
+      final result = await _payBill(
+        billId: bill.id,
+        accountId: checking.first.id,
+        categoryId: categoryId,
+      );
+      return result.fold(
+        (f) => 'Failed to mark bill as paid: ${f.message}',
+        (r) {
+          final next = r.nextOccurrence;
+          final base =
+              'Bill "${r.paidBill.description}" paid — transaction created.';
+          return next == null
+              ? base
+              : '$base Next occurrence scheduled for '
+                    '${_formatDateOnly(next.dueDate)}.';
+        },
+      );
+    }
+
+    if (action == 'delete') {
+      final billId = meta['billId'] as String?;
+      if (billId == null || billId.isEmpty) return 'Bill id required.';
+      final result = await _deleteBill(billId);
+      return result.fold(
+        (f) => 'Failed to delete bill: ${f.message}',
+        (_) => 'Bill deleted.',
+      );
+    }
+
+    return 'Unknown bill action.';
+  }
+
+  static String _formatDateOnly(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
 }

@@ -114,6 +114,9 @@ class TranslationsGeneralEn {
 	/// en: 'or'
 	String get or => 'or';
 
+	/// en: 'OK'
+	String get ok => 'OK';
+
 	/// en: 'Update'
 	String get update => 'Update';
 
@@ -315,8 +318,8 @@ class TranslationsDashboardEn {
 	/// en: 'Expenses'
 	String get expenses => 'Expenses';
 
-	/// en: 'Net Result'
-	String get netResult => 'Net Result';
+	/// en: 'Result'
+	String get netResult => 'Result';
 
 	/// en: 'Recent Transactions'
 	String get recentTransactions => 'Recent Transactions';
@@ -345,6 +348,12 @@ class TranslationsDashboardEn {
 	/// en: 'No accounts registered yet'
 	String get noAccountsYet => 'No accounts registered yet';
 
+	/// en: 'Credit Card Balance'
+	String get creditCardBalance => 'Credit Card Balance';
+
+	/// en: 'No credit cards registered yet'
+	String get noCreditCardsYet => 'No credit cards registered yet';
+
 	/// en: 'No expenses this month'
 	String get noExpensesYet => 'No expenses this month';
 
@@ -356,6 +365,21 @@ class TranslationsDashboardEn {
 
 	/// en: 'Total Income'
 	String get totalIncome => 'Total Income';
+
+	/// en: 'Transaction list'
+	String get transactionList => 'Transaction list';
+
+	/// en: 'Subcategories'
+	String get subcategories => 'Subcategories';
+
+	/// en: 'No subcategories'
+	String get noSubcategories => 'No subcategories';
+
+	/// en: 'Total'
+	String get total => 'Total';
+
+	/// en: 'Close'
+	String get close => 'Close';
 }
 
 // Path: transactions
@@ -458,6 +482,54 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Transaction deleted.'
 	String get deleted => 'Transaction deleted.';
+
+	/// en: 'Import transactions'
+	String get importCsv => 'Import transactions';
+
+	/// en: 'Import transactions from CSV'
+	String get importCsvIntroTitle => 'Import transactions from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Review import: $count transactions will be created.'
+	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
+
+	/// en: 'Missing categories:'
+	String get importMissingCategories => 'Missing categories:';
+
+	/// en: 'Missing accounts:'
+	String get importMissingAccounts => 'Missing accounts:';
+
+	/// en: '$count rows were skipped (invalid format).'
+	String importSkippedRows({required Object count}) => '${count} rows were skipped (invalid format).';
+
+	/// en: 'Imported $imported transactions. Skipped $skipped rows.'
+	String importSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.';
+
+	/// en: 'Cannot import: some categories or accounts were not found.'
+	String get importBlocked => 'Cannot import: some categories or accounts were not found.';
+
+	/// en: '$count transfers'
+	String importTransfers({required Object count}) => '${count} transfers';
+
+	/// en: '$count expenses'
+	String importExpenses({required Object count}) => '${count} expenses';
+
+	/// en: '$count incomes'
+	String importIncomes({required Object count}) => '${count} incomes';
 }
 
 // Path: accounts
@@ -647,6 +719,48 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Select color'
 	String get selectColor => 'Select color';
+
+	/// en: 'Parent category'
+	String get parentCategory => 'Parent category';
+
+	/// en: 'No parent'
+	String get noParent => 'No parent';
+
+	/// en: 'Subcategory'
+	String get subcategoryLabel => 'Subcategory';
+
+	/// en: 'Import categories'
+	String get importCsv => 'Import categories';
+
+	/// en: 'Import categories from CSV'
+	String get importCsvIntroTitle => 'Import categories from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Imported $count categories.'
+	String importSuccess({required Object count}) => 'Imported ${count} categories.';
+
+	/// en: 'Review import: $arg new items will be created.'
+	String importReview({required Object arg}) => 'Review import: ${arg} new items will be created.';
+
+	/// en: '$arg duplicate items will be skipped.'
+	String importDuplicates({required Object arg}) => '${arg} duplicate items will be skipped.';
+
+	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
+	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
 }
 
 // Path: chat
@@ -680,6 +794,9 @@ class TranslationsChatEn {
 
 	/// en: 'Sorry, I couldn't understand that. Could you try again?'
 	String get error => 'Sorry, I couldn\'t understand that. Could you try again?';
+
+	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
+	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
 }
 
 // Path: reports
@@ -764,6 +881,81 @@ class TranslationsProfileEn {
 
 	/// en: 'Are you sure you want to sign out?'
 	String get signOutConfirm => 'Are you sure you want to sign out?';
+
+	/// en: 'Clear all my data'
+	String get clearData => 'Clear all my data';
+
+	/// en: 'Delete transactions, chat, categories and accounts'
+	String get clearDataDescription => 'Delete transactions, chat, categories and accounts';
+
+	/// en: 'This will permanently delete all data from your account. Continue?'
+	String get clearDataConfirm => 'This will permanently delete all data from your account. Continue?';
+
+	/// en: 'Your account data was cleared.'
+	String get clearDataSuccess => 'Your account data was cleared.';
+
+	/// en: 'Download Android app'
+	String get downloadApk => 'Download Android app';
+
+	/// en: 'Install the mobile version on your Android device'
+	String get downloadApkDescription => 'Install the mobile version on your Android device';
+}
+
+// Path: chat.audio
+class TranslationsChatAudioEn {
+	TranslationsChatAudioEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Record voice message'
+	String get start => 'Record voice message';
+
+	/// en: 'Stop recording'
+	String get stop => 'Stop recording';
+
+	/// en: 'Cancel'
+	String get cancel => 'Cancel';
+
+	/// en: 'Recording'
+	String get recording => 'Recording';
+
+	/// en: 'Transcribing...'
+	String get transcribing => 'Transcribing...';
+
+	/// en: 'Review transcript and send'
+	String get reviewHint => 'Review transcript and send';
+
+	/// en: 'Microphone permission required to record voice.'
+	String get permissionDenied => 'Microphone permission required to record voice.';
+
+	/// en: 'Failed to record audio'
+	String get recordError => 'Failed to record audio';
+}
+
+// Path: chat.image
+class TranslationsChatImageEn {
+	TranslationsChatImageEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Attach image'
+	String get attach => 'Attach image';
+
+	/// en: 'Take photo'
+	String get takePhoto => 'Take photo';
+
+	/// en: 'Choose from gallery'
+	String get fromGallery => 'Choose from gallery';
+
+	/// en: 'Remove image'
+	String get remove => 'Remove image';
+
+	/// en: 'Could not pick image'
+	String get pickError => 'Could not pick image';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -788,6 +980,7 @@ extension on Translations {
 			'general.noResults' => 'No results found',
 			'general.success' => 'Success',
 			'general.or' => 'or',
+			'general.ok' => 'OK',
 			'general.update' => 'Update',
 			'general.create' => 'Create',
 			'general.yes' => 'Yes',
@@ -840,7 +1033,7 @@ extension on Translations {
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
 			'dashboard.expenses' => 'Expenses',
-			'dashboard.netResult' => 'Net Result',
+			'dashboard.netResult' => 'Result',
 			'dashboard.recentTransactions' => 'Recent Transactions',
 			'dashboard.seeAll' => 'See all',
 			'dashboard.thisMonth' => 'This month',
@@ -850,10 +1043,17 @@ extension on Translations {
 			'dashboard.expensesByCategory' => 'Expenses by Category',
 			'dashboard.incomeByCategory' => 'Income by Category',
 			'dashboard.noAccountsYet' => 'No accounts registered yet',
+			'dashboard.creditCardBalance' => 'Credit Card Balance',
+			'dashboard.noCreditCardsYet' => 'No credit cards registered yet',
 			'dashboard.noExpensesYet' => 'No expenses this month',
 			'dashboard.noIncomeYet' => 'No income this month',
 			'dashboard.totalExpenses' => 'Total Expenses',
 			'dashboard.totalIncome' => 'Total Income',
+			'dashboard.transactionList' => 'Transaction list',
+			'dashboard.subcategories' => 'Subcategories',
+			'dashboard.noSubcategories' => 'No subcategories',
+			'dashboard.total' => 'Total',
+			'dashboard.close' => 'Close',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
@@ -885,6 +1085,22 @@ extension on Translations {
 			'transactions.transactionCreated' => 'Transaction created',
 			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
+			'transactions.importCsv' => 'Import transactions',
+			'transactions.importCsvIntroTitle' => 'Import transactions from CSV',
+			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.',
+			'transactions.importCsvDownloadExample' => 'Download example',
+			'transactions.importCsvSelectFile' => 'Select file',
+			'transactions.importCsvExampleDownloaded' => 'Example saved.',
+			'transactions.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
+			'transactions.importMissingCategories' => 'Missing categories:',
+			'transactions.importMissingAccounts' => 'Missing accounts:',
+			'transactions.importSkippedRows' => ({required Object count}) => '${count} rows were skipped (invalid format).',
+			'transactions.importSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.',
+			'transactions.importBlocked' => 'Cannot import: some categories or accounts were not found.',
+			'transactions.importTransfers' => ({required Object count}) => '${count} transfers',
+			'transactions.importExpenses' => ({required Object count}) => '${count} expenses',
+			'transactions.importIncomes' => ({required Object count}) => '${count} incomes',
 			'accounts.title' => 'Accounts',
 			'accounts.addAccount' => 'New Account',
 			'accounts.editAccount' => 'Edit Account',
@@ -942,6 +1158,20 @@ extension on Translations {
 			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
+			'categories.parentCategory' => 'Parent category',
+			'categories.noParent' => 'No parent',
+			'categories.subcategoryLabel' => 'Subcategory',
+			'categories.importCsv' => 'Import categories',
+			'categories.importCsvIntroTitle' => 'Import categories from CSV',
+			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.',
+			'categories.importCsvDownloadExample' => 'Download example',
+			'categories.importCsvSelectFile' => 'Select file',
+			'categories.importCsvExampleDownloaded' => 'Example saved.',
+			'categories.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
+			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
+			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
+			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
 			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
@@ -950,6 +1180,19 @@ extension on Translations {
 			'chat.confirmed' => 'Transaction saved!',
 			'chat.cancelled' => 'Transaction cancelled.',
 			'chat.error' => 'Sorry, I couldn\'t understand that. Could you try again?',
+			'chat.audio.start' => 'Record voice message',
+			'chat.audio.stop' => 'Stop recording',
+			'chat.audio.cancel' => 'Cancel',
+			'chat.audio.recording' => 'Recording',
+			'chat.audio.transcribing' => 'Transcribing...',
+			'chat.audio.reviewHint' => 'Review transcript and send',
+			'chat.audio.permissionDenied' => 'Microphone permission required to record voice.',
+			'chat.audio.recordError' => 'Failed to record audio',
+			'chat.image.attach' => 'Attach image',
+			'chat.image.takePhoto' => 'Take photo',
+			'chat.image.fromGallery' => 'Choose from gallery',
+			'chat.image.remove' => 'Remove image',
+			'chat.image.pickError' => 'Could not pick image',
 			'reports.title' => 'Reports',
 			'reports.incomeVsExpenses' => 'Income vs Expenses',
 			'reports.expensesByCategory' => 'Expenses by Category',
@@ -972,6 +1215,12 @@ extension on Translations {
 			'profile.themeDark' => 'Dark',
 			'profile.themeSystem' => 'System',
 			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
+			'profile.clearData' => 'Clear all my data',
+			'profile.clearDataDescription' => 'Delete transactions, chat, categories and accounts',
+			'profile.clearDataConfirm' => 'This will permanently delete all data from your account. Continue?',
+			'profile.clearDataSuccess' => 'Your account data was cleared.',
+			'profile.downloadApk' => 'Download Android app',
+			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',
 			_ => null,
 		};
 	}

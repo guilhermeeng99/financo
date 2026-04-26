@@ -1,4 +1,5 @@
 import 'package:financo/core/database/daos/accounts_dao.dart';
+import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
@@ -16,6 +17,13 @@ import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_up_usecase.dart';
+import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
+import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
+import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
@@ -88,6 +96,23 @@ class MockCreateAccountUseCase extends Mock implements CreateAccountUseCase {}
 class MockUpdateAccountUseCase extends Mock implements UpdateAccountUseCase {}
 
 class MockDeleteAccountUseCase extends Mock implements DeleteAccountUseCase {}
+
+// ── Bills ──
+class MockBillRepository extends Mock implements BillRepository {}
+
+class MockBillRemoteDataSource extends Mock implements BillRemoteDataSource {}
+
+class MockBillsDao extends Mock implements BillsDao {}
+
+class MockGetBillsUseCase extends Mock implements GetBillsUseCase {}
+
+class MockCreateBillUseCase extends Mock implements CreateBillUseCase {}
+
+class MockUpdateBillUseCase extends Mock implements UpdateBillUseCase {}
+
+class MockDeleteBillUseCase extends Mock implements DeleteBillUseCase {}
+
+class MockPayBillUseCase extends Mock implements PayBillUseCase {}
 
 // ── Use Cases: Transactions ──
 class MockGetTransactionsUseCase extends Mock

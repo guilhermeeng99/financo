@@ -26,6 +26,11 @@ void main() {
   late MockGetCategoriesUseCase mockGetCategories;
   late MockDeleteCategoryUseCase mockDeleteCategory;
   late MockCreateTransactionUseCase mockCreateTransaction;
+  late MockGetBillsUseCase mockGetBills;
+  late MockCreateBillUseCase mockCreateBill;
+  late MockUpdateBillUseCase mockUpdateBill;
+  late MockDeleteBillUseCase mockDeleteBill;
+  late MockPayBillUseCase mockPayBill;
 
   const userId = 'user-1';
 
@@ -48,6 +53,11 @@ void main() {
     mockGetCategories = MockGetCategoriesUseCase();
     mockDeleteCategory = MockDeleteCategoryUseCase();
     mockCreateTransaction = MockCreateTransactionUseCase();
+    mockGetBills = MockGetBillsUseCase();
+    mockCreateBill = MockCreateBillUseCase();
+    mockUpdateBill = MockUpdateBillUseCase();
+    mockDeleteBill = MockDeleteBillUseCase();
+    mockPayBill = MockPayBillUseCase();
   });
 
   ChatBloc buildBloc() => ChatBloc(
@@ -62,6 +72,11 @@ void main() {
     getCategories: mockGetCategories,
     deleteCategory: mockDeleteCategory,
     createTransaction: mockCreateTransaction,
+    getBills: mockGetBills,
+    createBill: mockCreateBill,
+    updateBill: mockUpdateBill,
+    deleteBill: mockDeleteBill,
+    payBill: mockPayBill,
     userId: userId,
   );
 

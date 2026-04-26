@@ -2190,6 +2190,825 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
   }
 }
 
+class $LocalBillsTable extends LocalBills
+    with TableInfo<$LocalBillsTable, LocalBill> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalBillsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+    'due_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recurrenceMeta = const VerificationMeta(
+    'recurrence',
+  );
+  @override
+  late final GeneratedColumn<String> recurrence = GeneratedColumn<String>(
+    'recurrence',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidAtMeta = const VerificationMeta('paidAt');
+  @override
+  late final GeneratedColumn<DateTime> paidAt = GeneratedColumn<DateTime>(
+    'paid_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paidTransactionIdMeta = const VerificationMeta(
+    'paidTransactionId',
+  );
+  @override
+  late final GeneratedColumn<String> paidTransactionId =
+      GeneratedColumn<String>(
+        'paid_transaction_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _parentBillIdMeta = const VerificationMeta(
+    'parentBillId',
+  );
+  @override
+  late final GeneratedColumn<String> parentBillId = GeneratedColumn<String>(
+    'parent_bill_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    description,
+    amount,
+    dueDate,
+    status,
+    recurrence,
+    categoryId,
+    notes,
+    paidAt,
+    paidTransactionId,
+    parentBillId,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_bills';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalBill> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dueDateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('recurrence')) {
+      context.handle(
+        _recurrenceMeta,
+        recurrence.isAcceptableOrUnknown(data['recurrence']!, _recurrenceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recurrenceMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('paid_at')) {
+      context.handle(
+        _paidAtMeta,
+        paidAt.isAcceptableOrUnknown(data['paid_at']!, _paidAtMeta),
+      );
+    }
+    if (data.containsKey('paid_transaction_id')) {
+      context.handle(
+        _paidTransactionIdMeta,
+        paidTransactionId.isAcceptableOrUnknown(
+          data['paid_transaction_id']!,
+          _paidTransactionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parent_bill_id')) {
+      context.handle(
+        _parentBillIdMeta,
+        parentBillId.isAcceptableOrUnknown(
+          data['parent_bill_id']!,
+          _parentBillIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalBill map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalBill(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      recurrence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      paidAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paid_at'],
+      ),
+      paidTransactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}paid_transaction_id'],
+      ),
+      parentBillId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_bill_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalBillsTable createAlias(String alias) {
+    return $LocalBillsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalBill extends DataClass implements Insertable<LocalBill> {
+  final String id;
+  final String userId;
+  final String description;
+  final double amount;
+  final DateTime dueDate;
+  final String status;
+  final String recurrence;
+  final String? categoryId;
+  final String? notes;
+  final DateTime? paidAt;
+  final String? paidTransactionId;
+  final String? parentBillId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const LocalBill({
+    required this.id,
+    required this.userId,
+    required this.description,
+    required this.amount,
+    required this.dueDate,
+    required this.status,
+    required this.recurrence,
+    this.categoryId,
+    this.notes,
+    this.paidAt,
+    this.paidTransactionId,
+    this.parentBillId,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['description'] = Variable<String>(description);
+    map['amount'] = Variable<double>(amount);
+    map['due_date'] = Variable<DateTime>(dueDate);
+    map['status'] = Variable<String>(status);
+    map['recurrence'] = Variable<String>(recurrence);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || paidAt != null) {
+      map['paid_at'] = Variable<DateTime>(paidAt);
+    }
+    if (!nullToAbsent || paidTransactionId != null) {
+      map['paid_transaction_id'] = Variable<String>(paidTransactionId);
+    }
+    if (!nullToAbsent || parentBillId != null) {
+      map['parent_bill_id'] = Variable<String>(parentBillId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalBillsCompanion toCompanion(bool nullToAbsent) {
+    return LocalBillsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      description: Value(description),
+      amount: Value(amount),
+      dueDate: Value(dueDate),
+      status: Value(status),
+      recurrence: Value(recurrence),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      paidAt: paidAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidAt),
+      paidTransactionId: paidTransactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidTransactionId),
+      parentBillId: parentBillId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentBillId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalBill.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalBill(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      description: serializer.fromJson<String>(json['description']),
+      amount: serializer.fromJson<double>(json['amount']),
+      dueDate: serializer.fromJson<DateTime>(json['dueDate']),
+      status: serializer.fromJson<String>(json['status']),
+      recurrence: serializer.fromJson<String>(json['recurrence']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      paidAt: serializer.fromJson<DateTime?>(json['paidAt']),
+      paidTransactionId: serializer.fromJson<String?>(
+        json['paidTransactionId'],
+      ),
+      parentBillId: serializer.fromJson<String?>(json['parentBillId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'description': serializer.toJson<String>(description),
+      'amount': serializer.toJson<double>(amount),
+      'dueDate': serializer.toJson<DateTime>(dueDate),
+      'status': serializer.toJson<String>(status),
+      'recurrence': serializer.toJson<String>(recurrence),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'notes': serializer.toJson<String?>(notes),
+      'paidAt': serializer.toJson<DateTime?>(paidAt),
+      'paidTransactionId': serializer.toJson<String?>(paidTransactionId),
+      'parentBillId': serializer.toJson<String?>(parentBillId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalBill copyWith({
+    String? id,
+    String? userId,
+    String? description,
+    double? amount,
+    DateTime? dueDate,
+    String? status,
+    String? recurrence,
+    Value<String?> categoryId = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    Value<DateTime?> paidAt = const Value.absent(),
+    Value<String?> paidTransactionId = const Value.absent(),
+    Value<String?> parentBillId = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LocalBill(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    description: description ?? this.description,
+    amount: amount ?? this.amount,
+    dueDate: dueDate ?? this.dueDate,
+    status: status ?? this.status,
+    recurrence: recurrence ?? this.recurrence,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    notes: notes.present ? notes.value : this.notes,
+    paidAt: paidAt.present ? paidAt.value : this.paidAt,
+    paidTransactionId: paidTransactionId.present
+        ? paidTransactionId.value
+        : this.paidTransactionId,
+    parentBillId: parentBillId.present ? parentBillId.value : this.parentBillId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalBill copyWithCompanion(LocalBillsCompanion data) {
+    return LocalBill(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      status: data.status.present ? data.status.value : this.status,
+      recurrence: data.recurrence.present
+          ? data.recurrence.value
+          : this.recurrence,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      paidAt: data.paidAt.present ? data.paidAt.value : this.paidAt,
+      paidTransactionId: data.paidTransactionId.present
+          ? data.paidTransactionId.value
+          : this.paidTransactionId,
+      parentBillId: data.parentBillId.present
+          ? data.parentBillId.value
+          : this.parentBillId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBill(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('description: $description, ')
+          ..write('amount: $amount, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('recurrence: $recurrence, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('notes: $notes, ')
+          ..write('paidAt: $paidAt, ')
+          ..write('paidTransactionId: $paidTransactionId, ')
+          ..write('parentBillId: $parentBillId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    description,
+    amount,
+    dueDate,
+    status,
+    recurrence,
+    categoryId,
+    notes,
+    paidAt,
+    paidTransactionId,
+    parentBillId,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalBill &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.description == this.description &&
+          other.amount == this.amount &&
+          other.dueDate == this.dueDate &&
+          other.status == this.status &&
+          other.recurrence == this.recurrence &&
+          other.categoryId == this.categoryId &&
+          other.notes == this.notes &&
+          other.paidAt == this.paidAt &&
+          other.paidTransactionId == this.paidTransactionId &&
+          other.parentBillId == this.parentBillId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> description;
+  final Value<double> amount;
+  final Value<DateTime> dueDate;
+  final Value<String> status;
+  final Value<String> recurrence;
+  final Value<String?> categoryId;
+  final Value<String?> notes;
+  final Value<DateTime?> paidAt;
+  final Value<String?> paidTransactionId;
+  final Value<String?> parentBillId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalBillsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.recurrence = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.paidAt = const Value.absent(),
+    this.paidTransactionId = const Value.absent(),
+    this.parentBillId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalBillsCompanion.insert({
+    required String id,
+    required String userId,
+    required String description,
+    required double amount,
+    required DateTime dueDate,
+    required String status,
+    required String recurrence,
+    this.categoryId = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.paidAt = const Value.absent(),
+    this.paidTransactionId = const Value.absent(),
+    this.parentBillId = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       description = Value(description),
+       amount = Value(amount),
+       dueDate = Value(dueDate),
+       status = Value(status),
+       recurrence = Value(recurrence),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalBill> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? description,
+    Expression<double>? amount,
+    Expression<DateTime>? dueDate,
+    Expression<String>? status,
+    Expression<String>? recurrence,
+    Expression<String>? categoryId,
+    Expression<String>? notes,
+    Expression<DateTime>? paidAt,
+    Expression<String>? paidTransactionId,
+    Expression<String>? parentBillId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (description != null) 'description': description,
+      if (amount != null) 'amount': amount,
+      if (dueDate != null) 'due_date': dueDate,
+      if (status != null) 'status': status,
+      if (recurrence != null) 'recurrence': recurrence,
+      if (categoryId != null) 'category_id': categoryId,
+      if (notes != null) 'notes': notes,
+      if (paidAt != null) 'paid_at': paidAt,
+      if (paidTransactionId != null) 'paid_transaction_id': paidTransactionId,
+      if (parentBillId != null) 'parent_bill_id': parentBillId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalBillsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? description,
+    Value<double>? amount,
+    Value<DateTime>? dueDate,
+    Value<String>? status,
+    Value<String>? recurrence,
+    Value<String?>? categoryId,
+    Value<String?>? notes,
+    Value<DateTime?>? paidAt,
+    Value<String?>? paidTransactionId,
+    Value<String?>? parentBillId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalBillsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      description: description ?? this.description,
+      amount: amount ?? this.amount,
+      dueDate: dueDate ?? this.dueDate,
+      status: status ?? this.status,
+      recurrence: recurrence ?? this.recurrence,
+      categoryId: categoryId ?? this.categoryId,
+      notes: notes ?? this.notes,
+      paidAt: paidAt ?? this.paidAt,
+      paidTransactionId: paidTransactionId ?? this.paidTransactionId,
+      parentBillId: parentBillId ?? this.parentBillId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (recurrence.present) {
+      map['recurrence'] = Variable<String>(recurrence.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (paidAt.present) {
+      map['paid_at'] = Variable<DateTime>(paidAt.value);
+    }
+    if (paidTransactionId.present) {
+      map['paid_transaction_id'] = Variable<String>(paidTransactionId.value);
+    }
+    if (parentBillId.present) {
+      map['parent_bill_id'] = Variable<String>(parentBillId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalBillsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('description: $description, ')
+          ..write('amount: $amount, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('recurrence: $recurrence, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('notes: $notes, ')
+          ..write('paidAt: $paidAt, ')
+          ..write('paidTransactionId: $paidTransactionId, ')
+          ..write('parentBillId: $parentBillId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2200,12 +3019,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LocalCategoriesTable localCategories = $LocalCategoriesTable(
     this,
   );
+  late final $LocalBillsTable localBills = $LocalBillsTable(this);
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final AccountsDao accountsDao = AccountsDao(this as AppDatabase);
   late final TransactionsDao transactionsDao = TransactionsDao(
     this as AppDatabase,
   );
   late final CategoriesDao categoriesDao = CategoriesDao(this as AppDatabase);
+  late final BillsDao billsDao = BillsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2215,6 +3036,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localAccounts,
     localTransactions,
     localCategories,
+    localBills,
   ];
 }
 
@@ -3329,6 +4151,384 @@ typedef $$LocalCategoriesTableProcessedTableManager =
       LocalCategory,
       PrefetchHooks Function()
     >;
+typedef $$LocalBillsTableCreateCompanionBuilder =
+    LocalBillsCompanion Function({
+      required String id,
+      required String userId,
+      required String description,
+      required double amount,
+      required DateTime dueDate,
+      required String status,
+      required String recurrence,
+      Value<String?> categoryId,
+      Value<String?> notes,
+      Value<DateTime?> paidAt,
+      Value<String?> paidTransactionId,
+      Value<String?> parentBillId,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalBillsTableUpdateCompanionBuilder =
+    LocalBillsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> description,
+      Value<double> amount,
+      Value<DateTime> dueDate,
+      Value<String> status,
+      Value<String> recurrence,
+      Value<String?> categoryId,
+      Value<String?> notes,
+      Value<DateTime?> paidAt,
+      Value<String?> paidTransactionId,
+      Value<String?> parentBillId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalBillsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalBillsTable> {
+  $$LocalBillsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get paidAt => $composableBuilder(
+    column: $table.paidAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paidTransactionId => $composableBuilder(
+    column: $table.paidTransactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentBillId => $composableBuilder(
+    column: $table.parentBillId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalBillsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalBillsTable> {
+  $$LocalBillsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get paidAt => $composableBuilder(
+    column: $table.paidAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paidTransactionId => $composableBuilder(
+    column: $table.paidTransactionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentBillId => $composableBuilder(
+    column: $table.parentBillId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalBillsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalBillsTable> {
+  $$LocalBillsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get paidAt =>
+      $composableBuilder(column: $table.paidAt, builder: (column) => column);
+
+  GeneratedColumn<String> get paidTransactionId => $composableBuilder(
+    column: $table.paidTransactionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parentBillId => $composableBuilder(
+    column: $table.parentBillId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalBillsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalBillsTable,
+          LocalBill,
+          $$LocalBillsTableFilterComposer,
+          $$LocalBillsTableOrderingComposer,
+          $$LocalBillsTableAnnotationComposer,
+          $$LocalBillsTableCreateCompanionBuilder,
+          $$LocalBillsTableUpdateCompanionBuilder,
+          (
+            LocalBill,
+            BaseReferences<_$AppDatabase, $LocalBillsTable, LocalBill>,
+          ),
+          LocalBill,
+          PrefetchHooks Function()
+        > {
+  $$LocalBillsTableTableManager(_$AppDatabase db, $LocalBillsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalBillsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalBillsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalBillsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<double> amount = const Value.absent(),
+                Value<DateTime> dueDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> recurrence = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> paidAt = const Value.absent(),
+                Value<String?> paidTransactionId = const Value.absent(),
+                Value<String?> parentBillId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalBillsCompanion(
+                id: id,
+                userId: userId,
+                description: description,
+                amount: amount,
+                dueDate: dueDate,
+                status: status,
+                recurrence: recurrence,
+                categoryId: categoryId,
+                notes: notes,
+                paidAt: paidAt,
+                paidTransactionId: paidTransactionId,
+                parentBillId: parentBillId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String description,
+                required double amount,
+                required DateTime dueDate,
+                required String status,
+                required String recurrence,
+                Value<String?> categoryId = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> paidAt = const Value.absent(),
+                Value<String?> paidTransactionId = const Value.absent(),
+                Value<String?> parentBillId = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalBillsCompanion.insert(
+                id: id,
+                userId: userId,
+                description: description,
+                amount: amount,
+                dueDate: dueDate,
+                status: status,
+                recurrence: recurrence,
+                categoryId: categoryId,
+                notes: notes,
+                paidAt: paidAt,
+                paidTransactionId: paidTransactionId,
+                parentBillId: parentBillId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalBillsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalBillsTable,
+      LocalBill,
+      $$LocalBillsTableFilterComposer,
+      $$LocalBillsTableOrderingComposer,
+      $$LocalBillsTableAnnotationComposer,
+      $$LocalBillsTableCreateCompanionBuilder,
+      $$LocalBillsTableUpdateCompanionBuilder,
+      (LocalBill, BaseReferences<_$AppDatabase, $LocalBillsTable, LocalBill>),
+      LocalBill,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3341,4 +4541,6 @@ class $AppDatabaseManager {
       $$LocalTransactionsTableTableManager(_db, _db.localTransactions);
   $$LocalCategoriesTableTableManager get localCategories =>
       $$LocalCategoriesTableTableManager(_db, _db.localCategories);
+  $$LocalBillsTableTableManager get localBills =>
+      $$LocalBillsTableTableManager(_db, _db.localBills);
 }

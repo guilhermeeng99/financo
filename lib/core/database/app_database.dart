@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
+import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
+import 'package:financo/core/database/tables/bills_table.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
 import 'package:financo/core/database/tables/users_table.dart';
@@ -12,14 +14,20 @@ import 'package:financo/core/database/tables/users_table.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [LocalUsers, LocalAccounts, LocalTransactions, LocalCategories],
-  daos: [UsersDao, AccountsDao, TransactionsDao, CategoriesDao],
+  tables: [
+    LocalUsers,
+    LocalAccounts,
+    LocalTransactions,
+    LocalCategories,
+    LocalBills,
+  ],
+  daos: [UsersDao, AccountsDao, TransactionsDao, CategoriesDao, BillsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -49,6 +57,9 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'ALTER TABLE local_categories ADD COLUMN parent_id TEXT',
         );
+      }
+      if (from < 7) {
+        await migrator.createTable(localBills);
       }
     },
   );

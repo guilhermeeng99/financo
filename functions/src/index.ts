@@ -14,8 +14,11 @@ import { transcribeAudio } from './chat/transcribe';
 import type { HistoryTurn } from './chat/types';
 import { verifySignature } from './whatsapp/signature';
 import { processWebhookPayload } from './whatsapp/webhook';
+import { notifyBillsDue } from './bills/notifyBillsDue';
 
 admin.initializeApp();
+
+export { notifyBillsDue };
 
 interface ChatSendRequest {
   content: string;

@@ -26,6 +26,10 @@ dependencies:
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
   cloud_functions: ^6.0.0
+  firebase_messaging: ^16.1.0
+
+  # Notifications
+  flutter_local_notifications: ^19.4.2
 
   # Error Handling
   dartz: ^0.10.1

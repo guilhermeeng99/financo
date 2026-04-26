@@ -9,6 +9,12 @@ service cloud.firestore {
         && request.auth.uid == userId;
       allow create: if request.auth != null
         && request.auth.uid == userId;
+
+      // FCM push tokens (one doc per device, doc id == token).
+      match /fcmTokens/{tokenId} {
+        allow read, write, delete: if request.auth != null
+          && request.auth.uid == userId;
+      }
     }
 
     // ─── Accounts ───────────────────────────────────────────
@@ -42,6 +48,14 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;
       allow read, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── Bills ──────────────────────────────────────────────
+    match /bills/{billId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
         && resource.data.userId == request.auth.uid;
     }
   }

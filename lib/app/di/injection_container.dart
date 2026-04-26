@@ -3,10 +3,12 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
+import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
+import 'package:financo/core/notifications/notification_service.dart';
 import 'package:financo/core/sync/sync_service.dart';
 // Accounts
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
@@ -27,6 +29,15 @@ import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
+// Bills
+import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
+import 'package:financo/features/bills/data/repositories/bill_repository_impl.dart';
+import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
+import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 // Categories
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/data/repositories/category_repository_impl.dart';
@@ -98,15 +109,18 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => AccountsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => TransactionsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => CategoriesDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => BillsDao(sl<AppDatabase>()))
     // ─── Sync Service ───────────────────────────────────────
     ..registerLazySingleton(
       () => SyncService(
         accountRemote: sl(),
         transactionRemote: sl(),
         categoryRemote: sl(),
+        billRemote: sl(),
         accountsDao: sl(),
         transactionsDao: sl(),
         categoriesDao: sl(),
+        billsDao: sl(),
         usersDao: sl(),
         database: sl(),
       ),
@@ -127,6 +141,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<CategoryRemoteDataSource>(
       () => CategoryRemoteDataSourceImpl(firestore: sl()),
+    )
+    ..registerLazySingleton<BillRemoteDataSource>(
+      () => BillRemoteDataSourceImpl(firestore: sl()),
     )
     ..registerLazySingleton<ChatBackendDataSource>(
       () => ChatBackendDataSourceImpl(functions: sl()),
@@ -158,6 +175,13 @@ Future<void> initDependencies() async {
       () => CategoryRepositoryImpl(
         remoteDataSource: sl(),
         categoriesDao: sl(),
+      ),
+    )
+    ..registerLazySingleton<BillRepository>(
+      () => BillRepositoryImpl(
+        remoteDataSource: sl(),
+        billsDao: sl(),
+        transactionRepository: sl(),
       ),
     )
     ..registerLazySingleton<ChatRepository>(
@@ -233,6 +257,11 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(
       () => ImportCategoriesCsvUseCase(sl()),
     )
+    ..registerLazySingleton(() => GetBillsUseCase(sl()))
+    ..registerLazySingleton(() => CreateBillUseCase(sl()))
+    ..registerLazySingleton(() => UpdateBillUseCase(sl()))
+    ..registerLazySingleton(() => DeleteBillUseCase(sl()))
+    ..registerLazySingleton(() => PayBillUseCase(sl()))
     ..registerLazySingleton(() => SendMessageUseCase(sl()))
     ..registerLazySingleton(
       () => GetChatHistoryUseCase(sl()),
@@ -258,6 +287,7 @@ Future<void> initDependencies() async {
         signUpUseCase: sl(),
         signOutUseCase: sl(),
         getCurrentUser: sl(),
+        notificationService: kIsWeb ? null : sl<NotificationService>(),
       )..add(const AuthCheckRequested()),
     )
     ..registerLazySingleton(
@@ -269,5 +299,6 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(
       () => ThemeCubit(prefs: sl()),
     )
-    ..registerLazySingleton(DateFilterCubit.new);
+    ..registerLazySingleton(DateFilterCubit.new)
+    ..registerLazySingleton(NotificationService.new);
 }
