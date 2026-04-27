@@ -38,7 +38,7 @@ _flutter.buildConfig = {"engineRevision":"59aa584fdf100e6c78c785d8a5b565d1de4b48
 
 _flutter.loader.load({
   serviceWorker: {
-    serviceWorkerVersion: "1340064317" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */,
+    serviceWorkerVersion: "4055142619" /* Flutter's service worker is deprecated and will be removed in a future Flutter release. */,
   },
   onEntrypointLoaded: async function(engineInitializer) {
     const appRunner = await engineInitializer.initializeEngine();
