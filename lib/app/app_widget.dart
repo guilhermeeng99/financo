@@ -2,10 +2,10 @@ import 'package:financo/app/di/injection_container.dart';
 import 'package:financo/app/routes/app_router.dart';
 import 'package:financo/app/theme/app_theme.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
+import 'package:financo/core/constants/app_constants.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
-import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +32,7 @@ class _FinancoAppState extends State<FinancoApp> {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp.router(
-            title: t.app.name,
+            title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),

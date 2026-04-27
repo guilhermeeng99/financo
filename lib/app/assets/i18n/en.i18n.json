@@ -1,7 +1,4 @@
 {
-  "app": {
-    "name": "Financo"
-  },
   "general": {
     "loading": "Loading...",
     "error": "An error occurred",

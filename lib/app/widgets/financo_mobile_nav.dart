@@ -2,7 +2,6 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/date_helpers.dart';
-import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,8 +30,7 @@ class FinancoMobileAppBar extends StatelessWidget
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
-            onPressed: () =>
-                context.read<DateFilterCubit>().previousMonth(),
+            onPressed: () => context.read<DateFilterCubit>().previousMonth(),
             icon: FaIcon(
               FontAwesomeIcons.chevronLeft,
               size: 14,
@@ -75,33 +73,99 @@ class FinancoBottomBar extends StatelessWidget {
       currentIndex = 2;
     }
 
-    return NavigationBar(
-      backgroundColor: colors.surface,
-      selectedIndex: currentIndex,
-      onDestinationSelected: (i) {
-        switch (i) {
-          case 0:
-            context.go(AppRoutes.dashboard);
-          case 1:
-            context.go(AppRoutes.chat);
-          case 2:
-            context.go(AppRoutes.profile);
-        }
-      },
-      destinations: [
-        NavigationDestination(
-          icon: const FaIcon(FontAwesomeIcons.house, size: 18),
-          label: t.nav.dashboard,
+    void onTap(int i) {
+      switch (i) {
+        case 0:
+          context.go(AppRoutes.dashboard);
+        case 1:
+          context.go(AppRoutes.chat);
+        case 2:
+          context.go(AppRoutes.profile);
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        height: 64,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        NavigationDestination(
-          icon: const FaIcon(FontAwesomeIcons.comment, size: 18),
-          label: t.nav.chat,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _Item(
+              icon: FontAwesomeIcons.house,
+              index: 0,
+              currentIndex: currentIndex,
+              onTap: onTap,
+            ),
+            _Item(
+              icon: FontAwesomeIcons.comment,
+              index: 1,
+              currentIndex: currentIndex,
+              onTap: onTap,
+            ),
+            _Item(
+              icon: FontAwesomeIcons.gear,
+              index: 2,
+              currentIndex: currentIndex,
+              onTap: onTap,
+            ),
+          ],
         ),
-        NavigationDestination(
-          icon: const FaIcon(FontAwesomeIcons.gear, size: 18),
-          label: t.nav.profile,
+      ),
+    );
+  }
+}
+
+class _Item extends StatelessWidget {
+  const _Item({
+    required this.icon,
+    required this.index,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  final FaIconData icon;
+  final int index;
+  final int currentIndex;
+  final void Function(int) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = index == currentIndex;
+    final colors = context.appColors;
+
+    return GestureDetector(
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
+          shape: BoxShape.circle,
         ),
-      ],
+        child: Center(
+          child: FaIcon(
+            icon,
+            size: 18,
+            color: isSelected ? colors.primary : colors.onBackgroundLight,
+          ),
+        ),
+      ),
     );
   }
 }

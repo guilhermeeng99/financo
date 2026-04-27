@@ -1,5 +1,6 @@
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/core/constants/app_constants.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
@@ -43,7 +44,7 @@ class OnboardingPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  t.app.name,
+                  AppConstants.appName,
                   style: context.textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

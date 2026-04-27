@@ -1,5 +1,6 @@
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/theme/app_colors.dart';
+import 'package:financo/core/constants/app_constants.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/date_helpers.dart';
@@ -47,7 +48,7 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
           _SidebarIconButton(
             icon: _expanded ? FontAwesomeIcons.xmark : FontAwesomeIcons.bars,
             expanded: _expanded,
-            label: t.app.name,
+            label: AppConstants.appName,
             onTap: _toggle,
             isActive: false,
             colors: colors,
@@ -58,8 +59,7 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
             year: dateFilter.year,
             month: dateFilter.month,
             expanded: _expanded,
-            onPrevious: () =>
-                context.read<DateFilterCubit>().previousMonth(),
+            onPrevious: () => context.read<DateFilterCubit>().previousMonth(),
             onNext: () => context.read<DateFilterCubit>().nextMonth(),
             colors: colors,
           ),

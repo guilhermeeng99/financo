@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/core/constants/app_constants.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,7 +37,7 @@ class _StartupPageState extends State<StartupPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Financo',
+                AppConstants.appName,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
