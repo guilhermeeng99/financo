@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 class LocalBills extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
+  TextColumn get type => text().withDefault(const Constant('payable'))();
   TextColumn get description => text()();
   RealColumn get amount => real()();
   DateTimeColumn get dueDate => dateTime()();

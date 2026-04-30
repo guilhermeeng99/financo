@@ -13,6 +13,7 @@ interface CategoryContext {
 
 interface BillContext {
   id: string;
+  type: 'payable' | 'receivable';
   description: string;
   amount: number;
   dueDate: Date;
@@ -61,8 +62,11 @@ const fetchPendingBills = async (userId: string): Promise<BillContext[]> => {
   return snap.docs.map((d) => {
     const data = d.data();
     const due = data.dueDate;
+    const rawType = data.type;
     return {
       id: d.id,
+      // Legacy bills stored before BillType existed are payable by default.
+      type: rawType === 'receivable' ? 'receivable' : 'payable',
       description: String(data.description ?? ''),
       amount: Number(data.amount ?? 0),
       // Firestore Timestamp → Date.
@@ -80,8 +84,10 @@ const startOfToday = (): Date => {
 const formatDate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-const formatBillLine = (b: BillContext): string =>
-  `- id=${b.id} "${b.description}" R$${b.amount.toFixed(2)} (vence ${formatDate(b.dueDate)})`;
+const formatBillLine = (b: BillContext): string => {
+  const kind = b.type === 'receivable' ? 'a receber' : 'a pagar';
+  return `- id=${b.id} type=${b.type} (${kind}) "${b.description}" R$${b.amount.toFixed(2)} (vence ${formatDate(b.dueDate)})`;
+};
 
 const formatBillsBlock = (bills: BillContext[]): string => {
   if (bills.length === 0) return '';
@@ -95,7 +101,7 @@ const formatBillsBlock = (bills: BillContext[]): string => {
   );
   const sections: string[] = [];
   if (overdue.length > 0) {
-    sections.push(`⚠ Contas em atraso:\n${overdue.map(formatBillLine).join('\n')}`);
+    sections.push(`⚠ Contas em atraso (a pagar/receber):\n${overdue.map(formatBillLine).join('\n')}`);
   }
   if (dueToday.length > 0) {
     sections.push(`📌 Vencem hoje:\n${dueToday.map(formatBillLine).join('\n')}`);

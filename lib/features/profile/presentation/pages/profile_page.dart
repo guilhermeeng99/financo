@@ -187,11 +187,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     onTap: () => context.push(AppRoutes.categories),
                   ),
                   _ProfileTile(
-                    icon: FontAwesomeIcons.fileInvoiceDollar,
-                    title: t.profile.bills,
-                    onTap: () => context.push(AppRoutes.bills),
-                  ),
-                  _ProfileTile(
                     icon: FontAwesomeIcons.fileArrowUp,
                     title: t.transactions.importCsv,
                     onTap: _importCsv,

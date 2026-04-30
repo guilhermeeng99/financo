@@ -130,6 +130,7 @@ void registerBillFallbackValues() {
     BillEntity(
       id: 'fallback',
       userId: 'fallback',
+      type: BillType.payable,
       description: 'fallback',
       amount: 1,
       dueDate: DateTime(2026),
@@ -143,6 +144,7 @@ void registerBillFallbackValues() {
     BillModel(
       id: 'fallback',
       userId: 'fallback',
+      type: BillType.payable,
       description: 'fallback',
       amount: 1,
       dueDate: DateTime(2026),

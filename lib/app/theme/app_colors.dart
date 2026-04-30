@@ -38,36 +38,46 @@ class AppColors {
   const AppColors._();
 
   static const light = AppColorsData(
-    primary: Color(0xFF1A2B4A),
-    primaryLight: Color(0xFF2E4A7A),
-    primaryDark: Color(0xFF0D1B2A),
-    secondary: Color(0xFF00B4D8),
-    background: Color(0xFFF5F7FA),
+    primary: Color(0xFF5B5FEF),
+    primaryLight: Color(0xFF7C83FF),
+    primaryDark: Color(0xFF3F43C9),
+
+    secondary: Color(0xFF22C55E),
+
+    background: Color(0xFFF6F7FB),
     surface: Color(0xFFFFFFFF),
-    surfaceVariant: Color(0xFFEDF0F5),
-    onBackground: Color(0xFF1B1B1B),
+    surfaceVariant: Color(0xFFEEF0F6),
+
+    onBackground: Color(0xFF1A1B1F),
     onBackgroundLight: Color(0xFF6B7280),
-    income: Color(0xFF10B981),
+
+    income: Color(0xFF22C55E),
     expense: Color(0xFFEF4444),
+
     warning: Color(0xFFF59E0B),
-    success: Color(0xFF10B981),
+    success: Color(0xFF22C55E),
     error: Color(0xFFEF4444),
   );
 
   static const dark = AppColorsData(
-    primary: Color(0xFF4A7CC9),
-    primaryLight: Color(0xFF6B9FE8),
-    primaryDark: Color(0xFF2E5A9E),
-    secondary: Color(0xFF00D1FF),
-    background: Color(0xFF0D1117),
-    surface: Color(0xFF161B22),
-    surfaceVariant: Color(0xFF21262D),
-    onBackground: Color(0xFFE6EDF3),
-    onBackgroundLight: Color(0xFF8B949E),
-    income: Color(0xFF34D399),
+    primary: Color(0xFF7C83FF),
+    primaryLight: Color(0xFFA5ABFF),
+    primaryDark: Color(0xFF5B5FEF),
+
+    secondary: Color(0xFF22C55E),
+
+    background: Color(0xFF0F1117),
+    surface: Color(0xFF181C24),
+    surfaceVariant: Color(0xFF212632),
+
+    onBackground: Color(0xFFE6E9F0),
+    onBackgroundLight: Color(0xFF9AA3B2),
+
+    income: Color(0xFF22C55E),
     expense: Color(0xFFF87171),
+
     warning: Color(0xFFFBBF24),
-    success: Color(0xFF34D399),
+    success: Color(0xFF22C55E),
     error: Color(0xFFF87171),
   );
 }

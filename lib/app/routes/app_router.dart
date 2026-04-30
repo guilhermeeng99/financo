@@ -282,6 +282,9 @@ class _ShellWithSidebar extends StatelessWidget {
       final showMonthFilter = location == AppRoutes.dashboard;
 
       return Scaffold(
+        // Lets scrollable content flow behind the floating bottom bar so
+        // it visually "lifts" off the page instead of clipping the body.
+        extendBody: true,
         appBar: showMonthFilter ? const FinancoMobileAppBar() : null,
         body: child,
         bottomNavigationBar: const FinancoBottomBar(),

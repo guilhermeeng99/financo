@@ -17,26 +17,41 @@ Future<void> showPayBillDialog({
   final accountsState = context.read<AccountsCubit>().state;
   final categoriesState = context.read<CategoriesCubit>().state;
 
+  // Receivable bills accept any account that can hold a balance — for now
+  // that's checking accounts only (we don't deposit incoming money into a
+  // credit card). Same set as the payable case, but the "no category" error
+  // changes wording.
   final accounts = accountsState is AccountsLoaded
       ? accountsState.accounts
             .where((a) => a.type == AccountType.checking)
             .toList()
       : <AccountEntity>[];
+  final wantedCategoryType = bill.isReceivable
+      ? CategoryType.income
+      : CategoryType.expense;
   final categories = categoriesState is CategoriesLoaded
       ? categoriesState.categories
-            .where((c) => c.type == CategoryType.expense)
+            .where((c) => c.type == wantedCategoryType)
             .toList()
       : <CategoryEntity>[];
+
+  final dialogTitle = bill.isReceivable
+      ? t.bills.receiveDialogTitle
+      : t.bills.payDialogTitle;
+  final actionLabel = bill.isReceivable
+      ? t.bills.markAsReceived
+      : t.bills.markAsPaid;
+  final missingCategoryMessage = bill.isReceivable
+      ? t.bills.noIncomeCategory
+      : t.bills.noExpenseCategory;
 
   if (accounts.isEmpty || categories.isEmpty) {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(t.bills.payDialogTitle),
+        title: Text(dialogTitle),
         content: Text(
-          accounts.isEmpty
-              ? t.accounts.empty
-              : t.categories.empty,
+          accounts.isEmpty ? t.accounts.empty : missingCategoryMessage,
         ),
         actions: [
           TextButton(
@@ -63,7 +78,7 @@ Future<void> showPayBillDialog({
       return StatefulBuilder(
         builder: (ctx, setDialogState) {
           return AlertDialog(
-            title: Text(t.bills.payDialogTitle),
+            title: Text(dialogTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,7 +142,7 @@ Future<void> showPayBillDialog({
                   );
                   Navigator.pop(ctx);
                 },
-                child: Text(t.bills.markAsPaid),
+                child: Text(actionLabel),
               ),
             ],
           );

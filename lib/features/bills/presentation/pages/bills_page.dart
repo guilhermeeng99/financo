@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
@@ -20,6 +21,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
+/// Visual filter for the bills list. Bound to UI only — the underlying data
+/// load isn't filtered by type (we filter in-memory) since both lists are
+/// usually small and we already cache them locally.
+enum _TypeFilter { all, payable, receivable }
+
 class BillsPage extends StatefulWidget {
   const BillsPage({super.key});
 
@@ -28,6 +34,8 @@ class BillsPage extends StatefulWidget {
 }
 
 class _BillsPageState extends State<BillsPage> {
+  _TypeFilter _typeFilter = _TypeFilter.all;
+
   @override
   void initState() {
     super.initState();
@@ -78,7 +86,7 @@ class _BillsPageState extends State<BillsPage> {
           );
         }
         if (state is BillPaid) {
-          // Refresh transactions + dashboard so the new expense shows up.
+          // Refresh transactions + dashboard so the new tx shows up.
           context.read<TransactionsBloc>().add(
             TransactionsLoadRequested(forceRefresh: true),
           );
@@ -87,7 +95,15 @@ class _BillsPageState extends State<BillsPage> {
           );
           final messenger = ScaffoldMessenger.of(context)
             ..clearSnackBars()
-            ..showSnackBar(SnackBar(content: Text(t.bills.billPaid)));
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.result.paidBill.isReceivable
+                      ? t.bills.billReceived
+                      : t.bills.billPaid,
+                ),
+              ),
+            );
           if (state.result.nextOccurrence != null) {
             messenger.showSnackBar(
               SnackBar(content: Text(t.bills.nextOccurrenceCreated)),
@@ -97,50 +113,91 @@ class _BillsPageState extends State<BillsPage> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text(t.bills.title)),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'bills_fab',
-          onPressed: () async {
-            final result = await context.push(AppRoutes.addBill);
-            if (result == true && context.mounted) {
-              context.read<BillsBloc>().add(
-                const BillsLoadRequested(forceRefresh: true),
-              );
-            }
-          },
-          child: const Icon(Icons.add),
-        ),
-        body: BlocBuilder<BillsBloc, BillsState>(
-          builder: (context, state) {
-            if (state is BillsLoading || state is BillsInitial) {
-              return const LoadingShimmer();
-            }
-            if (state is BillsError) {
-              return ErrorView(
-                message: state.failure.message,
-                onRetry: () => context.read<BillsBloc>().add(
+        floatingActionButton: LiftedFab(
+          child: FloatingActionButton(
+            heroTag: 'bills_fab',
+            onPressed: () async {
+              final result = await context.push(AppRoutes.addBill);
+              if (result == true && context.mounted) {
+                context.read<BillsBloc>().add(
                   const BillsLoadRequested(forceRefresh: true),
-                ),
-              );
-            }
-            if (state is BillsLoaded) {
-              if (state.bills.isEmpty) {
-                return EmptyState(
-                  icon: FontAwesomeIcons.fileInvoiceDollar,
-                  message: t.bills.empty,
                 );
               }
-              return _BillsList(
-                bills: state.bills,
-                onTap: _onTapBill,
-                onPay: _onPayPressed,
-                onDelete: _confirmDelete,
-              );
-            }
-            return const SizedBox.shrink();
-          },
+            },
+            child: const Icon(Icons.add),
+          ),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: SegmentedButton<_TypeFilter>(
+                segments: [
+                  ButtonSegment(
+                    value: _TypeFilter.all,
+                    label: Text(t.bills.filterAll),
+                  ),
+                  ButtonSegment(
+                    value: _TypeFilter.payable,
+                    label: Text(t.bills.typePayable),
+                  ),
+                  ButtonSegment(
+                    value: _TypeFilter.receivable,
+                    label: Text(t.bills.typeReceivable),
+                  ),
+                ],
+                selected: {_typeFilter},
+                onSelectionChanged: (s) =>
+                    setState(() => _typeFilter = s.first),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<BillsBloc, BillsState>(
+                builder: (context, state) {
+                  if (state is BillsLoading || state is BillsInitial) {
+                    return const LoadingShimmer();
+                  }
+                  if (state is BillsError) {
+                    return ErrorView(
+                      message: state.failure.message,
+                      onRetry: () => context.read<BillsBloc>().add(
+                        const BillsLoadRequested(forceRefresh: true),
+                      ),
+                    );
+                  }
+                  if (state is BillsLoaded) {
+                    final filtered = _applyFilter(state.bills);
+                    if (filtered.isEmpty) {
+                      return EmptyState(
+                        icon: FontAwesomeIcons.fileInvoiceDollar,
+                        message: t.bills.empty,
+                      );
+                    }
+                    return _BillsList(
+                      bills: filtered,
+                      onTap: _onTapBill,
+                      onPay: _onPayPressed,
+                      onDelete: _confirmDelete,
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  List<BillEntity> _applyFilter(List<BillEntity> bills) {
+    return switch (_typeFilter) {
+      _TypeFilter.all => bills,
+      _TypeFilter.payable =>
+        bills.where((b) => b.type == BillType.payable).toList(),
+      _TypeFilter.receivable =>
+        bills.where((b) => b.type == BillType.receivable).toList(),
+    };
   }
 
   Future<void> _onTapBill(BillEntity bill) async {

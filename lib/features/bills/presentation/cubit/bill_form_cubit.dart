@@ -38,6 +38,14 @@ class BillFormCubit extends Cubit<BillFormState> {
     emit(state.copyWith(recurrence: recurrence));
   }
 
+  void updateType(BillType type) {
+    if (state.isEditing) return; // immutable after creation
+    if (state.type == type) return;
+    // Switching type invalidates any previously chosen category (which was
+    // bound to the old category type).
+    emit(state.copyWith(type: type, clearCategory: true));
+  }
+
   void updateCategoryId(String? id) =>
       emit(state.copyWith(categoryId: id, clearCategory: id == null));
 
@@ -51,6 +59,7 @@ class BillFormCubit extends Cubit<BillFormState> {
     final bill = BillEntity(
       id: state.existingId ?? '',
       userId: state.userId,
+      type: state.type,
       description: state.description.trim(),
       amount: state.amount,
       dueDate: state.dueDate,
@@ -77,6 +86,7 @@ class BillFormCubit extends Cubit<BillFormState> {
 class BillFormState extends Equatable {
   const BillFormState({
     required this.userId,
+    required this.type,
     required this.description,
     required this.amount,
     required this.dueDate,
@@ -100,6 +110,7 @@ class BillFormState extends Equatable {
     final today = DateTime.now();
     return BillFormState(
       userId: userId,
+      type: existing?.type ?? BillType.payable,
       description: existing?.description ?? '',
       amount: existing?.amount ?? 0,
       dueDate:
@@ -118,6 +129,7 @@ class BillFormState extends Equatable {
   }
 
   final String userId;
+  final BillType type;
   final String description;
   final double amount;
   final DateTime dueDate;
@@ -139,11 +151,13 @@ class BillFormState extends Equatable {
   bool get isValid {
     if (description.trim().isEmpty) return false;
     if (amount <= 0) return false;
+    if (categoryId == null) return false;
     if (isEditing && isPaid) return false;
     return true;
   }
 
   BillFormState copyWith({
+    BillType? type,
     String? description,
     double? amount,
     DateTime? dueDate,
@@ -156,6 +170,7 @@ class BillFormState extends Equatable {
   }) {
     return BillFormState(
       userId: userId,
+      type: type ?? this.type,
       description: description ?? this.description,
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,
@@ -176,6 +191,7 @@ class BillFormState extends Equatable {
   @override
   List<Object?> get props => [
     userId,
+    type,
     description,
     amount,
     dueDate,

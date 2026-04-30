@@ -52,7 +52,9 @@
       "PowerShell($keytool = \"C:\\\\Program Files\\\\Android\\\\Android Studio\\\\jbr\\\\bin\\\\keytool.exe\"; & $keytool -list -v -keystore \"android\\\\app\\\\upload-keystore.jks\" -alias upload -storepass 'Y1lOxlaMnd@#Blals8EEpja^+JCI' 2>&1 | Select-String -Pattern 'SHA1|SHA-1|SHA256|SHA-256|Valid')",
       "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"android\\\\app\\\\upload-keystore.jks\"\\); $b64 = [Convert]::ToBase64String\\($bytes\\); Set-Content -Path \"android\\\\app\\\\upload-keystore.jks.base64.txt\" -Value $b64 -Encoding ascii -NoNewline; Write-Output \"Base64 length: $\\($b64.Length\\) chars, written to android\\\\app\\\\upload-keystore.jks.base64.txt\")",
       "Bash(git check-ignore *)",
-      "Bash(grep -E \"\\\\.dart$\")"
+      "Bash(grep -E \"\\\\.dart$\")",
+      "Bash(:)",
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\guiga\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-guiga-Documents-Projetos-financo\\\\\\\\ef0c30e5-04ef-41e8-a352-269b40d1abb1\\\\\\\\tasks\\\\\\\\buhntks15.output)"
     ]
   }
 }

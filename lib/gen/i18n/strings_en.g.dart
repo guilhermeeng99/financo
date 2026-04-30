@@ -284,6 +284,9 @@ class TranslationsNavEn {
 
 	/// en: 'Profile'
 	String get profile => 'Profile';
+
+	/// en: 'Bills'
+	String get bills => 'Bills';
 }
 
 // Path: dashboard
@@ -879,11 +882,23 @@ class TranslationsBillsEn {
 	/// en: 'Monthly'
 	String get monthly => 'Monthly';
 
-	/// en: 'Category (optional)'
-	String get category => 'Category (optional)';
+	/// en: 'Type'
+	String get type => 'Type';
 
-	/// en: 'None'
-	String get noCategory => 'None';
+	/// en: 'To pay'
+	String get typePayable => 'To pay';
+
+	/// en: 'To receive'
+	String get typeReceivable => 'To receive';
+
+	/// en: 'All'
+	String get filterAll => 'All';
+
+	/// en: 'Category'
+	String get category => 'Category';
+
+	/// en: 'Pick a category'
+	String get categoryRequired => 'Pick a category';
 
 	/// en: 'Notes (optional)'
 	String get notes => 'Notes (optional)';
@@ -894,8 +909,14 @@ class TranslationsBillsEn {
 	/// en: 'Mark as paid'
 	String get markAsPaid => 'Mark as paid';
 
+	/// en: 'Mark as received'
+	String get markAsReceived => 'Mark as received';
+
 	/// en: 'Paid'
 	String get paid => 'Paid';
+
+	/// en: 'Received'
+	String get received => 'Received';
 
 	/// en: 'Pending'
 	String get pending => 'Pending';
@@ -918,8 +939,8 @@ class TranslationsBillsEn {
 	/// en: 'Upcoming'
 	String get upcomingGroup => 'Upcoming';
 
-	/// en: 'Paid'
-	String get paidGroup => 'Paid';
+	/// en: 'Settled'
+	String get paidGroup => 'Settled';
 
 	/// en: 'Are you sure you want to delete this bill?'
 	String get deleteConfirm => 'Are you sure you want to delete this bill?';
@@ -936,17 +957,23 @@ class TranslationsBillsEn {
 	/// en: 'Bill paid — transaction created'
 	String get billPaid => 'Bill paid — transaction created';
 
+	/// en: 'Payment received — transaction created'
+	String get billReceived => 'Payment received — transaction created';
+
 	/// en: 'Next month's bill scheduled'
 	String get nextOccurrenceCreated => 'Next month\'s bill scheduled';
 
-	/// en: 'This bill is already paid'
-	String get alreadyPaid => 'This bill is already paid';
+	/// en: 'This bill is already settled'
+	String get alreadyPaid => 'This bill is already settled';
 
-	/// en: 'Paid bills can't be edited'
-	String get cannotEditPaid => 'Paid bills can\'t be edited';
+	/// en: 'Settled bills can't be edited'
+	String get cannotEditPaid => 'Settled bills can\'t be edited';
 
 	/// en: 'Pay bill'
 	String get payDialogTitle => 'Pay bill';
+
+	/// en: 'Register received payment'
+	String get receiveDialogTitle => 'Register received payment';
 
 	/// en: 'Account'
 	String get selectAccount => 'Account';
@@ -962,6 +989,12 @@ class TranslationsBillsEn {
 
 	/// en: 'tomorrow'
 	String get dueTomorrow => 'tomorrow';
+
+	/// en: 'Create at least one expense category first.'
+	String get noExpenseCategory => 'Create at least one expense category first.';
+
+	/// en: 'Create at least one income category first.'
+	String get noIncomeCategory => 'Create at least one income category first.';
 
 	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
 }
@@ -1168,6 +1201,7 @@ extension on Translations {
 			'nav.chat' => 'Chat',
 			'nav.reports' => 'Reports',
 			'nav.profile' => 'Profile',
+			'nav.bills' => 'Bills',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -1357,12 +1391,18 @@ extension on Translations {
 			'bills.recurrence' => 'Recurrence',
 			'bills.oneShot' => 'One-time',
 			'bills.monthly' => 'Monthly',
-			'bills.category' => 'Category (optional)',
-			'bills.noCategory' => 'None',
+			'bills.type' => 'Type',
+			'bills.typePayable' => 'To pay',
+			'bills.typeReceivable' => 'To receive',
+			'bills.filterAll' => 'All',
+			'bills.category' => 'Category',
+			'bills.categoryRequired' => 'Pick a category',
 			'bills.notes' => 'Notes (optional)',
 			'bills.notesHint' => 'Additional details...',
 			'bills.markAsPaid' => 'Mark as paid',
+			'bills.markAsReceived' => 'Mark as received',
 			'bills.paid' => 'Paid',
+			'bills.received' => 'Received',
 			'bills.pending' => 'Pending',
 			'bills.overdue' => 'Overdue',
 			'bills.dueToday' => 'Due today',
@@ -1370,21 +1410,25 @@ extension on Translations {
 			'bills.overdueGroup' => 'Overdue',
 			'bills.todayGroup' => 'Today',
 			'bills.upcomingGroup' => 'Upcoming',
-			'bills.paidGroup' => 'Paid',
+			'bills.paidGroup' => 'Settled',
 			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
 			'bills.billCreated' => 'Bill created',
 			'bills.billUpdated' => 'Bill updated',
 			'bills.billDeleted' => 'Bill deleted',
 			'bills.billPaid' => 'Bill paid — transaction created',
+			'bills.billReceived' => 'Payment received — transaction created',
 			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
-			'bills.alreadyPaid' => 'This bill is already paid',
-			'bills.cannotEditPaid' => 'Paid bills can\'t be edited',
+			'bills.alreadyPaid' => 'This bill is already settled',
+			'bills.cannotEditPaid' => 'Settled bills can\'t be edited',
 			'bills.payDialogTitle' => 'Pay bill',
+			'bills.receiveDialogTitle' => 'Register received payment',
 			'bills.selectAccount' => 'Account',
 			'bills.selectCategory' => 'Category',
 			'bills.daysOverdue' => ({required Object days}) => '${days} days overdue',
 			'bills.dueInDays' => ({required Object days}) => 'in ${days} days',
 			'bills.dueTomorrow' => 'tomorrow',
+			'bills.noExpenseCategory' => 'Create at least one expense category first.',
+			'bills.noIncomeCategory' => 'Create at least one income category first.',
 			'bills.notification.title' => ({required Object count}) => 'You have ${count} bill(s) to pay',
 			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) is due today',
 			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) is overdue',

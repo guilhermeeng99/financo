@@ -5,10 +5,16 @@ enum BillStatus { pending, paid }
 
 enum BillRecurrence { oneShot, monthly }
 
+/// Whether this bill represents money the user owes (`payable`,
+/// e.g. internet bill) or money the user is expecting to receive
+/// (`receivable`, e.g. salary). Immutable once the bill is created.
+enum BillType { payable, receivable }
+
 class BillEntity extends Equatable {
   const BillEntity({
     required this.id,
     required this.userId,
+    required this.type,
     required this.description,
     required this.amount,
     required this.dueDate,
@@ -25,6 +31,7 @@ class BillEntity extends Equatable {
 
   final String id;
   final String userId;
+  final BillType type;
   final String description;
   final double amount;
   final DateTime dueDate;
@@ -40,6 +47,8 @@ class BillEntity extends Equatable {
 
   bool get isPending => status == BillStatus.pending;
   bool get isPaid => status == BillStatus.paid;
+  bool get isPayable => type == BillType.payable;
+  bool get isReceivable => type == BillType.receivable;
 
   bool get isOverdue {
     if (status != BillStatus.pending) return false;
@@ -56,6 +65,7 @@ class BillEntity extends Equatable {
   BillEntity copyWith({
     String? id,
     String? userId,
+    BillType? type,
     String? description,
     double? amount,
     DateTime? dueDate,
@@ -72,6 +82,7 @@ class BillEntity extends Equatable {
     return BillEntity(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      type: type ?? this.type,
       description: description ?? this.description,
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,
@@ -91,6 +102,7 @@ class BillEntity extends Equatable {
   List<Object?> get props => [
     id,
     userId,
+    type,
     description,
     amount,
     dueDate,

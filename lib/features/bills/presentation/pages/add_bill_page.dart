@@ -13,6 +13,7 @@ import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart'
 import 'package:financo/features/bills/presentation/cubit/bill_form_cubit.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -172,6 +173,31 @@ class _AddBillViewState extends State<_AddBillView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    SegmentedButton<BillType>(
+                      segments: [
+                        ButtonSegment(
+                          value: BillType.payable,
+                          label: Text(t.bills.typePayable),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowUp,
+                            size: 14,
+                          ),
+                        ),
+                        ButtonSegment(
+                          value: BillType.receivable,
+                          label: Text(t.bills.typeReceivable),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.arrowDown,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                      selected: {state.type},
+                      onSelectionChanged: state.isEditing
+                          ? null
+                          : (s) => cubit.updateType(s.first),
+                    ),
+                    const SizedBox(height: 16),
                     FinancoTextField(
                       controller: _descriptionController,
                       label: t.bills.description,
@@ -223,6 +249,7 @@ class _AddBillViewState extends State<_AddBillView> {
                     const SizedBox(height: 16),
                     _CategoryDropdown(
                       selectedId: state.categoryId,
+                      billType: state.type,
                       onChanged: cubit.updateCategoryId,
                     ),
                     const SizedBox(height: 16),
@@ -286,34 +313,81 @@ class _PaidBillBanner extends StatelessWidget {
 class _CategoryDropdown extends StatelessWidget {
   const _CategoryDropdown({
     required this.selectedId,
+    required this.billType,
     required this.onChanged,
   });
 
   final String? selectedId;
+  final BillType billType;
   final ValueChanged<String?> onChanged;
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<CategoriesCubit>().state;
+    final wantedType = billType == BillType.receivable
+        ? CategoryType.income
+        : CategoryType.expense;
     final categories = state is CategoriesLoaded
-        ? state.categories
-              .where((c) => c.type == CategoryType.expense)
-              .toList()
+        ? organizeCategoriesForDisplay(
+            state.categories.where((c) => c.type == wantedType).toList(),
+          )
         : <CategoryEntity>[];
 
+    // Reset selection when current category doesn't belong to the wanted type.
+    final hasMatch = selectedId != null &&
+        categories.any((c) => c.id == selectedId);
+    final effectiveSelectedId = hasMatch ? selectedId : null;
+
     return DropdownButtonFormField<String?>(
-      initialValue: selectedId,
+      initialValue: effectiveSelectedId,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: t.bills.category,
         border: const OutlineInputBorder(),
       ),
-      items: [
-        DropdownMenuItem<String?>(child: Text(t.bills.noCategory)),
-        ...categories.map(
-          (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
-        ),
-      ],
+      validator: (value) =>
+          value == null ? t.bills.categoryRequired : null,
+      items: categories
+          .map(
+            (c) => DropdownMenuItem<String?>(
+              value: c.id,
+              child: _CategoryDropdownItem(category: c),
+            ),
+          )
+          .toList(),
       onChanged: onChanged,
+    );
+  }
+}
+
+class _CategoryDropdownItem extends StatelessWidget {
+  const _CategoryDropdownItem({required this.category});
+
+  final CategoryEntity category;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    if (!category.isSubcategory) {
+      return Text(category.name, overflow: TextOverflow.ellipsis);
+    }
+    // Subcategories get an indent + arrow icon so the parent/child hierarchy
+    // is obvious in the dropdown (mirrors the Categories list page).
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Row(
+        children: [
+          FaIcon(
+            FontAwesomeIcons.arrowTurnDown,
+            size: 12,
+            color: colors.onBackgroundLight,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(category.name, overflow: TextOverflow.ellipsis),
+          ),
+        ],
+      ),
     );
   }
 }

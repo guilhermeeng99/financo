@@ -101,6 +101,47 @@ void main() {
       verifyNever(() => transactionRepo.createTransaction(any()));
     });
 
+    test('receivable bill creates an income transaction', () async {
+      final receivable = BillFactory.receivable();
+      when(
+        () => dao.getBillById('bill-receivable'),
+      ).thenAnswer((_) async => receivable);
+
+      final tx = TransactionFactory.expense(
+        id: 'tx-paid',
+        amount: receivable.amount,
+      );
+      when(() => transactionRepo.createTransaction(any())).thenAnswer(
+        (_) async => Right<Failure, TransactionEntity>(tx),
+      );
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+      when(() => remote.createBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      final result = await repository.payBill(
+        billId: 'bill-receivable',
+        accountId: 'acc-checking',
+        categoryId: 'cat-salary',
+      );
+
+      expect(result.isRight(), isTrue);
+      final captured = verify(
+        () => transactionRepo.createTransaction(captureAny()),
+      ).captured.single as TransactionEntity;
+      expect(captured.type, TransactionType.income);
+      expect(captured.amount, receivable.amount);
+
+      // Receivable monthly bills also generate the next occurrence preserving
+      // the type.
+      final payment = result.getOrElse(() => throw StateError('expected'));
+      expect(payment.nextOccurrence?.type, BillType.receivable);
+    });
+
     test(
       'monthly recurrence creates next occurrence with clamped due date',
       () async {

@@ -113,18 +113,28 @@ Available Material icon codes: 59470 (account_balance), 59473 (account_balance_w
 
 Bills are payment reminders with a due date. They are SEPARATE from transactions: a bill is the user's *intent* to pay something in the future. The user pays the bill via the app's "Mark as paid" button — when they do, a real expense Transaction is created automatically.
 
-Use bills when the user says things like: "lembra que tenho que pagar X", "registra uma conta de luz pra dia X", "tenho boleto da internet pra dia 5", "agenda esse pagamento". Do NOT use bills for past expenses — those are transactions.
+Use bills when the user says things like: "lembra que tenho que pagar X", "registra uma conta de luz pra dia X", "tenho boleto da internet pra dia 5", "agenda esse pagamento", "vou receber meu salário dia 5", "tenho um freela pra receber". Do NOT use bills for past transactions — those are transactions.
+
+A bill has a "type":
+- "payable" → money the user has to pay (default; e.g. internet, rent, boleto). Settling it creates an EXPENSE transaction.
+- "receivable" → money the user expects to receive (e.g. salary, freelance invoice). Settling it creates an INCOME transaction.
 
 Required for create:
-- description (e.g. "Conta de luz")
+- type: "payable" or "receivable" (default to "payable" if the user didn't specify)
+- description (e.g. "Conta de luz", "Salário")
 - amount > 0
 - dueDate (ISO 8601)
 - recurrence: "oneShot" or "monthly"
-- category (optional; expense category name from snapshot — leave out if user didn't specify)
+- category (optional; for "payable" use an expense category, for "receivable" use an income category — leave out if user didn't specify)
 
-Create:
+Create (payable):
 [BILL_ACTION]
-{"action": "create", "description": "Conta de luz", "amount": 200.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Moradia"}
+{"action": "create", "type": "payable", "description": "Conta de luz", "amount": 200.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Moradia"}
+[/BILL_ACTION]
+
+Create (receivable):
+[BILL_ACTION]
+{"action": "create", "type": "receivable", "description": "Salário", "amount": 5000.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Salário"}
 [/BILL_ACTION]
 
 Update an existing bill (the user references it from the OVERDUE / DUE TODAY list in USER CONTEXT — pass billId from there):

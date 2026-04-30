@@ -107,13 +107,17 @@ class BillRepositoryImpl implements BillRepository {
 
       final now = DateTime.now();
 
-      // 1. Create the linked transaction.
+      // 1. Create the linked transaction. Payable bills produce expenses,
+      // receivable bills produce income.
+      final txType = bill.type == BillType.receivable
+          ? TransactionType.income
+          : TransactionType.expense;
       final tx = TransactionEntity(
         id: '',
         userId: bill.userId,
         accountId: accountId,
         categoryId: categoryId,
-        type: TransactionType.expense,
+        type: txType,
         amount: bill.amount,
         description: bill.description,
         date: DateTime(now.year, now.month, now.day),
@@ -139,6 +143,7 @@ class BillRepositoryImpl implements BillRepository {
             final next = BillEntity(
               id: '',
               userId: updatedBill.userId,
+              type: updatedBill.type,
               description: updatedBill.description,
               amount: updatedBill.amount,
               dueDate: nextDue,

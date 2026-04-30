@@ -74,6 +74,14 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
             colors: colors,
           ),
           _SidebarIconButton(
+            icon: FontAwesomeIcons.fileInvoiceDollar,
+            expanded: _expanded,
+            label: t.nav.bills,
+            onTap: () => context.go(AppRoutes.bills),
+            isActive: location.startsWith(AppRoutes.bills),
+            colors: colors,
+          ),
+          _SidebarIconButton(
             icon: FontAwesomeIcons.comment,
             expanded: _expanded,
             label: t.nav.chat,

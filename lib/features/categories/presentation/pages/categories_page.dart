@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -72,19 +73,21 @@ class _CategoriesPageState extends State<CategoriesPage>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'categories_fab',
-        onPressed: () async {
-          final result = await context.push(AppRoutes.addCategory);
-          if (result == true && context.mounted) {
-            unawaited(
-              context.read<CategoriesCubit>().loadCategories(
-                forceRefresh: true,
-              ),
-            );
-          }
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: LiftedFab(
+        child: FloatingActionButton(
+          heroTag: 'categories_fab',
+          onPressed: () async {
+            final result = await context.push(AppRoutes.addCategory);
+            if (result == true && context.mounted) {
+              unawaited(
+                context.read<CategoriesCubit>().loadCategories(
+                  forceRefresh: true,
+                ),
+              );
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
       body: BlocBuilder<CategoriesCubit, CategoriesState>(
         builder: (context, state) {

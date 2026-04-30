@@ -5,6 +5,7 @@ class BillModel extends BillEntity {
   const BillModel({
     required super.id,
     required super.userId,
+    required super.type,
     required super.description,
     required super.amount,
     required super.dueDate,
@@ -30,9 +31,14 @@ class BillModel extends BillEntity {
     required String id,
     required Map<String, dynamic> data,
   }) {
+    // Legacy bills stored before BillType existed default to payable.
+    final rawType = data['type'] as String?;
     return BillModel(
       id: id,
       userId: data['userId'] as String,
+      type: rawType == null
+          ? BillType.payable
+          : BillType.values.byName(rawType),
       description: data['description'] as String,
       amount: (data['amount'] as num).toDouble(),
       dueDate: (data['dueDate'] as Timestamp).toDate(),
@@ -52,6 +58,7 @@ class BillModel extends BillEntity {
     return BillModel(
       id: entity.id,
       userId: entity.userId,
+      type: entity.type,
       description: entity.description,
       amount: entity.amount,
       dueDate: entity.dueDate,
@@ -70,6 +77,7 @@ class BillModel extends BillEntity {
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
+      'type': type.name,
       'description': description,
       'amount': amount,
       'dueDate': Timestamp.fromDate(dueDate),

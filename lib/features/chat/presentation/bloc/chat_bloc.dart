@@ -599,6 +599,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final recurrence = recurrenceStr == 'monthly'
           ? BillRecurrence.monthly
           : BillRecurrence.oneShot;
+      final typeStr = meta['type'] as String?;
+      final billType = typeStr == 'receivable'
+          ? BillType.receivable
+          : BillType.payable;
 
       String? categoryId;
       final categoryName = meta['category'] as String?;
@@ -615,6 +619,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       final bill = BillEntity(
         id: '',
         userId: _userId,
+        type: billType,
         description: description,
         amount: amount,
         dueDate: DateTime(dueDate.year, dueDate.month, dueDate.day),
@@ -697,13 +702,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (categoryId == null) {
         final catResult = await _getCategories(userId: _userId);
         final cats = catResult.getOrElse(() => []);
-        final expenseCats = cats
-            .where((c) => c.type == CategoryType.expense)
-            .toList();
-        if (expenseCats.isEmpty) {
-          return 'No expense category available to register the payment.';
+        final wantedType = bill.isReceivable
+            ? CategoryType.income
+            : CategoryType.expense;
+        final matching = cats.where((c) => c.type == wantedType).toList();
+        if (matching.isEmpty) {
+          return bill.isReceivable
+              ? 'No income category available to register the payment.'
+              : 'No expense category available to register the payment.';
         }
-        categoryId = expenseCats.first.id;
+        categoryId = matching.first.id;
       }
 
       final result = await _payBill(

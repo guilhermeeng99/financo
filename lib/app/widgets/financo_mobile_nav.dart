@@ -67,10 +67,12 @@ class FinancoBottomBar extends StatelessWidget {
     final colors = context.appColors;
 
     var currentIndex = 0;
-    if (location.startsWith(AppRoutes.chat)) {
+    if (location.startsWith(AppRoutes.bills)) {
       currentIndex = 1;
-    } else if (location.startsWith(AppRoutes.profile)) {
+    } else if (location.startsWith(AppRoutes.chat)) {
       currentIndex = 2;
+    } else if (location.startsWith(AppRoutes.profile)) {
+      currentIndex = 3;
     }
 
     void onTap(int i) {
@@ -78,8 +80,10 @@ class FinancoBottomBar extends StatelessWidget {
         case 0:
           context.go(AppRoutes.dashboard);
         case 1:
-          context.go(AppRoutes.chat);
+          context.go(AppRoutes.bills);
         case 2:
+          context.go(AppRoutes.chat);
+        case 3:
           context.go(AppRoutes.profile);
       }
     }
@@ -89,13 +93,27 @@ class FinancoBottomBar extends StatelessWidget {
       child: Container(
         height: 64,
         decoration: BoxDecoration(
-          color: colors.surface,
+          // surfaceVariant sits one elevation step above plain surface, so the
+          // bar reads as a separate floating layer instead of blending with
+          // the page background (especially on dark mode).
+          color: colors.surfaceVariant,
           borderRadius: BorderRadius.circular(40),
+          border: Border.all(
+            color: colors.onBackgroundLight.withValues(alpha: 0.08),
+          ),
           boxShadow: [
+            // Wide ambient shadow + tighter contact shadow for a layered,
+            // elevated feel that survives both light and dark backgrounds.
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 32,
+              spreadRadius: -4,
+              offset: const Offset(0, 12),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -109,14 +127,20 @@ class FinancoBottomBar extends StatelessWidget {
               onTap: onTap,
             ),
             _Item(
-              icon: FontAwesomeIcons.comment,
+              icon: FontAwesomeIcons.fileInvoiceDollar,
               index: 1,
               currentIndex: currentIndex,
               onTap: onTap,
             ),
             _Item(
-              icon: FontAwesomeIcons.gear,
+              icon: FontAwesomeIcons.comment,
               index: 2,
+              currentIndex: currentIndex,
+              onTap: onTap,
+            ),
+            _Item(
+              icon: FontAwesomeIcons.gear,
+              index: 3,
               currentIndex: currentIndex,
               onTap: onTap,
             ),

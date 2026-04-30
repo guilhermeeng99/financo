@@ -2,6 +2,7 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_app_bar.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
@@ -117,10 +118,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'transactions_fab',
-        onPressed: () => context.push(AppRoutes.addTransaction),
-        child: const FaIcon(FontAwesomeIcons.plus),
+      floatingActionButton: LiftedFab(
+        child: FloatingActionButton(
+          heroTag: 'transactions_fab',
+          onPressed: () => context.push(AppRoutes.addTransaction),
+          child: const FaIcon(FontAwesomeIcons.plus),
+        ),
       ),
     );
   }

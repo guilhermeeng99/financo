@@ -24,14 +24,19 @@ class BillTile extends StatelessWidget {
     final isPaid = bill.isPaid;
     final isOverdue = bill.isOverdue;
     final isDueToday = bill.isDueToday;
+    final isReceivable = bill.isReceivable;
 
+    // Receivable bills lean on the income color so the user can tell income
+    // reminders from expense ones at a glance, even before they're settled.
     final accentColor = isPaid
-        ? colors.income
+        ? (isReceivable ? colors.income : colors.income)
         : isOverdue
             ? colors.expense
             : isDueToday
                 ? Colors.orange
-                : colors.primary;
+                : isReceivable
+                    ? colors.income
+                    : colors.primary;
 
     return Card(
       child: InkWell(
@@ -94,7 +99,11 @@ class BillTile extends StatelessWidget {
                   child: TextButton.icon(
                     onPressed: onPayPressed,
                     icon: const FaIcon(FontAwesomeIcons.check, size: 14),
-                    label: Text(t.bills.markAsPaid),
+                    label: Text(
+                      isReceivable
+                          ? t.bills.markAsReceived
+                          : t.bills.markAsPaid,
+                    ),
                   ),
                 ),
               ],
@@ -110,6 +119,7 @@ class BillTile extends StatelessWidget {
     if (bill.recurrence == BillRecurrence.monthly) {
       return FontAwesomeIcons.arrowsRotate;
     }
+    if (bill.isReceivable) return FontAwesomeIcons.handHoldingDollar;
     return FontAwesomeIcons.fileInvoiceDollar;
   }
 
@@ -117,7 +127,8 @@ class BillTile extends StatelessWidget {
     final dateLabel = DateFormat('dd/MM/yyyy').format(bill.dueDate);
 
     if (bill.isPaid) {
-      return '${t.bills.paid} • $dateLabel';
+      final label = bill.isReceivable ? t.bills.received : t.bills.paid;
+      return '$label • $dateLabel';
     }
 
     if (bill.isOverdue) {

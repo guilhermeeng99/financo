@@ -30,6 +30,9 @@ class $LibAppAssetsGen {
 
   /// Directory path: lib/app/assets/images
   $LibAppAssetsImagesGen get images => const $LibAppAssetsImagesGen();
+
+  /// Directory path: lib/app/assets/samples
+  $LibAppAssetsSamplesGen get samples => const $LibAppAssetsSamplesGen();
 }
 
 class $LibAppAssetsImagesGen {
@@ -37,6 +40,28 @@ class $LibAppAssetsImagesGen {
 
   /// Directory path: lib/app/assets/images/banks
   $LibAppAssetsImagesBanksGen get banks => const $LibAppAssetsImagesBanksGen();
+
+  /// File path: lib/app/assets/images/logo.png
+  AssetGenImage get logo =>
+      const AssetGenImage('lib/app/assets/images/logo.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [logo];
+}
+
+class $LibAppAssetsSamplesGen {
+  const $LibAppAssetsSamplesGen();
+
+  /// File path: lib/app/assets/samples/categories_example.csv
+  String get categoriesExample =>
+      'lib/app/assets/samples/categories_example.csv';
+
+  /// File path: lib/app/assets/samples/transactions_example.csv
+  String get transactionsExample =>
+      'lib/app/assets/samples/transactions_example.csv';
+
+  /// List of all assets
+  List<String> get values => [categoriesExample, transactionsExample];
 }
 
 class $LibAppAssetsImagesBanksGen {

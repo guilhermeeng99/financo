@@ -53,6 +53,7 @@ class BillsDao extends DatabaseAccessor<AppDatabase> with _$BillsDaoMixin {
   LocalBillsCompanion _toCompanion(BillEntity e) => LocalBillsCompanion.insert(
     id: e.id,
     userId: e.userId,
+    type: Value(e.type.name),
     description: e.description,
     amount: e.amount,
     dueDate: e.dueDate,
@@ -70,6 +71,7 @@ class BillsDao extends DatabaseAccessor<AppDatabase> with _$BillsDaoMixin {
   BillEntity _toEntity(LocalBill row) => BillEntity(
     id: row.id,
     userId: row.userId,
+    type: BillType.values.byName(row.type),
     description: row.description,
     amount: row.amount,
     dueDate: row.dueDate,

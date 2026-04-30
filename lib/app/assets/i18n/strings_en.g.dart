@@ -40,7 +40,6 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
-	late final TranslationsAppEn app = TranslationsAppEn._(_root);
 	late final TranslationsGeneralEn general = TranslationsGeneralEn._(_root);
 	late final TranslationsValidatorsEn validators = TranslationsValidatorsEn._(_root);
 	late final TranslationsAuthEn auth = TranslationsAuthEn._(_root);
@@ -52,19 +51,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
 	late final TranslationsChatEn chat = TranslationsChatEn._(_root);
 	late final TranslationsReportsEn reports = TranslationsReportsEn._(_root);
+	late final TranslationsBillsEn bills = TranslationsBillsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
-}
-
-// Path: app
-class TranslationsAppEn {
-	TranslationsAppEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Financo'
-	String get name => 'Financo';
 }
 
 // Path: general
@@ -847,6 +835,137 @@ class TranslationsReportsEn {
 	String get noData => 'Not enough data to generate reports.';
 }
 
+// Path: bills
+class TranslationsBillsEn {
+	TranslationsBillsEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Bills'
+	String get title => 'Bills';
+
+	/// en: 'No bills. Add a bill to get reminders before it's due.'
+	String get empty => 'No bills. Add a bill to get reminders before it\'s due.';
+
+	/// en: 'New Bill'
+	String get addBill => 'New Bill';
+
+	/// en: 'Edit Bill'
+	String get editBill => 'Edit Bill';
+
+	/// en: 'Description'
+	String get description => 'Description';
+
+	/// en: 'e.g. Electricity'
+	String get descriptionHint => 'e.g. Electricity';
+
+	/// en: 'Amount'
+	String get amount => 'Amount';
+
+	/// en: 'Amount (R\$)'
+	String get amountLabel => 'Amount (R\$)';
+
+	/// en: 'Due date'
+	String get dueDate => 'Due date';
+
+	/// en: 'Recurrence'
+	String get recurrence => 'Recurrence';
+
+	/// en: 'One-time'
+	String get oneShot => 'One-time';
+
+	/// en: 'Monthly'
+	String get monthly => 'Monthly';
+
+	/// en: 'Category (optional)'
+	String get category => 'Category (optional)';
+
+	/// en: 'None'
+	String get noCategory => 'None';
+
+	/// en: 'Notes (optional)'
+	String get notes => 'Notes (optional)';
+
+	/// en: 'Additional details...'
+	String get notesHint => 'Additional details...';
+
+	/// en: 'Mark as paid'
+	String get markAsPaid => 'Mark as paid';
+
+	/// en: 'Paid'
+	String get paid => 'Paid';
+
+	/// en: 'Pending'
+	String get pending => 'Pending';
+
+	/// en: 'Overdue'
+	String get overdue => 'Overdue';
+
+	/// en: 'Due today'
+	String get dueToday => 'Due today';
+
+	/// en: 'Upcoming'
+	String get upcoming => 'Upcoming';
+
+	/// en: 'Overdue'
+	String get overdueGroup => 'Overdue';
+
+	/// en: 'Today'
+	String get todayGroup => 'Today';
+
+	/// en: 'Upcoming'
+	String get upcomingGroup => 'Upcoming';
+
+	/// en: 'Paid'
+	String get paidGroup => 'Paid';
+
+	/// en: 'Are you sure you want to delete this bill?'
+	String get deleteConfirm => 'Are you sure you want to delete this bill?';
+
+	/// en: 'Bill created'
+	String get billCreated => 'Bill created';
+
+	/// en: 'Bill updated'
+	String get billUpdated => 'Bill updated';
+
+	/// en: 'Bill deleted'
+	String get billDeleted => 'Bill deleted';
+
+	/// en: 'Bill paid — transaction created'
+	String get billPaid => 'Bill paid — transaction created';
+
+	/// en: 'Next month's bill scheduled'
+	String get nextOccurrenceCreated => 'Next month\'s bill scheduled';
+
+	/// en: 'This bill is already paid'
+	String get alreadyPaid => 'This bill is already paid';
+
+	/// en: 'Paid bills can't be edited'
+	String get cannotEditPaid => 'Paid bills can\'t be edited';
+
+	/// en: 'Pay bill'
+	String get payDialogTitle => 'Pay bill';
+
+	/// en: 'Account'
+	String get selectAccount => 'Account';
+
+	/// en: 'Category'
+	String get selectCategory => 'Category';
+
+	/// en: '$days days overdue'
+	String daysOverdue({required Object days}) => '${days} days overdue';
+
+	/// en: 'in $days days'
+	String dueInDays({required Object days}) => 'in ${days} days';
+
+	/// en: 'tomorrow'
+	String get dueTomorrow => 'tomorrow';
+
+	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
+}
+
 // Path: profile
 class TranslationsProfileEn {
 	TranslationsProfileEn._(this._root);
@@ -866,6 +985,9 @@ class TranslationsProfileEn {
 
 	/// en: 'Categories'
 	String get categories => 'Categories';
+
+	/// en: 'Bills'
+	String get bills => 'Bills';
 
 	/// en: 'Theme'
 	String get theme => 'Theme';
@@ -958,6 +1080,24 @@ class TranslationsChatImageEn {
 	String get pickError => 'Could not pick image';
 }
 
+// Path: bills.notification
+class TranslationsBillsNotificationEn {
+	TranslationsBillsNotificationEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'You have $count bill(s) to pay'
+	String title({required Object count}) => 'You have ${count} bill(s) to pay';
+
+	/// en: '$description ($amount) is due today'
+	String bodyDueToday({required Object description, required Object amount}) => '${description} (${amount}) is due today';
+
+	/// en: '$description ($amount) is overdue'
+	String bodyOverdue({required Object description, required Object amount}) => '${description} (${amount}) is overdue';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -966,7 +1106,6 @@ class TranslationsChatImageEn {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'app.name' => 'Financo',
 			'general.loading' => 'Loading...',
 			'general.error' => 'An error occurred',
 			'general.retry' => 'Try again',
@@ -1206,10 +1345,54 @@ extension on Translations {
 			'reports.monthlyComparison' => 'Monthly Comparison',
 			'reports.balanceEvolution' => 'Balance Evolution',
 			'reports.noData' => 'Not enough data to generate reports.',
+			'bills.title' => 'Bills',
+			'bills.empty' => 'No bills. Add a bill to get reminders before it\'s due.',
+			'bills.addBill' => 'New Bill',
+			'bills.editBill' => 'Edit Bill',
+			'bills.description' => 'Description',
+			'bills.descriptionHint' => 'e.g. Electricity',
+			'bills.amount' => 'Amount',
+			'bills.amountLabel' => 'Amount (R\$)',
+			'bills.dueDate' => 'Due date',
+			'bills.recurrence' => 'Recurrence',
+			'bills.oneShot' => 'One-time',
+			'bills.monthly' => 'Monthly',
+			'bills.category' => 'Category (optional)',
+			'bills.noCategory' => 'None',
+			'bills.notes' => 'Notes (optional)',
+			'bills.notesHint' => 'Additional details...',
+			'bills.markAsPaid' => 'Mark as paid',
+			'bills.paid' => 'Paid',
+			'bills.pending' => 'Pending',
+			'bills.overdue' => 'Overdue',
+			'bills.dueToday' => 'Due today',
+			'bills.upcoming' => 'Upcoming',
+			'bills.overdueGroup' => 'Overdue',
+			'bills.todayGroup' => 'Today',
+			'bills.upcomingGroup' => 'Upcoming',
+			'bills.paidGroup' => 'Paid',
+			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
+			'bills.billCreated' => 'Bill created',
+			'bills.billUpdated' => 'Bill updated',
+			'bills.billDeleted' => 'Bill deleted',
+			'bills.billPaid' => 'Bill paid — transaction created',
+			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
+			'bills.alreadyPaid' => 'This bill is already paid',
+			'bills.cannotEditPaid' => 'Paid bills can\'t be edited',
+			'bills.payDialogTitle' => 'Pay bill',
+			'bills.selectAccount' => 'Account',
+			'bills.selectCategory' => 'Category',
+			'bills.daysOverdue' => ({required Object days}) => '${days} days overdue',
+			'bills.dueInDays' => ({required Object days}) => 'in ${days} days',
+			'bills.dueTomorrow' => 'tomorrow',
+			'bills.notification.title' => ({required Object count}) => 'You have ${count} bill(s) to pay',
+			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) is due today',
+			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) is overdue',
 			'profile.title' => 'Profile',
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',
 			'profile.categories' => 'Categories',
+			'profile.bills' => 'Bills',
 			'profile.theme' => 'Theme',
 			'profile.themeLight' => 'Light',
 			'profile.themeDark' => 'Dark',

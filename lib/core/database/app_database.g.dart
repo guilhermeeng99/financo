@@ -2214,6 +2214,16 @@ class $LocalBillsTable extends LocalBills
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('payable'),
+  );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -2343,6 +2353,7 @@ class $LocalBillsTable extends LocalBills
   List<GeneratedColumn> get $columns => [
     id,
     userId,
+    type,
     description,
     amount,
     dueDate,
@@ -2380,6 +2391,12 @@ class $LocalBillsTable extends LocalBills
       );
     } else if (isInserting) {
       context.missing(_userIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -2493,6 +2510,10 @@ class $LocalBillsTable extends LocalBills
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -2553,6 +2574,7 @@ class $LocalBillsTable extends LocalBills
 class LocalBill extends DataClass implements Insertable<LocalBill> {
   final String id;
   final String userId;
+  final String type;
   final String description;
   final double amount;
   final DateTime dueDate;
@@ -2568,6 +2590,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
   const LocalBill({
     required this.id,
     required this.userId,
+    required this.type,
     required this.description,
     required this.amount,
     required this.dueDate,
@@ -2586,6 +2609,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
+    map['type'] = Variable<String>(type);
     map['description'] = Variable<String>(description);
     map['amount'] = Variable<double>(amount);
     map['due_date'] = Variable<DateTime>(dueDate);
@@ -2615,6 +2639,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     return LocalBillsCompanion(
       id: Value(id),
       userId: Value(userId),
+      type: Value(type),
       description: Value(description),
       amount: Value(amount),
       dueDate: Value(dueDate),
@@ -2648,6 +2673,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     return LocalBill(
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
+      type: serializer.fromJson<String>(json['type']),
       description: serializer.fromJson<String>(json['description']),
       amount: serializer.fromJson<double>(json['amount']),
       dueDate: serializer.fromJson<DateTime>(json['dueDate']),
@@ -2670,6 +2696,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
+      'type': serializer.toJson<String>(type),
       'description': serializer.toJson<String>(description),
       'amount': serializer.toJson<double>(amount),
       'dueDate': serializer.toJson<DateTime>(dueDate),
@@ -2688,6 +2715,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
   LocalBill copyWith({
     String? id,
     String? userId,
+    String? type,
     String? description,
     double? amount,
     DateTime? dueDate,
@@ -2703,6 +2731,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
   }) => LocalBill(
     id: id ?? this.id,
     userId: userId ?? this.userId,
+    type: type ?? this.type,
     description: description ?? this.description,
     amount: amount ?? this.amount,
     dueDate: dueDate ?? this.dueDate,
@@ -2722,6 +2751,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     return LocalBill(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
+      type: data.type.present ? data.type.value : this.type,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -2752,6 +2782,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     return (StringBuffer('LocalBill(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('type: $type, ')
           ..write('description: $description, ')
           ..write('amount: $amount, ')
           ..write('dueDate: $dueDate, ')
@@ -2772,6 +2803,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
   int get hashCode => Object.hash(
     id,
     userId,
+    type,
     description,
     amount,
     dueDate,
@@ -2791,6 +2823,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
       (other is LocalBill &&
           other.id == this.id &&
           other.userId == this.userId &&
+          other.type == this.type &&
           other.description == this.description &&
           other.amount == this.amount &&
           other.dueDate == this.dueDate &&
@@ -2808,6 +2841,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
 class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   final Value<String> id;
   final Value<String> userId;
+  final Value<String> type;
   final Value<String> description;
   final Value<double> amount;
   final Value<DateTime> dueDate;
@@ -2824,6 +2858,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   const LocalBillsCompanion({
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
+    this.type = const Value.absent(),
     this.description = const Value.absent(),
     this.amount = const Value.absent(),
     this.dueDate = const Value.absent(),
@@ -2841,6 +2876,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   LocalBillsCompanion.insert({
     required String id,
     required String userId,
+    this.type = const Value.absent(),
     required String description,
     required double amount,
     required DateTime dueDate,
@@ -2866,6 +2902,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   static Insertable<LocalBill> custom({
     Expression<String>? id,
     Expression<String>? userId,
+    Expression<String>? type,
     Expression<String>? description,
     Expression<double>? amount,
     Expression<DateTime>? dueDate,
@@ -2883,6 +2920,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
+      if (type != null) 'type': type,
       if (description != null) 'description': description,
       if (amount != null) 'amount': amount,
       if (dueDate != null) 'due_date': dueDate,
@@ -2902,6 +2940,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   LocalBillsCompanion copyWith({
     Value<String>? id,
     Value<String>? userId,
+    Value<String>? type,
     Value<String>? description,
     Value<double>? amount,
     Value<DateTime>? dueDate,
@@ -2919,6 +2958,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     return LocalBillsCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
+      type: type ?? this.type,
       description: description ?? this.description,
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,
@@ -2943,6 +2983,9 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     }
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -2991,6 +3034,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     return (StringBuffer('LocalBillsCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
+          ..write('type: $type, ')
           ..write('description: $description, ')
           ..write('amount: $amount, ')
           ..write('dueDate: $dueDate, ')
@@ -4155,6 +4199,7 @@ typedef $$LocalBillsTableCreateCompanionBuilder =
     LocalBillsCompanion Function({
       required String id,
       required String userId,
+      Value<String> type,
       required String description,
       required double amount,
       required DateTime dueDate,
@@ -4173,6 +4218,7 @@ typedef $$LocalBillsTableUpdateCompanionBuilder =
     LocalBillsCompanion Function({
       Value<String> id,
       Value<String> userId,
+      Value<String> type,
       Value<String> description,
       Value<double> amount,
       Value<DateTime> dueDate,
@@ -4204,6 +4250,11 @@ class $$LocalBillsTableFilterComposer
 
   ColumnFilters<String> get userId => $composableBuilder(
     column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4287,6 +4338,11 @@ class $$LocalBillsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -4362,6 +4418,9 @@ class $$LocalBillsTableAnnotationComposer
 
   GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
@@ -4443,6 +4502,7 @@ class $$LocalBillsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
+                Value<String> type = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<DateTime> dueDate = const Value.absent(),
@@ -4459,6 +4519,7 @@ class $$LocalBillsTableTableManager
               }) => LocalBillsCompanion(
                 id: id,
                 userId: userId,
+                type: type,
                 description: description,
                 amount: amount,
                 dueDate: dueDate,
@@ -4477,6 +4538,7 @@ class $$LocalBillsTableTableManager
               ({
                 required String id,
                 required String userId,
+                Value<String> type = const Value.absent(),
                 required String description,
                 required double amount,
                 required DateTime dueDate,
@@ -4493,6 +4555,7 @@ class $$LocalBillsTableTableManager
               }) => LocalBillsCompanion.insert(
                 id: id,
                 userId: userId,
+                type: type,
                 description: description,
                 amount: amount,
                 dueDate: dueDate,

@@ -13,6 +13,7 @@ void main() {
     test('fromMap parses all fields', () {
       final data = {
         'userId': 'user-1',
+        'type': 'payable',
         'description': 'Internet',
         'amount': 120.5,
         'dueDate': Timestamp.fromDate(dueDate),
@@ -31,6 +32,7 @@ void main() {
 
       expect(model.id, 'bill-1');
       expect(model.userId, 'user-1');
+      expect(model.type, BillType.payable);
       expect(model.description, 'Internet');
       expect(model.amount, 120.5);
       expect(model.dueDate, dueDate);
@@ -43,16 +45,33 @@ void main() {
       expect(model.createdAt, createdAt);
     });
 
+    test('fromMap defaults to payable when type field is missing', () {
+      // Legacy docs created before BillType existed should still load.
+      final data = {
+        'userId': 'user-1',
+        'description': 'Internet',
+        'amount': 100.0,
+        'dueDate': Timestamp.fromDate(dueDate),
+        'status': 'pending',
+        'recurrence': 'oneShot',
+        'createdAt': Timestamp.fromDate(createdAt),
+        'updatedAt': Timestamp.fromDate(updatedAt),
+      };
+      final model = BillModel.fromMap(id: 'legacy', data: data);
+      expect(model.type, BillType.payable);
+    });
+
     test('round-trip via Firestore preserves values', () async {
       final firestore = FakeFirebaseFirestore();
       final original = BillModel(
         id: '',
         userId: 'user-1',
-        description: 'Aluguel',
-        amount: 1500,
+        type: BillType.receivable,
+        description: 'Salário',
+        amount: 5000,
         dueDate: dueDate,
         status: BillStatus.pending,
-        recurrence: BillRecurrence.oneShot,
+        recurrence: BillRecurrence.monthly,
         notes: 'transferência',
         createdAt: createdAt,
         updatedAt: updatedAt,
@@ -62,10 +81,11 @@ void main() {
       final fetched = BillModel.fromFirestore(await ref.get());
 
       expect(fetched.userId, 'user-1');
-      expect(fetched.description, 'Aluguel');
-      expect(fetched.amount, 1500);
+      expect(fetched.type, BillType.receivable);
+      expect(fetched.description, 'Salário');
+      expect(fetched.amount, 5000);
       expect(fetched.status, BillStatus.pending);
-      expect(fetched.recurrence, BillRecurrence.oneShot);
+      expect(fetched.recurrence, BillRecurrence.monthly);
       expect(fetched.notes, 'transferência');
       expect(fetched.createdAt, createdAt);
     });
@@ -74,6 +94,7 @@ void main() {
       final pending = BillModel(
         id: '',
         userId: 'user-1',
+        type: BillType.payable,
         description: 'X',
         amount: 1,
         dueDate: dueDate,

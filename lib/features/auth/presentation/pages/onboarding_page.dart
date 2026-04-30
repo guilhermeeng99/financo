@@ -5,6 +5,7 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/gen/assets.gen.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -37,11 +38,12 @@ class OnboardingPage extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(),
-                FaIcon(
-                  FontAwesomeIcons.wallet,
-                  size: 80,
-                  color: context.colorScheme.primary,
+                Image.asset(
+                  Assets.lib.app.assets.images.logo.path,
+                  width: 80,
+                  height: 80,
                 ),
+               
                 const SizedBox(height: 24),
                 Text(
                   AppConstants.appName,

@@ -1,6 +1,8 @@
 # Bills Feature Spec
 
-Bills (Contas a Pagar) are user-defined payment reminders with a due date. They live separately from `transactions` — a bill represents an *intent* to pay; once paid it produces a real `TransactionEntity` that is linked back via `paidTransactionId`.
+Bills are user-defined reminders for upcoming money movements with a due date. A bill can be either **payable** (Conta a Pagar — e.g. internet, rent) or **receivable** (Conta a Receber — e.g. salary, freelance invoice). They live separately from `transactions` — a bill represents an *intent* to pay/receive; once settled it produces a real `TransactionEntity` (expense for payable, income for receivable) that is linked back via `paidTransactionId`.
+
+The feature is reachable from the main navigation (bottom bar on mobile, sidebar on web) — it is no longer nested under Profile/Settings.
 
 ## Entity Contract
 
@@ -8,12 +10,13 @@ Bills (Contas a Pagar) are user-defined payment reminders with a due date. They 
 BillEntity {
   id:                  String          (required, Firestore doc id)
   userId:              String          (required, owner)
+  type:                BillType        (required: payable | receivable)
   description:         String          (required, non-empty)
   amount:              double          (required, > 0)
   dueDate:             DateTime        (required, time normalized to 00:00 local)
   status:              BillStatus      (required: pending | paid)
   recurrence:          BillRecurrence  (required: oneShot | monthly)
-  categoryId:          String?         (optional expense category)
+  categoryId:          String?         (optional category — must match type)
   notes:               String?         (optional free-text)
   paidAt:              DateTime?       (set when status = paid)
   paidTransactionId:   String?         (set when status = paid)
@@ -35,8 +38,12 @@ bool get isDueToday =>
 2. **Amount must be positive** — `amount > 0`.
 3. **dueDate is date-only** — time component is normalized to `00:00` local before persisting.
 4. **Recurrence is immutable after creation** — same pattern as `TransactionType`. Editing a bill cannot change `recurrence`.
-5. **Editing a paid bill is blocked** — only `status == pending` bills are editable. The form rejects submit; the AI handler returns an error message.
-6. **categoryId, if provided**, must reference a category of `type == expense`. Validation happens at the form/UI layer (dropdown only shows expense categories) — repository does not re-validate.
+5. **Type is immutable after creation** — `BillType` (payable | receivable) is chosen at creation time and cannot be changed later. Default for new bills is `payable`.
+6. **Editing a paid bill is blocked** — only `status == pending` bills are editable. The form rejects submit; the AI handler returns an error message.
+7. **categoryId is required for new bills** and must reference a category whose type matches the bill type:
+   - `BillType.payable` → category must be `expense`
+   - `BillType.receivable` → category must be `income`
+   The form blocks submit when no category is picked. Validation happens at the form/UI layer (dropdown only shows the matching category type, including subcategories visually indented under their parent) — repository does not re-validate. The entity field stays nullable to keep legacy bills (created before this rule) loadable; only new/edited bills must satisfy it.
 7. **Bills are ordered by `dueDate` ascending** in queries (overdue first, then today, then upcoming).
 8. **Default sort groups for the UI**:
    - Overdue: `pending` and `dueDate < today`
@@ -46,18 +53,20 @@ bool get isDueToday =>
 9. **Default recurrence** is `oneShot` for new bills.
 10. **Default status** is `pending` for new bills. AI cannot create a bill already paid — must go through `payBill`.
 
-### Payment Rules
+### Settlement Rules
 
-11. **Marking as paid creates a real `TransactionEntity`**:
-    - `type = expense`
+11. **Marking a bill as settled creates a real `TransactionEntity`** whose `type` mirrors the bill type:
+    - `BillType.payable` → `TransactionType.expense`
+    - `BillType.receivable` → `TransactionType.income`
+    Other fields:
     - `amount = bill.amount`
     - `accountId = chosen by user`
     - `categoryId = chosen by user (defaults to bill.categoryId if set)`
     - `description = bill.description`
     - `date = today`
     - `notes = bill.notes`
-12. **Bill becomes paid atomically** with transaction creation: `status = paid`, `paidAt = now`, `paidTransactionId = transaction.id`.
-13. **Monthly recurrence on payment** — when a `monthly` bill is paid, the repository **creates a new pending bill** with the same `description`, `amount`, `categoryId`, `notes`, `recurrence = monthly`, `parentBillId = paidBill.id`, and `dueDate = nextMonthDueDate(paidBill.dueDate)`.
+12. **Bill becomes paid atomically** with transaction creation: `status = paid`, `paidAt = now`, `paidTransactionId = transaction.id`. The `paid` status applies to both payable (was paid) and receivable (was received) — we keep a single status enum for simplicity; the UI label adapts to the type.
+13. **Monthly recurrence on settlement** — when a `monthly` bill is settled, the repository **creates a new pending bill** with the same `type`, `description`, `amount`, `categoryId`, `notes`, `recurrence = monthly`, `parentBillId = paidBill.id`, and `dueDate = nextMonthDueDate(paidBill.dueDate)`.
 14. **`nextMonthDueDate` clamps to last valid day** — Jan 31 → Feb 28/29 (leap year aware). Implementation: `DateTime(d.year, d.month + 1, min(d.day, lastDayOfMonth(d.year, d.month + 1)))`.
 15. **Deleting a paid bill does NOT delete the linked transaction** — the transaction is independent.
 16. **Deleting a pending bill** is a simple Firestore + Drift delete, no cascades.
@@ -117,6 +126,7 @@ The `payBill` flow is implemented in `BillRepositoryImpl` and depends on injecte
 | Firestore field | Dart field | Type cast |
 |---|---|---|
 | `userId` | `userId` | `String` |
+| `type` | `type` | `BillType.values.byName(String)` — defaults to `payable` if missing (legacy docs) |
 | `description` | `description` | `String` |
 | `amount` | `amount` | `(num).toDouble()` |
 | `dueDate` | `dueDate` | `Timestamp → DateTime` |
@@ -220,7 +230,11 @@ The AI emits an `[BILL_ACTION]` block. The Flutter `ChatBloc` parses metadata an
 
 ```
 [BILL_ACTION]
-{"action": "create", "description": "Conta de luz", "amount": 200.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Moradia", "notes": "..."}
+{"action": "create", "type": "payable", "description": "Conta de luz", "amount": 200.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Moradia", "notes": "..."}
+[/BILL_ACTION]
+
+[BILL_ACTION]
+{"action": "create", "type": "receivable", "description": "Salário", "amount": 5000.00, "dueDate": "2026-05-05", "recurrence": "monthly", "category": "Salário"}
 [/BILL_ACTION]
 
 [BILL_ACTION]

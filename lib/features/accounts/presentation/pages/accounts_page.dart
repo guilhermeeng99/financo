@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/account_card.dart';
 import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_app_bar.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
@@ -76,19 +77,21 @@ class _AccountsPageState extends State<AccountsPage> {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'accounts_fab',
-        onPressed: () async {
-          final result = await context.push(AppRoutes.addAccount);
-          if (result == true && context.mounted) {
-            unawaited(
-              context.read<AccountsCubit>().loadAccounts(
-                forceRefresh: true,
-              ),
-            );
-          }
-        },
-        child: const FaIcon(FontAwesomeIcons.plus),
+      floatingActionButton: LiftedFab(
+        child: FloatingActionButton(
+          heroTag: 'accounts_fab',
+          onPressed: () async {
+            final result = await context.push(AppRoutes.addAccount);
+            if (result == true && context.mounted) {
+              unawaited(
+                context.read<AccountsCubit>().loadAccounts(
+                  forceRefresh: true,
+                ),
+              );
+            }
+          },
+          child: const FaIcon(FontAwesomeIcons.plus),
+        ),
       ),
     );
   }
