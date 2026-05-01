@@ -21,6 +21,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     on<TransactionsLoadRequested>(_onLoadRequested);
     on<TransactionDeleteRequested>(_onDeleteRequested);
     on<TransactionsImportCsvRequested>(_onImportCsvRequested);
+    on<TransactionsImportRowsConfirmed>(_onImportRowsConfirmed);
   }
 
   final GetTransactionsUseCase _getTransactions;
@@ -36,6 +37,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       userId: _userId,
     );
   }
+
 
   Future<void> _onLoadRequested(
     TransactionsLoadRequested event,
@@ -103,6 +105,29 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     final result = await _importTransactionsCsv(
       csvContent: event.csvContent,
       userId: _userId,
+    );
+
+    result.fold(
+      (failure) => emit(TransactionsError(failure)),
+      (importResult) => emit(
+        TransactionsImported(
+          importedCount: importResult.importedCount,
+          skippedCount: importResult.skippedCount,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onImportRowsConfirmed(
+    TransactionsImportRowsConfirmed event,
+    Emitter<TransactionsState> emit,
+  ) async {
+    emit(const TransactionsLoading());
+
+    final result = await _importTransactionsCsv.importRows(
+      rows: event.rows,
+      userId: _userId,
+      skippedCount: event.skippedCount,
     );
 
     result.fold(

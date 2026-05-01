@@ -21,7 +21,7 @@ No computed properties. Equatable by all fields.
 3. **Google sign-in resilience** — if Firestore is unavailable after Firebase Auth succeeds, returns a minimal profile from Firebase Auth data (non-fatal).
 4. **Google sign-in cancellation** — if user cancels the dialog on mobile, `GoogleSignInException` is caught and mapped to `AuthFailure`.
 5. **Sign-up** — creates Firebase Auth account, creates Firestore profile, upserts local DB.
-6. **Sign-out** — Google sign-out is non-fatal (failure doesn't block Firebase sign-out). Firebase sign-out always executes. On success, clears all local data via `SyncService.clearLocalData()`.
+6. **Sign-out** — platform-specific: on Web the `google_sign_in` plugin is *not* initialised (Firebase's `signInWithPopup` owns the GSI lifecycle), so calling `googleSignIn.signOut()` would throw `StateError`; the datasource skips it on Web and relies solely on `_auth.signOut()`. On mobile, Google sign-out is attempted but is non-fatal — any failure (Exception or Error) is swallowed so Firebase sign-out always executes. On success, the repository clears all local data via `SyncService.clearLocalData()`.
 7. **Sign-out error handling** — result is folded: failure emits `AuthError`, success emits `Unauthenticated`.
 8. **getCurrentUser** — checks Firebase Auth session, fetches Firestore profile, upserts local if found. If authenticated user has no Firestore profile (e.g. first-time Google redirect on web), creates the profile automatically.
 9. **authStateChanges** — stream from Firebase Auth mapped to Firestore profile fetch. Returns null on Firestore error (non-fatal).

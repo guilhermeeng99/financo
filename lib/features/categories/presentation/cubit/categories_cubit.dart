@@ -53,6 +53,30 @@ class CategoriesCubit extends Cubit<CategoriesState> {
       userId: _userId,
     );
 
+    await _emitImportResult(result);
+  }
+
+  /// Confirms the import for the (possibly user-edited) preview items.
+  /// Used by the import-categories page after the user reviews/edits the
+  /// parsed CSV preview.
+  Future<void> confirmImport({
+    required List<CategoryImportPreviewItem> items,
+    int duplicateCount = 0,
+  }) async {
+    emit(const CategoriesLoading());
+
+    final result = await _importCategoriesCsv.importItems(
+      items: items,
+      userId: _userId,
+      duplicateCount: duplicateCount,
+    );
+
+    await _emitImportResult(result);
+  }
+
+  Future<void> _emitImportResult(
+    Either<Failure, CategoryImportResult> result,
+  ) async {
     await result.fold(
       (failure) async => emit(CategoriesError(failure)),
       (importResult) async {

@@ -10,6 +10,7 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/account_card.dart';
+import 'package:financo/features/accounts/presentation/widgets/accounts_csv_import_dialog.dart';
 import 'package:financo/features/accounts/presentation/widgets/accounts_empty_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +50,27 @@ class _AccountsPageState extends State<AccountsPage> {
     }
   }
 
+  Future<void> _openImport() => showAccountsCsvImportDialog(context);
+
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Scaffold(
-      appBar: FinancoLargeAppBar(title: t.accounts.title, showBack: true),
+      appBar: FinancoLargeAppBar(
+        title: t.accounts.title,
+        showBack: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16, top: 4),
+            child: _AppBarIconButton(
+              icon: FontAwesomeIcons.fileArrowUp,
+              tooltip: t.accounts.importCsv,
+              color: colors.primary,
+              onPressed: () => unawaited(_openImport()),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
           heroTag: 'accounts_fab',
@@ -60,28 +78,80 @@ class _AccountsPageState extends State<AccountsPage> {
           child: const FaIcon(FontAwesomeIcons.plus),
         ),
       ),
-      body: BlocBuilder<AccountsCubit, AccountsState>(
-        builder: (context, state) {
-          if (state is AccountsLoading) return const LoadingShimmer();
-          if (state is AccountsError) {
-            return ErrorView(
-              message: state.failure.message,
-              onRetry: () => context
-                  .read<AccountsCubit>()
-                  .loadAccounts(forceRefresh: true),
+      body: BlocListener<AccountsCubit, AccountsState>(
+        listener: (context, state) {
+          if (state is AccountsImported) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  t.accounts.importSuccessDetailed(
+                    imported: state.importedCount,
+                    duplicates: state.duplicateCount,
+                  ),
+                ),
+              ),
             );
           }
-          if (state is AccountsLoaded) {
-            if (state.accounts.isEmpty) {
+        },
+        child: BlocBuilder<AccountsCubit, AccountsState>(
+          builder: (context, state) {
+            if (state is AccountsLoading) return const LoadingShimmer();
+            if (state is AccountsError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () => context
+                    .read<AccountsCubit>()
+                    .loadAccounts(forceRefresh: true),
+              );
+            }
+            final accounts = switch (state) {
+              AccountsLoaded(:final accounts) => accounts,
+              AccountsImported(:final accounts) => accounts,
+              _ => const <AccountEntity>[],
+            };
+            if (accounts.isEmpty) {
               return AccountsEmptyState(onAddPressed: _openAdd);
             }
             return _AccountsList(
-              accounts: state.accounts,
+              accounts: accounts,
               onTap: _openEdit,
             );
-          }
-          return const SizedBox.shrink();
-        },
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
+        ),
       ),
     );
   }

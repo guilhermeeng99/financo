@@ -15,6 +15,7 @@ class ClearAccountDataUseCase {
 
   Future<Either<Failure, void>> call(String userId) async {
     try {
+      await _deleteCollectionDocs('bills', userId);
       await _deleteCollectionDocs('transactions', userId);
       await _deleteCollectionDocs('chat_messages', userId);
       await _deleteCollectionDocs('categories', userId);

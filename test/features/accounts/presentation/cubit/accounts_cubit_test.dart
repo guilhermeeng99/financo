@@ -1,6 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,15 +12,18 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockGetAccountsUseCase mockGetAccounts;
+  late MockImportAccountsCsvUseCase mockImportAccountsCsv;
 
   setUp(() {
     mockGetAccounts = MockGetAccountsUseCase();
+    mockImportAccountsCsv = MockImportAccountsCsvUseCase();
   });
 
   const userId = 'user-1';
 
   AccountsCubit buildCubit() => AccountsCubit(
     getAccounts: mockGetAccounts,
+    importAccountsCsv: mockImportAccountsCsv,
     userId: userId,
   );
 
@@ -110,6 +115,44 @@ void main() {
           'accounts',
           isEmpty,
         ),
+      ],
+    );
+
+    blocTest<AccountsCubit, AccountsState>(
+      'emits [Loading, AccountsImported] when confirmImport succeeds',
+      setUp: () {
+        when(
+          () => mockImportAccountsCsv.importItems(
+            items: any(named: 'items'),
+            userId: userId,
+            duplicateCount: any(named: 'duplicateCount'),
+          ),
+        ).thenAnswer(
+          (_) async => const Right(
+            AccountImportResult(importedCount: 2, duplicateCount: 1),
+          ),
+        );
+        when(
+          () => mockGetAccounts(userId: userId, forceRefresh: true),
+        ).thenAnswer((_) async => Right(AccountFactory.list()));
+      },
+      build: buildCubit,
+      act: (cubit) async => cubit.confirmImport(
+        items: const [
+          AccountImportPreviewItem(
+            name: 'Nubank Gui',
+            type: AccountType.checking,
+            bank: BankType.nubank,
+            initialBalance: 0,
+          ),
+        ],
+        duplicateCount: 1,
+      ),
+      expect: () => [
+        isA<AccountsLoading>(),
+        isA<AccountsImported>()
+            .having((s) => s.importedCount, 'importedCount', 2)
+            .having((s) => s.duplicateCount, 'duplicateCount', 1),
       ],
     );
   });

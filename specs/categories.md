@@ -165,7 +165,43 @@ Initial state (edit mode):
 | Subcategory in dashboard | Transaction amounts rolled up into parent category totals |
 | Orphaned subcategory (parent deleted externally) | Treated as root category gracefully |
 
-## 6. Model Serialization
+## 6. CSV Import Preview Editing
+
+The CSV import flow has two stages: **parse + preview** and **confirm**. The preview is rendered on a dedicated page (not a dialog) so the user can review and adjust each item before committing.
+
+### Preview item
+
+```
+CategoryImportPreviewItem {
+  name:        String           (required)
+  type:        CategoryType     (required, derived from CSV row)
+  icon:        int              (required, defaults to 58332)
+  color:       int              (required, auto-assigned via CategoryColors.forIndex)
+  parentName:  String?          (set for subcategory rows)
+}
+```
+
+### Page-level rules
+
+19. **Tabs split by type**: the page presents Expense and Income tabs (counts in labels). Items from the other tab are hidden but kept in state.
+20. **Per-item edit**: tapping an item opens a sheet with name, icon and color editors. Type and parent relationship are not editable in the sheet.
+21. **Renaming a root cascades to children**: when the user changes a root's `name`, every child whose `parentName` matched the old name is updated to the new name so the parent lookup at import time still resolves.
+22. **Deleting a root drops its children**: the user is asked to confirm the cascade when the root has subcategories. Deleting a leaf or a childless root removes only that item.
+23. **Duplicates are read-only**: items the preview marked as duplicates are listed in a muted "Will be skipped" section per tab and cannot be edited or removed.
+24. **Submit guard**: the submit bar is disabled when the editable list is empty (everything was removed); duplicates alone are not enough to submit.
+25. **Confirm calls `importItems`**: the cubit's `confirmImport(items, duplicateCount)` delegates to `ImportCategoriesCsvUseCase.importItems`, which uses each item's icon/color verbatim and creates roots before children. Children whose parent name no longer resolves are silently skipped (they were edited away by the user).
+
+### Cubit contract addition
+
+```
+confirmImport({
+  required List<CategoryImportPreviewItem> items,
+  int duplicateCount = 0,
+}) → Loading → CategoriesImported(categories, importedCount, duplicateCount)
+                                | CategoriesError(failure)
+```
+
+## 7. Model Serialization
 
 ### CategoryModel
 

@@ -17,6 +17,7 @@ import 'package:financo/features/accounts/domain/repositories/account_repository
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 // Auth
 import 'package:financo/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -241,6 +242,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => DeleteAccountUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => ImportAccountsCsvUseCase(sl()),
     )
     ..registerLazySingleton(
       () => GetCategoriesUseCase(sl()),

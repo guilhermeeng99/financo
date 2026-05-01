@@ -161,11 +161,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      try {
-        await _googleSignIn.signOut();
-      } on Exception {
-        // Google sign-out failure is non-fatal — the user may not have
-        // signed in via Google.
+      // On Web GoogleSignIn.initialize() is intentionally skipped (Firebase's
+      // signInWithPopup owns the GSI lifecycle), so calling
+      // _googleSignIn.signOut() throws StateError and would prevent the
+      // Firebase sign-out from running — leaving the UI stuck.
+      if (!kIsWeb) {
+        try {
+          await _googleSignIn.signOut();
+        } on Object {
+          // Google sign-out failure is non-fatal — the user may not have
+          // signed in via Google. Catch Object (not Exception) so future
+          // Error-typed failures from the SDK don't leak past this guard.
+        }
       }
       await _auth.signOut();
     } on Exception catch (e) {

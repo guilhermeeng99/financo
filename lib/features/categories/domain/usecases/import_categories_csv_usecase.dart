@@ -10,17 +10,37 @@ class CategoryImportPreviewItem extends Equatable {
   const CategoryImportPreviewItem({
     required this.name,
     required this.type,
+    required this.icon,
+    required this.color,
     this.parentName,
   });
 
   final String name;
   final CategoryType type;
+  final int icon;
+  final int color;
   final String? parentName;
 
   bool get isSubcategory => parentName != null;
 
+  CategoryImportPreviewItem copyWith({
+    String? name,
+    CategoryType? type,
+    int? icon,
+    int? color,
+    String? parentName,
+  }) {
+    return CategoryImportPreviewItem(
+      name: name ?? this.name,
+      type: type ?? this.type,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      parentName: parentName ?? this.parentName,
+    );
+  }
+
   @override
-  List<Object?> get props => [name, type, parentName];
+  List<Object?> get props => [name, type, icon, color, parentName];
 }
 
 class CategoryImportPreview extends Equatable {
@@ -48,6 +68,11 @@ class CategoryImportResult extends Equatable {
   @override
   List<Object?> get props => [importedCount, duplicateCount];
 }
+
+/// Default Material icon code point (shopping_cart) — same default as the
+/// category form, so freshly parsed CSV rows show a recognizable icon while
+/// the user reviews the import.
+const int _defaultIcon = 58332;
 
 class ImportCategoriesCsvUseCase {
   const ImportCategoriesCsvUseCase(this._repository);
@@ -92,7 +117,24 @@ class ImportCategoriesCsvUseCase {
       return Left(previewFailure!);
     }
 
-    final previewData = previewValue!;
+    return importItems(
+      items: previewValue!.toCreate,
+      userId: userId,
+      duplicateCount: previewValue!.duplicates.length,
+    );
+  }
+
+  /// Creates the [items] as categories under [userId] in dependency order
+  /// (roots first, then children). Each item's `icon`/`color` are used
+  /// verbatim — letting the import-preview page expose per-item editing.
+  ///
+  /// Children whose parent is missing (deleted from the preview before
+  /// import) are silently skipped, matching the CSV-only flow.
+  Future<Either<Failure, CategoryImportResult>> importItems({
+    required List<CategoryImportPreviewItem> items,
+    required String userId,
+    int duplicateCount = 0,
+  }) async {
     final existingResult = await _repository.getCategories(userId: userId);
 
     Failure? existingFailure;
@@ -114,13 +156,8 @@ class ImportCategoriesCsvUseCase {
     }
 
     var importedCount = 0;
-    var colorIndex = existingCategories!.length;
-    final rootsToCreate = previewData.toCreate.where(
-      (item) => !item.isSubcategory,
-    );
-    final childrenToCreate = previewData.toCreate.where(
-      (item) => item.isSubcategory,
-    );
+    final rootsToCreate = items.where((item) => !item.isSubcategory);
+    final childrenToCreate = items.where((item) => item.isSubcategory);
 
     for (final item in rootsToCreate) {
       final result = await _repository.createCategory(
@@ -128,8 +165,8 @@ class ImportCategoriesCsvUseCase {
           id: '',
           userId: userId,
           name: item.name,
-          icon: 58332,
-          color: CategoryColors.forIndex(colorIndex++),
+          icon: item.icon,
+          color: item.color,
           type: item.type,
         ),
       );
@@ -153,8 +190,8 @@ class ImportCategoriesCsvUseCase {
           id: '',
           userId: userId,
           name: item.name,
-          icon: 58332,
-          color: CategoryColors.forIndex(colorIndex++),
+          icon: item.icon,
+          color: item.color,
           type: item.type,
           parentId: parentId,
         ),
@@ -169,7 +206,7 @@ class ImportCategoriesCsvUseCase {
     return Right(
       CategoryImportResult(
         importedCount: importedCount,
-        duplicateCount: previewData.duplicates.length,
+        duplicateCount: duplicateCount,
       ),
     );
   }
@@ -182,6 +219,7 @@ class ImportCategoriesCsvUseCase {
 
     final items = <CategoryImportPreviewItem>[];
     final seenRoots = <String>{};
+    var colorIndex = 0;
     for (final row in rows.skip(1)) {
       if (row.length < 3) continue;
 
@@ -197,7 +235,14 @@ class ImportCategoriesCsvUseCase {
 
       final rootKey = '${type.name}:${category.toLowerCase()}';
       if (seenRoots.add(rootKey)) {
-        items.add(CategoryImportPreviewItem(name: category, type: type));
+        items.add(
+          CategoryImportPreviewItem(
+            name: category,
+            type: type,
+            icon: _defaultIcon,
+            color: CategoryColors.forIndex(colorIndex++),
+          ),
+        );
       }
 
       if (subcategory.isNotEmpty) {
@@ -206,6 +251,8 @@ class ImportCategoriesCsvUseCase {
             name: subcategory,
             type: type,
             parentName: category,
+            icon: _defaultIcon,
+            color: CategoryColors.forIndex(colorIndex++),
           ),
         );
       }

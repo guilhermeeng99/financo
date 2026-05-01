@@ -27,46 +27,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 1;
 
+  // Local cache is disposable — Firestore is the source of truth and the
+  // sync service repopulates everything on next open. Any version mismatch
+  // (upgrade or downgrade) just drops every table and recreates the schema.
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onUpgrade: (migrator, from, to) async {
-      if (from < 2) {
-        await customStatement(
-          'ALTER TABLE local_accounts RENAME COLUMN balance TO initial_balance',
-        );
+    onUpgrade: (m, from, to) async {
+      for (final table in allTables) {
+        await m.deleteTable(table.actualTableName);
       }
-      if (from < 3) {
-        // Remove isDefault and sortOrder columns from local_categories.
-        // Recreate the table since SQLite doesn't always support DROP COLUMN.
-        await customStatement('DROP TABLE IF EXISTS local_categories');
-        await migrator.createTable(localCategories);
-      }
-      if (from < 4) {
-        // Remove isActive column from local_accounts.
-        await customStatement('DROP TABLE IF EXISTS local_accounts');
-        await migrator.createTable(localAccounts);
-      }
-      if (from < 5) {
-        // Remove isReconciled, add linkedTransactionId to local_transactions.
-        await customStatement('DROP TABLE IF EXISTS local_transactions');
-        await migrator.createTable(localTransactions);
-      }
-      if (from < 6) {
-        await customStatement(
-          'ALTER TABLE local_categories ADD COLUMN parent_id TEXT',
-        );
-      }
-      if (from < 7) {
-        await migrator.createTable(localBills);
-      }
-      if (from < 8) {
-        await customStatement(
-          'ALTER TABLE local_bills ADD COLUMN type TEXT NOT NULL '
-          "DEFAULT 'payable'",
-        );
-      }
+      await m.createAll();
     },
   );
 

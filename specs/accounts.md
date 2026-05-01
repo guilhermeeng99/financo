@@ -155,6 +155,66 @@ Initial ──load(account, year, month)──→ Loading
 - **Statement with no transactions** — runningBalance = initialBalance, zero totals.
 - **Statement fetch failure** — first failing result short-circuits to error.
 
+## CSV Import
+
+The accounts list lets the user import accounts in bulk from a CSV. The flow has two stages: **parse + preview** and **confirm**. The preview is rendered on a dedicated page so the user can review and adjust each row before committing.
+
+### CSV Format
+
+Header: `Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento`
+
+| Column | Description | Format |
+|---|---|---|
+| Nome | Account name | Free text, required |
+| Saldo inicial | Initial balance | Brazilian format: `"421,95"` or `"1.234,56"` (quoted, comma decimal) |
+| Tipo | Account type | `Conta Corrente` (checking) or `Cartão de Crédito` (credit card). Accent/case tolerant |
+| Banco | Bank code | `nubank` or anything else (mapped to `BankType.others`) |
+| Limite | Credit limit | Brazilian format. Only for credit cards, ignored for checking |
+| Próximo Vencimento | Next due date | `DD/MM/YYYY`. Only the day is used, populating `dueDay`. Only for credit cards |
+| Fechamento | Closing day | Integer 1–31. Only for credit cards |
+
+### Preview item
+
+```
+AccountImportPreviewItem {
+  name:               String          (required)
+  type:               AccountType     (required, parsed from CSV)
+  bank:               BankType        (required, default others)
+  initialBalance:     double          (required, default 0)
+  creditLimit:        double?         (set for credit cards)
+  closingDay:         int?            (set for credit cards)
+  dueDay:             int?            (set for credit cards)
+  linkedAccountName:  String?         (CSV does not carry this — null until user picks)
+}
+```
+
+### Page-level rules
+
+12. **Tabs split by type**: the page presents Checking and Credit card tabs (counts in labels). Items from the other tab are hidden but kept in state.
+13. **Per-item edit**: tapping a row opens a sheet with name, type pill toggle, bank pill toggle, initial balance, and the credit-card group (limit, closing day, due day, linked checking account) when applicable.
+14. **Type is editable**: switching Checking ↔ Credit card cleans up the conditional fields:
+    - Going to Checking clears `creditLimit`, `closingDay`, `dueDay`, `linkedAccountName`.
+    - Going to Credit card requires the user to fill all four before submit.
+15. **Linked account picker**: surfaces both existing checking accounts under this user AND checking accounts being imported in the same batch (by name, since IDs aren't assigned yet). Returns the picked account's name, which is later resolved to an ID at import time.
+16. **Renaming a checking account cascades**: when the user renames a checking account in the preview, every credit card whose `linkedAccountName` matched the old name is updated to the new name so the link still resolves.
+17. **Removing a checking account cascades**: when the user removes a checking account, every credit card whose `linkedAccountName` matched it is unlinked (set to null), causing them to surface in the missing-link banner until re-linked or removed.
+18. **Missing-link banner**: credit cards with no resolvable `linkedAccountName` (existing or in-import) appear in a red banner at the top; the submit bar is disabled until the list is empty.
+19. **Duplicates are read-only**: items the preview marked as duplicates (existing user accounts with the same lowercase name) are listed in a muted "Will be skipped" section per tab and cannot be edited or removed.
+20. **Submit calls `confirmImport`**: the cubit's `confirmImport(items, duplicateCount)` delegates to `ImportAccountsCsvUseCase.importItems`, which creates checking accounts first (so credit cards can reference them by name), then credit cards. Credit cards whose link cannot be resolved at import time are silently skipped — the page-level guard above is expected to prevent this case.
+
+### Cubit contract addition
+
+```
+previewCsv(String csvContent) → Either<Failure, AccountImportPreview>
+  delegates to ImportAccountsCsvUseCase.preview()
+
+confirmImport({
+  required List<AccountImportPreviewItem> items,
+  int duplicateCount = 0,
+}) → Loading → AccountsImported(accounts, importedCount, duplicateCount)
+              | AccountsError(failure)
+```
+
 ## Firestore
 
 **Collection:** `accounts/{id}`

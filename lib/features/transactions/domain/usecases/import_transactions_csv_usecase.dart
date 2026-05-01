@@ -36,6 +36,37 @@ class TransactionImportRow extends Equatable {
       csvType == CsvTransactionType.transferencia ||
       csvType == CsvTransactionType.pagamento;
 
+  TransactionImportRow copyWith({
+    CsvTransactionType? csvType,
+    double? amount,
+    String? description,
+    DateTime? date,
+    String? categoryName,
+    bool clearCategoryName = false,
+    String? subcategoryName,
+    bool clearSubcategoryName = false,
+    String? accountName,
+    String? destinationAccountName,
+    bool clearDestinationAccountName = false,
+  }) {
+    return TransactionImportRow(
+      csvType: csvType ?? this.csvType,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      date: date ?? this.date,
+      categoryName: clearCategoryName
+          ? null
+          : (categoryName ?? this.categoryName),
+      subcategoryName: clearSubcategoryName
+          ? null
+          : (subcategoryName ?? this.subcategoryName),
+      accountName: accountName ?? this.accountName,
+      destinationAccountName: clearDestinationAccountName
+          ? null
+          : (destinationAccountName ?? this.destinationAccountName),
+    );
+  }
+
   @override
   List<Object?> get props => [
     csvType,
@@ -155,109 +186,127 @@ class ImportTransactionsCsvUseCase {
         );
       }
 
-      final categoriesResult = await _categoryRepository.getCategories(
+      return importRows(
+        rows: previewData.rows,
         userId: userId,
+        skippedCount: previewData.skippedRows,
       );
-      final accountsResult = await _accountRepository.getAccounts(
-        userId: userId,
-      );
+    });
+  }
 
-      return categoriesResult.fold(Left.new, (categories) {
-        return accountsResult.fold(Left.new, (accounts) async {
-          final categoryLookup = _buildCategoryLookup(categories);
-          final accountLookup = _buildAccountLookup(accounts);
-          final now = DateTime.now();
-          var importedCount = 0;
+  /// Creates the (possibly user-edited) [rows] as transactions/transfers
+  /// for [userId]. Resolves account/category names against the latest
+  /// repository state, so renames between preview and import still work.
+  ///
+  /// Rows with unresolved account or category references are silently
+  /// skipped — the caller (import-preview page) is expected to surface
+  /// these as validation errors before invoking this method.
+  Future<Either<Failure, TransactionImportResult>> importRows({
+    required List<TransactionImportRow> rows,
+    required String userId,
+    int skippedCount = 0,
+  }) async {
+    final categoriesResult = await _categoryRepository.getCategories(
+      userId: userId,
+    );
+    final accountsResult = await _accountRepository.getAccounts(
+      userId: userId,
+    );
 
-          for (final row in previewData.rows) {
-            if (row.isTransfer) {
-              final sourceId = accountLookup[row.accountName.toLowerCase()];
-              final destId =
-                  accountLookup[row.destinationAccountName?.toLowerCase() ??
-                      ''];
+    return categoriesResult.fold(Left.new, (categories) {
+      return accountsResult.fold(Left.new, (accounts) async {
+        final categoryLookup = _buildCategoryLookup(categories);
+        final accountLookup = _buildAccountLookup(accounts);
+        final now = DateTime.now();
+        var importedCount = 0;
 
-              if (sourceId == null || destId == null) continue;
+        for (final row in rows) {
+          if (row.isTransfer) {
+            final sourceId = accountLookup[row.accountName.toLowerCase()];
+            final destId =
+                accountLookup[row.destinationAccountName?.toLowerCase() ?? ''];
 
-              final expense = TransactionEntity(
-                id: '',
-                userId: userId,
-                accountId: sourceId,
-                categoryId: '',
-                type: TransactionType.expense,
-                amount: row.amount,
-                description: row.description,
-                date: row.date,
-                createdAt: now,
-                updatedAt: now,
-              );
+            if (sourceId == null || destId == null) continue;
 
-              final income = TransactionEntity(
-                id: '',
-                userId: userId,
-                accountId: destId,
-                categoryId: '',
-                type: TransactionType.income,
-                amount: row.amount,
-                description: row.description,
-                date: row.date,
-                createdAt: now,
-                updatedAt: now,
-              );
+            final expense = TransactionEntity(
+              id: '',
+              userId: userId,
+              accountId: sourceId,
+              categoryId: '',
+              type: TransactionType.expense,
+              amount: row.amount,
+              description: row.description,
+              date: row.date,
+              createdAt: now,
+              updatedAt: now,
+            );
 
-              final result = await _transactionRepository.createTransfer(
-                expense: expense,
-                income: income,
-              );
+            final income = TransactionEntity(
+              id: '',
+              userId: userId,
+              accountId: destId,
+              categoryId: '',
+              type: TransactionType.income,
+              amount: row.amount,
+              description: row.description,
+              date: row.date,
+              createdAt: now,
+              updatedAt: now,
+            );
 
-              final failure = result.fold<Failure?>((f) => f, (_) => null);
-              if (failure != null) return Left(failure);
+            final result = await _transactionRepository.createTransfer(
+              expense: expense,
+              income: income,
+            );
 
-              importedCount += 2;
-            } else {
-              final categoryId = _resolveCategoryId(
-                categoryLookup: categoryLookup,
-                categoryName: row.categoryName,
-                subcategoryName: row.subcategoryName,
-              );
+            final failure = result.fold<Failure?>((f) => f, (_) => null);
+            if (failure != null) return Left(failure);
 
-              final accountId = accountLookup[row.accountName.toLowerCase()];
-              if (categoryId == null || accountId == null) continue;
+            importedCount += 2;
+          } else {
+            final categoryId = _resolveCategoryId(
+              categoryLookup: categoryLookup,
+              categoryName: row.categoryName,
+              subcategoryName: row.subcategoryName,
+            );
 
-              final type = row.csvType == CsvTransactionType.receita
-                  ? TransactionType.income
-                  : TransactionType.expense;
+            final accountId = accountLookup[row.accountName.toLowerCase()];
+            if (categoryId == null || accountId == null) continue;
 
-              final transaction = TransactionEntity(
-                id: '',
-                userId: userId,
-                accountId: accountId,
-                categoryId: categoryId,
-                type: type,
-                amount: row.amount,
-                description: row.description,
-                date: row.date,
-                createdAt: now,
-                updatedAt: now,
-              );
+            final type = row.csvType == CsvTransactionType.receita
+                ? TransactionType.income
+                : TransactionType.expense;
 
-              final result = await _transactionRepository.createTransaction(
-                transaction,
-              );
+            final transaction = TransactionEntity(
+              id: '',
+              userId: userId,
+              accountId: accountId,
+              categoryId: categoryId,
+              type: type,
+              amount: row.amount,
+              description: row.description,
+              date: row.date,
+              createdAt: now,
+              updatedAt: now,
+            );
 
-              final failure = result.fold<Failure?>((f) => f, (_) => null);
-              if (failure != null) return Left(failure);
+            final result = await _transactionRepository.createTransaction(
+              transaction,
+            );
 
-              importedCount++;
-            }
+            final failure = result.fold<Failure?>((f) => f, (_) => null);
+            if (failure != null) return Left(failure);
+
+            importedCount++;
           }
+        }
 
-          return Right(
-            TransactionImportResult(
-              importedCount: importedCount,
-              skippedCount: previewData.skippedRows,
-            ),
-          );
-        });
+        return Right(
+          TransactionImportResult(
+            importedCount: importedCount,
+            skippedCount: skippedCount,
+          ),
+        );
       });
     });
   }

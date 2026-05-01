@@ -1,14 +1,15 @@
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/core/errors/failures.dart';
-import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/csv_example_downloader.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 const _exampleAssetPath = 'lib/app/assets/samples/categories_example.csv';
 
@@ -102,87 +103,5 @@ Future<void> _pickAndImport(BuildContext context) async {
     return;
   }
 
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(t.categories.importCsv),
-      content: SizedBox(
-        width: 480,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                t.categories.importReview(arg: preview!.toCreate.length),
-              ),
-              const SizedBox(height: 12),
-              ...preview!.toCreate.map(
-                (item) => Text(
-                  item.parentName == null
-                      ? '• ${item.name}'
-                      : '• ${item.parentName} → ${item.name}',
-                ),
-              ),
-              if (preview!.duplicates.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(
-                  t.categories.importDuplicates(
-                    arg: preview!.duplicates.length,
-                  ),
-                  style: TextStyle(
-                    color: dialogContext.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...preview!.duplicates.map(
-                  (item) => Text(
-                    item.parentName == null
-                        ? '• ${item.name}'
-                        : '• ${item.parentName} → ${item.name}',
-                    style: TextStyle(
-                      color: dialogContext.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(t.general.cancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(t.general.confirm),
-        ),
-      ],
-    ),
-  );
-
-  if (confirmed != true || !context.mounted) return;
-
-  await context.read<CategoriesCubit>().importCsv(csvContent);
-  if (!context.mounted) return;
-
-  final newState = context.read<CategoriesCubit>().state;
-  if (newState is CategoriesImported) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          t.categories.importSuccessDetailed(
-            imported: newState.importedCount,
-            duplicates: newState.duplicateCount,
-          ),
-        ),
-      ),
-    );
-  } else if (newState is CategoriesError) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(newState.failure.message)),
-    );
-  }
+  await context.push(AppRoutes.importCategories, extra: preview);
 }

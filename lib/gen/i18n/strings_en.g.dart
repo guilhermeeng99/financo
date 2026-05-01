@@ -522,6 +522,39 @@ class TranslationsTransactionsEn {
 
 	/// en: '$count incomes'
 	String importIncomes({required Object count}) => '${count} incomes';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap a row to edit · trash to remove'
+	String get importPageSubtitle => 'Tap a row to edit · trash to remove';
+
+	/// en: 'Expense ($count)'
+	String importTabExpense({required Object count}) => 'Expense (${count})';
+
+	/// en: 'Income ($count)'
+	String importTabIncome({required Object count}) => 'Income (${count})';
+
+	/// en: 'Transfer ($count)'
+	String importTabTransfer({required Object count}) => 'Transfer (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Edit transaction'
+	String get importEditTitle => 'Edit transaction';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count transactions'
+	String importSubmit({required Object count}) => 'Import ${count} transactions';
+
+	/// en: 'Resolve missing references before importing:'
+	String get importMissingAfterEditPrefix => 'Resolve missing references before importing:';
+
+	/// en: '$count rows skipped'
+	String importSkippedRowsPill({required Object count}) => '${count} rows skipped';
 }
 
 // Path: accounts
@@ -672,6 +705,60 @@ class TranslationsAccountsEn {
 
 	/// en: 'No accounts yet'
 	String get emptyTitle => 'No accounts yet';
+
+	/// en: 'Import accounts'
+	String get importCsv => 'Import accounts';
+
+	/// en: 'Import accounts from CSV'
+	String get importCsvIntroTitle => 'Import accounts from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap a row to edit · trash to remove'
+	String get importPageSubtitle => 'Tap a row to edit · trash to remove';
+
+	/// en: 'Checking ($count)'
+	String importTabChecking({required Object count}) => 'Checking (${count})';
+
+	/// en: 'Credit card ($count)'
+	String importTabCreditCard({required Object count}) => 'Credit card (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Will be skipped (already exists)'
+	String get importDuplicatesHeader => 'Will be skipped (already exists)';
+
+	/// en: 'Edit account'
+	String get importEditTitle => 'Edit account';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count accounts'
+	String importSubmit({required Object count}) => 'Import ${count} accounts';
+
+	/// en: 'Pick a linked checking account for:'
+	String get importMissingLinkPrefix => 'Pick a linked checking account for:';
+
+	/// en: 'Imported $imported accounts. Skipped $duplicates duplicates.'
+	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.';
 }
 
 // Path: categories
@@ -780,6 +867,39 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
 	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap an item to edit · swipe trash to remove'
+	String get importPageSubtitle => 'Tap an item to edit · swipe trash to remove';
+
+	/// en: 'Expense ($count)'
+	String importTabExpense({required Object count}) => 'Expense (${count})';
+
+	/// en: 'Income ($count)'
+	String importTabIncome({required Object count}) => 'Income (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Will be skipped (already exists)'
+	String get importDuplicatesHeader => 'Will be skipped (already exists)';
+
+	/// en: 'Edit category'
+	String get importEditTitle => 'Edit category';
+
+	/// en: 'Remove $name and its $count subcategories?'
+	String importDeleteRoot({required Object name, required Object count}) => 'Remove ${name} and its ${count} subcategories?';
+
+	/// en: 'Remove'
+	String get importDeleteRootConfirm => 'Remove';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count items'
+	String importSubmit({required Object count}) => 'Import ${count} items';
 
 	/// en: 'Type'
 	String get formSectionType => 'Type';
@@ -1519,6 +1639,17 @@ extension on Translations {
 			'transactions.importTransfers' => ({required Object count}) => '${count} transfers',
 			'transactions.importExpenses' => ({required Object count}) => '${count} expenses',
 			'transactions.importIncomes' => ({required Object count}) => '${count} incomes',
+			'transactions.importPageTitle' => 'Review import',
+			'transactions.importPageSubtitle' => 'Tap a row to edit · trash to remove',
+			'transactions.importTabExpense' => ({required Object count}) => 'Expense (${count})',
+			'transactions.importTabIncome' => ({required Object count}) => 'Income (${count})',
+			'transactions.importTabTransfer' => ({required Object count}) => 'Transfer (${count})',
+			'transactions.importEmptyTab' => 'Nothing to import in this tab.',
+			'transactions.importEditTitle' => 'Edit transaction',
+			'transactions.importNothingLeft' => 'Nothing left to import.',
+			'transactions.importSubmit' => ({required Object count}) => 'Import ${count} transactions',
+			'transactions.importMissingAfterEditPrefix' => 'Resolve missing references before importing:',
+			'transactions.importSkippedRowsPill' => ({required Object count}) => '${count} rows skipped',
 			'accounts.title' => 'Accounts',
 			'accounts.addAccount' => 'New Account',
 			'accounts.editAccount' => 'Edit Account',
@@ -1566,6 +1697,24 @@ extension on Translations {
 			'accounts.noLinkedCandidates' => 'Create a checking account first.',
 			'accounts.addFirst' => 'Add your first account',
 			'accounts.emptyTitle' => 'No accounts yet',
+			'accounts.importCsv' => 'Import accounts',
+			'accounts.importCsvIntroTitle' => 'Import accounts from CSV',
+			'accounts.importCsvIntroBody' => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.',
+			'accounts.importCsvDownloadExample' => 'Download example',
+			'accounts.importCsvSelectFile' => 'Select file',
+			'accounts.importCsvExampleDownloaded' => 'Example saved.',
+			'accounts.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'accounts.importPageTitle' => 'Review import',
+			'accounts.importPageSubtitle' => 'Tap a row to edit · trash to remove',
+			'accounts.importTabChecking' => ({required Object count}) => 'Checking (${count})',
+			'accounts.importTabCreditCard' => ({required Object count}) => 'Credit card (${count})',
+			'accounts.importEmptyTab' => 'Nothing to import in this tab.',
+			'accounts.importDuplicatesHeader' => 'Will be skipped (already exists)',
+			'accounts.importEditTitle' => 'Edit account',
+			'accounts.importNothingLeft' => 'Nothing left to import.',
+			'accounts.importSubmit' => ({required Object count}) => 'Import ${count} accounts',
+			'accounts.importMissingLinkPrefix' => 'Pick a linked checking account for:',
+			'accounts.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
 			'categories.editCategory' => 'Edit Category',
@@ -1599,6 +1748,17 @@ extension on Translations {
 			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
 			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
 			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
+			'categories.importPageTitle' => 'Review import',
+			'categories.importPageSubtitle' => 'Tap an item to edit · swipe trash to remove',
+			'categories.importTabExpense' => ({required Object count}) => 'Expense (${count})',
+			'categories.importTabIncome' => ({required Object count}) => 'Income (${count})',
+			'categories.importEmptyTab' => 'Nothing to import in this tab.',
+			'categories.importDuplicatesHeader' => 'Will be skipped (already exists)',
+			'categories.importEditTitle' => 'Edit category',
+			'categories.importDeleteRoot' => ({required Object name, required Object count}) => 'Remove ${name} and its ${count} subcategories?',
+			'categories.importDeleteRootConfirm' => 'Remove',
+			'categories.importNothingLeft' => 'Nothing left to import.',
+			'categories.importSubmit' => ({required Object count}) => 'Import ${count} items',
 			'categories.formSectionType' => 'Type',
 			'categories.formSectionDetails' => 'Details',
 			'categories.formSectionAppearance' => 'Appearance',

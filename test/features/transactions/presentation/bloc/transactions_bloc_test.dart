@@ -314,5 +314,70 @@ void main() {
         ).called(1);
       });
     });
+
+    group('TransactionsImportRowsConfirmed', () {
+      blocTest<TransactionsBloc, TransactionsState>(
+        'emits [Loading, Imported] when importRows succeeds',
+        setUp: () {
+          when(
+            () => mockImportTransactionsCsv.importRows(
+              rows: any(named: 'rows'),
+              userId: any(named: 'userId'),
+              skippedCount: any(named: 'skippedCount'),
+            ),
+          ).thenAnswer(
+            (_) async => const Right(
+              TransactionImportResult(importedCount: 7, skippedCount: 2),
+            ),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) => bloc.add(
+          TransactionsImportRowsConfirmed(
+            rows: [
+              TransactionImportRow(
+                csvType: CsvTransactionType.despesa,
+                amount: 10,
+                description: 'edited',
+                date: DateTime(2026, 4),
+                accountName: 'Nubank',
+                categoryName: 'Food',
+              ),
+            ],
+            skippedCount: 2,
+          ),
+        ),
+        expect: () => [
+          isA<TransactionsLoading>(),
+          isA<TransactionsImported>()
+              .having((s) => s.importedCount, 'importedCount', 7)
+              .having((s) => s.skippedCount, 'skippedCount', 2),
+        ],
+      );
+
+      blocTest<TransactionsBloc, TransactionsState>(
+        'emits [Loading, Error] when importRows fails',
+        setUp: () {
+          when(
+            () => mockImportTransactionsCsv.importRows(
+              rows: any(named: 'rows'),
+              userId: any(named: 'userId'),
+              skippedCount: any(named: 'skippedCount'),
+            ),
+          ).thenAnswer(
+            (_) async => const Left(ServerFailure('boom')),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) => bloc.add(
+          const TransactionsImportRowsConfirmed(rows: []),
+        ),
+        expect: () => [
+          isA<TransactionsLoading>(),
+          isA<TransactionsError>()
+              .having((s) => s.failure.message, 'message', 'boom'),
+        ],
+      );
+    });
   });
 }

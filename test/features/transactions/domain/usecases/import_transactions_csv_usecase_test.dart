@@ -725,4 +725,101 @@ Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,''';
       });
     });
   });
+
+  group('ImportTransactionsCsvUseCase.importRows', () {
+    setUp(() {
+      when(() => mockCategoryRepo.getCategories(userId: userId))
+          .thenAnswer((_) async => Right(categories));
+      when(() => mockAccountRepo.getAccounts(userId: userId))
+          .thenAnswer((_) async => Right(accounts));
+    });
+
+    test('creates expense and income rows using user-edited names', () async {
+      when(() => mockTransactionRepo.createTransaction(any())).thenAnswer(
+        (invocation) async {
+          final tx = invocation.positionalArguments.first as TransactionEntity;
+          return Right<Failure, TransactionEntity>(
+            tx.copyWith(id: 'tx-${tx.description}'),
+          );
+        },
+      );
+
+      final rows = [
+        TransactionImportRow(
+          csvType: CsvTransactionType.despesa,
+          amount: 12.50,
+          description: 'edited expense',
+          date: DateTime(2026, 4),
+          accountName: 'Nubank Gui',
+          categoryName: 'Gui',
+        ),
+        TransactionImportRow(
+          csvType: CsvTransactionType.receita,
+          amount: 1000,
+          description: 'salary',
+          date: DateTime(2026, 4, 5),
+          accountName: 'Nubank Gui',
+          categoryName: 'Salário',
+        ),
+      ];
+
+      final result = await useCase.importRows(
+        rows: rows,
+        userId: userId,
+        skippedCount: 3,
+      );
+
+      expect(
+        result,
+        const Right<Failure, TransactionImportResult>(
+          TransactionImportResult(importedCount: 2, skippedCount: 3),
+        ),
+      );
+      verify(() => mockTransactionRepo.createTransaction(any())).called(2);
+    });
+
+    test('skips rows whose account is not found in the latest state',
+        () async {
+      when(() => mockTransactionRepo.createTransaction(any())).thenAnswer(
+        (_) async => Right<Failure, TransactionEntity>(
+          TransactionEntity(
+            id: 'x',
+            userId: userId,
+            accountId: 'acc-nubank-gui',
+            categoryId: 'cat-gui',
+            type: TransactionType.expense,
+            amount: 1,
+            description: '',
+            date: DateTime(2026, 4),
+            createdAt: DateTime(2026, 4),
+            updatedAt: DateTime(2026, 4),
+          ),
+        ),
+      );
+
+      final rows = [
+        TransactionImportRow(
+          csvType: CsvTransactionType.despesa,
+          amount: 10,
+          description: '',
+          date: DateTime(2026, 4),
+          accountName: 'Ghost Account',
+          categoryName: 'Gui',
+        ),
+      ];
+
+      final result = await useCase.importRows(
+        rows: rows,
+        userId: userId,
+      );
+
+      expect(
+        result,
+        const Right<Failure, TransactionImportResult>(
+          TransactionImportResult(importedCount: 0, skippedCount: 0),
+        ),
+      );
+      verifyNever(() => mockTransactionRepo.createTransaction(any()));
+    });
+  });
 }

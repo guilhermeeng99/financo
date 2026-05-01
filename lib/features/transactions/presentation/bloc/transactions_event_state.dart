@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 
 sealed class TransactionsEvent extends Equatable {
   const TransactionsEvent();
@@ -41,6 +42,19 @@ final class TransactionsImportCsvRequested extends TransactionsEvent {
 
   @override
   List<Object> get props => [csvContent];
+}
+
+final class TransactionsImportRowsConfirmed extends TransactionsEvent {
+  const TransactionsImportRowsConfirmed({
+    required this.rows,
+    this.skippedCount = 0,
+  });
+
+  final List<TransactionImportRow> rows;
+  final int skippedCount;
+
+  @override
+  List<Object> get props => [rows, skippedCount];
 }
 
 sealed class TransactionsState extends Equatable {

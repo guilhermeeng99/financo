@@ -54,7 +54,9 @@
       "Bash(git check-ignore *)",
       "Bash(grep -E \"\\\\.dart$\")",
       "Bash(:)",
-      "Bash(cat C:\\\\\\\\Users\\\\\\\\guiga\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-guiga-Documents-Projetos-financo\\\\\\\\ef0c30e5-04ef-41e8-a352-269b40d1abb1\\\\\\\\tasks\\\\\\\\buhntks15.output)"
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\guiga\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-guiga-Documents-Projetos-financo\\\\\\\\ef0c30e5-04ef-41e8-a352-269b40d1abb1\\\\\\\\tasks\\\\\\\\buhntks15.output)",
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\guiga\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-guiga-Documents-Projetos-financo\\\\\\\\2934338b-9bad-4260-875e-1e9d1d410758\\\\\\\\tasks\\\\\\\\be6qv3frk.output)",
+      "Bash(awk 'END{print NR}' test/features/transactions/domain/usecases/import_transactions_csv_usecase_test.dart)"
     ]
   }
 }

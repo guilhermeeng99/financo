@@ -239,6 +239,7 @@ class ImportTransactionsCsvUseCase {
 ```
 Events:
   TransactionsImportCsvRequested { csvContent }
+  TransactionsImportRowsConfirmed { rows, skippedCount }
 
 States:
   → Loading → TransactionsImported { importedCount, skippedCount }
@@ -246,6 +247,21 @@ States:
 ```
 
 Public method on bloc: `previewCsv(String csvContent)` — delegates to use case `preview()`, returns `Either` directly (same pattern as `CategoriesCubit.previewCsv`).
+
+### CSV Import Preview Editing
+
+The CSV import flow has two stages: **parse + preview** and **confirm**. The preview is rendered on a dedicated page (not a dialog) so the user can review and adjust each row before committing.
+
+28. **Tabs split by type**: the page presents Expense / Income / Transfer tabs (counts in labels). Rows from the other tabs are hidden but kept in state.
+29. **Per-row edit**: tapping a row opens a sheet with type (Expense/Income/Transfer pill toggle), date, amount, description, account, and category (or destination account for transfers) editors. Changing the type clears mismatched fields:
+   - Switching to Transfer clears category/subcategory and destination account (user must re-pick destination).
+   - Switching from Transfer to Expense/Income clears destination and category (user must pick a category).
+   - Switching Expense ↔ Income clears category (income/expense use different categories).
+   - Source account (`accountName`) is preserved across all transitions so the user keeps their account context.
+   This is the escape hatch for CSVs that misclassified rows — e.g. a credit-card bill payment imported as a `Despesa` with category "Pagamento de cartão" can be converted in-place to a Transfer.
+30. **Account/category overrides**: when the user picks a different account or category in the sheet, the row's `accountName`/`categoryName` strings are rewritten to the picked entity's name. Resolution at import time happens against the latest categories/accounts state.
+31. **On-the-fly missing recomputation**: the page derives `missingAccounts` and `missingCategories` from the *current* edited rows + the latest categories/accounts cubits. The submit bar disables (and a red banner shows the unresolved names) until everything resolves; this means the preview's original `missingAccounts`/`missingCategories` may already be stale — the page does not rely on them.
+32. **Submit**: dispatches `TransactionsImportRowsConfirmed(rows, skippedCount)` → bloc calls `ImportTransactionsCsvUseCase.importRows`, which uses the same per-row creation logic as `call(csvContent)`. Rows whose account or category cannot be resolved at import time are silently skipped (the page-level guard above is expected to prevent this case).
 
 ## Firestore
 

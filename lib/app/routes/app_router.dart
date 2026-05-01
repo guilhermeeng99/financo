@@ -6,11 +6,13 @@ import 'package:financo/app/widgets/financo_sidebar.dart';
 import 'package:financo/app/widgets/sub_page_scope.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/pages/account_statement_page.dart';
 import 'package:financo/features/accounts/presentation/pages/accounts_page.dart';
 import 'package:financo/features/accounts/presentation/pages/add_account_page.dart';
+import 'package:financo/features/accounts/presentation/pages/import_accounts_page.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
@@ -29,6 +31,7 @@ import 'package:financo/features/categories/domain/usecases/import_categories_cs
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/pages/add_category_page.dart';
 import 'package:financo/features/categories/presentation/pages/categories_page.dart';
+import 'package:financo/features/categories/presentation/pages/import_categories_page.dart';
 import 'package:financo/features/chat/presentation/pages/chat_page.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -44,6 +47,7 @@ import 'package:financo/features/transactions/domain/usecases/get_transactions_u
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/pages/add_transaction_page.dart';
+import 'package:financo/features/transactions/presentation/pages/import_transactions_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -129,6 +133,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = AccountsCubit(
                   getAccounts: GetIt.I<GetAccountsUseCase>(),
+                  importAccountsCsv: GetIt.I<ImportAccountsCsvUseCase>(),
                   userId: userId,
                 );
                 unawaited(cubit.loadAccounts());
@@ -203,14 +208,41 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           },
         ),
         GoRoute(
+          path: AppRoutes.importTransactions,
+          builder: (context, state) {
+            final preview = state.extra! as TransactionImportPreview;
+            return SubPageScope(
+              child: ImportTransactionsPage(preview: preview),
+            );
+          },
+        ),
+        GoRoute(
           path: AppRoutes.accounts,
           builder: (context, state) =>
               const SubPageScope(child: AccountsPage()),
         ),
         GoRoute(
+          path: AppRoutes.importAccounts,
+          builder: (context, state) {
+            final preview = state.extra! as AccountImportPreview;
+            return SubPageScope(
+              child: ImportAccountsPage(preview: preview),
+            );
+          },
+        ),
+        GoRoute(
           path: AppRoutes.categories,
           builder: (context, state) =>
               const SubPageScope(child: CategoriesPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.importCategories,
+          builder: (context, state) {
+            final preview = state.extra! as CategoryImportPreview;
+            return SubPageScope(
+              child: ImportCategoriesPage(preview: preview),
+            );
+          },
         ),
         GoRoute(
           path: AppRoutes.bills,

@@ -91,4 +91,100 @@ Food,,Expense
       );
     });
   });
+
+  group('ImportCategoriesCsvUseCase.importItems', () {
+    const userId = 'user-1';
+
+    test("uses each item's icon and color when creating", () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      final created = <CategoryEntity>[];
+      when(() => mockRepository.createCategory(any())).thenAnswer((
+        invocation,
+      ) async {
+        final category = invocation.positionalArguments.first as CategoryEntity;
+        created.add(category);
+        return Right<Failure, CategoryEntity>(
+          category.copyWith(id: 'created-${created.length}'),
+        );
+      });
+
+      final items = [
+        const CategoryImportPreviewItem(
+          name: 'Food',
+          type: CategoryType.expense,
+          icon: 9000,
+          color: 0xFFAA0000,
+        ),
+        const CategoryImportPreviewItem(
+          name: 'Restaurants',
+          type: CategoryType.expense,
+          parentName: 'Food',
+          icon: 9001,
+          color: 0xFFAA0001,
+        ),
+      ];
+
+      final result = await useCase.importItems(
+        items: items,
+        userId: userId,
+        duplicateCount: 2,
+      );
+
+      expect(
+        result,
+        const Right<Failure, CategoryImportResult>(
+          CategoryImportResult(importedCount: 2, duplicateCount: 2),
+        ),
+      );
+      expect(created[0].icon, 9000);
+      expect(created[0].color, 0xFFAA0000);
+      expect(created[1].icon, 9001);
+      expect(created[1].color, 0xFFAA0001);
+      expect(created[1].parentId, 'created-1');
+    });
+
+    test('skips children whose parent was removed from the items list',
+        () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      var createdCount = 0;
+      when(() => mockRepository.createCategory(any())).thenAnswer((
+        invocation,
+      ) async {
+        final category = invocation.positionalArguments.first as CategoryEntity;
+        createdCount++;
+        return Right<Failure, CategoryEntity>(
+          category.copyWith(id: 'created-$createdCount'),
+        );
+      });
+
+      final items = [
+        const CategoryImportPreviewItem(
+          name: 'Restaurants',
+          type: CategoryType.expense,
+          parentName: 'Food',
+          icon: 100,
+          color: 0xFF000000,
+        ),
+      ];
+
+      final result = await useCase.importItems(
+        items: items,
+        userId: userId,
+      );
+
+      expect(
+        result,
+        const Right<Failure, CategoryImportResult>(
+          CategoryImportResult(importedCount: 0, duplicateCount: 0),
+        ),
+      );
+      verifyNever(() => mockRepository.createCategory(any()));
+    });
+  });
 }

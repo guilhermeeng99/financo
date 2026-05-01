@@ -4,23 +4,23 @@ import 'package:file_picker/file_picker.dart';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_example_downloader.dart';
-import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
-import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-const _exampleAssetPath = 'lib/app/assets/samples/transactions_example.csv';
+const _exampleAssetPath = 'lib/app/assets/samples/accounts_example.csv';
 
 enum _CsvImportAction { downloadExample, selectFile }
 
-Future<void> showTransactionsCsvImportDialog(BuildContext context) async {
+Future<void> showAccountsCsvImportDialog(BuildContext context) async {
   final action = await showDialog<_CsvImportAction>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: Text(t.transactions.importCsvIntroTitle),
-      content: Text(t.transactions.importCsvIntroBody),
+      title: Text(t.accounts.importCsvIntroTitle),
+      content: Text(t.accounts.importCsvIntroBody),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(),
@@ -29,12 +29,12 @@ Future<void> showTransactionsCsvImportDialog(BuildContext context) async {
         TextButton(
           onPressed: () => Navigator.of(dialogContext)
               .pop(_CsvImportAction.downloadExample),
-          child: Text(t.transactions.importCsvDownloadExample),
+          child: Text(t.accounts.importCsvDownloadExample),
         ),
         FilledButton(
           onPressed: () =>
               Navigator.of(dialogContext).pop(_CsvImportAction.selectFile),
-          child: Text(t.transactions.importCsvSelectFile),
+          child: Text(t.accounts.importCsvSelectFile),
         ),
       ],
     ),
@@ -55,13 +55,13 @@ Future<void> _downloadExample(BuildContext context) async {
   try {
     didSave = await downloadCsvExample(
       assetPath: _exampleAssetPath,
-      fileName: 'transactions_example.csv',
-      dialogTitle: t.transactions.importCsvDownloadExample,
+      fileName: 'accounts_example.csv',
+      dialogTitle: t.accounts.importCsvDownloadExample,
     );
   } on Exception {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.transactions.importCsvExampleFailed)),
+      SnackBar(content: Text(t.accounts.importCsvExampleFailed)),
     );
     return;
   }
@@ -69,7 +69,7 @@ Future<void> _downloadExample(BuildContext context) async {
   if (!context.mounted || !didSave) return;
 
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(t.transactions.importCsvExampleDownloaded)),
+    SnackBar(content: Text(t.accounts.importCsvExampleDownloaded)),
   );
 }
 
@@ -84,13 +84,13 @@ Future<void> _pickAndImport(BuildContext context) async {
   if (bytes == null || !context.mounted) return;
 
   final csvContent = utf8.decode(bytes);
-  final previewResult = await context.read<TransactionsBloc>().previewCsv(
+  final previewResult = await context.read<AccountsCubit>().previewCsv(
     csvContent,
   );
   if (!context.mounted) return;
 
   Failure? previewFailure;
-  TransactionImportPreview? preview;
+  AccountImportPreview? preview;
   previewResult.fold<void>(
     (failure) => previewFailure = failure,
     (value) => preview = value,
@@ -103,5 +103,5 @@ Future<void> _pickAndImport(BuildContext context) async {
     return;
   }
 
-  await context.push(AppRoutes.importTransactions, extra: preview);
+  await context.push(AppRoutes.importAccounts, extra: preview);
 }

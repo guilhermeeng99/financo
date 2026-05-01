@@ -16,8 +16,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-const _collapsedWidth = 76.0;
-const _expandedWidth = 232.0;
+const _collapsedWidth = 104.0;
+const _expandedWidth = 240.0;
 const _animDuration = Duration(milliseconds: 240);
 const Curve _animCurve = Curves.easeOutCubic;
 
@@ -126,8 +126,11 @@ class _BrandRow extends StatelessWidget {
     return SizedBox(
       height: 44,
       child: Row(
+        mainAxisAlignment: expanded
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.spaceBetween,
         children: [
-          _BrandMark(),
+          _BrandMark(onTap: onToggle),
           if (expanded) ...[
             const SizedBox(width: 12),
             Expanded(
@@ -150,28 +153,40 @@ class _BrandRow extends StatelessWidget {
 }
 
 class _BrandMark extends StatelessWidget {
+  const _BrandMark({this.onTap});
+
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [colors.primary, colors.primaryLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(
-          AppConstants.appName.substring(0, 1),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            height: 1,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colors.primary, colors.primaryLight],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              AppConstants.appName.substring(0, 1),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                height: 1,
+              ),
+            ),
           ),
         ),
       ),

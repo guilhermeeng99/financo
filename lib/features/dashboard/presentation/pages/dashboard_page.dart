@@ -1,5 +1,6 @@
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -36,25 +37,35 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Future<void> _openAddTransaction() async {
+    await context.push(AppRoutes.addTransaction);
+    if (!mounted) return;
+    final filter = context.read<DateFilterCubit>().state;
+    context.read<DashboardBloc>().add(
+      DashboardLoadRequested(
+        year: filter.year,
+        month: filter.month,
+        forceRefresh: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<DateFilterCubit, DateFilterState>(
-          listener: (context, filter) {
-            context.read<DashboardBloc>().add(
-              DashboardLoadRequested(
-                year: filter.year,
-                month: filter.month,
-                forceRefresh: true,
-              ),
-            );
-          },
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: LiftedFab(
+        child: FloatingActionButton(
+          heroTag: 'dashboard_fab',
+          onPressed: _openAddTransaction,
+          tooltip: t.transactions.addTransaction,
+          child: const FaIcon(FontAwesomeIcons.plus),
         ),
-        BlocListener<AccountsCubit, AccountsState>(
-          listener: (context, state) {
-            if (state is AccountsLoaded) {
-              final filter = context.read<DateFilterCubit>().state;
+      ),
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<DateFilterCubit, DateFilterState>(
+            listener: (context, filter) {
               context.read<DashboardBloc>().add(
                 DashboardLoadRequested(
                   year: filter.year,
@@ -62,26 +73,40 @@ class _DashboardPageState extends State<DashboardPage> {
                   forceRefresh: true,
                 ),
               );
+            },
+          ),
+          BlocListener<AccountsCubit, AccountsState>(
+            listener: (context, state) {
+              if (state is AccountsLoaded) {
+                final filter = context.read<DateFilterCubit>().state;
+                context.read<DashboardBloc>().add(
+                  DashboardLoadRequested(
+                    year: filter.year,
+                    month: filter.month,
+                    forceRefresh: true,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<DashboardBloc, DashboardState>(
+          builder: (context, state) {
+            if (state is DashboardLoading) return const LoadingShimmer();
+            if (state is DashboardError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () => context.read<DashboardBloc>().add(
+                  DashboardLoadRequested(forceRefresh: true),
+                ),
+              );
             }
+            if (state is DashboardLoaded) {
+              return _DashboardContent(state: state);
+            }
+            return const SizedBox.shrink();
           },
         ),
-      ],
-      child: BlocBuilder<DashboardBloc, DashboardState>(
-        builder: (context, state) {
-          if (state is DashboardLoading) return const LoadingShimmer();
-          if (state is DashboardError) {
-            return ErrorView(
-              message: state.failure.message,
-              onRetry: () => context.read<DashboardBloc>().add(
-                DashboardLoadRequested(forceRefresh: true),
-              ),
-            );
-          }
-          if (state is DashboardLoaded) {
-            return _DashboardContent(state: state);
-          }
-          return const SizedBox.shrink();
-        },
       ),
     );
   }

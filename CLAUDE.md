@@ -211,9 +211,11 @@ Test infrastructure lives in `test/harness/`:
 
 ```
 users/{userId}
+users/{userId}/fcmTokens/{tokenId}
 accounts/{id}
 categories/{id}
 transactions/{id}
+bills/{id}
 chat_messages/{id}
 ```
 
@@ -229,9 +231,11 @@ chat_messages/{id}
 ## Firebase — Firestore Collections
 
 ```
-users/{userId}          → name, email, photoUrl, createdAt
-accounts/{id}           → userId, name, type, bank, initialBalance, creditLimit?, closingDay?, dueDay?, createdAt
-categories/{id}         → userId, name, icon, color, type (income | expense)
-transactions/{id}       → userId, accountId, categoryId, type, amount, description, date, notes, linkedTransactionId?, createdAt, updatedAt
-chat_messages/{id}      → userId, role, content, metadata, createdAt
+users/{userId}                       → name, email, photoUrl, createdAt
+users/{userId}/fcmTokens/{tokenId}   → token, platform, updatedAt
+accounts/{id}                        → userId, name, type, bank, initialBalance, creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
+categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?
+transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, notes, linkedTransactionId?, createdAt, updatedAt
+bills/{id}                           → userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, createdAt, updatedAt
+chat_messages/{id}                   → userId, role, content, metadata, createdAt
 ```
