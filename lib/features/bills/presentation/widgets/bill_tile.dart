@@ -1,11 +1,16 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/presentation/widgets/bill_status_dot.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
+/// A single row in the bills list. Tap → triggers [onTap] (currently routes
+/// to the edit page; phase 2 will swap this for a detail bottom sheet).
+/// Pending bills get a small trailing check button to settle without leaving
+/// the list.
 class BillTile extends StatelessWidget {
   const BillTile({
     required this.bill,
@@ -21,93 +26,75 @@ class BillTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final isPaid = bill.isPaid;
-    final isOverdue = bill.isOverdue;
-    final isDueToday = bill.isDueToday;
-    final isReceivable = bill.isReceivable;
+    final kind = bill.statusKind;
+    final accent = billStatusColor(
+      context,
+      kind,
+      isReceivable: bill.isReceivable,
+    );
+    final isPaid = kind == BillStatusKind.paid;
 
-    // Receivable bills lean on the income color so the user can tell income
-    // reminders from expense ones at a glance, even before they're settled.
-    final accentColor = isPaid
-        ? (isReceivable ? colors.income : colors.income)
-        : isOverdue
-            ? colors.expense
-            : isDueToday
-                ? Colors.orange
-                : isReceivable
-                    ? colors.income
-                    : colors.primary;
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: accentColor.withValues(alpha: 0.15),
-                    child: FaIcon(
-                      _iconFor(bill),
-                      color: accentColor,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          bill.description,
-                          style: context.textTheme.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                _IconDisc(icon: _iconFor(bill), color: accent),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bill.description,
+                        style: context.textTheme.titleSmall?.copyWith(
+                          color: isPaid
+                              ? colors.onBackgroundLight
+                              : colors.onBackground,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          _subtitleFor(context, bill),
-                          style: context.textTheme.bodySmall?.copyWith(
-                            color: accentColor,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _subtitleFor(bill),
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: kind == BillStatusKind.overdue ||
+                                  kind == BillStatusKind.today
+                              ? accent
+                              : colors.onBackgroundLight,
+                          fontWeight:
+                              kind == BillStatusKind.overdue ||
+                                      kind == BillStatusKind.today
+                                  ? FontWeight.w500
+                                  : FontWeight.w400,
                         ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    formatCurrency(bill.amount),
-                    style: context.textTheme.titleSmall?.copyWith(
-                      color: isPaid
-                          ? colors.onBackgroundLight
-                          : colors.onBackground,
-                      decoration:
-                          isPaid ? TextDecoration.lineThrough : null,
-                    ),
-                  ),
-                ],
-              ),
-              if (!isPaid) ...[
-                const SizedBox(height: 12),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: onPayPressed,
-                    icon: const FaIcon(FontAwesomeIcons.check, size: 14),
-                    label: Text(
-                      isReceivable
-                          ? t.bills.markAsReceived
-                          : t.bills.markAsPaid,
-                    ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
+                const SizedBox(width: 12),
+                _AmountColumn(bill: bill),
+                if (!isPaid) ...[
+                  const SizedBox(width: 8),
+                  _PayButton(onPressed: onPayPressed, color: accent),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -123,12 +110,12 @@ class BillTile extends StatelessWidget {
     return FontAwesomeIcons.fileInvoiceDollar;
   }
 
-  static String _subtitleFor(BuildContext context, BillEntity bill) {
-    final dateLabel = DateFormat('dd/MM/yyyy').format(bill.dueDate);
+  static String _subtitleFor(BillEntity bill) {
+    final dateLabel = DateFormat('dd/MM').format(bill.dueDate);
 
     if (bill.isPaid) {
       final label = bill.isReceivable ? t.bills.received : t.bills.paid;
-      return '$label • $dateLabel';
+      return '$label · $dateLabel';
     }
 
     if (bill.isOverdue) {
@@ -141,16 +128,92 @@ class BillTile extends StatelessWidget {
       return t.bills.daysOverdue(days: daysOverdue);
     }
 
-    if (bill.isDueToday) {
-      return t.bills.dueToday;
-    }
+    if (bill.isDueToday) return t.bills.dueToday;
 
     final today = DateTime.now();
     final dueOnly =
         DateTime(bill.dueDate.year, bill.dueDate.month, bill.dueDate.day);
     final todayOnly = DateTime(today.year, today.month, today.day);
     final daysUntil = dueOnly.difference(todayOnly).inDays;
-    if (daysUntil == 1) return '$dateLabel • ${t.bills.dueTomorrow}';
-    return '$dateLabel • ${t.bills.dueInDays(days: daysUntil)}';
+    final recurrenceSuffix = bill.recurrence == BillRecurrence.monthly
+        ? ' · ${t.bills.monthly}'
+        : '';
+
+    if (daysUntil == 1) {
+      return '${t.bills.dueTomorrow}$recurrenceSuffix';
+    }
+    return '${t.bills.dueInDays(days: daysUntil)}$recurrenceSuffix';
+  }
+}
+
+class _IconDisc extends StatelessWidget {
+  const _IconDisc({required this.icon, required this.color});
+
+  final FaIconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Center(
+        child: FaIcon(icon, size: 18, color: color),
+      ),
+    );
+  }
+}
+
+class _AmountColumn extends StatelessWidget {
+  const _AmountColumn({required this.bill});
+
+  final BillEntity bill;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final isPaid = bill.isPaid;
+    return Text(
+      formatCurrency(bill.amount),
+      style: context.textTheme.titleSmall?.copyWith(
+        color: isPaid ? colors.onBackgroundLight : colors.onBackground,
+        fontWeight: FontWeight.w600,
+        decoration: isPaid ? TextDecoration.lineThrough : null,
+      ),
+    );
+  }
+}
+
+class _PayButton extends StatelessWidget {
+  const _PayButton({required this.onPressed, required this.color});
+
+  final VoidCallback onPressed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: t.bills.markAsPaid,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(
+              child: FaIcon(FontAwesomeIcons.check, size: 14, color: color),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

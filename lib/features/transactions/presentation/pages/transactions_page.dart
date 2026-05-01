@@ -1,13 +1,20 @@
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
-import 'package:financo/app/widgets/financo_app_bar.dart';
+import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
+import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/categories/domain/entities/category_entity.dart';
+import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
+import 'package:financo/features/transactions/presentation/widgets/transactions_day_header.dart';
+import 'package:financo/features/transactions/presentation/widgets/transactions_empty_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,33 +38,17 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
+  void _openAdd() => context.push(AppRoutes.addTransaction);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: FinancoAppBar(title: t.transactions.title),
+      appBar: FinancoLargeAppBar(
+        title: t.transactions.title,
+        showBack: true,
+      ),
       body: BlocListener<TransactionsBloc, TransactionsState>(
-        listener: (context, state) {
-          if (state is TransactionsImported) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  t.transactions.importSuccess(
-                    imported: state.importedCount,
-                    skipped: state.skippedCount,
-                  ),
-                ),
-              ),
-            );
-            final filter = context.read<DateFilterCubit>().state;
-            context.read<TransactionsBloc>().add(
-              TransactionsLoadRequested(
-                year: filter.year,
-                month: filter.month,
-                forceRefresh: true,
-              ),
-            );
-          }
-        },
+        listener: _onTransactionsState,
         child: BlocListener<DateFilterCubit, DateFilterState>(
           listener: (context, filter) {
             context.read<TransactionsBloc>().add(
@@ -70,9 +61,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
           },
           child: BlocBuilder<TransactionsBloc, TransactionsState>(
             builder: (context, state) {
-              if (state is TransactionsLoading) {
-                return const LoadingShimmer();
-              }
+              if (state is TransactionsLoading) return const LoadingShimmer();
               if (state is TransactionsError) {
                 return ErrorView(
                   message: state.failure.message,
@@ -83,35 +72,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
               }
               if (state is TransactionsLoaded) {
                 if (state.transactions.isEmpty) {
-                  return EmptyState(
-                    icon: FontAwesomeIcons.receipt,
-                    message: t.transactions.empty,
-                  );
+                  return TransactionsEmptyState(onAddPressed: _openAdd);
                 }
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<TransactionsBloc>().add(
-                      TransactionsLoadRequested(
-                        forceRefresh: true,
-                        year: state.selectedYear,
-                        month: state.selectedMonth,
-                      ),
-                    );
-                  },
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: state.transactions.length,
-                    itemBuilder: (context, index) {
-                      final transaction = state.transactions[index];
-                      return TransactionTile(
-                        transaction: transaction,
-                        onTap: () => context.push(
-                          AppRoutes.transactionById(transaction.id),
-                        ),
-                      );
-                    },
-                  ),
-                );
+                return _TransactionsList(state: state);
               }
               return const SizedBox.shrink();
             },
@@ -121,10 +84,147 @@ class _TransactionsPageState extends State<TransactionsPage> {
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
           heroTag: 'transactions_fab',
-          onPressed: () => context.push(AppRoutes.addTransaction),
+          onPressed: _openAdd,
           child: const FaIcon(FontAwesomeIcons.plus),
         ),
       ),
     );
   }
+
+  void _onTransactionsState(BuildContext context, TransactionsState state) {
+    if (state is TransactionsImported) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t.transactions.importSuccess(
+              imported: state.importedCount,
+              skipped: state.skippedCount,
+            ),
+          ),
+        ),
+      );
+      final filter = context.read<DateFilterCubit>().state;
+      context.read<TransactionsBloc>().add(
+        TransactionsLoadRequested(
+          year: filter.year,
+          month: filter.month,
+          forceRefresh: true,
+        ),
+      );
+    }
+  }
+}
+
+class _TransactionsList extends StatelessWidget {
+  const _TransactionsList({required this.state});
+
+  final TransactionsLoaded state;
+
+  @override
+  Widget build(BuildContext context) {
+    final categoriesState = context.watch<CategoriesCubit>().state;
+    final categoryMap = categoriesState is CategoriesLoaded
+        ? {for (final c in categoriesState.categories) c.id: c}
+        : <String, CategoryEntity>{};
+    final accountsState = context.watch<AccountsCubit>().state;
+    final accountMap = accountsState is AccountsLoaded
+        ? {for (final a in accountsState.accounts) a.id: a}
+        : <String, AccountEntity>{};
+
+    final groups = _groupByDay(state.transactions);
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<TransactionsBloc>().add(
+          TransactionsLoadRequested(
+            forceRefresh: true,
+            year: state.selectedYear,
+            month: state.selectedMonth,
+          ),
+        );
+      },
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+        itemCount: groups.length,
+        itemBuilder: (context, index) {
+          final group = groups[index];
+          final colors = context.appColors;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TransactionsDayHeader(date: group.date),
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < group.items.length; i++) ...[
+                      if (i > 0)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Container(
+                            height: 0.5,
+                            color: colors.surfaceVariant,
+                          ),
+                        ),
+                      TransactionTile(
+                        transaction: group.items[i],
+                        categoryLabel: _categoryLabel(
+                          categoryMap,
+                          group.items[i].categoryId,
+                        ),
+                        accountLabel:
+                            accountMap[group.items[i].accountId]?.name,
+                        onTap: () => context.push(
+                          AppRoutes.addTransaction,
+                          extra: group.items[i],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  static String? _categoryLabel(
+    Map<String, CategoryEntity> categoryMap,
+    String categoryId,
+  ) {
+    if (categoryId.isEmpty) return null;
+    final category = categoryMap[categoryId];
+    if (category == null) return null;
+    if (category.parentId != null) {
+      final parent = categoryMap[category.parentId];
+      if (parent != null) return '${parent.name} › ${category.name}';
+    }
+    return category.name;
+  }
+
+  static List<_DayGroup> _groupByDay(List<TransactionEntity> txs) {
+    final byDay = <DateTime, List<TransactionEntity>>{};
+    for (final tx in txs) {
+      final day = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      byDay.putIfAbsent(day, () => []).add(tx);
+    }
+    final entries = byDay.entries.toList()
+      ..sort((a, b) => b.key.compareTo(a.key));
+    return entries
+        .map((e) => _DayGroup(date: e.key, items: e.value))
+        .toList();
+  }
+}
+
+class _DayGroup {
+  const _DayGroup({required this.date, required this.items});
+
+  final DateTime date;
+  final List<TransactionEntity> items;
 }

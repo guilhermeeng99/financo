@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_mobile_nav.dart';
 import 'package:financo/app/widgets/financo_sidebar.dart';
+import 'package:financo/app/widgets/sub_page_scope.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
@@ -180,13 +181,15 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.accountDetail,
           builder: (context, state) {
             final id = state.pathParameters['id']!;
-            return BlocProvider(
-              create: (_) => AccountStatementCubit(
-                getTransactions: GetIt.I<GetTransactionsUseCase>(),
-                getTransaction: GetIt.I<GetTransactionUseCase>(),
-                accountId: id,
+            return SubPageScope(
+              child: BlocProvider(
+                create: (_) => AccountStatementCubit(
+                  getTransactions: GetIt.I<GetTransactionsUseCase>(),
+                  getTransaction: GetIt.I<GetTransactionUseCase>(),
+                  accountId: id,
+                ),
+                child: AccountStatementPage(accountId: id),
               ),
-              child: AccountStatementPage(accountId: id),
             );
           },
         ),
@@ -194,16 +197,20 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.addTransaction,
           builder: (context, state) {
             final existing = state.extra as TransactionEntity?;
-            return AddTransactionPage(existingTransaction: existing);
+            return SubPageScope(
+              child: AddTransactionPage(existingTransaction: existing),
+            );
           },
         ),
         GoRoute(
           path: AppRoutes.accounts,
-          builder: (context, state) => const AccountsPage(),
+          builder: (context, state) =>
+              const SubPageScope(child: AccountsPage()),
         ),
         GoRoute(
           path: AppRoutes.categories,
-          builder: (context, state) => const CategoriesPage(),
+          builder: (context, state) =>
+              const SubPageScope(child: CategoriesPage()),
         ),
         GoRoute(
           path: AppRoutes.bills,
@@ -213,14 +220,18 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.addBill,
           builder: (context, state) {
             final existing = state.extra as BillEntity?;
-            return AddBillPage(existingBill: existing);
+            return SubPageScope(
+              child: AddBillPage(existingBill: existing),
+            );
           },
         ),
         GoRoute(
           path: AppRoutes.editBill,
           builder: (context, state) {
             final existing = state.extra as BillEntity?;
-            return AddBillPage(existingBill: existing);
+            return SubPageScope(
+              child: AddBillPage(existingBill: existing),
+            );
           },
         ),
       ],
@@ -263,7 +274,16 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-class _ShellWithSidebar extends StatelessWidget {
+/// Mobile shell. Bottom bar and month filter visibility are driven by
+/// [SubPageScope]: any sub-page (accounts, categories, account detail,
+/// add bill, etc.) wraps itself in `SubPageScope`, which increments a
+/// global depth counter. While depth > 0, the bar is hidden.
+///
+/// We use this explicit signal because go_router's `state.matchedLocation`
+/// and `Navigator.canPop()` are both unreliable for sibling pushes inside
+/// a ShellRoute — the shell-level match doesn't refresh and the navigator
+/// stack appears flat after the push transition settles.
+class _ShellWithSidebar extends StatefulWidget {
   const _ShellWithSidebar({required this.child});
 
   final Widget child;
@@ -271,23 +291,67 @@ class _ShellWithSidebar extends StatelessWidget {
   static const double _mobileBreakpoint = 600;
 
   @override
+  State<_ShellWithSidebar> createState() => _ShellWithSidebarState();
+}
+
+class _ShellWithSidebarState extends State<_ShellWithSidebar> {
+  GoRouter? _router;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final router = GoRouter.of(context);
+    if (router != _router) {
+      _router?.routerDelegate.removeListener(_onRouteChange);
+      _router = router;
+      _router!.routerDelegate.addListener(_onRouteChange);
+    }
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_onRouteChange);
+    super.dispose();
+  }
+
+  void _onRouteChange() {
+    if (mounted) setState(() {});
+  }
+
+  /// Shell-level matched location — used only to gate the dashboard
+  /// month filter, which lives on a tab route reached via `context.go`
+  /// (and is therefore reliably reflected here).
+  String _shellLocation() {
+    final config = _router?.routerDelegate.currentConfiguration;
+    if (config == null) return '';
+    return config.uri.path;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < _mobileBreakpoint;
+    final isMobile =
+        MediaQuery.of(context).size.width < _ShellWithSidebar._mobileBreakpoint;
 
     if (isMobile) {
-      // The month filter only makes sense on routes that show data scoped to
-      // a month (dashboard). Chat and Profile have no monthly context and
-      // already render their own AppBar, so we skip the shell AppBar there.
-      final location = GoRouterState.of(context).matchedLocation;
-      final showMonthFilter = location == AppRoutes.dashboard;
+      return ValueListenableBuilder<int>(
+        valueListenable: subPageDepthListenable,
+        builder: (context, depth, _) {
+          final isOnSubPage = depth > 0;
+          final showMonthFilter =
+              !isOnSubPage && _shellLocation() == AppRoutes.dashboard;
+          final showBottomBar = !isOnSubPage;
 
-      return Scaffold(
-        // Lets scrollable content flow behind the floating bottom bar so
-        // it visually "lifts" off the page instead of clipping the body.
-        extendBody: true,
-        appBar: showMonthFilter ? const FinancoMobileAppBar() : null,
-        body: child,
-        bottomNavigationBar: const FinancoBottomBar(),
+          return Scaffold(
+            // Lets scrollable content flow behind the floating bottom bar
+            // so it visually "lifts" off the page instead of clipping the
+            // body.
+            extendBody: true,
+            appBar: showMonthFilter ? const FinancoMobileAppBar() : null,
+            body: widget.child,
+            bottomNavigationBar:
+                showBottomBar ? const FinancoBottomBar() : null,
+          );
+        },
       );
     }
 
@@ -295,7 +359,7 @@ class _ShellWithSidebar extends StatelessWidget {
       body: Row(
         children: [
           const FinancoSidebar(),
-          Expanded(child: child),
+          Expanded(child: widget.child),
         ],
       ),
     );

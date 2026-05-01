@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_pill_toggle.dart';
+import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
@@ -12,6 +14,9 @@ import 'package:financo/features/categories/domain/usecases/delete_category_usec
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/category_form_cubit.dart';
+import 'package:financo/features/categories/presentation/widgets/category_color_picker.dart';
+import 'package:financo/features/categories/presentation/widgets/category_icon_picker.dart';
+import 'package:financo/features/categories/presentation/widgets/parent_category_picker_sheet.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -49,15 +54,16 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return FutureBuilder<int>(
       future: _categoryCountFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: colors.background,
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
-
         return BlocProvider(
           create: (_) => CategoryFormCubit(
             createCategory: GetIt.I<CreateCategoryUseCase>(),
@@ -89,24 +95,8 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
   void initState() {
     super.initState();
     final state = context.read<CategoryFormCubit>().state;
-    if (state.isEditing) {
-      _nameController.text = state.name;
-    }
+    if (state.isEditing) _nameController.text = state.name;
     unawaited(_loadRootCategories());
-  }
-
-  Future<void> _loadRootCategories() async {
-    final getCategories = GetIt.I<GetCategoriesUseCase>();
-    final cubitState = context.read<CategoryFormCubit>().state;
-    final result = await getCategories(userId: cubitState.userId);
-    if (mounted) {
-      setState(() {
-        _rootCategories = result.fold(
-          (_) => [],
-          (cats) => cats.where((c) => c.canBeParent).toList(),
-        );
-      });
-    }
   }
 
   @override
@@ -115,14 +105,27 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     super.dispose();
   }
 
+  Future<void> _loadRootCategories() async {
+    final cubitState = context.read<CategoryFormCubit>().state;
+    final result = await GetIt.I<GetCategoriesUseCase>()(
+      userId: cubitState.userId,
+    );
+    if (!mounted) return;
+    setState(() {
+      _rootCategories = result.fold(
+        (_) => <CategoryEntity>[],
+        (cats) => cats.where((c) => c.canBeParent).toList(),
+      );
+    });
+  }
+
   Future<void> _confirmDelete(String categoryId) async {
     final getCategories = GetIt.I<GetCategoriesUseCase>();
     final deleteCategory = GetIt.I<DeleteCategoryUseCase>();
     final transactionRepo = GetIt.I<TransactionRepository>();
     final cubitState = context.read<CategoryFormCubit>().state;
-    final userId = cubitState.userId;
 
-    final categoriesResult = await getCategories(userId: userId);
+    final categoriesResult = await getCategories(userId: cubitState.userId);
     if (!mounted) return;
 
     final others = categoriesResult.fold(
@@ -169,7 +172,10 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(t.general.delete),
+              child: Text(
+                t.general.delete,
+                style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+              ),
             ),
           ],
         ),
@@ -186,145 +192,147 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     }
   }
 
+  Future<void> _pickParent() async {
+    final cubit = context.read<CategoryFormCubit>();
+    final state = cubit.state;
+    final candidates = _rootCategories
+        .where((c) => c.type == state.type)
+        .toList();
+    final picked = await showParentCategoryPicker(
+      context: context,
+      options: candidates,
+      selectedId: state.parentId,
+    );
+    if (picked == null) return;
+    cubit.updateParentId(picked.isEmpty ? null : picked);
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      unawaited(context.read<CategoryFormCubit>().submit());
+    }
+  }
+
+  void _onFormStateChanged(BuildContext context, CategoryFormState state) {
+    if (state.status == FormStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            state.isEditing
+                ? t.categories.categoryUpdated
+                : t.categories.categoryCreated,
+          ),
+        ),
+      );
+      context.pop(true);
+    } else if (state.status == FormStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocListener<CategoryFormCubit, CategoryFormState>(
-      listener: (context, state) {
-        if (state.status == FormStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isEditing
-                    ? t.categories.categoryUpdated
-                    : t.categories.categoryCreated,
-              ),
-            ),
-          );
-          context.pop(true);
-        } else if (state.status == FormStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.failure?.message ?? t.general.error,
-              ),
-            ),
-          );
-        }
-      },
+      listener: _onFormStateChanged,
       child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<CategoryFormCubit, CategoryFormState>(
-            builder: (context, state) => Text(
-              state.isEditing
-                  ? t.categories.editCategory
-                  : t.categories.addCategory,
-            ),
-          ),
-          actions: [
-            BlocBuilder<CategoryFormCubit, CategoryFormState>(
-              builder: (context, state) {
-                if (!state.isEditing) {
-                  return const SizedBox.shrink();
-                }
-                return IconButton(
-                  icon: const FaIcon(
-                    FontAwesomeIcons.trash,
-                    size: 18,
-                  ),
-                  onPressed: () => _confirmDelete(
-                    state.existingId!,
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+        backgroundColor: colors.background,
+        appBar: _buildAppBar(),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Form(
             key: _formKey,
             child: BlocBuilder<CategoryFormCubit, CategoryFormState>(
               builder: (context, state) {
+                final cubit = context.read<CategoryFormCubit>();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SegmentedButton<CategoryType>(
-                      segments: [
-                        ButtonSegment(
-                          value: CategoryType.expense,
-                          label: Text(t.categories.expenseType),
-                        ),
-                        ButtonSegment(
-                          value: CategoryType.income,
-                          label: Text(t.categories.incomeType),
+                    FinancoFormSection(
+                      label: t.categories.formSectionType,
+                      children: [
+                        FinancoPillToggle<CategoryType>(
+                          selected: state.type,
+                          disabled: state.isEditing || state.parentId != null,
+                          onChanged: cubit.updateType,
+                          options: [
+                            FinancoPillToggleOption(
+                              value: CategoryType.expense,
+                              label: t.categories.expenseType,
+                              icon: FontAwesomeIcons.arrowUp,
+                            ),
+                            FinancoPillToggleOption(
+                              value: CategoryType.income,
+                              label: t.categories.incomeType,
+                              icon: FontAwesomeIcons.arrowDown,
+                            ),
+                          ],
                         ),
                       ],
-                      selected: {state.type},
-                      onSelectionChanged:
-                          state.isEditing || state.parentId != null
-                          ? null
-                          : (selected) => context
-                                .read<CategoryFormCubit>()
-                                .updateType(selected.first),
                     ),
-                    if (!state.isEditing) ...[
-                      const SizedBox(height: 24),
-                      DropdownButtonFormField<String>(
-                        initialValue: state.parentId,
-                        decoration: InputDecoration(
-                          labelText: t.categories.parentCategory,
-                          border: const OutlineInputBorder(),
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.categories.formSectionDetails,
+                      children: [
+                        FinancoTextField(
+                          controller: _nameController,
+                          label: t.categories.name,
+                          hintText: t.categories.nameHint,
+                          validator: Validators.requiredField,
+                          onChanged: cubit.updateName,
                         ),
-                        items: [
-                          DropdownMenuItem<String>(
-                            child: Text(t.categories.noParent),
+                        if (!state.isEditing) ...[
+                          const SizedBox(height: 12),
+                          _ParentRow(
+                            selectedName: _resolveParentName(state.parentId),
+                            onTap: _pickParent,
                           ),
-                          ..._rootCategories
-                              .where((c) => c.type == state.type)
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c.id,
-                                  child: Text(c.name),
-                                ),
-                              ),
                         ],
-                        onChanged: (value) => context
-                            .read<CategoryFormCubit>()
-                            .updateParentId(value),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    FinancoTextField(
-                      controller: _nameController,
-                      label: t.categories.name,
-                      hintText: t.categories.nameHint,
-                      validator: Validators.requiredField,
-                      onChanged: context.read<CategoryFormCubit>().updateName,
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      t.categories.selectIcon,
-                      style: context.textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    _IconSelector(
-                      selectedIcon: state.icon,
-                      selectedColor: state.color,
-                      onChanged: context.read<CategoryFormCubit>().updateIcon,
-                    ),
-                    const SizedBox(height: 32),
-                    FinancoButton(
-                      label: state.isEditing
-                          ? t.general.update
-                          : t.general.create,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          unawaited(
-                            context.read<CategoryFormCubit>().submit(),
-                          );
-                        }
-                      },
-                      isLoading: state.status == FormStatus.submitting,
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.categories.formSectionAppearance,
+                      children: [
+                        _PreviewTile(
+                          name: state.name.isEmpty
+                              ? t.categories.nameHint
+                              : state.name,
+                          icon: state.icon,
+                          color: state.color,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          t.categories.selectColor.toUpperCase(),
+                          style: context.textTheme.labelSmall?.copyWith(
+                            color: colors.onBackgroundLight,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        CategoryColorPicker(
+                          selected: state.color,
+                          onChanged: cubit.updateColor,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          t.categories.selectIcon.toUpperCase(),
+                          style: context.textTheme.labelSmall?.copyWith(
+                            color: colors.onBackgroundLight,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        CategoryIconPicker(
+                          selectedIcon: state.icon,
+                          color: state.color,
+                          onChanged: cubit.updateIcon,
+                        ),
+                      ],
                     ),
                   ],
                 );
@@ -332,78 +340,224 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
             ),
           ),
         ),
+        bottomNavigationBar: BlocBuilder<CategoryFormCubit, CategoryFormState>(
+          builder: (context, state) => FinancoSubmitBar(
+            label: state.isEditing ? t.general.update : t.general.create,
+            isLoading: state.status == FormStatus.submitting,
+            isEnabled: state.isValid,
+            onSubmit: _onSubmit,
+          ),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    final colors = context.appColors;
+    return AppBar(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      centerTitle: true,
+      title: BlocBuilder<CategoryFormCubit, CategoryFormState>(
+        builder: (context, state) => Text(
+          state.isEditing
+              ? t.categories.editCategory
+              : t.categories.addCategory,
+          style: context.textTheme.titleMedium?.copyWith(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      actions: [
+        BlocBuilder<CategoryFormCubit, CategoryFormState>(
+          builder: (context, state) {
+            if (!state.isEditing) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _AppBarIconButton(
+                icon: FontAwesomeIcons.trash,
+                color: colors.error,
+                tooltip: t.general.delete,
+                onPressed: () =>
+                    unawaited(_confirmDelete(state.existingId!)),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String? _resolveParentName(String? parentId) {
+    if (parentId == null) return null;
+    final match = _rootCategories
+        .where((c) => c.id == parentId)
+        .firstOrNull;
+    return match?.name;
+  }
+}
+
+class _ParentRow extends StatelessWidget {
+  const _ParentRow({required this.selectedName, required this.onTap});
+
+  final String? selectedName;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final hasValue = selectedName != null;
+    return Material(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Row(
+            children: [
+              FaIcon(
+                FontAwesomeIcons.folderTree,
+                size: 14,
+                color: colors.onBackgroundLight,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      t.categories.parentCategory,
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasValue ? selectedName! : t.categories.noParentChosen,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: hasValue
+                            ? colors.onBackground
+                            : colors.onBackgroundLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              FaIcon(
+                FontAwesomeIcons.chevronRight,
+                size: 11,
+                color: colors.onBackgroundLight,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-const _availableIcons = <int, String>{
-  59470: 'account_balance',
-  59473: 'account_balance_wallet',
-  58332: 'shopping_cart',
-  58746: 'restaurant',
-  58715: 'directions_car',
-  58288: 'home',
-  59545: 'fitness_center',
-  58714: 'local_hospital',
-  59494: 'school',
-  58726: 'flight',
-  58261: 'work',
-  59560: 'pets',
-  58818: 'local_cafe',
-  58835: 'local_grocery_store',
-  59690: 'sports_bar',
-  59502: 'self_improvement',
-  58404: 'card_giftcard',
-  59472: 'attach_money',
-  58286: 'headset',
-  58947: 'movie',
-  58810: 'local_bar',
-  58694: 'beach_access',
-  58168: 'phone_android',
-  58123: 'wifi',
-  58736: 'local_gas_station',
-  58889: 'menu_book',
-  58392: 'build',
-  59411: 'savings',
-  58682: 'child_care',
-  59588: 'brush',
-};
-
-class _IconSelector extends StatelessWidget {
-  const _IconSelector({
-    required this.selectedIcon,
-    required this.selectedColor,
-    required this.onChanged,
+class _PreviewTile extends StatelessWidget {
+  const _PreviewTile({
+    required this.name,
+    required this.icon,
+    required this.color,
   });
 
-  final int selectedIcon;
-  final int selectedColor;
-  final ValueChanged<int> onChanged;
+  final String name;
+  final int icon;
+  final int color;
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: _availableIcons.keys.map((iconCode) {
-        final isSelected = iconCode == selectedIcon;
-        return GestureDetector(
-          onTap: () => onChanged(iconCode),
-          child: CircleAvatar(
-            radius: 24,
-            backgroundColor: isSelected
-                ? Color(selectedColor)
-                : context.colorScheme.surfaceContainerHighest,
-            child: Icon(
-              IconData(iconCode, fontFamily: 'MaterialIcons'),
-              color: isSelected
-                  ? Colors.white
-                  : context.colorScheme.onSurfaceVariant,
+    final tint = Color(color);
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            tint.withValues(alpha: 0.18),
+            tint.withValues(alpha: 0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: tint,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Icon(
+                IconData(icon, fontFamily: 'MaterialIcons'),
+                size: 20,
+                color: Colors.white,
+              ),
             ),
           ),
-        );
-      }).toList(),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              name,
+              style: context.textTheme.titleMedium?.copyWith(
+                color: colors.onBackground,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -7,9 +7,12 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/accounts/presentation/widgets/account_balance_card.dart';
+import 'package:financo/features/accounts/presentation/widgets/account_detail_section.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
@@ -34,7 +37,6 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
   @override
   void initState() {
     super.initState();
-    // Trigger load after first frame so context is fully available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final accountsState = context.read<AccountsCubit>().state;
@@ -61,55 +63,57 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        // AccountsCubit becomes ready (e.g. after auth completes)
-        BlocListener<AccountsCubit, AccountsState>(
-          listener: (context, state) {
-            if (state is AccountsLoaded) {
-              final account = state.accounts
-                  .where((a) => a.id == widget.accountId)
-                  .firstOrNull;
-              if (account != null && account != _account) {
-                _triggerLoad(account);
+    final colors = context.appColors;
+    return Scaffold(
+      backgroundColor: colors.background,
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<AccountsCubit, AccountsState>(
+            listener: (context, state) {
+              if (state is AccountsLoaded) {
+                final account = state.accounts
+                    .where((a) => a.id == widget.accountId)
+                    .firstOrNull;
+                if (account != null && account != _account) {
+                  _triggerLoad(account);
+                }
               }
+            },
+          ),
+          BlocListener<DateFilterCubit, DateFilterState>(
+            listener: (context, filter) {
+              if (_account != null) {
+                unawaited(
+                  context.read<AccountStatementCubit>().load(
+                    _account!,
+                    filter.year,
+                    filter.month,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<AccountStatementCubit, AccountStatementState>(
+          builder: (context, state) {
+            if (state is AccountStatementLoading ||
+                state is AccountStatementInitial) {
+              return const LoadingShimmer();
             }
-          },
-        ),
-        // Sidebar month/year changed
-        BlocListener<DateFilterCubit, DateFilterState>(
-          listener: (context, filter) {
-            if (_account != null) {
-              unawaited(
-                context.read<AccountStatementCubit>().load(
-                  _account!,
-                  filter.year,
-                  filter.month,
-                ),
+            if (state is AccountStatementError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () {
+                  if (_account != null) _triggerLoad(_account!);
+                },
               );
             }
+            if (state is AccountStatementLoaded) {
+              return _StatementContent(state: state);
+            }
+            return const SizedBox.shrink();
           },
         ),
-      ],
-      child: BlocBuilder<AccountStatementCubit, AccountStatementState>(
-        builder: (context, state) {
-          if (state is AccountStatementLoading ||
-              state is AccountStatementInitial) {
-            return const LoadingShimmer();
-          }
-          if (state is AccountStatementError) {
-            return ErrorView(
-              message: state.failure.message,
-              onRetry: () {
-                if (_account != null) _triggerLoad(_account!);
-              },
-            );
-          }
-          if (state is AccountStatementLoaded) {
-            return _StatementContent(state: state);
-          }
-          return const SizedBox.shrink();
-        },
       ),
     );
   }
@@ -120,47 +124,50 @@ class _StatementContent extends StatelessWidget {
 
   final AccountStatementLoaded state;
 
-  // Breakpoint: below this width, switch to single-column layout
   static const _kWideBreakpoint = 600.0;
 
   @override
   Widget build(BuildContext context) {
     final isWide = context.screenSize.width >= _kWideBreakpoint;
-
     if (isWide) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 350,
+            width: 360,
             child: SingleChildScrollView(
-              child: _SummaryPanel(state: state),
+              padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+              child: _SummarySide(state: state),
             ),
           ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: _TransactionsPanel(state: state),
+          Container(
+            width: 0.5,
+            margin: const EdgeInsets.symmetric(vertical: 24),
+            color: context.appColors.surfaceVariant,
           ),
+          Expanded(child: _TransactionsSide(state: state)),
         ],
       );
     }
 
-    // Mobile: single scrollable column
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _SummaryPanel(state: state)),
-        const SliverToBoxAdapter(child: Divider(height: 1)),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: _SummarySide(state: state),
+          ),
+        ),
         SliverFillRemaining(
-          child: _TransactionsPanel(state: state),
+          child: _TransactionsSide(state: state),
         ),
       ],
     );
   }
 }
 
-// ─── Left panel: account info + financial summary ────────────
-class _SummaryPanel extends StatelessWidget {
-  const _SummaryPanel({required this.state});
+class _SummarySide extends StatelessWidget {
+  const _SummarySide({required this.state});
 
   final AccountStatementLoaded state;
 
@@ -168,160 +175,141 @@ class _SummaryPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final account = state.account;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Back chip — kept here (not in an AppBar) because the page sits
+        // inside the shell scaffold and a top bar would double the
+        // navigation chrome.
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _BackChip(
+            onTap: () => context.go(AppRoutes.dashboard),
+          ),
+        ),
+        const SizedBox(height: 16),
+        AccountBalanceCard(
+          account: account,
+          balance: state.runningBalance,
+        ),
+        const SizedBox(height: 20),
+        AccountDetailSection(
+          label: t.accounts.statement,
+          rows: [
+            _SummaryRow(
+              label: t.accounts.monthIncome,
+              amount: state.totalIncome,
+              color: colors.income,
+            ),
+            _SummaryRow(
+              label: t.accounts.monthExpenses,
+              amount: -state.totalExpenses,
+              color: colors.expense,
+            ),
+            _SummaryRow(
+              label: t.accounts.monthResult,
+              amount: state.result,
+              color: state.result >= 0 ? colors.income : colors.expense,
+              bold: true,
+            ),
+          ],
+        ),
+        if (account.type == AccountType.creditCard) ...[
+          const SizedBox(height: 20),
+          AccountDetailSection(
+            label: t.accounts.creditCard,
+            rows: [
+              AccountDetailRow(
+                label: t.accounts.creditLimit,
+                value: formatCurrency(account.creditLimit ?? 0),
+              ),
+              AccountDetailRow(
+                label: t.accounts.availableCredit,
+                value: formatCurrency(account.availableCredit),
+              ),
+              AccountDetailRow(
+                label: t.accounts.closingDay,
+                value: '${account.closingDay ?? '-'}',
+              ),
+              AccountDetailRow(
+                label: t.accounts.dueDay,
+                value: '${account.dueDay ?? '-'}',
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ─── Back button + title ───────────────────────────
-          Row(
+class _BackChip extends StatelessWidget {
+  const _BackChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Material(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                onPressed: () => context.go(AppRoutes.dashboard),
-                icon: const FaIcon(FontAwesomeIcons.arrowLeft, size: 18),
-                tooltip: t.nav.dashboard,
+              FaIcon(
+                FontAwesomeIcons.chevronLeft,
+                size: 11,
+                color: colors.onBackgroundLight,
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  account.name,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                t.nav.dashboard,
+                style: context.textTheme.labelMedium?.copyWith(
+                  color: colors.onBackground,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.only(left: 48),
-            child: Text(
-              _accountSubtitle(account),
-              style: context.textTheme.bodySmall?.copyWith(
-                color: colors.onBackgroundLight,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // ─── Current balance ───────────────────────────────
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Text(
-                    t.accounts.currentBalance,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AmountText(amount: state.runningBalance, fontSize: 24),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // ─── Monthly summary ───────────────────────────────
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.accounts.statement,
-                    style: context.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _SummaryRow(
-                    label: t.accounts.monthIncome,
-                    amount: state.totalIncome,
-                    icon: FontAwesomeIcons.arrowUp,
-                  ),
-                  const SizedBox(height: 8),
-                  _SummaryRow(
-                    label: t.accounts.monthExpenses,
-                    amount: -state.totalExpenses,
-                    icon: FontAwesomeIcons.arrowDown,
-                  ),
-                  const Divider(height: 20),
-                  _SummaryRow(
-                    label: t.accounts.monthResult,
-                    amount: state.result,
-                    icon: FontAwesomeIcons.equals,
-                    bold: true,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ─── Credit card details ───────────────────────────
-          if (account.type == AccountType.creditCard) ...[
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.accounts.creditCard,
-                      style: context.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _DetailRow(
-                      label: t.accounts.creditLimit,
-                      child: AmountText(
-                        amount: account.creditLimit ?? 0,
-                        fontSize: 14,
-                      ),
-                    ),
-                    _DetailRow(
-                      label: t.accounts.availableCredit,
-                      child: AmountText(
-                        amount: account.availableCredit,
-                        fontSize: 14,
-                      ),
-                    ),
-                    _DetailRow(
-                      label: t.accounts.closingDay,
-                      value: '${account.closingDay}',
-                    ),
-                    _DetailRow(
-                      label: t.accounts.dueDay,
-                      value: '${account.dueDay}',
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
+}
 
-  String _accountSubtitle(AccountEntity account) {
-    final type = account.type == AccountType.checking
-        ? t.accounts.checking
-        : t.accounts.creditCard;
-    return '$type • ${account.bankLabel}';
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.label,
+    required this.amount,
+    required this.color,
+    this.bold = false,
+  });
+
+  final String label;
+  final double amount;
+  final Color color;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    return AccountDetailRow(
+      label: label,
+      child: AmountText(
+        amount: amount,
+        fontSize: bold ? 16 : 14,
+      ),
+    );
   }
 }
 
-// ─── Right panel: transaction list ───────────────────────────
-class _TransactionsPanel extends StatelessWidget {
-  const _TransactionsPanel({required this.state});
+class _TransactionsSide extends StatelessWidget {
+  const _TransactionsSide({required this.state});
 
   final AccountStatementLoaded state;
 
@@ -332,7 +320,6 @@ class _TransactionsPanel extends StatelessWidget {
     final categoryMap = categoriesState is CategoriesLoaded
         ? {for (final c in categoriesState.categories) c.id: c}
         : <String, CategoryEntity>{};
-
     final accountsState = context.watch<AccountsCubit>().state;
     final accountMap = accountsState is AccountsLoaded
         ? {for (final a in accountsState.accounts) a.id: a}
@@ -340,19 +327,22 @@ class _TransactionsPanel extends StatelessWidget {
 
     if (state.transactions.isEmpty) {
       return Center(
-        child: Text(
-          t.accounts.noTransactionsInPeriod,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: colors.onBackgroundLight,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            t.accounts.noTransactionsInPeriod,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: colors.onBackgroundLight,
+            ),
           ),
         ),
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       itemCount: state.transactions.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
+      separatorBuilder: (_, _) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
         final tx = state.transactions[index];
         final label = tx.isTransfer
@@ -361,10 +351,7 @@ class _TransactionsPanel extends StatelessWidget {
         return TransactionTile(
           transaction: tx,
           categoryLabel: label,
-          onTap: () => context.go(
-            AppRoutes.addTransaction,
-            extra: tx,
-          ),
+          onTap: () => context.go(AppRoutes.addTransaction, extra: tx),
         );
       },
     );
@@ -375,15 +362,12 @@ class _TransactionsPanel extends StatelessWidget {
     String categoryId,
   ) {
     if (categoryId.isEmpty) return null;
-
     final category = categoryMap[categoryId];
     if (category == null) return null;
-
     if (category.parentId != null) {
       final parent = categoryMap[category.parentId];
       if (parent != null) return '${parent.name} › ${category.name}';
     }
-
     return category.name;
   }
 
@@ -395,75 +379,9 @@ class _TransactionsPanel extends StatelessWidget {
     final otherAccountId = state.transferCounterpartAccountIds[tx.id];
     final otherAccount =
         otherAccountId != null ? accountMap[otherAccountId] : null;
-
     if (thisAccount == null || otherAccount == null) return null;
-
-    // Income into this account → money came FROM the other account.
-    // Expense from this account → money went TO the other account.
     return tx.type == TransactionType.income
         ? '${otherAccount.name} → ${thisAccount.name}'
         : '${thisAccount.name} → ${otherAccount.name}';
-  }
-}
-
-// ─── Summary row ─────────────────────────────────────────────
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.label,
-    required this.amount,
-    required this.icon,
-    this.bold = false,
-  });
-
-  final String label;
-  final double amount;
-  final FaIconData icon;
-  final bool bold;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        FaIcon(icon, size: 14, color: context.appColors.onBackgroundLight),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ),
-        AmountText(amount: amount, fontSize: 14),
-      ],
-    );
-  }
-}
-
-// ─── Detail row ──────────────────────────────────────────────
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, this.value, this.child});
-
-  final String label;
-  final String? value;
-  final Widget? child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: context.appColors.onBackgroundLight,
-            ),
-          ),
-          child ?? Text(value ?? '', style: context.textTheme.bodyMedium),
-        ],
-      ),
-    );
   }
 }

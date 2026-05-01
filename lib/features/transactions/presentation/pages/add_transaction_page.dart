@@ -1,12 +1,16 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_pill_toggle.dart';
+import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
@@ -15,12 +19,23 @@ import 'package:financo/features/transactions/domain/usecases/update_transaction
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
+import 'package:financo/features/transactions/presentation/widgets/transaction_account_picker_sheet.dart';
+import 'package:financo/features/transactions/presentation/widgets/transaction_category_picker_sheet.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+enum _Mode { expense, income, transfer }
+
+_Mode _modeFromState(TransactionFormState state) {
+  if (state.isTransfer) return _Mode.transfer;
+  if (state.type == TransactionType.income) return _Mode.income;
+  return _Mode.expense;
+}
 
 class AddTransactionPage extends StatelessWidget {
   const AddTransactionPage({super.key, this.existingTransaction});
@@ -64,7 +79,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     final state = context.read<TransactionFormCubit>().state;
     if (state.isEditing) {
       _descriptionController.text = state.description;
-      _amountController.text = state.amount > 0 ? state.amount.toString() : '';
+      _amountController.text = state.amount > 0
+          ? state.amount.toStringAsFixed(2)
+          : '';
       _notesController.text = state.notes;
     }
   }
@@ -77,87 +94,118 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<TransactionFormCubit, TransactionFormState>(
-      listener: (context, state) {
-        if (state.status == FormStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isTransfer && !state.isEditing
-                    ? t.transactions.transferCreated
-                    : state.isEditing
-                    ? t.transactions.transactionUpdated
-                    : t.transactions.transactionCreated,
-              ),
-            ),
-          );
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go(AppRoutes.dashboard);
-          }
-        } else if (state.status == FormStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure?.message ?? 'An error occurred'),
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<TransactionFormCubit, TransactionFormState>(
-            builder: (context, state) => Text(
-              state.isEditing
-                  ? t.transactions.editTransaction
-                  : t.transactions.addTransaction,
+  Future<void> _confirmDelete(String id) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.transactions.deleteTransaction),
+        content: Text(t.transactions.deleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.general.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              t.general.delete,
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
             ),
           ),
-          actions: [
-            BlocBuilder<TransactionFormCubit, TransactionFormState>(
-              builder: (context, state) {
-                if (!state.isEditing) return const SizedBox.shrink();
-                return IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.trashCan),
-                  tooltip: t.general.delete,
-                  onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text(t.transactions.deleteTransaction),
-                        content: Text(t.transactions.deleteConfirm),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: Text(t.general.cancel),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: Text(t.general.delete),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true && context.mounted) {
-                      context.read<TransactionsBloc>().add(
-                        TransactionDeleteRequested(state.existingId!),
-                      );
-                      if (context.canPop()) {
-                        context.pop();
-                      } else {
-                        context.go(AppRoutes.dashboard);
-                      }
-                    }
-                  },
-                );
-              },
-            ),
-          ],
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      context.read<TransactionsBloc>().add(TransactionDeleteRequested(id));
+      _navigateBack();
+    }
+  }
+
+  void _navigateBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.dashboard);
+    }
+  }
+
+  Future<void> _pickDate() async {
+    final cubit = context.read<TransactionFormCubit>();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: cubit.state.date,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) cubit.updateDate(picked);
+  }
+
+  Future<void> _pickAccount({
+    required String label,
+    required ValueChanged<String> onPicked,
+    String? selectedId,
+    String? excludeId,
+  }) async {
+    final picked = await showTransactionAccountPicker(
+      context: context,
+      title: label,
+      selectedId: selectedId,
+      excludeId: excludeId,
+    );
+    if (picked != null) onPicked(picked);
+  }
+
+  Future<void> _pickCategory(TransactionType type, String? selectedId) async {
+    final picked = await showTransactionCategoryPicker(
+      context: context,
+      transactionType: type,
+      selectedId: selectedId,
+    );
+    if (picked != null && mounted) {
+      context.read<TransactionFormCubit>().updateCategoryId(picked);
+    }
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      unawaited(context.read<TransactionFormCubit>().submit());
+    }
+  }
+
+  void _onFormStateChanged(
+    BuildContext context,
+    TransactionFormState state,
+  ) {
+    if (state.status == FormStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            state.isTransfer && !state.isEditing
+                ? t.transactions.transferCreated
+                : state.isEditing
+                    ? t.transactions.transactionUpdated
+                    : t.transactions.transactionCreated,
+          ),
         ),
+      );
+      _navigateBack();
+    } else if (state.status == FormStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return BlocListener<TransactionFormCubit, TransactionFormState>(
+      listener: _onFormStateChanged,
+      child: Scaffold(
+        backgroundColor: colors.background,
+        appBar: _buildAppBar(),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Form(
             key: _formKey,
             child: BlocBuilder<TransactionFormCubit, TransactionFormState>(
@@ -166,110 +214,101 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SegmentedButton<_TransactionMode>(
-                      segments: [
-                        ButtonSegment(
-                          value: _TransactionMode.expense,
-                          label: Text(t.transactions.expense),
-                          icon: const FaIcon(FontAwesomeIcons.arrowDown),
-                        ),
-                        ButtonSegment(
-                          value: _TransactionMode.income,
-                          label: Text(t.transactions.income),
-                          icon: const FaIcon(FontAwesomeIcons.arrowUp),
-                        ),
-                        ButtonSegment(
-                          value: _TransactionMode.transfer,
-                          label: Text(t.transactions.transfer),
-                          icon: const FaIcon(
-                            FontAwesomeIcons.arrowRightArrowLeft,
-                          ),
+                    FinancoFormSection(
+                      label: t.transactions.type,
+                      children: [
+                        FinancoPillToggle<_Mode>(
+                          selected: _modeFromState(state),
+                          disabled: state.isEditing,
+                          onChanged: (mode) {
+                            if (mode == _Mode.transfer) {
+                              cubit.setTransferMode(enabled: true);
+                            } else {
+                              cubit
+                                ..setTransferMode(enabled: false)
+                                ..updateType(
+                                  mode == _Mode.income
+                                      ? TransactionType.income
+                                      : TransactionType.expense,
+                                );
+                            }
+                          },
+                          options: [
+                            FinancoPillToggleOption(
+                              value: _Mode.expense,
+                              label: t.transactions.expense,
+                              icon: FontAwesomeIcons.arrowUp,
+                            ),
+                            FinancoPillToggleOption(
+                              value: _Mode.income,
+                              label: t.transactions.income,
+                              icon: FontAwesomeIcons.arrowDown,
+                            ),
+                            FinancoPillToggleOption(
+                              value: _Mode.transfer,
+                              label: t.transactions.transfer,
+                              icon: FontAwesomeIcons.arrowRightArrowLeft,
+                            ),
+                          ],
                         ),
                       ],
-                      selected: {_modeFromState(state)},
-                      onSelectionChanged: state.isEditing
-                          ? null
-                          : (selected) {
-                              final mode = selected.first;
-                              if (mode == _TransactionMode.transfer) {
-                                cubit.setTransferMode(enabled: true);
-                              } else {
-                                cubit
-                                  ..setTransferMode(enabled: false)
-                                  ..updateType(
-                                    mode == _TransactionMode.income
-                                        ? TransactionType.income
-                                        : TransactionType.expense,
-                                  );
-                              }
-                            },
                     ),
-                    const SizedBox(height: 24),
-                    FinancoTextField(
-                      controller: _descriptionController,
-                      label: t.transactions.description,
-                      hintText: t.transactions.descriptionHint,
-                      onChanged: cubit.updateDescription,
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.bills.formDetails,
+                      children: [
+                        FinancoTextField(
+                          controller: _descriptionController,
+                          label: t.transactions.description,
+                          hintText: t.transactions.descriptionHint,
+                          onChanged: cubit.updateDescription,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: FinancoTextField(
+                                controller: _amountController,
+                                label: t.transactions.amountLabel,
+                                hintText: t.transactions.amountHint,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                onChanged: cubit.updateAmount,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _DateField(
+                                date: state.date,
+                                onTap: _pickDate,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    FinancoTextField(
-                      controller: _amountController,
-                      label: t.transactions.amountLabel,
-                      hintText: t.transactions.amountHint,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      onChanged: cubit.updateAmount,
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.bills.formClassification,
+                      children: state.isTransfer
+                          ? _transferFields(cubit, state)
+                          : _normalFields(cubit, state),
                     ),
-                    const SizedBox(height: 16),
-                    if (state.isTransfer) ...[
-                      _AccountDropdown(
-                        selectedId: state.accountId,
-                        label: t.transactions.sourceAccount,
-                        onChanged: cubit.updateAccountId,
-                      ),
-                      const SizedBox(height: 16),
-                      _AccountDropdown(
-                        selectedId: state.destinationAccountId,
-                        label: t.transactions.destinationAccount,
-                        onChanged: cubit.updateDestinationAccountId,
-                      ),
-                    ] else ...[
-                      _AccountDropdown(
-                        selectedId: state.accountId,
-                        onChanged: cubit.updateAccountId,
-                      ),
-                      const SizedBox(height: 16),
-                      _CategoryDropdown(
-                        selectedId: state.categoryId,
-                        transactionType: state.type,
-                        onChanged: cubit.updateCategoryId,
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _DatePicker(
-                      date: state.date,
-                      onChanged: cubit.updateDate,
-                    ),
-                    const SizedBox(height: 16),
-                    FinancoTextField(
-                      controller: _notesController,
-                      label: t.transactions.notesOptional,
-                      hintText: t.transactions.notesHint,
-                      maxLines: 3,
-                      onChanged: cubit.updateNotes,
-                    ),
-                    const SizedBox(height: 32),
-                    FinancoButton(
-                      label: state.isEditing
-                          ? t.general.update
-                          : t.general.save,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          unawaited(cubit.submit());
-                        }
-                      },
-                      isLoading: state.status == FormStatus.submitting,
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.transactions.notes,
+                      children: [
+                        FinancoTextField(
+                          controller: _notesController,
+                          label: t.transactions.notesOptional,
+                          hintText: t.transactions.notesHint,
+                          maxLines: 3,
+                          onChanged: cubit.updateNotes,
+                        ),
+                      ],
                     ),
                   ],
                 );
@@ -277,124 +316,359 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
             ),
           ),
         ),
+        bottomNavigationBar:
+            BlocBuilder<TransactionFormCubit, TransactionFormState>(
+              builder: (context, state) => FinancoSubmitBar(
+                label: state.isEditing ? t.general.update : t.general.save,
+                isLoading: state.status == FormStatus.submitting,
+                isEnabled: state.isValid,
+                onSubmit: _onSubmit,
+              ),
+            ),
+      ),
+    );
+  }
+
+  List<Widget> _normalFields(
+    TransactionFormCubit cubit,
+    TransactionFormState state,
+  ) {
+    return [
+      _AccountRow(
+        label: t.transactions.account,
+        selectedId: state.accountId,
+        onTap: () => _pickAccount(
+          label: t.transactions.account,
+          selectedId: state.accountId,
+          onPicked: cubit.updateAccountId,
+        ),
+      ),
+      const SizedBox(height: 12),
+      _CategoryRow(
+        selectedId: state.categoryId,
+        type: state.type,
+        onTap: () => _pickCategory(state.type, state.categoryId),
+      ),
+    ];
+  }
+
+  List<Widget> _transferFields(
+    TransactionFormCubit cubit,
+    TransactionFormState state,
+  ) {
+    return [
+      _AccountRow(
+        label: t.transactions.sourceAccount,
+        selectedId: state.accountId,
+        onTap: () => _pickAccount(
+          label: t.transactions.sourceAccount,
+          selectedId: state.accountId,
+          excludeId: state.destinationAccountId,
+          onPicked: cubit.updateAccountId,
+        ),
+      ),
+      const SizedBox(height: 12),
+      _AccountRow(
+        label: t.transactions.destinationAccount,
+        selectedId: state.destinationAccountId,
+        onTap: () => _pickAccount(
+          label: t.transactions.destinationAccount,
+          selectedId: state.destinationAccountId,
+          excludeId: state.accountId,
+          onPicked: cubit.updateDestinationAccountId,
+        ),
+      ),
+    ];
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    final colors = context.appColors;
+    return AppBar(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      centerTitle: true,
+      title: BlocBuilder<TransactionFormCubit, TransactionFormState>(
+        builder: (context, state) => Text(
+          state.isEditing
+              ? t.transactions.editTransaction
+              : t.transactions.addTransaction,
+          style: context.textTheme.titleMedium?.copyWith(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      actions: [
+        BlocBuilder<TransactionFormCubit, TransactionFormState>(
+          builder: (context, state) {
+            if (!state.isEditing) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _AppBarIconButton(
+                icon: FontAwesomeIcons.trash,
+                color: colors.error,
+                tooltip: t.general.delete,
+                onPressed: () =>
+                    unawaited(_confirmDelete(state.existingId!)),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  const _DateField({required this.date, required this.onTap});
+
+  final DateTime date;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: t.transactions.date,
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FaIcon(
+              FontAwesomeIcons.calendar,
+              size: 14,
+              color: context.appColors.onBackgroundLight,
+            ),
+          ),
+        ),
+        child: Text(
+          DateFormat('dd/MM/yyyy').format(date),
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.appColors.onBackground,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
 }
 
-enum _TransactionMode { expense, income, transfer }
-
-_TransactionMode _modeFromState(TransactionFormState state) {
-  if (state.isTransfer) return _TransactionMode.transfer;
-  if (state.type == TransactionType.income) return _TransactionMode.income;
-  return _TransactionMode.expense;
-}
-
-class _AccountDropdown extends StatelessWidget {
-  const _AccountDropdown({
+class _AccountRow extends StatelessWidget {
+  const _AccountRow({
+    required this.label,
     required this.selectedId,
-    required this.onChanged,
-    this.label,
+    required this.onTap,
   });
 
+  final String label;
   final String selectedId;
-  final ValueChanged<String> onChanged;
-  final String? label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AccountsCubit, AccountsState>(
-      builder: (context, state) {
-        if (state is! AccountsLoaded) {
-          return const LinearProgressIndicator();
-        }
-        return DropdownButtonFormField<String>(
-          initialValue: selectedId.isNotEmpty ? selectedId : null,
-          decoration: InputDecoration(
-            labelText: label ?? t.transactions.account,
-          ),
-          items: state.accounts
-              .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
-              .toList(),
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-          validator: (v) => v == null ? t.validators.selectAccount : null,
-        );
-      },
-    );
-  }
-}
+    final colors = context.appColors;
+    final accountsState = context.watch<AccountsCubit>().state;
+    final selected = accountsState is AccountsLoaded && selectedId.isNotEmpty
+        ? accountsState.accounts
+              .where((a) => a.id == selectedId)
+              .firstOrNull
+        : null;
+    final hasValue = selected != null;
 
-class _CategoryDropdown extends StatelessWidget {
-  const _CategoryDropdown({
-    required this.selectedId,
-    required this.transactionType,
-    required this.onChanged,
-  });
-
-  final String selectedId;
-  final TransactionType transactionType;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<CategoriesCubit, CategoriesState>(
-      builder: (context, state) {
-        if (state is! CategoriesLoaded) {
-          return const LinearProgressIndicator();
-        }
-        final filtered = state.categories
-            .where(
-              (c) =>
-                  c.type.name == transactionType.name || c.type.name == 'both',
-            )
-            .toList();
-        return DropdownButtonFormField<String>(
-          initialValue: selectedId.isNotEmpty ? selectedId : null,
-          decoration: InputDecoration(labelText: t.transactions.category),
-          items: filtered
-              .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
-              .toList(),
-          onChanged: (value) {
-            if (value != null) onChanged(value);
-          },
-          validator: (v) => v == null ? t.validators.selectCategory : null,
-        );
-      },
-    );
-  }
-}
-
-class _DatePicker extends StatelessWidget {
-  const _DatePicker({
-    required this.date,
-    required this.onChanged,
-  });
-
-  final DateTime date;
-  final ValueChanged<DateTime> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
     return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: date,
-          firstDate: DateTime(2020),
-          lastDate: DateTime(2030),
-        );
-        if (picked != null) onChanged(picked);
-      },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: t.transactions.date,
-          suffixIcon: const FaIcon(FontAwesomeIcons.calendar),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(
-          '${date.day}/${date.month}/${date.year}',
-          style: context.textTheme.bodyLarge,
+        child: Row(
+          children: [
+            FaIcon(
+              selected?.type == AccountType.creditCard
+                  ? FontAwesomeIcons.creditCard
+                  : FontAwesomeIcons.buildingColumns,
+              size: 14,
+              color: colors.onBackgroundLight,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: context.textTheme.labelSmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasValue ? selected.name : t.transactions.account,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: hasValue
+                          ? colors.onBackground
+                          : colors.onBackgroundLight,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            FaIcon(
+              FontAwesomeIcons.chevronRight,
+              size: 11,
+              color: colors.onBackgroundLight,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({
+    required this.selectedId,
+    required this.type,
+    required this.onTap,
+  });
+
+  final String selectedId;
+  final TransactionType type;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final state = context.watch<CategoriesCubit>().state;
+    final selected = state is CategoriesLoaded && selectedId.isNotEmpty
+        ? state.categories.where((c) => c.id == selectedId).firstOrNull
+        : null;
+    final hasValue = selected != null;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            if (hasValue)
+              _CategoryDot(category: selected)
+            else
+              FaIcon(
+                FontAwesomeIcons.tag,
+                size: 14,
+                color: colors.onBackgroundLight,
+              ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    t.transactions.category,
+                    style: context.textTheme.labelSmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasValue ? selected.name : t.bills.pickCategory,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: hasValue
+                          ? colors.onBackground
+                          : colors.onBackgroundLight,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            FaIcon(
+              FontAwesomeIcons.chevronRight,
+              size: 11,
+              color: colors.onBackgroundLight,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryDot extends StatelessWidget {
+  const _CategoryDot({required this.category});
+
+  final CategoryEntity category;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Color(category.color);
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Icon(
+          IconData(category.icon, fontFamily: 'MaterialIcons'),
+          size: 14,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
         ),
       ),
     );

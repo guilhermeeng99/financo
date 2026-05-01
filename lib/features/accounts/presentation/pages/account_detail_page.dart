@@ -1,14 +1,17 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/accounts/presentation/widgets/account_balance_card.dart';
+import 'package:financo/features/accounts/presentation/widgets/account_detail_section.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,188 +22,211 @@ class AccountDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocBuilder<AccountsCubit, AccountsState>(
       builder: (context, state) {
-        AccountEntity? account;
-        if (state is AccountsLoaded) {
-          account = state.accounts.where((a) => a.id == accountId).firstOrNull;
-        }
+        final accounts = state is AccountsLoaded ? state.accounts : null;
+        final account =
+            accounts?.where((a) => a.id == accountId).firstOrNull;
 
         if (account == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(t.accounts.account)),
+            backgroundColor: colors.background,
+            appBar: _buildAppBar(context, t.accounts.account),
             body: Center(child: Text(t.accounts.accountNotFound)),
           );
         }
 
-        final currentAccount = account;
-
         return Scaffold(
-          appBar: AppBar(
-            title: Text(account.name),
-            actions: [
-              PopupMenuButton<String>(
-                onSelected: (value) async {
-                  if (value == 'edit') {
-                    final result = await context.push(
-                      AppRoutes.addAccount,
-                      extra: account,
-                    );
-                    if (result == true && context.mounted) {
-                      unawaited(
-                        context.read<AccountsCubit>().loadAccounts(
-                          forceRefresh: true,
-                        ),
-                      );
-                    }
-                  } else if (value == 'delete') {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text(t.general.delete),
-                        content: Text(
-                          t.accounts.deleteConfirm,
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: Text(t.general.cancel),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: Text(t.general.delete),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true && context.mounted) {
-                      final deleteAccount = GetIt.I<DeleteAccountUseCase>();
-                      await deleteAccount(currentAccount.id);
-                      if (context.mounted) context.pop(true);
-                    }
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text(t.general.edit),
+          backgroundColor: colors.background,
+          appBar: _buildAppBar(
+            context,
+            account.name,
+            account: account,
+          ),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            children: [
+              AccountBalanceCard(
+                account: account,
+                balance: account.type == AccountType.creditCard
+                    ? account.availableCredit
+                    : account.initialBalance,
+              ),
+              const SizedBox(height: 24),
+              AccountDetailSection(
+                label: t.accounts.formSectionDetails,
+                rows: [
+                  AccountDetailRow(
+                    label: t.accounts.type,
+                    value: account.type == AccountType.checking
+                        ? t.accounts.checking
+                        : t.accounts.creditCard,
                   ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text(t.general.delete),
+                  AccountDetailRow(
+                    label: t.accounts.bank,
+                    value: account.bankLabel,
                   ),
+                  if (account.type == AccountType.creditCard &&
+                      accounts != null &&
+                      account.linkedAccountId != null)
+                    AccountDetailRow(
+                      label: t.accounts.linkedAccount,
+                      value: accounts
+                              .where(
+                                (a) => a.id == account.linkedAccountId,
+                              )
+                              .firstOrNull
+                              ?.name ??
+                          '—',
+                    ),
                 ],
               ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: AmountText(
-                    amount: account.initialBalance,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    t.accounts.currentBalance,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceVariant,
+              if (account.type == AccountType.creditCard) ...[
+                const SizedBox(height: 20),
+                AccountDetailSection(
+                  label: t.accounts.formSectionCreditCard,
+                  rows: [
+                    AccountDetailRow(
+                      label: t.accounts.creditLimit,
+                      value: formatCurrency(account.creditLimit ?? 0),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _DetailRow(
-                  label: t.accounts.type,
-                  value: account.type == AccountType.checking
-                      ? t.accounts.checking
-                      : t.accounts.creditCard,
-                ),
-                _DetailRow(
-                  label: t.accounts.bank,
-                  value: account.bankLabel,
-                ),
-                if (account.type == AccountType.creditCard) ...[
-                  if (account.linkedAccountId != null &&
-                      state is AccountsLoaded) ...[
-                    Builder(
-                      builder: (context) {
-                        final linked = state.accounts
-                            .where(
-                              (a) => a.id == currentAccount.linkedAccountId,
-                            )
-                            .firstOrNull;
-                        if (linked == null) return const SizedBox.shrink();
-                        return _DetailRow(
-                          label: t.accounts.linkedAccount,
-                          value: linked.name,
-                        );
-                      },
+                    AccountDetailRow(
+                      label: t.accounts.availableCredit,
+                      value: formatCurrency(account.availableCredit),
+                    ),
+                    AccountDetailRow(
+                      label: t.accounts.closingDay,
+                      value: '${account.closingDay ?? '-'}',
+                    ),
+                    AccountDetailRow(
+                      label: t.accounts.dueDay,
+                      value: '${account.dueDay ?? '-'}',
                     ),
                   ],
-                  _DetailRow(
-                    label: t.accounts.creditLimit,
-                    child: AmountText(
-                      amount: account.creditLimit ?? 0,
-                      fontSize: 16,
-                    ),
-                  ),
-                  _DetailRow(
-                    label: t.accounts.availableCredit,
-                    child: AmountText(
-                      amount: account.availableCredit,
-                      fontSize: 16,
-                    ),
-                  ),
-                  _DetailRow(
-                    label: t.accounts.closingDay,
-                    value: '${account.closingDay}',
-                  ),
-                  _DetailRow(
-                    label: t.accounts.dueDay,
-                    value: '${account.dueDay}',
-                  ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         );
       },
     );
   }
+
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    String title, {
+    AccountEntity? account,
+  }) {
+    final colors = context.appColors;
+    return AppBar(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        title,
+        style: context.textTheme.titleMedium?.copyWith(
+          color: colors.onBackground,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      actions: account == null
+          ? null
+          : [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _AppBarIconButton(
+                  icon: FontAwesomeIcons.penToSquare,
+                  color: colors.primary,
+                  tooltip: t.general.edit,
+                  onPressed: () =>
+                      unawaited(_openEdit(context, account)),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: _AppBarIconButton(
+                  icon: FontAwesomeIcons.trash,
+                  color: colors.error,
+                  tooltip: t.general.delete,
+                  onPressed: () =>
+                      unawaited(_confirmDelete(context, account)),
+                ),
+              ),
+            ],
+    );
+  }
+
+  Future<void> _openEdit(BuildContext context, AccountEntity account) async {
+    final result = await context.push(AppRoutes.addAccount, extra: account);
+    if (result == true && context.mounted) {
+      unawaited(
+        context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    AccountEntity account,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.general.delete),
+        content: Text(t.accounts.deleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.general.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              t.general.delete,
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await GetIt.I<DeleteAccountUseCase>()(account.id);
+    if (context.mounted) context.pop(true);
+  }
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, this.value, this.child});
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    required this.tooltip,
+  });
 
-  final String label;
-  final String? value;
-  final Widget? child;
+  final FaIconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 140,
-            child: Text(
-              label,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurfaceVariant,
-              ),
-            ),
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
           ),
-          Expanded(
-            child:
-                child ?? Text(value ?? '', style: context.textTheme.bodyLarge),
-          ),
-        ],
+        ),
       ),
     );
   }

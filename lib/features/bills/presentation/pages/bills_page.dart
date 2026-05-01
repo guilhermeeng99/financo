@@ -1,15 +1,20 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_large_app_bar.dart';
+import 'package:financo/app/widgets/financo_section_header.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
+import 'package:financo/features/bills/presentation/widgets/bill_status_dot.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_tile.dart';
+import 'package:financo/features/bills/presentation/widgets/bills_empty_state.dart';
+import 'package:financo/features/bills/presentation/widgets/bills_summary_card.dart';
+import 'package:financo/features/bills/presentation/widgets/bills_type_pills.dart';
 import 'package:financo/features/bills/presentation/widgets/pay_bill_dialog.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
@@ -21,11 +26,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-/// Visual filter for the bills list. Bound to UI only — the underlying data
-/// load isn't filtered by type (we filter in-memory) since both lists are
-/// usually small and we already cache them locally.
-enum _TypeFilter { all, payable, receivable }
-
 class BillsPage extends StatefulWidget {
   const BillsPage({super.key});
 
@@ -34,7 +34,7 @@ class BillsPage extends StatefulWidget {
 }
 
 class _BillsPageState extends State<BillsPage> {
-  _TypeFilter _typeFilter = _TypeFilter.all;
+  BillsTypeFilter _typeFilter = BillsTypeFilter.all;
 
   @override
   void initState() {
@@ -76,128 +76,13 @@ class _BillsPageState extends State<BillsPage> {
     await showPayBillDialog(context: context, bill: bill);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<BillsBloc, BillsState>(
-      listener: (context, state) {
-        if (state is BillsError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.failure.message)),
-          );
-        }
-        if (state is BillPaid) {
-          // Refresh transactions + dashboard so the new tx shows up.
-          context.read<TransactionsBloc>().add(
-            TransactionsLoadRequested(forceRefresh: true),
-          );
-          context.read<DashboardBloc>().add(
-            const DashboardRefreshRequested(),
-          );
-          final messenger = ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(
-              SnackBar(
-                content: Text(
-                  state.result.paidBill.isReceivable
-                      ? t.bills.billReceived
-                      : t.bills.billPaid,
-                ),
-              ),
-            );
-          if (state.result.nextOccurrence != null) {
-            messenger.showSnackBar(
-              SnackBar(content: Text(t.bills.nextOccurrenceCreated)),
-            );
-          }
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: Text(t.bills.title)),
-        floatingActionButton: LiftedFab(
-          child: FloatingActionButton(
-            heroTag: 'bills_fab',
-            onPressed: () async {
-              final result = await context.push(AppRoutes.addBill);
-              if (result == true && context.mounted) {
-                context.read<BillsBloc>().add(
-                  const BillsLoadRequested(forceRefresh: true),
-                );
-              }
-            },
-            child: const Icon(Icons.add),
-          ),
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: SegmentedButton<_TypeFilter>(
-                segments: [
-                  ButtonSegment(
-                    value: _TypeFilter.all,
-                    label: Text(t.bills.filterAll),
-                  ),
-                  ButtonSegment(
-                    value: _TypeFilter.payable,
-                    label: Text(t.bills.typePayable),
-                  ),
-                  ButtonSegment(
-                    value: _TypeFilter.receivable,
-                    label: Text(t.bills.typeReceivable),
-                  ),
-                ],
-                selected: {_typeFilter},
-                onSelectionChanged: (s) =>
-                    setState(() => _typeFilter = s.first),
-              ),
-            ),
-            Expanded(
-              child: BlocBuilder<BillsBloc, BillsState>(
-                builder: (context, state) {
-                  if (state is BillsLoading || state is BillsInitial) {
-                    return const LoadingShimmer();
-                  }
-                  if (state is BillsError) {
-                    return ErrorView(
-                      message: state.failure.message,
-                      onRetry: () => context.read<BillsBloc>().add(
-                        const BillsLoadRequested(forceRefresh: true),
-                      ),
-                    );
-                  }
-                  if (state is BillsLoaded) {
-                    final filtered = _applyFilter(state.bills);
-                    if (filtered.isEmpty) {
-                      return EmptyState(
-                        icon: FontAwesomeIcons.fileInvoiceDollar,
-                        message: t.bills.empty,
-                      );
-                    }
-                    return _BillsList(
-                      bills: filtered,
-                      onTap: _onTapBill,
-                      onPay: _onPayPressed,
-                      onDelete: _confirmDelete,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<BillEntity> _applyFilter(List<BillEntity> bills) {
-    return switch (_typeFilter) {
-      _TypeFilter.all => bills,
-      _TypeFilter.payable =>
-        bills.where((b) => b.type == BillType.payable).toList(),
-      _TypeFilter.receivable =>
-        bills.where((b) => b.type == BillType.receivable).toList(),
-    };
+  Future<void> _openAddBill() async {
+    final result = await context.push(AppRoutes.addBill);
+    if (result == true && mounted) {
+      context.read<BillsBloc>().add(
+        const BillsLoadRequested(forceRefresh: true),
+      );
+    }
   }
 
   Future<void> _onTapBill(BillEntity bill) async {
@@ -208,75 +93,255 @@ class _BillsPageState extends State<BillsPage> {
       );
     }
   }
-}
-
-class _BillsList extends StatelessWidget {
-  const _BillsList({
-    required this.bills,
-    required this.onTap,
-    required this.onPay,
-    required this.onDelete,
-  });
-
-  final List<BillEntity> bills;
-  final void Function(BillEntity) onTap;
-  final void Function(BillEntity) onPay;
-  final void Function(BillEntity) onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final overdue = bills.where((b) => b.isOverdue).toList();
-    final today = bills.where((b) => b.isDueToday).toList();
-    final upcoming = bills
-        .where((b) => b.isPending && !b.isOverdue && !b.isDueToday)
-        .toList();
-    final paid = bills.where((b) => b.isPaid).toList()
-      ..sort((a, b) => (b.paidAt ?? b.updatedAt)
-          .compareTo(a.paidAt ?? a.updatedAt));
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (overdue.isNotEmpty)
-          _Section(
-            title: t.bills.overdueGroup,
-            bills: overdue,
-            onTap: onTap,
-            onPay: onPay,
-            onDelete: onDelete,
+    return BlocListener<BillsBloc, BillsState>(
+      listener: _onBillsStateChanged,
+      child: Scaffold(
+        appBar: FinancoLargeAppBar(title: t.bills.title),
+        floatingActionButton: LiftedFab(
+          child: FloatingActionButton(
+            heroTag: 'bills_fab',
+            onPressed: _openAddBill,
+            child: const Icon(Icons.add),
           ),
-        if (today.isNotEmpty)
-          _Section(
-            title: t.bills.todayGroup,
-            bills: today,
-            onTap: onTap,
-            onPay: onPay,
-            onDelete: onDelete,
-          ),
-        if (upcoming.isNotEmpty)
-          _Section(
-            title: t.bills.upcomingGroup,
-            bills: upcoming,
-            onTap: onTap,
-            onPay: onPay,
-            onDelete: onDelete,
-          ),
-        if (paid.isNotEmpty)
-          _Section(
-            title: t.bills.paidGroup,
-            bills: paid,
-            onTap: onTap,
-            onPay: onPay,
-            onDelete: onDelete,
-          ),
-      ],
+        ),
+        body: BlocBuilder<BillsBloc, BillsState>(
+          builder: (context, state) {
+            if (state is BillsLoading || state is BillsInitial) {
+              return const LoadingShimmer();
+            }
+            if (state is BillsError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () => context.read<BillsBloc>().add(
+                  const BillsLoadRequested(forceRefresh: true),
+                ),
+              );
+            }
+            if (state is BillsLoaded) {
+              return _BillsContent(
+                bills: state.bills,
+                typeFilter: _typeFilter,
+                onFilterChanged: (f) => setState(() => _typeFilter = f),
+                onTapBill: _onTapBill,
+                onPayBill: _onPayPressed,
+                onDeleteBill: _confirmDelete,
+                onAddBill: _openAddBill,
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
     );
+  }
+
+  void _onBillsStateChanged(BuildContext context, BillsState state) {
+    if (state is BillsError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure.message)),
+      );
+    }
+    if (state is BillPaid) {
+      // Refresh transactions + dashboard so the new tx shows up immediately,
+      // since paying a bill creates a real transaction in another collection.
+      context.read<TransactionsBloc>().add(
+        TransactionsLoadRequested(forceRefresh: true),
+      );
+      context.read<DashboardBloc>().add(
+        const DashboardRefreshRequested(),
+      );
+      final messenger = ScaffoldMessenger.of(context)
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              state.result.paidBill.isReceivable
+                  ? t.bills.billReceived
+                  : t.bills.billPaid,
+            ),
+          ),
+        );
+      if (state.result.nextOccurrence != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(t.bills.nextOccurrenceCreated)),
+        );
+      }
+    }
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({
+/// The body shown once bills have loaded. Splits filtering, summary, and
+/// list rendering away from the page-level state machine for clarity.
+class _BillsContent extends StatelessWidget {
+  const _BillsContent({
+    required this.bills,
+    required this.typeFilter,
+    required this.onFilterChanged,
+    required this.onTapBill,
+    required this.onPayBill,
+    required this.onDeleteBill,
+    required this.onAddBill,
+  });
+
+  final List<BillEntity> bills;
+  final BillsTypeFilter typeFilter;
+  final ValueChanged<BillsTypeFilter> onFilterChanged;
+  final void Function(BillEntity) onTapBill;
+  final void Function(BillEntity) onPayBill;
+  final void Function(BillEntity) onDeleteBill;
+  final VoidCallback onAddBill;
+
+  @override
+  Widget build(BuildContext context) {
+    if (bills.isEmpty) {
+      return BillsEmptyState(onAddPressed: onAddBill);
+    }
+
+    final filtered = _applyTypeFilter(bills, typeFilter);
+    final summary = BillsSummary.from(filtered);
+    final groups = _BillGroups.fromBills(filtered);
+
+    return CustomScrollView(
+      slivers: [
+        if (!summary.isEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            sliver: SliverToBoxAdapter(
+              child: BillsSummaryCard(summary: summary),
+            ),
+          ),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(0, summary.isEmpty ? 16 : 8, 0, 8),
+          sliver: SliverToBoxAdapter(
+            child: BillsTypePills(
+              selected: typeFilter,
+              onChanged: onFilterChanged,
+              labels: (
+                all: t.bills.filterAll,
+                payable: t.bills.typePayable,
+                receivable: t.bills.typeReceivable,
+              ),
+            ),
+          ),
+        ),
+        if (groups.isFullyEmpty)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _NoMatchingFilter(),
+          )
+        else ...[
+          if (groups.overdue.isNotEmpty)
+            _BillsSliverSection(
+              title: t.bills.overdueGroup,
+              accent: context.appColors.expense,
+              bills: groups.overdue,
+              onTap: onTapBill,
+              onPay: onPayBill,
+              onDelete: onDeleteBill,
+            ),
+          if (groups.today.isNotEmpty)
+            _BillsSliverSection(
+              title: t.bills.todayGroup,
+              accent: context.appColors.warning,
+              bills: groups.today,
+              onTap: onTapBill,
+              onPay: onPayBill,
+              onDelete: onDeleteBill,
+            ),
+          if (groups.upcoming.isNotEmpty)
+            _BillsSliverSection(
+              title: t.bills.upcomingGroup,
+              accent: context.appColors.primary,
+              bills: groups.upcoming,
+              onTap: onTapBill,
+              onPay: onPayBill,
+              onDelete: onDeleteBill,
+            ),
+          if (groups.paid.isNotEmpty)
+            _BillsSliverSection(
+              title: t.bills.paidGroup,
+              accent: context.appColors.onBackgroundLight,
+              bills: groups.paid,
+              onTap: onTapBill,
+              onPay: onPayBill,
+              onDelete: onDeleteBill,
+            ),
+          // Bottom breathing room so the FAB doesn't crop the last tile.
+          const SliverToBoxAdapter(child: SizedBox(height: 96)),
+        ],
+      ],
+    );
+  }
+
+  List<BillEntity> _applyTypeFilter(
+    List<BillEntity> all,
+    BillsTypeFilter filter,
+  ) {
+    return switch (filter) {
+      BillsTypeFilter.all => all,
+      BillsTypeFilter.payable =>
+        all.where((b) => b.type == BillType.payable).toList(),
+      BillsTypeFilter.receivable =>
+        all.where((b) => b.type == BillType.receivable).toList(),
+    };
+  }
+}
+
+class _BillGroups {
+  const _BillGroups({
+    required this.overdue,
+    required this.today,
+    required this.upcoming,
+    required this.paid,
+  });
+
+  factory _BillGroups.fromBills(List<BillEntity> bills) {
+    final overdue = <BillEntity>[];
+    final today = <BillEntity>[];
+    final upcoming = <BillEntity>[];
+    final paid = <BillEntity>[];
+
+    for (final b in bills) {
+      switch (b.statusKind) {
+        case BillStatusKind.overdue:
+          overdue.add(b);
+        case BillStatusKind.today:
+          today.add(b);
+        case BillStatusKind.upcoming:
+          upcoming.add(b);
+        case BillStatusKind.paid:
+          paid.add(b);
+      }
+    }
+
+    paid.sort(
+      (a, b) => (b.paidAt ?? b.updatedAt).compareTo(a.paidAt ?? a.updatedAt),
+    );
+
+    return _BillGroups(
+      overdue: overdue,
+      today: today,
+      upcoming: upcoming,
+      paid: paid,
+    );
+  }
+
+  final List<BillEntity> overdue;
+  final List<BillEntity> today;
+  final List<BillEntity> upcoming;
+  final List<BillEntity> paid;
+
+  bool get isFullyEmpty =>
+      overdue.isEmpty && today.isEmpty && upcoming.isEmpty && paid.isEmpty;
+}
+
+class _BillsSliverSection extends StatelessWidget {
+  const _BillsSliverSection({
     required this.title,
+    required this.accent,
     required this.bills,
     required this.onTap,
     required this.onPay,
@@ -284,6 +349,7 @@ class _Section extends StatelessWidget {
   });
 
   final String title;
+  final Color accent;
   final List<BillEntity> bills;
   final void Function(BillEntity) onTap;
   final void Function(BillEntity) onPay;
@@ -291,41 +357,65 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, top: 12, bottom: 4),
-          child: Text(
-            title,
-            style: context.textTheme.labelLarge?.copyWith(
-              color: context.appColors.onBackgroundLight,
-              fontWeight: FontWeight.w600,
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          FinancoSectionHeader(
+            title: title,
+            count: bills.length,
+            accent: accent,
+          ),
+          ...bills.map(
+            (bill) => Dismissible(
+              key: ValueKey(bill.id),
+              direction: DismissDirection.endToStart,
+              confirmDismiss: (_) async {
+                onDelete(bill);
+                return false;
+              },
+              background: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 24),
+                decoration: BoxDecoration(
+                  color: context.appColors.expense,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const FaIcon(
+                  FontAwesomeIcons.trash,
+                  color: Colors.white,
+                ),
+              ),
+              child: BillTile(
+                bill: bill,
+                onTap: () => onTap(bill),
+                onPayPressed: () => onPay(bill),
+              ),
             ),
           ),
-        ),
-        ...bills.map(
-          (bill) => Dismissible(
-            key: ValueKey(bill.id),
-            direction: DismissDirection.endToStart,
-            confirmDismiss: (_) async {
-              onDelete(bill);
-              return false;
-            },
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 24),
-              color: context.appColors.expense,
-              child: const FaIcon(FontAwesomeIcons.trash, color: Colors.white),
-            ),
-            child: BillTile(
-              bill: bill,
-              onTap: () => onTap(bill),
-              onPayPressed: () => onPay(bill),
-            ),
+        ]),
+      ),
+    );
+  }
+}
+
+class _NoMatchingFilter extends StatelessWidget {
+  const _NoMatchingFilter();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Center(
+        child: Text(
+          t.general.noResults,
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: colors.onBackgroundLight,
           ),
         ),
-      ],
+      ),
     );
   }
 }

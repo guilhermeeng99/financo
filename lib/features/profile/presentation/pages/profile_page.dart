@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/app/widgets/error_view.dart';
-import 'package:financo/app/widgets/financo_app_bar.dart';
-import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/web_file_download.dart'
-    if (dart.library.js_interop)
-        'package:financo/core/utils/web_file_download_web.dart';
+    if (dart.library.js_interop) 'package:financo/core/utils/web_file_download_web.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
@@ -19,6 +16,10 @@ import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_header_card.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_row.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_section.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_theme_row.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/features/transactions/presentation/widgets/transactions_csv_import_dialog.dart';
@@ -38,19 +39,48 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    unawaited(context.read<ProfileCubit>().loadProfile());
+  }
+
+  Future<void> _confirmSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.auth.signOut),
+        content: Text(t.profile.signOutConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.general.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.auth.signOut),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      context.read<AuthBloc>().add(const AuthSignOutRequested());
+    }
+  }
+
   Future<void> _clearAccountData(String userId) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(t.profile.clearData),
         content: Text(t.profile.clearDataConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: Text(t.general.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: Text(t.general.delete),
           ),
         ],
@@ -80,61 +110,52 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> _importCsv() async {
-    await showTransactionsCsvImportDialog(context);
-  }
+  Future<void> _importCsv() => showTransactionsCsvImportDialog(context);
 
-  void _downloadApk() {
-    triggerBrowserUrlDownload('financo.apk', 'financo.apk');
-  }
+  void _downloadApk() =>
+      triggerBrowserUrlDownload('financo.apk', 'financo.apk');
 
-  @override
-  void initState() {
-    super.initState();
-    unawaited(context.read<ProfileCubit>().loadProfile());
+  void _onTransactionsState(BuildContext context, TransactionsState state) {
+    if (state is TransactionsImported) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t.transactions.importSuccess(
+              imported: state.importedCount,
+              skipped: state.skippedCount,
+            ),
+          ),
+        ),
+      );
+      final filter = context.read<DateFilterCubit>().state;
+      context.read<DashboardBloc>().add(
+        DashboardLoadRequested(
+          year: filter.year,
+          month: filter.month,
+          forceRefresh: true,
+        ),
+      );
+      context.read<TransactionsBloc>().add(
+        TransactionsLoadRequested(
+          year: filter.year,
+          month: filter.month,
+          forceRefresh: true,
+        ),
+      );
+    }
+    if (state is TransactionsError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure.message)),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: FinancoAppBar(title: t.profile.title),
+      appBar: FinancoLargeAppBar(title: t.profile.title),
       body: BlocListener<TransactionsBloc, TransactionsState>(
-        listener: (context, state) {
-          if (state is TransactionsImported) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  t.transactions.importSuccess(
-                    imported: state.importedCount,
-                    skipped: state.skippedCount,
-                  ),
-                ),
-              ),
-            );
-
-            final filter = context.read<DateFilterCubit>().state;
-            context.read<DashboardBloc>().add(
-              DashboardLoadRequested(
-                year: filter.year,
-                month: filter.month,
-                forceRefresh: true,
-              ),
-            );
-            context.read<TransactionsBloc>().add(
-              TransactionsLoadRequested(
-                year: filter.year,
-                month: filter.month,
-                forceRefresh: true,
-              ),
-            );
-          }
-
-          if (state is TransactionsError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.failure.message)),
-            );
-          }
-        },
+        listener: _onTransactionsState,
         child: BlocBuilder<ProfileCubit, ProfileState>(
           builder: (context, state) {
             if (state is ProfileLoading) return const LoadingShimmer();
@@ -147,85 +168,15 @@ class _ProfilePageState extends State<ProfilePage> {
               );
             }
             if (state is ProfileLoaded) {
-              final user = state.user;
-              return ListView(
-                padding: const EdgeInsets.all(24),
-                children: [
-                  Center(
-                    child: _ProfileAvatar(
-                      name: user.name,
-                      photoUrl: user.photoUrl,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      user.name,
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Text(
-                      user.email,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  _ProfileTile(
-                    icon: FontAwesomeIcons.buildingColumns,
-                    title: t.profile.accounts,
-                    onTap: () => context.push(AppRoutes.accounts),
-                  ),
-                  _ProfileTile(
-                    icon: FontAwesomeIcons.tags,
-                    title: t.profile.categories,
-                    onTap: () => context.push(AppRoutes.categories),
-                  ),
-                  _ProfileTile(
-                    icon: FontAwesomeIcons.fileArrowUp,
-                    title: t.transactions.importCsv,
-                    onTap: _importCsv,
-                  ),
-                  if (kIsWeb)
-                    ListTile(
-                      leading: const FaIcon(FontAwesomeIcons.android),
-                      title: Text(t.profile.downloadApk),
-                      subtitle: Text(t.profile.downloadApkDescription),
-                      trailing: const FaIcon(FontAwesomeIcons.download),
-                      onTap: _downloadApk,
-                    ),
-                  const Divider(),
-                  _ThemeSelector(),
-                  const Divider(),
-                  ListTile(
-                    leading: const FaIcon(
-                      FontAwesomeIcons.triangleExclamation,
-                      color: Colors.red,
-                    ),
-                    title: Text(
-                      t.profile.clearData,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                    subtitle: Text(t.profile.clearDataDescription),
-                    onTap: () => _clearAccountData(user.id),
-                  ),
-                  const Divider(),
-                  const SizedBox(height: 24),
-                  FinancoButton(
-                    label: t.auth.signOut,
-                    isOutlined: true,
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                        const AuthSignOutRequested(),
-                      );
-                    },
-                  ),
-                ],
+              return _ProfileContent(
+                userId: state.user.id,
+                name: state.user.name,
+                email: state.user.email,
+                photoUrl: state.user.photoUrl,
+                onImportCsv: _importCsv,
+                onDownloadApk: _downloadApk,
+                onSignOut: _confirmSignOut,
+                onClearData: () => _clearAccountData(state.user.id),
               );
             }
             return const SizedBox.shrink();
@@ -236,99 +187,108 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-class _ThemeSelector extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeMode>(
-      builder: (context, themeMode) {
-        // ThemeMode.system follows the OS, so resolve it to the actual
-        // brightness — otherwise the switch can appear "off" while the app
-        // is already rendering in dark mode, making the first toggle look
-        // like a no-op.
-        final isDark = switch (themeMode) {
-          ThemeMode.dark => true,
-          ThemeMode.light => false,
-          ThemeMode.system =>
-            MediaQuery.platformBrightnessOf(context) == Brightness.dark,
-        };
-        return SwitchListTile(
-          secondary: FaIcon(
-            isDark ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-          ),
-          title: Text(t.profile.theme),
-          subtitle: Text(
-            isDark ? t.profile.themeDark : t.profile.themeLight,
-          ),
-          value: isDark,
-          onChanged: (value) => unawaited(
-            context.read<ThemeCubit>().setThemeMode(
-              value ? ThemeMode.dark : ThemeMode.light,
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({
+    required this.userId,
+    required this.name,
+    required this.email,
+    required this.photoUrl,
+    required this.onImportCsv,
+    required this.onDownloadApk,
+    required this.onSignOut,
+    required this.onClearData,
   });
 
-  final FaIconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: FaIcon(icon),
-      title: Text(title),
-      trailing: const FaIcon(FontAwesomeIcons.chevronRight),
-      onTap: onTap,
-    );
-  }
-}
-
-class _ProfileAvatar extends StatefulWidget {
-  const _ProfileAvatar({required this.name, this.photoUrl});
-
+  final String userId;
   final String name;
+  final String email;
   final String? photoUrl;
-
-  @override
-  State<_ProfileAvatar> createState() => _ProfileAvatarState();
-}
-
-class _ProfileAvatarState extends State<_ProfileAvatar> {
-  bool _imageError = false;
+  final Future<void> Function() onImportCsv;
+  final VoidCallback onDownloadApk;
+  final VoidCallback onSignOut;
+  final VoidCallback onClearData;
 
   @override
   Widget build(BuildContext context) {
-    final showImage = widget.photoUrl != null && !_imageError;
-
-    return CircleAvatar(
-      radius: 48,
-      backgroundColor: context.colorScheme.primaryContainer,
-      backgroundImage: showImage ? NetworkImage(widget.photoUrl!) : null,
-      onBackgroundImageError: showImage
-          ? (error, stackTrace) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) setState(() => _imageError = true);
-              });
-            }
-          : null,
-      child: !showImage
-          ? Text(
-              widget.name.isNotEmpty ? widget.name[0].toUpperCase() : '?',
-              style: context.textTheme.headlineLarge?.copyWith(
-                color: context.colorScheme.onPrimaryContainer,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      children: [
+        ProfileHeaderCard(name: name, email: email, photoUrl: photoUrl),
+        const SizedBox(height: 24),
+        ProfileSection(
+          label: t.profile.sectionYourData,
+          children: [
+            ProfileRow(
+              icon: FontAwesomeIcons.buildingColumns,
+              title: t.profile.accounts,
+              onTap: () => context.push(AppRoutes.accounts),
+            ),
+            ProfileRow(
+              icon: FontAwesomeIcons.tags,
+              title: t.profile.categories,
+              accent: context.appColors.income,
+              onTap: () => context.push(AppRoutes.categories),
+            ),
+            ProfileRow(
+              icon: FontAwesomeIcons.fileArrowUp,
+              title: t.transactions.importCsv,
+              accent: context.appColors.warning,
+              onTap: () => unawaited(onImportCsv()),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        ProfileSection(
+          label: t.profile.sectionPreferences,
+          children: const [ProfileThemeRow()],
+        ),
+        if (kIsWeb) ...[
+          const SizedBox(height: 20),
+          ProfileSection(
+            label: t.profile.sectionGetTheApp,
+            children: [
+              ProfileRow(
+                icon: FontAwesomeIcons.android,
+                title: t.profile.downloadApk,
+                subtitle: t.profile.downloadApkDescription,
+                accent: context.appColors.success,
+                trailing: FaIcon(
+                  FontAwesomeIcons.download,
+                  size: 14,
+                  color: context.appColors.onBackgroundLight,
+                ),
+                onTap: onDownloadApk,
               ),
-            )
-          : null,
+            ],
+          ),
+        ],
+        const SizedBox(height: 20),
+        ProfileSection(
+          label: t.profile.sectionAccount,
+          children: [
+            ProfileRow(
+              icon: FontAwesomeIcons.rightFromBracket,
+              title: t.auth.signOut,
+              accent: context.appColors.onBackgroundLight,
+              onTap: onSignOut,
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        ProfileSection(
+          label: t.profile.sectionDangerZone,
+          children: [
+            ProfileRow(
+              icon: FontAwesomeIcons.triangleExclamation,
+              title: t.profile.clearData,
+              subtitle: t.profile.clearDataDescription,
+              destructive: true,
+              onTap: onClearData,
+            ),
+          ],
+        ),
+        const SizedBox(height: 80),
+      ],
     );
   }
 }

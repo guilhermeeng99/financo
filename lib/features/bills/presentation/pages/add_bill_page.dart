@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_pill_toggle.dart';
+import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
@@ -11,9 +13,9 @@ import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart'
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/bills/presentation/cubit/bill_form_cubit.dart';
+import 'package:financo/features/bills/presentation/widgets/bill_category_picker_sheet.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
-import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,15 +41,13 @@ class AddBillPage extends StatelessWidget {
         userId: userId,
         existingBill: existingBill,
       ),
-      child: _AddBillView(existingBill: existingBill),
+      child: const _AddBillView(),
     );
   }
 }
 
 class _AddBillView extends StatefulWidget {
-  const _AddBillView({this.existingBill});
-
-  final BillEntity? existingBill;
+  const _AddBillView();
 
   @override
   State<_AddBillView> createState() => _AddBillViewState();
@@ -120,162 +120,429 @@ class _AddBillViewState extends State<_AddBillView> {
     if (picked != null) cubit.updateDueDate(picked);
   }
 
+  Future<void> _pickCategory() async {
+    final cubit = context.read<BillFormCubit>();
+    final state = cubit.state;
+    final picked = await showBillCategoryPicker(
+      context: context,
+      billType: state.type,
+      selectedId: state.categoryId,
+    );
+    if (picked != null) cubit.updateCategoryId(picked);
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      unawaited(context.read<BillFormCubit>().submit());
+    }
+  }
+
+  void _onFormStateChanged(BuildContext context, BillFormState state) {
+    if (state.status == BillFormStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            state.isEditing ? t.bills.billUpdated : t.bills.billCreated,
+          ),
+        ),
+      );
+      context.pop(true);
+    } else if (state.status == BillFormStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocListener<BillFormCubit, BillFormState>(
-      listener: (context, state) {
-        if (state.status == BillFormStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isEditing ? t.bills.billUpdated : t.bills.billCreated,
-              ),
-            ),
-          );
-          context.pop(true);
-        } else if (state.status == BillFormStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure?.message ?? t.general.error),
-            ),
-          );
-        }
-      },
+      listener: _onFormStateChanged,
       child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<BillFormCubit, BillFormState>(
-            builder: (context, state) => Text(
-              state.isEditing ? t.bills.editBill : t.bills.addBill,
-            ),
-          ),
-          actions: [
-            BlocBuilder<BillFormCubit, BillFormState>(
-              builder: (context, state) {
-                if (!state.isEditing) return const SizedBox.shrink();
-                return IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.trash, size: 18),
-                  onPressed: () => _confirmDelete(state.existingId!),
-                );
-              },
-            ),
-          ],
+        backgroundColor: colors.background,
+        appBar: _buildAppBar(),
+        body: BlocBuilder<BillFormCubit, BillFormState>(
+          builder: (context, state) {
+            if (state.isEditing && state.isPaid) return _PaidBillBanner();
+            return _FormBody(
+              formKey: _formKey,
+              descriptionController: _descriptionController,
+              amountController: _amountController,
+              notesController: _notesController,
+              onPickDate: _pickDate,
+              onPickCategory: _pickCategory,
+            );
+          },
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: BlocBuilder<BillFormCubit, BillFormState>(
-              builder: (context, state) {
-                final cubit = context.read<BillFormCubit>();
-                if (state.isEditing && state.isPaid) {
-                  return _PaidBillBanner();
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+        bottomNavigationBar: BlocBuilder<BillFormCubit, BillFormState>(
+          builder: (context, state) {
+            if (state.isEditing && state.isPaid) {
+              return const SizedBox.shrink();
+            }
+            return FinancoSubmitBar(
+              label: state.isEditing ? t.general.update : t.general.create,
+              isLoading: state.status == BillFormStatus.submitting,
+              isEnabled: state.isValid,
+              onSubmit: _onSubmit,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    final colors = context.appColors;
+    return AppBar(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      centerTitle: true,
+      title: BlocBuilder<BillFormCubit, BillFormState>(
+        builder: (context, state) => Text(
+          state.isEditing ? t.bills.editBill : t.bills.addBill,
+          style: context.textTheme.titleMedium?.copyWith(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      actions: [
+        BlocBuilder<BillFormCubit, BillFormState>(
+          builder: (context, state) {
+            if (!state.isEditing) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _AppBarIconButton(
+                icon: FontAwesomeIcons.trash,
+                color: colors.error,
+                onPressed: () => _confirmDelete(state.existingId!),
+                tooltip: t.general.delete,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _FormBody extends StatelessWidget {
+  const _FormBody({
+    required this.formKey,
+    required this.descriptionController,
+    required this.amountController,
+    required this.notesController,
+    required this.onPickDate,
+    required this.onPickCategory,
+  });
+
+  final GlobalKey<FormState> formKey;
+  final TextEditingController descriptionController;
+  final TextEditingController amountController;
+  final TextEditingController notesController;
+  final VoidCallback onPickDate;
+  final VoidCallback onPickCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Form(
+        key: formKey,
+        child: BlocBuilder<BillFormCubit, BillFormState>(
+          builder: (context, state) {
+            final cubit = context.read<BillFormCubit>();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FinancoFormSection(
+                  label: t.bills.type,
                   children: [
-                    SegmentedButton<BillType>(
-                      segments: [
-                        ButtonSegment(
+                    FinancoPillToggle<BillType>(
+                      selected: state.type,
+                      disabled: state.isEditing,
+                      onChanged: cubit.updateType,
+                      options: [
+                        FinancoPillToggleOption(
                           value: BillType.payable,
-                          label: Text(t.bills.typePayable),
-                          icon: const FaIcon(
-                            FontAwesomeIcons.arrowUp,
-                            size: 14,
-                          ),
+                          label: t.bills.typePayable,
+                          icon: FontAwesomeIcons.arrowUp,
                         ),
-                        ButtonSegment(
+                        FinancoPillToggleOption(
                           value: BillType.receivable,
-                          label: Text(t.bills.typeReceivable),
-                          icon: const FaIcon(
-                            FontAwesomeIcons.arrowDown,
-                            size: 14,
-                          ),
+                          label: t.bills.typeReceivable,
+                          icon: FontAwesomeIcons.arrowDown,
                         ),
                       ],
-                      selected: {state.type},
-                      onSelectionChanged: state.isEditing
-                          ? null
-                          : (s) => cubit.updateType(s.first),
                     ),
-                    const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                FinancoFormSection(
+                  label: t.bills.formDetails,
+                  children: [
                     FinancoTextField(
-                      controller: _descriptionController,
+                      controller: descriptionController,
                       label: t.bills.description,
                       hintText: t.bills.descriptionHint,
                       validator: Validators.requiredField,
                       onChanged: cubit.updateDescription,
                     ),
-                    const SizedBox(height: 16),
-                    FinancoTextField(
-                      controller: _amountController,
-                      label: t.bills.amountLabel,
-                      hintText: '0.00',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: Validators.amount,
-                      onChanged: cubit.updateAmount,
-                    ),
-                    const SizedBox(height: 16),
-                    InkWell(
-                      onTap: _pickDate,
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: t.bills.dueDate,
-                          border: const OutlineInputBorder(),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: FinancoTextField(
+                            controller: amountController,
+                            label: t.bills.amountLabel,
+                            hintText: '0.00',
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                            validator: Validators.amount,
+                            onChanged: cubit.updateAmount,
+                          ),
                         ),
-                        child: Text(
-                          DateFormat('dd/MM/yyyy').format(state.dueDate),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SegmentedButton<BillRecurrence>(
-                      segments: [
-                        ButtonSegment(
-                          value: BillRecurrence.oneShot,
-                          label: Text(t.bills.oneShot),
-                        ),
-                        ButtonSegment(
-                          value: BillRecurrence.monthly,
-                          label: Text(t.bills.monthly),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _DateField(
+                            label: t.bills.dueDate,
+                            value: state.dueDate,
+                            onTap: onPickDate,
+                          ),
                         ),
                       ],
-                      selected: {state.recurrence},
-                      onSelectionChanged: state.isEditing
-                          ? null
-                          : (s) => cubit.updateRecurrence(s.first),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                FinancoFormSection(
+                  label: t.bills.formClassification,
+                  children: [
+                    _CategoryRowField(
+                      billType: state.type,
+                      selectedId: state.categoryId,
+                      onTap: onPickCategory,
                     ),
                     const SizedBox(height: 16),
-                    _CategoryDropdown(
-                      selectedId: state.categoryId,
-                      billType: state.type,
-                      onChanged: cubit.updateCategoryId,
+                    FinancoPillToggle<BillRecurrence>(
+                      selected: state.recurrence,
+                      disabled: state.isEditing,
+                      onChanged: cubit.updateRecurrence,
+                      options: [
+                        FinancoPillToggleOption(
+                          value: BillRecurrence.oneShot,
+                          label: t.bills.oneShot,
+                        ),
+                        FinancoPillToggleOption(
+                          value: BillRecurrence.monthly,
+                          label: t.bills.monthly,
+                          icon: FontAwesomeIcons.arrowsRotate,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     FinancoTextField(
-                      controller: _notesController,
+                      controller: notesController,
                       label: t.bills.notes,
                       hintText: t.bills.notesHint,
                       maxLines: 3,
                       onChanged: cubit.updateNotes,
                     ),
-                    const SizedBox(height: 32),
-                    FinancoButton(
-                      label: state.isEditing
-                          ? t.general.update
-                          : t.general.create,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          unawaited(cubit.submit());
-                        }
-                      },
-                      isLoading: state.status == BillFormStatus.submitting,
-                    ),
                   ],
-                );
-              },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final DateTime value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FaIcon(
+              FontAwesomeIcons.calendar,
+              size: 14,
+              color: context.appColors.onBackgroundLight,
             ),
+          ),
+        ),
+        child: Text(
+          DateFormat('dd/MM/yyyy').format(value),
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.appColors.onBackground,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryRowField extends StatelessWidget {
+  const _CategoryRowField({
+    required this.billType,
+    required this.selectedId,
+    required this.onTap,
+  });
+
+  final BillType billType;
+  final String? selectedId;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final categoriesState = context.watch<CategoriesCubit>().state;
+    final wantedType = billType == BillType.receivable
+        ? CategoryType.income
+        : CategoryType.expense;
+    final categories = categoriesState is CategoriesLoaded
+        ? categoriesState.categories.where((c) => c.type == wantedType).toList()
+        : <CategoryEntity>[];
+    final selected = selectedId != null
+        ? categories.where((c) => c.id == selectedId).toList()
+        : <CategoryEntity>[];
+    final hasSelection = selected.isNotEmpty;
+    final isMissing = selectedId != null && !hasSelection;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            if (hasSelection) ...[
+              _CategoryDot(category: selected.first),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t.bills.category,
+                    style: context.textTheme.labelSmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasSelection
+                        ? selected.first.name
+                        : isMissing
+                            ? t.bills.categoryRequired
+                            : t.bills.pickCategory,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: hasSelection
+                          ? colors.onBackground
+                          : colors.onBackgroundLight,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FaIcon(
+              FontAwesomeIcons.chevronRight,
+              size: 12,
+              color: colors.onBackgroundLight,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryDot extends StatelessWidget {
+  const _CategoryDot({required this.category});
+
+  final CategoryEntity category;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Color(category.color);
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: Icon(
+          IconData(category.icon, fontFamily: 'MaterialIcons'),
+          size: 18,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
           ),
         ),
       ),
@@ -286,107 +553,39 @@ class _AddBillViewState extends State<_AddBillView> {
 class _PaidBillBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FaIcon(
-              FontAwesomeIcons.circleCheck,
-              size: 64,
-              color: context.appColors.income,
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: colors.success.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Center(
+                child: FaIcon(
+                  FontAwesomeIcons.circleCheck,
+                  size: 36,
+                  color: colors.success,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               t.bills.cannotEditPaid,
-              style: context.textTheme.titleMedium,
+              style: context.textTheme.titleMedium?.copyWith(
+                color: colors.onBackground,
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CategoryDropdown extends StatelessWidget {
-  const _CategoryDropdown({
-    required this.selectedId,
-    required this.billType,
-    required this.onChanged,
-  });
-
-  final String? selectedId;
-  final BillType billType;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final state = context.watch<CategoriesCubit>().state;
-    final wantedType = billType == BillType.receivable
-        ? CategoryType.income
-        : CategoryType.expense;
-    final categories = state is CategoriesLoaded
-        ? organizeCategoriesForDisplay(
-            state.categories.where((c) => c.type == wantedType).toList(),
-          )
-        : <CategoryEntity>[];
-
-    // Reset selection when current category doesn't belong to the wanted type.
-    final hasMatch = selectedId != null &&
-        categories.any((c) => c.id == selectedId);
-    final effectiveSelectedId = hasMatch ? selectedId : null;
-
-    return DropdownButtonFormField<String?>(
-      initialValue: effectiveSelectedId,
-      isExpanded: true,
-      decoration: InputDecoration(
-        labelText: t.bills.category,
-        border: const OutlineInputBorder(),
-      ),
-      validator: (value) =>
-          value == null ? t.bills.categoryRequired : null,
-      items: categories
-          .map(
-            (c) => DropdownMenuItem<String?>(
-              value: c.id,
-              child: _CategoryDropdownItem(category: c),
-            ),
-          )
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
-}
-
-class _CategoryDropdownItem extends StatelessWidget {
-  const _CategoryDropdownItem({required this.category});
-
-  final CategoryEntity category;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    if (!category.isSubcategory) {
-      return Text(category.name, overflow: TextOverflow.ellipsis);
-    }
-    // Subcategories get an indent + arrow icon so the parent/child hierarchy
-    // is obvious in the dropdown (mirrors the Categories list page).
-    return Padding(
-      padding: const EdgeInsets.only(left: 16),
-      child: Row(
-        children: [
-          FaIcon(
-            FontAwesomeIcons.arrowTurnDown,
-            size: 12,
-            color: colors.onBackgroundLight,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(category.name, overflow: TextOverflow.ellipsis),
-          ),
-        ],
       ),
     );
   }

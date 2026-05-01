@@ -53,6 +53,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsReportsEn reports = TranslationsReportsEn._(_root);
 	late final TranslationsBillsEn bills = TranslationsBillsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
+	late final TranslationsStartupEn startup = TranslationsStartupEn._(_root);
 }
 
 // Path: general
@@ -644,6 +645,33 @@ class TranslationsAccountsEn {
 
 	/// en: 'No transactions in this period'
 	String get noTransactionsInPeriod => 'No transactions in this period';
+
+	/// en: 'Type'
+	String get formSectionType => 'Type';
+
+	/// en: 'Details'
+	String get formSectionDetails => 'Details';
+
+	/// en: 'Credit card'
+	String get formSectionCreditCard => 'Credit card';
+
+	/// en: 'Closing day'
+	String get pickClosingDay => 'Closing day';
+
+	/// en: 'Due day'
+	String get pickDueDay => 'Due day';
+
+	/// en: 'Linked checking account'
+	String get pickLinkedAccount => 'Linked checking account';
+
+	/// en: 'Create a checking account first.'
+	String get noLinkedCandidates => 'Create a checking account first.';
+
+	/// en: 'Add your first account'
+	String get addFirst => 'Add your first account';
+
+	/// en: 'No accounts yet'
+	String get emptyTitle => 'No accounts yet';
 }
 
 // Path: categories
@@ -752,6 +780,27 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
 	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
+
+	/// en: 'Type'
+	String get formSectionType => 'Type';
+
+	/// en: 'Details'
+	String get formSectionDetails => 'Details';
+
+	/// en: 'Appearance'
+	String get formSectionAppearance => 'Appearance';
+
+	/// en: 'Parent category'
+	String get pickParent => 'Parent category';
+
+	/// en: 'None'
+	String get noParentChosen => 'None';
+
+	/// en: 'Add your first category'
+	String get addFirst => 'Add your first category';
+
+	/// en: 'No categories yet'
+	String get emptyTitle => 'No categories yet';
 }
 
 // Path: chat
@@ -786,6 +835,37 @@ class TranslationsChatEn {
 	/// en: 'Sorry, I couldn't understand that. Could you try again?'
 	String get error => 'Sorry, I couldn\'t understand that. Could you try again?';
 
+	/// en: 'Financo AI'
+	String get aiName => 'Financo AI';
+
+	/// en: 'Online'
+	String get online => 'Online';
+
+	/// en: 'Today'
+	String get today => 'Today';
+
+	/// en: 'Yesterday'
+	String get yesterday => 'Yesterday';
+
+	/// en: 'via WhatsApp'
+	String get viaWhatsapp => 'via WhatsApp';
+
+	/// en: 'Try asking'
+	String get tryAsking => 'Try asking';
+
+	/// en: 'I spent R$ 30 at the bakery'
+	String get suggestion1 => 'I spent R\$ 30 at the bakery';
+
+	/// en: 'How much do I have on my Nubank account?'
+	String get suggestion2 => 'How much do I have on my Nubank account?';
+
+	/// en: 'Show my overdue bills'
+	String get suggestion3 => 'Show my overdue bills';
+
+	/// en: 'Create a category called Leisure'
+	String get suggestion4 => 'Create a category called Leisure';
+
+	late final TranslationsChatActionEn action = TranslationsChatActionEn._(_root);
 	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
 	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
 }
@@ -996,6 +1076,33 @@ class TranslationsBillsEn {
 	/// en: 'Create at least one income category first.'
 	String get noIncomeCategory => 'Create at least one income category first.';
 
+	/// en: 'This month'
+	String get summaryTitle => 'This month';
+
+	/// en: 'Nothing due — you're all caught up'
+	String get summaryAllCaughtUp => 'Nothing due — you\'re all caught up';
+
+	/// en: '$count overdue'
+	String overdueChip({required Object count}) => '${count} overdue';
+
+	/// en: '$count pending'
+	String pendingCount({required Object count}) => '${count} pending';
+
+	/// en: 'No bills yet'
+	String get emptyTitle => 'No bills yet';
+
+	/// en: 'Add your first bill'
+	String get addFirst => 'Add your first bill';
+
+	/// en: 'Details'
+	String get formDetails => 'Details';
+
+	/// en: 'Classification'
+	String get formClassification => 'Classification';
+
+	/// en: 'Choose a category'
+	String get pickCategory => 'Choose a category';
+
 	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
 }
 
@@ -1054,6 +1161,144 @@ class TranslationsProfileEn {
 
 	/// en: 'Install the mobile version on your Android device'
 	String get downloadApkDescription => 'Install the mobile version on your Android device';
+
+	/// en: 'Your data'
+	String get sectionYourData => 'Your data';
+
+	/// en: 'Preferences'
+	String get sectionPreferences => 'Preferences';
+
+	/// en: 'Get the app'
+	String get sectionGetTheApp => 'Get the app';
+
+	/// en: 'Account'
+	String get sectionAccount => 'Account';
+
+	/// en: 'Danger zone'
+	String get sectionDangerZone => 'Danger zone';
+
+	/// en: 'Appearance'
+	String get appearance => 'Appearance';
+}
+
+// Path: startup
+class TranslationsStartupEn {
+	TranslationsStartupEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Your finances, in flow.'
+	String get tagline => 'Your finances, in flow.';
+
+	/// en: 'Checking your account'
+	String get stepCheckingAuth => 'Checking your account';
+
+	/// en: 'Syncing your data'
+	String get stepSyncingData => 'Syncing your data';
+
+	/// en: 'Almost there'
+	String get stepReady => 'Almost there';
+
+	/// en: 'Something went wrong'
+	String get errorTitle => 'Something went wrong';
+
+	/// en: 'Try again'
+	String get errorRetry => 'Try again';
+}
+
+// Path: chat.action
+class TranslationsChatActionEn {
+	TranslationsChatActionEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Confirm expense'
+	String get transactionExpense => 'Confirm expense';
+
+	/// en: 'Confirm income'
+	String get transactionIncome => 'Confirm income';
+
+	/// en: 'Create account'
+	String get accountCreate => 'Create account';
+
+	/// en: 'Delete account'
+	String get accountDelete => 'Delete account';
+
+	/// en: 'Create category'
+	String get categoryCreate => 'Create category';
+
+	/// en: 'Delete category'
+	String get categoryDelete => 'Delete category';
+
+	/// en: 'Schedule bill'
+	String get billCreate => 'Schedule bill';
+
+	/// en: 'Update bill'
+	String get billUpdate => 'Update bill';
+
+	/// en: 'Mark bill as paid'
+	String get billMarkPaid => 'Mark bill as paid';
+
+	/// en: 'Delete bill'
+	String get billDelete => 'Delete bill';
+
+	/// en: 'Amount'
+	String get fieldAmount => 'Amount';
+
+	/// en: 'Description'
+	String get fieldDescription => 'Description';
+
+	/// en: 'Category'
+	String get fieldCategory => 'Category';
+
+	/// en: 'Account'
+	String get fieldAccount => 'Account';
+
+	/// en: 'Date'
+	String get fieldDate => 'Date';
+
+	/// en: 'Type'
+	String get fieldType => 'Type';
+
+	/// en: 'Bank'
+	String get fieldBank => 'Bank';
+
+	/// en: 'Credit limit'
+	String get fieldCreditLimit => 'Credit limit';
+
+	/// en: 'Closing day'
+	String get fieldClosingDay => 'Closing day';
+
+	/// en: 'Due day'
+	String get fieldDueDay => 'Due day';
+
+	/// en: 'Due date'
+	String get fieldDueDate => 'Due date';
+
+	/// en: 'Recurrence'
+	String get fieldRecurrence => 'Recurrence';
+
+	/// en: 'Name'
+	String get fieldName => 'Name';
+
+	/// en: 'Linked account'
+	String get fieldLinkedAccount => 'Linked account';
+
+	/// en: 'Initial balance'
+	String get fieldBalance => 'Initial balance';
+
+	/// en: 'Notes'
+	String get fieldNotes => 'Notes';
+
+	/// en: 'Confirm'
+	String get confirm => 'Confirm';
+
+	/// en: 'Cancel'
+	String get cancel => 'Cancel';
 }
 
 // Path: chat.audio
@@ -1312,6 +1557,15 @@ extension on Translations {
 			'accounts.monthExpenses' => 'Expenses',
 			'accounts.monthResult' => 'Result',
 			'accounts.noTransactionsInPeriod' => 'No transactions in this period',
+			'accounts.formSectionType' => 'Type',
+			'accounts.formSectionDetails' => 'Details',
+			'accounts.formSectionCreditCard' => 'Credit card',
+			'accounts.pickClosingDay' => 'Closing day',
+			'accounts.pickDueDay' => 'Due day',
+			'accounts.pickLinkedAccount' => 'Linked checking account',
+			'accounts.noLinkedCandidates' => 'Create a checking account first.',
+			'accounts.addFirst' => 'Add your first account',
+			'accounts.emptyTitle' => 'No accounts yet',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
 			'categories.editCategory' => 'Edit Category',
@@ -1345,6 +1599,13 @@ extension on Translations {
 			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
 			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
 			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
+			'categories.formSectionType' => 'Type',
+			'categories.formSectionDetails' => 'Details',
+			'categories.formSectionAppearance' => 'Appearance',
+			'categories.pickParent' => 'Parent category',
+			'categories.noParentChosen' => 'None',
+			'categories.addFirst' => 'Add your first category',
+			'categories.emptyTitle' => 'No categories yet',
 			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
@@ -1353,6 +1614,44 @@ extension on Translations {
 			'chat.confirmed' => 'Transaction saved!',
 			'chat.cancelled' => 'Transaction cancelled.',
 			'chat.error' => 'Sorry, I couldn\'t understand that. Could you try again?',
+			'chat.aiName' => 'Financo AI',
+			'chat.online' => 'Online',
+			'chat.today' => 'Today',
+			'chat.yesterday' => 'Yesterday',
+			'chat.viaWhatsapp' => 'via WhatsApp',
+			'chat.tryAsking' => 'Try asking',
+			'chat.suggestion1' => 'I spent R\$ 30 at the bakery',
+			'chat.suggestion2' => 'How much do I have on my Nubank account?',
+			'chat.suggestion3' => 'Show my overdue bills',
+			'chat.suggestion4' => 'Create a category called Leisure',
+			'chat.action.transactionExpense' => 'Confirm expense',
+			'chat.action.transactionIncome' => 'Confirm income',
+			'chat.action.accountCreate' => 'Create account',
+			'chat.action.accountDelete' => 'Delete account',
+			'chat.action.categoryCreate' => 'Create category',
+			'chat.action.categoryDelete' => 'Delete category',
+			'chat.action.billCreate' => 'Schedule bill',
+			'chat.action.billUpdate' => 'Update bill',
+			'chat.action.billMarkPaid' => 'Mark bill as paid',
+			'chat.action.billDelete' => 'Delete bill',
+			'chat.action.fieldAmount' => 'Amount',
+			'chat.action.fieldDescription' => 'Description',
+			'chat.action.fieldCategory' => 'Category',
+			'chat.action.fieldAccount' => 'Account',
+			'chat.action.fieldDate' => 'Date',
+			'chat.action.fieldType' => 'Type',
+			'chat.action.fieldBank' => 'Bank',
+			'chat.action.fieldCreditLimit' => 'Credit limit',
+			'chat.action.fieldClosingDay' => 'Closing day',
+			'chat.action.fieldDueDay' => 'Due day',
+			'chat.action.fieldDueDate' => 'Due date',
+			'chat.action.fieldRecurrence' => 'Recurrence',
+			'chat.action.fieldName' => 'Name',
+			'chat.action.fieldLinkedAccount' => 'Linked account',
+			'chat.action.fieldBalance' => 'Initial balance',
+			'chat.action.fieldNotes' => 'Notes',
+			'chat.action.confirm' => 'Confirm',
+			'chat.action.cancel' => 'Cancel',
 			'chat.audio.start' => 'Record voice message',
 			'chat.audio.stop' => 'Stop recording',
 			'chat.audio.cancel' => 'Cancel',
@@ -1429,6 +1728,15 @@ extension on Translations {
 			'bills.dueTomorrow' => 'tomorrow',
 			'bills.noExpenseCategory' => 'Create at least one expense category first.',
 			'bills.noIncomeCategory' => 'Create at least one income category first.',
+			'bills.summaryTitle' => 'This month',
+			'bills.summaryAllCaughtUp' => 'Nothing due — you\'re all caught up',
+			'bills.overdueChip' => ({required Object count}) => '${count} overdue',
+			'bills.pendingCount' => ({required Object count}) => '${count} pending',
+			'bills.emptyTitle' => 'No bills yet',
+			'bills.addFirst' => 'Add your first bill',
+			'bills.formDetails' => 'Details',
+			'bills.formClassification' => 'Classification',
+			'bills.pickCategory' => 'Choose a category',
 			'bills.notification.title' => ({required Object count}) => 'You have ${count} bill(s) to pay',
 			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) is due today',
 			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) is overdue',
@@ -1448,6 +1756,18 @@ extension on Translations {
 			'profile.clearDataSuccess' => 'Your account data was cleared.',
 			'profile.downloadApk' => 'Download Android app',
 			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',
+			'profile.sectionYourData' => 'Your data',
+			'profile.sectionPreferences' => 'Preferences',
+			'profile.sectionGetTheApp' => 'Get the app',
+			'profile.sectionAccount' => 'Account',
+			'profile.sectionDangerZone' => 'Danger zone',
+			'profile.appearance' => 'Appearance',
+			'startup.tagline' => 'Your finances, in flow.',
+			'startup.stepCheckingAuth' => 'Checking your account',
+			'startup.stepSyncingData' => 'Syncing your data',
+			'startup.stepReady' => 'Almost there',
+			'startup.errorTitle' => 'Something went wrong',
+			'startup.errorRetry' => 'Try again',
 			_ => null,
 		};
 	}

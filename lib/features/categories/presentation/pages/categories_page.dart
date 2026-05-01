@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/empty_state.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_large_app_bar.dart';
+import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -10,6 +11,8 @@ import 'package:financo/features/categories/domain/entities/category_entity.dart
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
 import 'package:financo/features/categories/presentation/widgets/categories_csv_import_dialog.dart';
+import 'package:financo/features/categories/presentation/widgets/categories_empty_state.dart';
+import 'package:financo/features/categories/presentation/widgets/category_tile.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,70 +26,62 @@ class CategoriesPage extends StatefulWidget {
   State<CategoriesPage> createState() => _CategoriesPageState();
 }
 
-class _CategoriesPageState extends State<CategoriesPage>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+class _CategoriesPageState extends State<CategoriesPage> {
+  CategoryType _filter = CategoryType.expense;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     unawaited(context.read<CategoriesCubit>().loadCategories());
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _openAdd() async {
+    final result = await context.push(AppRoutes.addCategory);
+    if (result == true && mounted) {
+      unawaited(
+        context.read<CategoriesCubit>().loadCategories(forceRefresh: true),
+      );
+    }
   }
+
+  Future<void> _openEdit(CategoryEntity category) async {
+    final result = await context.push(
+      AppRoutes.editCategory,
+      extra: category,
+    );
+    if (result == true && mounted) {
+      unawaited(
+        context.read<CategoriesCubit>().loadCategories(forceRefresh: true),
+      );
+    }
+  }
+
+  Future<void> _openImport() => showCategoriesCsvImportDialog(context);
 
   @override
   Widget build(BuildContext context) {
-    final categoriesState = context.watch<CategoriesCubit>().state;
-    final categories = switch (categoriesState) {
-      CategoriesLoaded(:final categories) => categories,
-      CategoriesImported(:final categories) => categories,
-      _ => const <CategoryEntity>[],
-    };
-    final incomeCount = categories
-        .where((c) => c.type == CategoryType.income)
-        .length;
-    final expenseCount = categories
-        .where((c) => c.type == CategoryType.expense)
-        .length;
-
+    final colors = context.appColors;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t.categories.title),
+      appBar: FinancoLargeAppBar(
+        title: t.categories.title,
+        showBack: true,
         actions: [
-          IconButton(
-            tooltip: t.categories.importCsv,
-            onPressed: () => showCategoriesCsvImportDialog(context),
-            icon: const Icon(Icons.upload_file),
+          Padding(
+            padding: const EdgeInsets.only(right: 16, top: 4),
+            child: _AppBarIconButton(
+              icon: FontAwesomeIcons.fileArrowUp,
+              tooltip: t.categories.importCsv,
+              color: colors.primary,
+              onPressed: () => unawaited(_openImport()),
+            ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: '${t.categories.incomeType} ($incomeCount)'),
-            Tab(text: '${t.categories.expenseType} ($expenseCount)'),
-          ],
-        ),
       ),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
           heroTag: 'categories_fab',
-          onPressed: () async {
-            final result = await context.push(AppRoutes.addCategory);
-            if (result == true && context.mounted) {
-              unawaited(
-                context.read<CategoriesCubit>().loadCategories(
-                  forceRefresh: true,
-                ),
-              );
-            }
-          },
-          child: const Icon(Icons.add),
+          onPressed: _openAdd,
+          child: const FaIcon(FontAwesomeIcons.plus),
         ),
       ),
       body: BlocBuilder<CategoriesCubit, CategoriesState>(
@@ -95,137 +90,150 @@ class _CategoriesPageState extends State<CategoriesPage>
           if (state is CategoriesError) {
             return ErrorView(
               message: state.failure.message,
-              onRetry: () => context.read<CategoriesCubit>().loadCategories(
-                forceRefresh: true,
-              ),
+              onRetry: () => context
+                  .read<CategoriesCubit>()
+                  .loadCategories(forceRefresh: true),
             );
           }
-          if (state is CategoriesLoaded || state is CategoriesImported) {
-            final categories = state is CategoriesLoaded
-                ? state.categories
-                : (state as CategoriesImported).categories;
-            if (categories.isEmpty) {
-              return EmptyState(
-                icon: FontAwesomeIcons.tags,
-                message: t.categories.empty,
-              );
-            }
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                _CategoryList(
-                  categories: organizeCategoriesForDisplay(
-                    categories
-                        .where((c) => c.type == CategoryType.income)
-                        .toList(),
-                  ),
-                ),
-                _CategoryList(
-                  categories: organizeCategoriesForDisplay(
-                    categories
-                        .where((c) => c.type == CategoryType.expense)
-                        .toList(),
-                  ),
-                ),
-              ],
-            );
+          final categories = switch (state) {
+            CategoriesLoaded(:final categories) => categories,
+            CategoriesImported(:final categories) => categories,
+            _ => const <CategoryEntity>[],
+          };
+          if (categories.isEmpty) {
+            return CategoriesEmptyState(onAddPressed: _openAdd);
           }
-          return const SizedBox.shrink();
+          return _CategoriesBody(
+            categories: categories,
+            filter: _filter,
+            onFilterChanged: (f) => setState(() => _filter = f),
+            onTapCategory: _openEdit,
+          );
         },
       ),
     );
   }
 }
 
-class _CategoryList extends StatelessWidget {
-  const _CategoryList({required this.categories});
+class _CategoriesBody extends StatelessWidget {
+  const _CategoriesBody({
+    required this.categories,
+    required this.filter,
+    required this.onFilterChanged,
+    required this.onTapCategory,
+  });
 
   final List<CategoryEntity> categories;
+  final CategoryType filter;
+  final ValueChanged<CategoryType> onFilterChanged;
+  final void Function(CategoryEntity) onTapCategory;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        final colors = context.appColors;
-        final parent = category.parentId == null
-            ? null
-            : categories.where((c) => c.id == category.parentId).firstOrNull;
-        final typeLabel = category.isSubcategory
-            ? '${parent?.name ?? t.categories.parentCategory} '
-                  '• ${t.categories.subcategoryLabel}'
-            : (category.type == CategoryType.income
-                  ? t.categories.incomeType
-                  : t.categories.expenseType);
+    final incomeCount = categories
+        .where((c) => c.type == CategoryType.income)
+        .length;
+    final expenseCount = categories
+        .where((c) => c.type == CategoryType.expense)
+        .length;
+    final filtered = organizeCategoriesForDisplay(
+      categories.where((c) => c.type == filter).toList(),
+    );
 
-        return Padding(
-          padding: EdgeInsets.only(left: category.isSubcategory ? 20 : 0),
-          child: Card(
-            child: InkWell(
-              onTap: () async {
-                final result = await context.push(
-                  AppRoutes.editCategory,
-                  extra: category,
-                );
-                if (result == true && context.mounted) {
-                  unawaited(
-                    context.read<CategoriesCubit>().loadCategories(
-                      forceRefresh: true,
-                    ),
-                  );
-                }
-              },
-              borderRadius: BorderRadius.circular(16),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Color(category.color),
-                      child: Icon(
-                        IconData(
-                          category.icon,
-                          fontFamily: 'MaterialIcons',
-                        ),
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            category.isSubcategory
-                                ? '↳ ${category.name}'
-                                : category.name,
-                            style: context.textTheme.titleSmall,
-                          ),
-                          Text(
-                            typeLabel,
-                            style: context.textTheme.bodySmall?.copyWith(
-                              color: colors.onBackgroundLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    FaIcon(
-                      FontAwesomeIcons.chevronRight,
-                      size: 14,
-                      color: colors.onBackgroundLight,
-                    ),
-                  ],
-                ),
+    final byId = {for (final c in categories) c.id: c};
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: FinancoPillToggle<CategoryType>(
+            selected: filter,
+            onChanged: onFilterChanged,
+            options: [
+              FinancoPillToggleOption(
+                value: CategoryType.expense,
+                label: '${t.categories.expenseType} ($expenseCount)',
+                icon: FontAwesomeIcons.arrowUp,
               ),
-            ),
+              FinancoPillToggleOption(
+                value: CategoryType.income,
+                label: '${t.categories.incomeType} ($incomeCount)',
+                icon: FontAwesomeIcons.arrowDown,
+              ),
+            ],
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? _NoFilterResults()
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                  itemCount: filtered.length,
+                  itemBuilder: (_, i) {
+                    final c = filtered[i];
+                    final parent = c.parentId == null
+                        ? null
+                        : byId[c.parentId];
+                    return CategoryTile(
+                      category: c,
+                      parentName: parent?.name,
+                      onTap: () => onTapCategory(c),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NoFilterResults extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Text(
+          t.general.noResults,
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: context.appColors.onBackgroundLight,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
+        ),
+      ),
     );
   }
 }

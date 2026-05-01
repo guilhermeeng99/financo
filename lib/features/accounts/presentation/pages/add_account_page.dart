@@ -1,14 +1,19 @@
 import 'dart:async';
 
-import 'package:financo/app/widgets/financo_button.dart';
+import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_pill_toggle.dart';
+import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
+import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
-import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
+import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
@@ -62,8 +67,10 @@ class _AddAccountViewState extends State<_AddAccountView> {
     final state = context.read<AccountFormCubit>().state;
     if (state.isEditing) {
       _nameController.text = state.name;
-      _balanceController.text = state.balance.toString();
-      _creditLimitController.text = state.creditLimit.toString();
+      _balanceController.text = state.balance.toStringAsFixed(2);
+      if (state.creditLimit > 0) {
+        _creditLimitController.text = state.creditLimit.toStringAsFixed(2);
+      }
     }
   }
 
@@ -90,9 +97,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               t.general.delete,
-              style: TextStyle(
-                color: Theme.of(ctx).colorScheme.error,
-              ),
+              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
             ),
           ),
         ],
@@ -104,7 +109,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
     final deleteTransaction = GetIt.I<DeleteTransactionUseCase>();
     final deleteAccount = GetIt.I<DeleteAccountUseCase>();
 
-    // Delete all transactions belonging to this account
     final txResult = await getTransactions(
       userId: userId,
       accountId: accountId,
@@ -119,281 +123,370 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
 
     await deleteAccount(accountId);
-    if (mounted) {
+    if (mounted) context.pop(true);
+  }
+
+  Future<void> _pickClosingDay() async {
+    final cubit = context.read<AccountFormCubit>();
+    final picked = await showDayPickerSheet(
+      context: context,
+      selected: cubit.state.closingDay,
+      title: t.accounts.pickClosingDay,
+    );
+    if (picked != null) cubit.updateClosingDay(picked);
+  }
+
+  Future<void> _pickDueDay() async {
+    final cubit = context.read<AccountFormCubit>();
+    final picked = await showDayPickerSheet(
+      context: context,
+      selected: cubit.state.dueDay,
+      title: t.accounts.pickDueDay,
+    );
+    if (picked != null) cubit.updateDueDay(picked);
+  }
+
+  Future<void> _pickLinkedAccount() async {
+    final cubit = context.read<AccountFormCubit>();
+    final state = cubit.state;
+    final picked = await showLinkedAccountPicker(
+      context: context,
+      userId: state.userId,
+      selectedId: state.linkedAccountId.isEmpty ? null : state.linkedAccountId,
+    );
+    if (picked != null) cubit.updateLinkedAccountId(picked);
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      unawaited(context.read<AccountFormCubit>().submit());
+    }
+  }
+
+  void _onFormStateChanged(BuildContext context, AccountFormState state) {
+    if (state.status == FormStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            state.isEditing
+                ? t.accounts.accountUpdated
+                : t.accounts.accountCreated,
+          ),
+        ),
+      );
       context.pop(true);
+    } else if (state.status == FormStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return BlocListener<AccountFormCubit, AccountFormState>(
-      listener: (context, state) {
-        if (state.status == FormStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isEditing
-                    ? t.accounts.accountUpdated
-                    : t.accounts.accountCreated,
-              ),
-            ),
-          );
-          context.pop(true);
-        } else if (state.status == FormStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.failure?.message ?? 'An error occurred'),
-            ),
-          );
-        }
-      },
+      listener: _onFormStateChanged,
       child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<AccountFormCubit, AccountFormState>(
-            builder: (context, state) => Text(
-              state.isEditing ? t.accounts.editAccount : t.accounts.addAccount,
-            ),
-          ),
-          actions: [
-            BlocBuilder<AccountFormCubit, AccountFormState>(
-              builder: (context, state) {
-                if (!state.isEditing) return const SizedBox.shrink();
-                return IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.trash, size: 18),
-                  onPressed: () => unawaited(
-                    _confirmDelete(state.existingId!, state.userId),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
+        backgroundColor: colors.background,
+        appBar: _buildAppBar(),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           child: Form(
             key: _formKey,
             child: BlocBuilder<AccountFormCubit, AccountFormState>(
               builder: (context, state) {
+                final cubit = context.read<AccountFormCubit>();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SegmentedButton<AccountType>(
-                      segments: [
-                        ButtonSegment(
-                          value: AccountType.checking,
-                          label: Text(t.accounts.checkingShort),
-                          icon: const FaIcon(FontAwesomeIcons.buildingColumns),
-                        ),
-                        ButtonSegment(
-                          value: AccountType.creditCard,
-                          label: Text(t.accounts.creditCard),
-                          icon: const FaIcon(FontAwesomeIcons.creditCard),
-                        ),
-                      ],
-                      selected: {state.type},
-                      onSelectionChanged: state.isEditing
-                          ? null
-                          : (selected) => context
-                                .read<AccountFormCubit>()
-                                .updateType(selected.first),
-                    ),
-                    const SizedBox(height: 24),
-                    FinancoTextField(
-                      controller: _nameController,
-                      label: t.accounts.name,
-                      hintText: t.accounts.nameHint,
-                      validator: Validators.requiredField,
-                      onChanged: context.read<AccountFormCubit>().updateName,
-                    ),
-                    const SizedBox(height: 16),
-                    SegmentedButton<BankType>(
-                      segments: [
-                        const ButtonSegment(
-                          value: BankType.nubank,
-                          label: Text('Nubank'),
-                          icon: FaIcon(
-                            FontAwesomeIcons.buildingColumns,
-                          ),
-                        ),
-                        ButtonSegment(
-                          value: BankType.others,
-                          label: Text(t.accounts.bankOthers),
-                          icon: const FaIcon(FontAwesomeIcons.wallet),
+                    FinancoFormSection(
+                      label: t.accounts.formSectionType,
+                      children: [
+                        FinancoPillToggle<AccountType>(
+                          selected: state.type,
+                          disabled: state.isEditing,
+                          onChanged: cubit.updateType,
+                          options: [
+                            FinancoPillToggleOption(
+                              value: AccountType.checking,
+                              label: t.accounts.checkingShort,
+                              icon: FontAwesomeIcons.buildingColumns,
+                            ),
+                            FinancoPillToggleOption(
+                              value: AccountType.creditCard,
+                              label: t.accounts.creditCard,
+                              icon: FontAwesomeIcons.creditCard,
+                            ),
+                          ],
                         ),
                       ],
-                      selected: {state.bank},
-                      onSelectionChanged: (selected) => context
-                          .read<AccountFormCubit>()
-                          .updateBank(selected.first),
                     ),
-                    const SizedBox(height: 16),
-                    FinancoTextField(
-                      controller: _balanceController,
-                      label: t.accounts.balanceLabel,
-                      hintText: t.accounts.balanceHint,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      onChanged: context.read<AccountFormCubit>().updateBalance,
+                    const SizedBox(height: 20),
+                    FinancoFormSection(
+                      label: t.accounts.formSectionDetails,
+                      children: [
+                        FinancoTextField(
+                          controller: _nameController,
+                          label: t.accounts.name,
+                          hintText: t.accounts.nameHint,
+                          validator: Validators.requiredField,
+                          onChanged: cubit.updateName,
+                        ),
+                        const SizedBox(height: 12),
+                        FinancoPillToggle<BankType>(
+                          selected: state.bank,
+                          onChanged: cubit.updateBank,
+                          options: const [
+                            FinancoPillToggleOption(
+                              value: BankType.nubank,
+                              label: 'Nubank',
+                              icon: FontAwesomeIcons.buildingColumns,
+                            ),
+                            FinancoPillToggleOption(
+                              value: BankType.others,
+                              label: 'Others',
+                              icon: FontAwesomeIcons.wallet,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        FinancoTextField(
+                          controller: _balanceController,
+                          label: t.accounts.balanceLabel,
+                          hintText: t.accounts.balanceHint,
+                          keyboardType:
+                              const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                          onChanged: cubit.updateBalance,
+                        ),
+                      ],
                     ),
                     if (state.type == AccountType.creditCard) ...[
-                      const SizedBox(height: 16),
-                      _LinkedAccountDropdown(
-                        selectedId: state.linkedAccountId,
-                        userId: state.userId,
-                        onChanged: context
-                            .read<AccountFormCubit>()
-                            .updateLinkedAccountId,
-                      ),
-                      const SizedBox(height: 16),
-                      FinancoTextField(
-                        controller: _creditLimitController,
-                        label: t.accounts.creditLimitLabel,
-                        hintText: t.accounts.creditLimitHint,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        onChanged: context
-                            .read<AccountFormCubit>()
-                            .updateCreditLimit,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
+                      const SizedBox(height: 20),
+                      FinancoFormSection(
+                        label: t.accounts.formSectionCreditCard,
                         children: [
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: state.closingDay,
-                              decoration: InputDecoration(
-                                labelText: t.accounts.closingDay,
-                              ),
-                              items: List.generate(
-                                28,
-                                (i) => DropdownMenuItem(
-                                  value: i + 1,
-                                  child: Text('${i + 1}'),
-                                ),
-                              ),
-                              onChanged: (v) {
-                                if (v != null) {
-                                  context
-                                      .read<AccountFormCubit>()
-                                      .updateClosingDay(v);
-                                }
-                              },
+                          _RowSelector(
+                            label: t.accounts.linkedAccount,
+                            value: _resolveLinkedName(
+                              context,
+                              state.linkedAccountId,
                             ),
+                            placeholder: t.accounts.pickLinkedAccount,
+                            icon: FontAwesomeIcons.link,
+                            onTap: _pickLinkedAccount,
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: state.dueDay,
-                              decoration: InputDecoration(
-                                labelText: t.accounts.dueDay,
-                              ),
-                              items: List.generate(
-                                28,
-                                (i) => DropdownMenuItem(
-                                  value: i + 1,
-                                  child: Text('${i + 1}'),
+                          const SizedBox(height: 12),
+                          FinancoTextField(
+                            controller: _creditLimitController,
+                            label: t.accounts.creditLimitLabel,
+                            hintText: t.accounts.creditLimitHint,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
+                            onChanged: cubit.updateCreditLimit,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _RowSelector(
+                                  label: t.accounts.closingDay,
+                                  value: '${state.closingDay}',
+                                  placeholder: t.accounts.pickClosingDay,
+                                  icon: FontAwesomeIcons.calendarDay,
+                                  onTap: _pickClosingDay,
                                 ),
                               ),
-                              onChanged: (v) {
-                                if (v != null) {
-                                  context.read<AccountFormCubit>().updateDueDay(
-                                    v,
-                                  );
-                                }
-                              },
-                            ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _RowSelector(
+                                  label: t.accounts.dueDay,
+                                  value: '${state.dueDay}',
+                                  placeholder: t.accounts.pickDueDay,
+                                  icon: FontAwesomeIcons.calendarCheck,
+                                  onTap: _pickDueDay,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
-                    const SizedBox(height: 32),
-                    FinancoButton(
-                      label: state.isEditing
-                          ? t.general.update
-                          : t.general.create,
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          unawaited(
-                            context.read<AccountFormCubit>().submit(),
-                          );
-                        }
-                      },
-                      isLoading: state.status == FormStatus.submitting,
-                    ),
                   ],
                 );
               },
             ),
           ),
         ),
+        bottomNavigationBar: BlocBuilder<AccountFormCubit, AccountFormState>(
+          builder: (context, state) => FinancoSubmitBar(
+            label: state.isEditing ? t.general.update : t.general.create,
+            isLoading: state.status == FormStatus.submitting,
+            isEnabled: state.isValid,
+            onSubmit: _onSubmit,
+          ),
+        ),
       ),
     );
   }
+
+  PreferredSizeWidget _buildAppBar() {
+    final colors = context.appColors;
+    return AppBar(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      centerTitle: true,
+      title: BlocBuilder<AccountFormCubit, AccountFormState>(
+        builder: (context, state) => Text(
+          state.isEditing ? t.accounts.editAccount : t.accounts.addAccount,
+          style: context.textTheme.titleMedium?.copyWith(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      actions: [
+        BlocBuilder<AccountFormCubit, AccountFormState>(
+          builder: (context, state) {
+            if (!state.isEditing) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _AppBarIconButton(
+                icon: FontAwesomeIcons.trash,
+                color: colors.error,
+                onPressed: () => unawaited(
+                  _confirmDelete(state.existingId!, state.userId),
+                ),
+                tooltip: t.general.delete,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Looks up the linked account's name from the AccountsCubit cache so the
+  /// row reads "Nubank Conta" instead of an opaque id. Returns null when no
+  /// id is set yet (the row then renders its placeholder).
+  String? _resolveLinkedName(BuildContext context, String id) {
+    if (id.isEmpty) return null;
+    final accountsState = context.read<AccountsCubit>().state;
+    if (accountsState is! AccountsLoaded) return null;
+    final match = accountsState.accounts
+        .where((a) => a.id == id)
+        .firstOrNull;
+    return match?.name;
+  }
 }
 
-class _LinkedAccountDropdown extends StatefulWidget {
-  const _LinkedAccountDropdown({
-    required this.selectedId,
-    required this.userId,
-    required this.onChanged,
+class _RowSelector extends StatelessWidget {
+  const _RowSelector({
+    required this.label,
+    required this.value,
+    required this.placeholder,
+    required this.icon,
+    required this.onTap,
   });
 
-  final String selectedId;
-  final String userId;
-  final ValueChanged<String> onChanged;
-
-  @override
-  State<_LinkedAccountDropdown> createState() => _LinkedAccountDropdownState();
-}
-
-class _LinkedAccountDropdownState extends State<_LinkedAccountDropdown> {
-  List<AccountEntity>? _accounts;
-  bool _loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadCheckingAccounts());
-  }
-
-  Future<void> _loadCheckingAccounts() async {
-    final result = await GetIt.I<GetAccountsUseCase>()(
-      userId: widget.userId,
-    );
-    if (!mounted) return;
-    result.fold(
-      (_) => setState(() => _loading = false),
-      (accounts) {
-        final checking = accounts
-            .where((a) => a.type == AccountType.checking)
-            .toList();
-        setState(() {
-          _accounts = checking;
-          _loading = false;
-        });
-      },
-    );
-  }
+  final String label;
+  final String? value;
+  final String placeholder;
+  final FaIconData icon;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const LinearProgressIndicator();
-    return DropdownButtonFormField<String>(
-      initialValue: widget.selectedId.isNotEmpty ? widget.selectedId : null,
-      decoration: InputDecoration(
-        labelText: t.accounts.linkedAccount,
+    final colors = context.appColors;
+    final hasValue = value != null && value!.isNotEmpty;
+    return Material(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Row(
+            children: [
+              FaIcon(icon, size: 14, color: colors.onBackgroundLight),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasValue ? value! : placeholder,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: hasValue
+                            ? colors.onBackground
+                            : colors.onBackgroundLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              FaIcon(
+                FontAwesomeIcons.chevronRight,
+                size: 11,
+                color: colors.onBackgroundLight,
+              ),
+            ],
+          ),
+        ),
       ),
-      items: (_accounts ?? [])
-          .map(
-            (a) => DropdownMenuItem(value: a.id, child: Text(a.name)),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value != null) widget.onChanged(value);
-      },
-      validator: (v) => v == null ? t.validators.selectAccount : null,
+    );
+  }
+}
+
+class _AppBarIconButton extends StatelessWidget {
+  const _AppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
+        ),
+      ),
     );
   }
 }
