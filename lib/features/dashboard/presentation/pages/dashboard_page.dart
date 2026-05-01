@@ -76,17 +76,19 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           ),
           BlocListener<AccountsCubit, AccountsState>(
+            // Refresh whenever accounts data lands (initial load or post-CSV
+            // import) — both states carry the up-to-date list.
+            listenWhen: (previous, current) =>
+                current is AccountsLoaded || current is AccountsImported,
             listener: (context, state) {
-              if (state is AccountsLoaded) {
-                final filter = context.read<DateFilterCubit>().state;
-                context.read<DashboardBloc>().add(
-                  DashboardLoadRequested(
-                    year: filter.year,
-                    month: filter.month,
-                    forceRefresh: true,
-                  ),
-                );
-              }
+              final filter = context.read<DateFilterCubit>().state;
+              context.read<DashboardBloc>().add(
+                DashboardLoadRequested(
+                  year: filter.year,
+                  month: filter.month,
+                  forceRefresh: true,
+                ),
+              );
             },
           ),
         ],

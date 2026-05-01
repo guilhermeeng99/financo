@@ -183,35 +183,52 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
           subtitle: t.categories.importPageSubtitle,
           showBack: true,
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: FinancoPillToggle<CategoryType>(
-                selected: _filter,
-                onChanged: (f) => setState(() => _filter = f),
-                options: [
-                  FinancoPillToggleOption(
-                    value: CategoryType.expense,
-                    label: t.categories.importTabExpense(count: expenseCount),
-                    icon: FontAwesomeIcons.arrowUp,
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: FinancoPillToggle<CategoryType>(
+                    selected: _filter,
+                    onChanged: (f) => setState(() => _filter = f),
+                    options: [
+                      FinancoPillToggleOption(
+                        value: CategoryType.expense,
+                        label: t.categories.importTabExpense(
+                          count: expenseCount,
+                        ),
+                        icon: FontAwesomeIcons.arrowUp,
+                      ),
+                      FinancoPillToggleOption(
+                        value: CategoryType.income,
+                        label: t.categories.importTabIncome(count: incomeCount),
+                        icon: FontAwesomeIcons.arrowDown,
+                      ),
+                    ],
                   ),
-                  FinancoPillToggleOption(
-                    value: CategoryType.income,
-                    label: t.categories.importTabIncome(count: incomeCount),
-                    icon: FontAwesomeIcons.arrowDown,
+                ),
+                Expanded(
+                  child: _ImportList(
+                    items: _items,
+                    duplicates: widget.preview.duplicates,
+                    filter: _filter,
+                    onTap: _editItem,
+                    onRemove: _confirmRemove,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _ImportList(
-                items: _items,
-                duplicates: widget.preview.duplicates,
-                filter: _filter,
-                onTap: _editItem,
-                onRemove: _confirmRemove,
-              ),
+            BlocBuilder<CategoriesCubit, CategoriesState>(
+              buildWhen: (previous, current) =>
+                  previous is CategoriesImporting ||
+                  current is CategoriesImporting,
+              builder: (context, state) {
+                if (state is! CategoriesImporting) {
+                  return const SizedBox.shrink();
+                }
+                return _ImportProgressOverlay(state: state);
+              },
             ),
           ],
         ),
@@ -220,9 +237,88 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
             label: _items.isEmpty
                 ? t.categories.importNothingLeft
                 : t.categories.importSubmit(count: _items.length),
-            isLoading: state is CategoriesLoading,
+            isLoading:
+                state is CategoriesLoading || state is CategoriesImporting,
             isEnabled: _items.isNotEmpty,
             onSubmit: _onSubmit,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal-style overlay rendered on top of the import preview while the cubit
+/// is in the [CategoriesImporting] state. Blocks interaction with the list
+/// (an in-flight import shouldn't be edited) and shows a determinate
+/// progress bar with a `processed of total` counter so the user knows how
+/// long the operation still has to run.
+class _ImportProgressOverlay extends StatelessWidget {
+  const _ImportProgressOverlay({required this.state});
+
+  final CategoriesImporting state;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
+
+    return ColoredBox(
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  t.categories.importInProgressTitle,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: colors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: state.progress,
+                    minHeight: 8,
+                    backgroundColor: colors.surfaceVariant,
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      t.categories.importProgressCounter(
+                        processed: state.processed,
+                        total: state.total,
+                      ),
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    Text(
+                      '$percent%',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

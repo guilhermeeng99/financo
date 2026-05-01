@@ -481,8 +481,8 @@ class TranslationsTransactionsEn {
 	/// en: 'Import transactions from CSV'
 	String get importCsvIntroTitle => 'Import transactions from CSV';
 
-	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.';
+	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.';
 
 	/// en: 'Download example'
 	String get importCsvDownloadExample => 'Download example';
@@ -495,6 +495,18 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Couldn't save the example file.'
 	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
+	/// en: 'Importing transactions...'
+	String get importInProgressTitle => 'Importing transactions...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
+
+	/// en: 'Fill in: $fields'
+	String importMissingFields({required Object fields}) => 'Fill in: ${fields}';
 
 	/// en: 'Review import: $count transactions will be created.'
 	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
@@ -712,8 +724,8 @@ class TranslationsAccountsEn {
 	/// en: 'Import accounts from CSV'
 	String get importCsvIntroTitle => 'Import accounts from CSV';
 
-	/// en: 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.';
+	/// en: 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.';
 
 	/// en: 'Download example'
 	String get importCsvDownloadExample => 'Download example';
@@ -726,6 +738,9 @@ class TranslationsAccountsEn {
 
 	/// en: 'Couldn't save the example file.'
 	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
 
 	/// en: 'Review import'
 	String get importPageTitle => 'Review import';
@@ -759,6 +774,15 @@ class TranslationsAccountsEn {
 
 	/// en: 'Imported $imported accounts. Skipped $duplicates duplicates.'
 	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.';
+
+	/// en: 'Importing accounts...'
+	String get importInProgressTitle => 'Importing accounts...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
+
+	/// en: 'Fill in: $fields'
+	String importMissingFields({required Object fields}) => 'Fill in: ${fields}';
 }
 
 // Path: categories
@@ -841,8 +865,8 @@ class TranslationsCategoriesEn {
 	/// en: 'Import categories from CSV'
 	String get importCsvIntroTitle => 'Import categories from CSV';
 
-	/// en: 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.';
+	/// en: 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.';
 
 	/// en: 'Download example'
 	String get importCsvDownloadExample => 'Download example';
@@ -855,6 +879,9 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Couldn't save the example file.'
 	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
 
 	/// en: 'Imported $count categories.'
 	String importSuccess({required Object count}) => 'Imported ${count} categories.';
@@ -900,6 +927,12 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Import $count items'
 	String importSubmit({required Object count}) => 'Import ${count} items';
+
+	/// en: 'Importing categories...'
+	String get importInProgressTitle => 'Importing categories...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
 
 	/// en: 'Type'
 	String get formSectionType => 'Type';
@@ -1342,6 +1375,15 @@ class TranslationsChatActionEn {
 	/// en: 'Confirm income'
 	String get transactionIncome => 'Confirm income';
 
+	/// en: 'Confirm transfer'
+	String get transfer => 'Confirm transfer';
+
+	/// en: 'From'
+	String get fieldFromAccount => 'From';
+
+	/// en: 'To'
+	String get fieldToAccount => 'To';
+
 	/// en: 'Create account'
 	String get accountCreate => 'Create account';
 
@@ -1419,6 +1461,12 @@ class TranslationsChatActionEn {
 
 	/// en: 'Cancel'
 	String get cancel => 'Cancel';
+
+	/// en: 'Confirmed'
+	String get statusConfirmed => 'Confirmed';
+
+	/// en: 'Cancelled'
+	String get statusCancelled => 'Cancelled';
 }
 
 // Path: chat.audio
@@ -1625,11 +1673,15 @@ extension on Translations {
 			'transactions.deleted' => 'Transaction deleted.',
 			'transactions.importCsv' => 'Import transactions',
 			'transactions.importCsvIntroTitle' => 'Import transactions from CSV',
-			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.',
+			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.',
 			'transactions.importCsvDownloadExample' => 'Download example',
 			'transactions.importCsvSelectFile' => 'Select file',
 			'transactions.importCsvExampleDownloaded' => 'Example saved.',
 			'transactions.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'transactions.importCsvErrorTitle' => 'Couldn\'t import the CSV',
+			'transactions.importInProgressTitle' => 'Importing transactions...',
+			'transactions.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
+			'transactions.importMissingFields' => ({required Object fields}) => 'Fill in: ${fields}',
 			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
 			'transactions.importMissingCategories' => 'Missing categories:',
 			'transactions.importMissingAccounts' => 'Missing accounts:',
@@ -1699,11 +1751,12 @@ extension on Translations {
 			'accounts.emptyTitle' => 'No accounts yet',
 			'accounts.importCsv' => 'Import accounts',
 			'accounts.importCsvIntroTitle' => 'Import accounts from CSV',
-			'accounts.importCsvIntroBody' => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento). Download the example to see how it works.',
+			'accounts.importCsvIntroBody' => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.',
 			'accounts.importCsvDownloadExample' => 'Download example',
 			'accounts.importCsvSelectFile' => 'Select file',
 			'accounts.importCsvExampleDownloaded' => 'Example saved.',
 			'accounts.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'accounts.importCsvErrorTitle' => 'Couldn\'t import the CSV',
 			'accounts.importPageTitle' => 'Review import',
 			'accounts.importPageSubtitle' => 'Tap a row to edit · trash to remove',
 			'accounts.importTabChecking' => ({required Object count}) => 'Checking (${count})',
@@ -1715,6 +1768,9 @@ extension on Translations {
 			'accounts.importSubmit' => ({required Object count}) => 'Import ${count} accounts',
 			'accounts.importMissingLinkPrefix' => 'Pick a linked checking account for:',
 			'accounts.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.',
+			'accounts.importInProgressTitle' => 'Importing accounts...',
+			'accounts.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
+			'accounts.importMissingFields' => ({required Object fields}) => 'Fill in: ${fields}',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
 			'categories.editCategory' => 'Edit Category',
@@ -1739,11 +1795,12 @@ extension on Translations {
 			'categories.subcategoryLabel' => 'Subcategory',
 			'categories.importCsv' => 'Import categories',
 			'categories.importCsvIntroTitle' => 'Import categories from CSV',
-			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.',
+			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.',
 			'categories.importCsvDownloadExample' => 'Download example',
 			'categories.importCsvSelectFile' => 'Select file',
 			'categories.importCsvExampleDownloaded' => 'Example saved.',
 			'categories.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'categories.importCsvErrorTitle' => 'Couldn\'t import the CSV',
 			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
 			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
 			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
@@ -1759,6 +1816,8 @@ extension on Translations {
 			'categories.importDeleteRootConfirm' => 'Remove',
 			'categories.importNothingLeft' => 'Nothing left to import.',
 			'categories.importSubmit' => ({required Object count}) => 'Import ${count} items',
+			'categories.importInProgressTitle' => 'Importing categories...',
+			'categories.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
 			'categories.formSectionType' => 'Type',
 			'categories.formSectionDetails' => 'Details',
 			'categories.formSectionAppearance' => 'Appearance',
@@ -1786,6 +1845,9 @@ extension on Translations {
 			'chat.suggestion4' => 'Create a category called Leisure',
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
+			'chat.action.transfer' => 'Confirm transfer',
+			'chat.action.fieldFromAccount' => 'From',
+			'chat.action.fieldToAccount' => 'To',
 			'chat.action.accountCreate' => 'Create account',
 			'chat.action.accountDelete' => 'Delete account',
 			'chat.action.categoryCreate' => 'Create category',
@@ -1812,6 +1874,8 @@ extension on Translations {
 			'chat.action.fieldNotes' => 'Notes',
 			'chat.action.confirm' => 'Confirm',
 			'chat.action.cancel' => 'Cancel',
+			'chat.action.statusConfirmed' => 'Confirmed',
+			'chat.action.statusCancelled' => 'Cancelled',
 			'chat.audio.start' => 'Record voice message',
 			'chat.audio.stop' => 'Stop recording',
 			'chat.audio.cancel' => 'Cancel',

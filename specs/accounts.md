@@ -161,17 +161,21 @@ The accounts list lets the user import accounts in bulk from a CSV. The flow has
 
 ### CSV Format
 
-Header: `Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento`
+The parser locates each field by **header name** (accent- and case-insensitive), not by column position — extra/reordered columns are tolerated, and unknown columns are ignored. The first row must include each required header below.
 
-| Column | Description | Format |
+| Logical field | Accepted headers (any of) | Description / Format |
 |---|---|---|
-| Nome | Account name | Free text, required |
-| Saldo inicial | Initial balance | Brazilian format: `"421,95"` or `"1.234,56"` (quoted, comma decimal) |
-| Tipo | Account type | `Conta Corrente` (checking) or `Cartão de Crédito` (credit card). Accent/case tolerant |
-| Banco | Bank code | `nubank` or anything else (mapped to `BankType.others`) |
-| Limite | Credit limit | Brazilian format. Only for credit cards, ignored for checking |
-| Próximo Vencimento | Next due date | `DD/MM/YYYY`. Only the day is used, populating `dueDay`. Only for credit cards |
-| Fechamento | Closing day | Integer 1–31. Only for credit cards |
+| name (required) | `Nome`, `Name`, `Account Name`, `Apelido` | Free text, required |
+| balance (required) | `Saldo inicial`, `Saldo`, `Initial balance`, `Balance`, `Opening balance` | Number — accepts both Brazilian (`421,95`, `1.234,56`) and English (`421.95`, `1,234.56`) decimal styles. The rightmost separator is treated as the decimal point. |
+| type (required) | `Tipo`, `Type`, `Kind` | `Conta Corrente` / `Checking` for checking, `Cartão de Crédito` / `Credit Card` for credit card. Accent- and case-tolerant. **Empty or unrecognized values reject the whole import** with a `ValidationFailure` whose message points to the offending row and lists accepted values. |
+| bank (required) | `Banco`, `Bank` | `nubank` (case-insensitive) maps to `BankType.nubank`; anything else maps to `BankType.others`. |
+| limit (optional) | `Limite`, `Credit limit`, `Limit` | Number, same format rules as balance. Only used for credit cards. |
+| due (optional) | `Próximo Vencimento`, `Vencimento`, `Due date`, `Due day`, `Next due` | `DD/MM/YYYY` or a bare day number. Only the day is used, populating `dueDay`. Only used for credit cards. |
+| closing (optional) | `Fechamento`, `Closing day`, `Closing`, `Closing date` | Integer 1–31. Only used for credit cards. |
+
+If a required header is missing, the parser raises `ValidationFailure: CSV is missing the required "X" column.` — the dialog surfaces this in an `AlertDialog` so the user can read the full detail.
+
+The dialog surfaces parse failures as an `AlertDialog` (not a snackbar) so the user can read the full row/value detail.
 
 ### Preview item
 
@@ -211,9 +215,16 @@ previewCsv(String csvContent) → Either<Failure, AccountImportPreview>
 confirmImport({
   required List<AccountImportPreviewItem> items,
   int duplicateCount = 0,
-}) → Loading → AccountsImported(accounts, importedCount, duplicateCount)
-              | AccountsError(failure)
+}) → AccountsImporting(processed: 0, total: items.length)
+   → AccountsImporting(processed: i, total: items.length)  // for each i
+   → AccountsImported(accounts, importedCount, duplicateCount)
+   | AccountsError(failure)
 ```
+
+### Progress reporting
+
+21. **`importItems` accepts an optional `onProgress(processed, total)` callback** invoked after every processed item (created or skipped). `total` equals `items.length`; orphan credit cards skipped because their `linkedAccountName` cannot be resolved still tick the counter so the bar reaches 100%.
+22. **The cubit translates progress into `AccountsImporting` states** so the import-accounts page renders a determinate `LinearProgressIndicator` overlay (with a `processed of total` counter and percentage) until the import resolves. The accounts list page treats `AccountsImporting` as a loading state.
 
 ## Firestore
 

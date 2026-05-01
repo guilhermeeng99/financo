@@ -5,21 +5,32 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
+/// Lifecycle of an AI-proposed action as the user sees it. `pending` shows
+/// Cancel/Confirm buttons; the resolved states replace those buttons with a
+/// status badge so the user keeps the card as a record of what was decided.
+enum ChatActionStatus { confirmed, cancelled }
+
 /// Structured preview of an AI-suggested action. Renders below an AI bubble
 /// whose `metadata.actionType` is set, replacing the previous "raw text +
 /// inline Confirm button" pattern with a card the user can scan before
 /// committing.
+///
+/// When `status` is non-null the card is in a settled state — the buttons
+/// give way to a status badge so the confirmation/cancellation stays
+/// visible in the conversation as a permanent record.
 class ChatActionCard extends StatelessWidget {
   const ChatActionCard({
     required this.metadata,
-    required this.onConfirm,
-    required this.onCancel,
+    this.status,
+    this.onConfirm,
+    this.onCancel,
     super.key,
   });
 
   final Map<String, dynamic> metadata;
-  final VoidCallback onConfirm;
-  final VoidCallback onCancel;
+  final ChatActionStatus? status;
+  final VoidCallback? onConfirm;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -73,26 +84,92 @@ class ChatActionCard extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(height: 1),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _CardSecondaryButton(
-                    label: t.chat.action.cancel,
-                    onPressed: onCancel,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _CardPrimaryButton(
-                    label: t.chat.action.confirm,
-                    color: preview.destructive ? colors.error : colors.primary,
-                    onPressed: onConfirm,
-                  ),
-                ),
-              ],
-            ),
+            if (status == null)
+              _PendingFooter(
+                preview: preview,
+                onConfirm: onConfirm!,
+                onCancel: onCancel!,
+              )
+            else
+              _StatusBadge(status: status!),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PendingFooter extends StatelessWidget {
+  const _PendingFooter({
+    required this.preview,
+    required this.onConfirm,
+    required this.onCancel,
+  });
+
+  final _ActionPreview preview;
+  final VoidCallback onConfirm;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Row(
+      children: [
+        Expanded(
+          child: _CardSecondaryButton(
+            label: t.chat.action.cancel,
+            onPressed: onCancel,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _CardPrimaryButton(
+            label: t.chat.action.confirm,
+            color: preview.destructive ? colors.error : colors.primary,
+            onPressed: onConfirm,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.status});
+
+  final ChatActionStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final isConfirmed = status == ChatActionStatus.confirmed;
+    final accent = isConfirmed ? colors.success : colors.onBackgroundLight;
+    final icon = isConfirmed
+        ? FontAwesomeIcons.circleCheck
+        : FontAwesomeIcons.circleXmark;
+    final label = isConfirmed
+        ? t.chat.action.statusConfirmed
+        : t.chat.action.statusCancelled;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FaIcon(icon, size: 14, color: accent),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: context.textTheme.labelLarge?.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -270,6 +347,7 @@ class _ActionPreview {
     final action = meta['action'] as String?;
     return switch (actionType) {
       'transaction' => _ActionPreview.transaction(context, meta),
+      'transfer' => _ActionPreview.transfer(context, meta),
       'account' => action == 'delete'
           ? _ActionPreview.accountDelete(context, meta)
           : _ActionPreview.accountCreate(context, meta),
@@ -312,6 +390,31 @@ class _ActionPreview {
           (label: t.chat.action.fieldCategory, value: '${meta['category']}'),
         if (meta['account'] != null)
           (label: t.chat.action.fieldAccount, value: '${meta['account']}'),
+        (
+          label: t.chat.action.fieldDate,
+          value: _formatDate(meta['date'] as String?),
+        ),
+      ],
+    );
+  }
+
+  factory _ActionPreview.transfer(
+    BuildContext context,
+    Map<String, dynamic> meta,
+  ) {
+    final colors = context.appColors;
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    return _ActionPreview(
+      title: t.chat.action.transfer,
+      icon: FontAwesomeIcons.rightLeft,
+      accent: colors.primary,
+      amount: formatCurrency(amount),
+      headline: meta['description'] as String?,
+      fields: [
+        if (meta['from'] != null)
+          (label: t.chat.action.fieldFromAccount, value: '${meta['from']}'),
+        if (meta['to'] != null)
+          (label: t.chat.action.fieldToAccount, value: '${meta['to']}'),
         (
           label: t.chat.action.fieldDate,
           value: _formatDate(meta['date'] as String?),

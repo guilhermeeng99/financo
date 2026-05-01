@@ -25,6 +25,7 @@ import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart'
 import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
@@ -50,12 +51,19 @@ final class ChatMessageSent extends ChatEvent {
 }
 
 final class ChatActionConfirmed extends ChatEvent {
-  const ChatActionConfirmed(this.metadata);
+  const ChatActionConfirmed({
+    required this.actionMessageId,
+    required this.metadata,
+  });
 
+  /// Id of the AI proposal message whose Confirm button was tapped. Saved
+  /// onto the result message as `originActionId` so the timeline can render
+  /// the proposal card as "Confirmed" persistently (survives chat reload).
+  final String actionMessageId;
   final Map<String, dynamic> metadata;
 
   @override
-  List<Object> get props => [metadata];
+  List<Object> get props => [actionMessageId, metadata];
 }
 
 final class ChatAudioTranscriptionRequested extends ChatEvent {
@@ -140,6 +148,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required GetCategoriesUseCase getCategories,
     required DeleteCategoryUseCase deleteCategory,
     required CreateTransactionUseCase createTransaction,
+    required CreateTransferUseCase createTransfer,
     required GetBillsUseCase getBills,
     required CreateBillUseCase createBill,
     required UpdateBillUseCase updateBill,
@@ -157,6 +166,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
        _getCategories = getCategories,
        _deleteCategory = deleteCategory,
        _createTransaction = createTransaction,
+       _createTransfer = createTransfer,
        _getBills = getBills,
        _createBill = createBill,
        _updateBill = updateBill,
@@ -182,6 +192,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final GetCategoriesUseCase _getCategories;
   final DeleteCategoryUseCase _deleteCategory;
   final CreateTransactionUseCase _createTransaction;
+  final CreateTransferUseCase _createTransfer;
   final GetBillsUseCase _getBills;
   final CreateBillUseCase _createBill;
   final UpdateBillUseCase _updateBill;
@@ -254,35 +265,67 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       image: event.image,
     );
 
-    result.fold(
-      (failure) {
-        log(
-          'ChatBloc: AI call failed — ${failure.message}',
-          name: 'ChatBloc',
-          error: failure,
-        );
-        final isQuota =
-            failure.message.toLowerCase().contains('quota') ||
-            failure.message.toLowerCase().contains('rate');
-        final errorText = isQuota
-            ? 'The AI service is temporarily unavailable due to rate limits. '
-                  'Please wait a moment and try again.'
-            : 'Sorry, I could not process your message. Please try again.';
-        final errorMessage = ChatMessageEntity(
+    if (result.isLeft()) {
+      final failure = result.fold((f) => f, (_) => throw StateError('left'));
+      log(
+        'ChatBloc: AI call failed — ${failure.message}',
+        name: 'ChatBloc',
+        error: failure,
+      );
+      final isQuota =
+          failure.message.toLowerCase().contains('quota') ||
+          failure.message.toLowerCase().contains('rate');
+      final errorText = isQuota
+          ? 'The AI service is temporarily unavailable due to rate limits. '
+                'Please wait a moment and try again.'
+          : 'Sorry, I could not process your message. Please try again.';
+      final errorMessage = ChatMessageEntity(
+        id: _uuid.v4(),
+        userId: _userId,
+        role: ChatRole.assistant,
+        content: errorText,
+        createdAt: DateTime.now(),
+      );
+      _messages.add(errorMessage);
+      emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+      return;
+    }
+
+    final response = result.fold(
+      (_) => throw StateError('right'),
+      (r) => r,
+    );
+    _messages.add(response);
+
+    // Preflight: validate the action against current data before showing
+    // the card. Confirming a card and then seeing an error message breaks
+    // the contract the card sets up — if the user got to Confirm, all
+    // checks should already have passed.
+    final actionType = response.metadata?['actionType'] as String?;
+    if (actionType != null) {
+      final preflightError = await _preflightAction(response.metadata!);
+      if (preflightError != null) {
+        final rejection = ChatMessageEntity(
           id: _uuid.v4(),
           userId: _userId,
           role: ChatRole.assistant,
-          content: errorText,
+          content: '⚠️ $preflightError',
+          metadata: {
+            'kind': 'actionRejected',
+            'originActionId': response.id,
+          },
           createdAt: DateTime.now(),
         );
-        _messages.add(errorMessage);
-        emit(ChatLoaded(messages: List.unmodifiable(_messages)));
-      },
-      (response) {
-        _messages.add(response);
-        emit(ChatLoaded(messages: List.unmodifiable(_messages)));
-      },
-    );
+        _messages.add(rejection);
+        try {
+          await _saveChatMessage(rejection);
+        } on Exception {
+          // non-blocking — UI already shows the rejection bubble.
+        }
+      }
+    }
+
+    emit(ChatLoaded(messages: List.unmodifiable(_messages)));
   }
 
   Future<void> _onActionConfirmed(
@@ -301,17 +344,29 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         resultText = await _handleCategoryAction(meta);
       case 'transaction':
         resultText = await _handleTransactionAction(meta);
+      case 'transfer':
+        resultText = await _handleTransferAction(meta);
       case 'bill':
         resultText = await _handleBillAction(meta);
       default:
         resultText = 'Unknown action type.';
     }
 
+    // - `kind: 'actionResult'` so the data source strips this from the
+    //   history sent to Gemini (otherwise the AI mimics the success pattern
+    //   in future turns and skips the action block).
+    // - `originActionId` lets the timeline find this result later and
+    //   render the proposal card persistently as "Confirmed" — survives
+    //   page reload, unlike page-level state.
     final sysMessage = ChatMessageEntity(
       id: _uuid.v4(),
       userId: _userId,
       role: ChatRole.assistant,
       content: resultText,
+      metadata: {
+        'kind': 'actionResult',
+        'originActionId': event.actionMessageId,
+      },
       createdAt: DateTime.now(),
     );
 
@@ -324,8 +379,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(
       ChatLoaded(
         messages: List.unmodifiable(_messages),
-        shouldRefreshTransactions:
-            actionType == 'transaction' || actionType == 'bill',
+        shouldRefreshTransactions: actionType == 'transaction' ||
+            actionType == 'transfer' ||
+            actionType == 'bill',
         shouldRefreshBills: actionType == 'bill',
       ),
     );
@@ -552,14 +608,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (accounts.isEmpty) {
       return 'No accounts found. Please create an account first.';
     }
-    final matchedAccounts = accountName.isNotEmpty
-        ? accounts
-              .where((a) => a.name.toLowerCase() == accountName.toLowerCase())
-              .toList()
-        : <AccountEntity>[];
-    final account = matchedAccounts.isNotEmpty
-        ? matchedAccounts.first
-        : accounts.first;
+    final resolution = _resolveAccount(accounts, accountName);
+    final account = resolution.account;
+    if (account == null) {
+      return resolution.error ?? 'Could not resolve account.';
+    }
 
     final transaction = TransactionEntity(
       id: '',
@@ -580,6 +633,154 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       (t) =>
           'Transaction "${t.description}" of '
           'R\$ ${t.amount.toStringAsFixed(2)} created successfully!',
+    );
+  }
+
+  // Validates action metadata against the user's current accounts /
+  // categories BEFORE the action card is shown. The user shouldn't have to
+  // tap Confirm only to discover the AI emitted a non-existent category or
+  // an unresolvable account name — by then the card looks like a contract.
+  // Returns a human-readable error string when the action would fail, or
+  // null when it should proceed to the card.
+  Future<String?> _preflightAction(Map<String, dynamic> meta) async {
+    final actionType = meta['actionType'] as String?;
+    switch (actionType) {
+      case 'transaction':
+        return _preflightTransaction(meta);
+      case 'transfer':
+        return _preflightTransfer(meta);
+      default:
+        return null;
+    }
+  }
+
+  Future<String?> _preflightTransaction(Map<String, dynamic> meta) async {
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    if (amount <= 0) return 'Invalid amount.';
+
+    final categoryName = (meta['category'] as String? ?? '').trim();
+    if (categoryName.isEmpty) return 'Category is required.';
+
+    final catResult = await _getCategories(userId: _userId);
+    // If we can't reach the data, let the action through — better than a
+    // false negative blocking a legitimate request.
+    if (catResult.isLeft()) return null;
+    final categories = catResult.getOrElse(() => []);
+    final hasCategory = categories.any(
+      (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
+    );
+    if (!hasCategory) {
+      return 'Categoria "$categoryName" não existe. '
+          'Se for uma transferência entre suas contas, peça '
+          '"transferência" explicitamente; senão, crie a categoria primeiro.';
+    }
+
+    final accResult = await _getAccounts(userId: _userId);
+    if (accResult.isLeft()) return null;
+    final accounts = accResult.getOrElse(() => []);
+    if (accounts.isEmpty) return 'Crie uma conta primeiro.';
+    final accountName = (meta['account'] as String? ?? '').trim();
+    final resolution = _resolveAccount(accounts, accountName);
+    if (resolution.account == null) return resolution.error;
+    return null;
+  }
+
+  Future<String?> _preflightTransfer(Map<String, dynamic> meta) async {
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    if (amount <= 0) return 'Invalid amount.';
+
+    final fromName = (meta['from'] as String? ?? '').trim();
+    final toName = (meta['to'] as String? ?? '').trim();
+    if (fromName.isEmpty || toName.isEmpty) {
+      return 'Transferência precisa de origem e destino.';
+    }
+
+    final accResult = await _getAccounts(userId: _userId);
+    if (accResult.isLeft()) return null;
+    final accounts = accResult.getOrElse(() => []);
+    if (accounts.length < 2) {
+      return 'Transferência requer ao menos duas contas.';
+    }
+    final fromR = _resolveAccount(accounts, fromName);
+    if (fromR.account == null) return fromR.error;
+    final toR = _resolveAccount(accounts, toName);
+    if (toR.account == null) return toR.error;
+    if (fromR.account!.id == toR.account!.id) {
+      return 'Origem e destino devem ser contas diferentes.';
+    }
+    return null;
+  }
+
+  Future<String> _handleTransferAction(Map<String, dynamic> meta) async {
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    if (amount <= 0) return 'Invalid amount.';
+
+    final fromName = (meta['from'] as String? ?? '').trim();
+    final toName = (meta['to'] as String? ?? '').trim();
+    if (fromName.isEmpty || toName.isEmpty) {
+      return 'Transfer requires both source and destination accounts.';
+    }
+
+    final accResult = await _getAccounts(userId: _userId);
+    if (accResult.isLeft()) return 'Failed to load accounts.';
+    final accounts = accResult.getOrElse(() => []);
+    if (accounts.length < 2) {
+      return 'Transfer requires at least two accounts.';
+    }
+
+    final fromR = _resolveAccount(accounts, fromName);
+    final fromAccount = fromR.account;
+    if (fromAccount == null) {
+      return fromR.error ?? 'Could not resolve source account.';
+    }
+    final toR = _resolveAccount(accounts, toName);
+    final toAccount = toR.account;
+    if (toAccount == null) {
+      return toR.error ?? 'Could not resolve destination account.';
+    }
+    if (fromAccount.id == toAccount.id) {
+      return 'Source and destination must be different accounts.';
+    }
+
+    final description = meta['description'] as String? ?? '';
+    final dateStr = meta['date'] as String?;
+    final date = dateStr != null
+        ? DateTime.tryParse(dateStr) ?? DateTime.now()
+        : DateTime.now();
+    final now = DateTime.now();
+
+    final expense = TransactionEntity(
+      id: '',
+      userId: _userId,
+      accountId: fromAccount.id,
+      categoryId: '',
+      type: TransactionType.expense,
+      amount: amount,
+      description: description,
+      date: date,
+      createdAt: now,
+      updatedAt: now,
+    );
+    final income = TransactionEntity(
+      id: '',
+      userId: _userId,
+      accountId: toAccount.id,
+      categoryId: '',
+      type: TransactionType.income,
+      amount: amount,
+      description: description,
+      date: date,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final result = await _createTransfer(expense: expense, income: income);
+    return result.fold(
+      (f) => 'Failed to create transfer: ${f.message}',
+      (_) =>
+          'Transfer of R\$ ${amount.toStringAsFixed(2)} '
+          'from "${fromAccount.name}" to "${toAccount.name}" '
+          'created successfully!',
     );
   }
 
@@ -750,4 +951,64 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
+
+  // Two-tier account resolution: exact case-insensitive, then word-set
+  // match (every query word appears in the account name as a substring, or
+  // vice versa). Word-set covers the common case where the user types
+  // "cartão mila" and the registered account is "Cartão Nubank Mila" —
+  // contiguous-substring would miss it because "nubank" sits between the
+  // matching words. Returns an error message on zero or multiple matches —
+  // never silently picks an arbitrary account, which would write the
+  // transaction to the wrong card and still report success (chat spec §10).
+  static ({AccountEntity? account, String? error}) _resolveAccount(
+    List<AccountEntity> accounts,
+    String query,
+  ) {
+    final normalized = query.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return (
+        account: null,
+        error:
+            'Which account should I use? Please tell me the account name.',
+      );
+    }
+
+    final exact = accounts
+        .where((a) => a.name.toLowerCase() == normalized)
+        .toList();
+    if (exact.isNotEmpty) return (account: exact.first, error: null);
+
+    final fuzzy = accounts
+        .where((a) => _wordsMatch(normalized, a.name.toLowerCase()))
+        .toList();
+
+    if (fuzzy.length == 1) return (account: fuzzy.first, error: null);
+    if (fuzzy.isEmpty) {
+      return (
+        account: null,
+        error:
+            'Account "$query" not found. '
+            'Please create it first or use the exact name.',
+      );
+    }
+    final names = fuzzy.map((a) => '"${a.name}"').join(', ');
+    return (
+      account: null,
+      error:
+          'Multiple accounts match "$query": $names. '
+          'Please be more specific.',
+    );
+  }
+
+  static bool _wordsMatch(String query, String accountName) {
+    final qWords = _tokens(query);
+    final aWords = _tokens(accountName);
+    if (qWords.isEmpty || aWords.isEmpty) return false;
+    final qInA = qWords.every((w) => aWords.any((a) => a.contains(w)));
+    final aInQ = aWords.every((a) => qWords.any((w) => w.contains(a)));
+    return qInA || aInQ;
+  }
+
+  static List<String> _tokens(String s) =>
+      s.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
 }

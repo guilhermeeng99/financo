@@ -200,7 +200,11 @@ Transferência,01/04/2026,"-359,91", ,Transferência,Nubank Emergência,Nubank G
         },
       );
 
-      test('should skip malformed rows', () async {
+      test('should skip rows that are too short to read required cells',
+          () async {
+        // Trailing/blank rows in user CSVs are common — they should not
+        // reject the whole import. A row that lacks enough cells to even
+        // reach the `account` column is treated as incomplete.
         stubRepositories();
 
         const csv = '''
@@ -220,6 +224,160 @@ MalformedRow,only,two''';
             expect(preview.skippedRows, 1);
           },
         );
+      });
+
+      test('rejects unknown type values with row + value detail', () async {
+        stubRepositories();
+
+        const csv = '''
+Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
+Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,
+Saidinha,01/04/2026,"-1,00",,Gui,Nubank Gui,''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) {
+            expect(failure, isA<ValidationFailure>());
+            expect(failure.message, contains('Row 3'));
+            expect(failure.message, contains('Saidinha'));
+          },
+          (_) => fail('Expected ValidationFailure'),
+        );
+      });
+
+      test('tolerates extra columns and resolves layout by header',
+          () async {
+        // The CSV adds a `Notas` column the parser doesn't know about,
+        // shifting Conta to a later index. Header-based mapping must
+        // ignore the extra column and still find Conta correctly.
+        stubRepositories();
+
+        const csv = '''
+Tipo,Data,Valor,Descrição,Notas,Categoria,Conta,Conta transferência
+Despesa,01/04/2026,"-9,99",coffee,extra notes,Gui,Nubank Gui,''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Expected Right'), (preview) {
+          expect(preview.rows, hasLength(1));
+          expect(preview.rows.first.accountName, 'Nubank Gui');
+          expect(preview.rows.first.categoryName, 'Gui');
+          expect(preview.rows.first.amount, closeTo(9.99, 0.001));
+        });
+      });
+
+      test('collapses Mobills-style mirror transfer rows into one row',
+          () async {
+        // Mobills/similar exporters emit two rows per transfer: a
+        // negative on the source account and a positive on the
+        // destination. Both refer to the same money movement and must
+        // collapse to a single import row (otherwise we double-count
+        // and create reverse-direction transfers too).
+        stubRepositories();
+
+        const csv = '''
+Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
+Transferência,02/01/2026,"-1060,10", ,Transferência,Nu Invest,Nubank Gui
+Transferência,02/01/2026,"1060,10", ,Transferência,Nubank Gui,Nu Invest''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Expected Right'), (preview) {
+          expect(preview.rows, hasLength(1));
+          // Negative leg wins — its `Conta` is already the source.
+          expect(preview.rows.first.accountName, 'Nu Invest');
+          expect(preview.rows.first.destinationAccountName, 'Nubank Gui');
+          expect(preview.rows.first.amount, closeTo(1060.10, 0.001));
+          expect(preview.skippedRows, 1);
+        });
+      });
+
+      test('keeps each leg of repeated identical transfers', () async {
+        // Three real transfers of the same amount on the same day = six
+        // CSV rows (3 negatives + 3 positives). Dedup must keep three.
+        stubRepositories();
+
+        const csv = '''
+Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
+Transferência,02/01/2026,"-100,00", ,Transferência,Nubank Gui,Nubank Mila
+Transferência,02/01/2026,"-100,00", ,Transferência,Nubank Gui,Nubank Mila
+Transferência,02/01/2026,"-100,00", ,Transferência,Nubank Gui,Nubank Mila
+Transferência,02/01/2026,"100,00", ,Transferência,Nubank Mila,Nubank Gui
+Transferência,02/01/2026,"100,00", ,Transferência,Nubank Mila,Nubank Gui
+Transferência,02/01/2026,"100,00", ,Transferência,Nubank Mila,Nubank Gui''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        result.fold((_) => fail('Expected Right'), (preview) {
+          expect(preview.rows, hasLength(3));
+          expect(preview.skippedRows, 3);
+          for (final row in preview.rows) {
+            expect(row.accountName, 'Nubank Gui');
+            expect(row.destinationAccountName, 'Nubank Mila');
+          }
+        });
+      });
+
+      test('swaps src/dest for unpaired positive transfer rows', () async {
+        // A positive transfer row reports money INTO `Conta` from the
+        // `Conta transferência` account — opposite of our pipeline's
+        // assumption (`Conta` = source). Without a matching negative to
+        // collapse with, we keep the row but flip the accounts so the
+        // expense lands on the actual source.
+        stubRepositories();
+
+        const csv = '''
+Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
+Transferência,02/01/2026,"100,00", ,Transferência,Nubank Gui,Nubank Mila''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        result.fold((_) => fail('Expected Right'), (preview) {
+          expect(preview.rows, hasLength(1));
+          // CSV said Conta=Nubank Gui (where money landed) and
+          // Conta transf=Nubank Mila (where money came from).
+          // We flip them so source=Nubank Mila, dest=Nubank Gui.
+          expect(preview.rows.first.accountName, 'Nubank Mila');
+          expect(preview.rows.first.destinationAccountName, 'Nubank Gui');
+        });
+      });
+
+      test('parses English-style decimal amounts', () async {
+        stubRepositories();
+
+        const csv = '''
+Type,Date,Value,Description,Category,Account,Transfer Account
+Expense,01/04/2026,-1234.56,coffee,Gui,Nubank Gui,''';
+
+        final result = await useCase.preview(
+          csvContent: csv,
+          userId: userId,
+        );
+
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Expected Right'), (preview) {
+          expect(preview.rows.first.amount, closeTo(1234.56, 0.001));
+          expect(preview.rows.first.csvType, CsvTransactionType.despesa);
+        });
       });
     });
 
@@ -442,7 +600,10 @@ Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,''';
         },
       );
 
-      test('should skip malformed rows and import valid ones', () async {
+      test('should skip too-short rows and import valid ones', () async {
+        // `BadRow,only,three` only has 3 cells; the parser can't even
+        // reach the account column, so it's treated as incomplete and
+        // counted in `skippedCount` rather than rejecting the import.
         stubRepositories();
 
         when(
@@ -820,6 +981,58 @@ Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,''';
         ),
       );
       verifyNever(() => mockTransactionRepo.createTransaction(any()));
+    });
+
+    test('reports progress for each processed row via onProgress', () async {
+      when(() => mockTransactionRepo.createTransaction(any())).thenAnswer(
+        (invocation) async {
+          final tx = invocation.positionalArguments.first as TransactionEntity;
+          return Right<Failure, TransactionEntity>(
+            tx.copyWith(id: 'created'),
+          );
+        },
+      );
+
+      final rows = [
+        TransactionImportRow(
+          csvType: CsvTransactionType.despesa,
+          amount: 9.99,
+          description: '',
+          date: DateTime(2026, 4),
+          accountName: 'Nubank Gui',
+          categoryName: 'Gui',
+        ),
+        TransactionImportRow(
+          csvType: CsvTransactionType.despesa,
+          amount: 1,
+          description: '',
+          date: DateTime(2026, 4),
+          accountName: 'Ghost Account', // unresolved → skipped row
+          categoryName: 'Gui',
+        ),
+        TransactionImportRow(
+          csvType: CsvTransactionType.despesa,
+          amount: 5,
+          description: '',
+          date: DateTime(2026, 4),
+          accountName: 'Nubank Mila',
+          categoryName: 'Mila',
+        ),
+      ];
+
+      final progressEvents = <List<int>>[];
+      await useCase.importRows(
+        rows: rows,
+        userId: userId,
+        onProgress: (processed, total) =>
+            progressEvents.add([processed, total]),
+      );
+
+      expect(progressEvents, [
+        [1, 3],
+        [2, 3],
+        [3, 3],
+      ]);
     });
   });
 }

@@ -112,14 +112,9 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    final categoriesState = context.watch<CategoriesCubit>().state;
-    final accountsState = context.watch<AccountsCubit>().state;
-    final categories = categoriesState is CategoriesLoaded
-        ? categoriesState.categories
-        : const <CategoryEntity>[];
-    final accounts = accountsState is AccountsLoaded
-        ? accountsState.accounts
-        : const <AccountEntity>[];
+    final categories =
+        context.watch<CategoriesCubit>().state.categoriesOrEmpty;
+    final accounts = context.watch<AccountsCubit>().state.accountsOrEmpty;
 
     final missingAccounts = _missingAccounts(_rows, accounts);
     final missingCategories = _missingCategories(_rows, categories);
@@ -137,68 +132,85 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
           subtitle: t.transactions.importPageSubtitle,
           showBack: true,
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: FinancoPillToggle<_Tab>(
-                selected: _filter,
-                onChanged: (f) => setState(() => _filter = f),
-                options: [
-                  FinancoPillToggleOption(
-                    value: _Tab.expense,
-                    label: t.transactions.importTabExpense(
-                      count: _countFor(_Tab.expense),
-                    ),
-                    icon: FontAwesomeIcons.arrowUp,
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: FinancoPillToggle<_Tab>(
+                    selected: _filter,
+                    onChanged: (f) => setState(() => _filter = f),
+                    options: [
+                      FinancoPillToggleOption(
+                        value: _Tab.expense,
+                        label: t.transactions.importTabExpense(
+                          count: _countFor(_Tab.expense),
+                        ),
+                        icon: FontAwesomeIcons.arrowUp,
+                      ),
+                      FinancoPillToggleOption(
+                        value: _Tab.income,
+                        label: t.transactions.importTabIncome(
+                          count: _countFor(_Tab.income),
+                        ),
+                        icon: FontAwesomeIcons.arrowDown,
+                      ),
+                      FinancoPillToggleOption(
+                        value: _Tab.transfer,
+                        label: t.transactions.importTabTransfer(
+                          count: _countFor(_Tab.transfer),
+                        ),
+                        icon: FontAwesomeIcons.arrowRightArrowLeft,
+                      ),
+                    ],
                   ),
-                  FinancoPillToggleOption(
-                    value: _Tab.income,
-                    label: t.transactions.importTabIncome(
-                      count: _countFor(_Tab.income),
+                ),
+                if (missingAccounts.isNotEmpty || missingCategories.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: _MissingBanner(
+                      missingAccounts: missingAccounts,
+                      missingCategories: missingCategories,
                     ),
-                    icon: FontAwesomeIcons.arrowDown,
                   ),
-                  FinancoPillToggleOption(
-                    value: _Tab.transfer,
-                    label: t.transactions.importTabTransfer(
-                      count: _countFor(_Tab.transfer),
+                if (_skippedCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        t.transactions.importSkippedRowsPill(
+                          count: _skippedCount,
+                        ),
+                        style: context.textTheme.labelSmall?.copyWith(
+                          color: colors.onBackgroundLight,
+                        ),
+                      ),
                     ),
-                    icon: FontAwesomeIcons.arrowRightArrowLeft,
                   ),
-                ],
-              ),
+                Expanded(
+                  child: _RowsList(
+                    rows: _rows,
+                    filter: _filter,
+                    accounts: accounts,
+                    categories: categories,
+                    onTap: _editRow,
+                    onRemove: _removeRow,
+                  ),
+                ),
+              ],
             ),
-            if (missingAccounts.isNotEmpty || missingCategories.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _MissingBanner(
-                  missingAccounts: missingAccounts,
-                  missingCategories: missingCategories,
-                ),
-              ),
-            if (_skippedCount > 0)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    t.transactions.importSkippedRowsPill(count: _skippedCount),
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                ),
-              ),
-            Expanded(
-              child: _RowsList(
-                rows: _rows,
-                filter: _filter,
-                accounts: accounts,
-                categories: categories,
-                onTap: _editRow,
-                onRemove: _removeRow,
-              ),
+            BlocBuilder<TransactionsBloc, TransactionsState>(
+              buildWhen: (previous, current) =>
+                  previous is TransactionsImporting ||
+                  current is TransactionsImporting,
+              builder: (context, state) {
+                if (state is! TransactionsImporting) {
+                  return const SizedBox.shrink();
+                }
+                return _ImportProgressOverlay(state: state);
+              },
             ),
           ],
         ),
@@ -207,7 +219,8 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
             label: _rows.isEmpty
                 ? t.transactions.importNothingLeft
                 : t.transactions.importSubmit(count: _rows.length),
-            isLoading: state is TransactionsLoading,
+            isLoading: state is TransactionsLoading ||
+                state is TransactionsImporting,
             isEnabled: canImport,
             onSubmit: _onSubmit,
           ),
@@ -277,6 +290,84 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
       row.subcategoryName != null
           ? '${row.categoryName}/${row.subcategoryName}'
           : row.categoryName!;
+}
+
+/// Modal-style overlay rendered on top of the import preview while the
+/// bloc is in the [TransactionsImporting] state. Blocks interaction with
+/// the list (an in-flight import shouldn't be edited) and shows a
+/// determinate progress bar with a `processed of total` counter so the
+/// user knows how long the operation still has to run.
+class _ImportProgressOverlay extends StatelessWidget {
+  const _ImportProgressOverlay({required this.state});
+
+  final TransactionsImporting state;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
+
+    return ColoredBox(
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  t.transactions.importInProgressTitle,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: colors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: state.progress,
+                    minHeight: 8,
+                    backgroundColor: colors.surfaceVariant,
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      t.transactions.importProgressCounter(
+                        processed: state.processed,
+                        total: state.total,
+                      ),
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    Text(
+                      '$percent%',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _RowsList extends StatelessWidget {
@@ -647,10 +738,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   }
 
   Future<void> _pickAccount({required bool destination}) async {
-    final accountsState = context.read<AccountsCubit>().state;
-    final accounts = accountsState is AccountsLoaded
-        ? accountsState.accounts
-        : const <AccountEntity>[];
+    final accounts = context.read<AccountsCubit>().state.accountsOrEmpty;
 
     final selectedName = destination
         ? _draft.destinationAccountName
@@ -692,10 +780,8 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   }
 
   Future<void> _pickCategory() async {
-    final categoriesState = context.read<CategoriesCubit>().state;
-    final categories = categoriesState is CategoriesLoaded
-        ? categoriesState.categories
-        : const <CategoryEntity>[];
+    final categories =
+        context.read<CategoriesCubit>().state.categoriesOrEmpty;
     final byId = {for (final c in categories) c.id: c};
 
     final type = _draft.csvType == CsvTransactionType.receita
@@ -754,28 +840,47 @@ class _EditRowSheetState extends State<_EditRowSheet> {
     });
   }
 
-  bool get _isValid {
+  /// Returns the localized labels for fields the user still has to fill
+  /// (or fix) before this row can be saved. Used by [_save] to spell out
+  /// the reason in a snackbar instead of silently disabling the button.
+  List<String> _missingFields() {
+    final missing = <String>[];
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
-    if (amount == null || amount <= 0) return false;
-    if (_draft.accountName.isEmpty) return false;
-    if (_draft.isTransfer) {
-      if (_draft.destinationAccountName == null ||
-          _draft.destinationAccountName!.isEmpty) {
-        return false;
-      }
-      if (_draft.destinationAccountName!.toLowerCase() ==
-          _draft.accountName.toLowerCase()) {
-        return false;
-      }
-    } else if (_draft.categoryName == null ||
-        _draft.categoryName!.isEmpty) {
-      return false;
+    if (amount == null || amount <= 0) {
+      missing.add(t.transactions.amountLabel);
     }
-    return true;
+    if (_draft.accountName.isEmpty) {
+      missing.add(_draft.isTransfer
+          ? t.transactions.sourceAccount
+          : t.transactions.account);
+    }
+    if (_draft.isTransfer) {
+      final dest = _draft.destinationAccountName;
+      if (dest == null || dest.isEmpty) {
+        missing.add(t.transactions.destinationAccount);
+      } else if (dest.toLowerCase() == _draft.accountName.toLowerCase()) {
+        // Same source/destination — surface as "destination account"
+        // so the user knows which one to change.
+        missing.add(t.transactions.destinationAccount);
+      }
+    } else if (_draft.categoryName == null || _draft.categoryName!.isEmpty) {
+      missing.add(t.transactions.category);
+    }
+    return missing;
   }
 
   void _save() {
-    if (!_isValid) return;
+    final missing = _missingFields();
+    if (missing.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t.transactions.importMissingFields(fields: missing.join(', ')),
+          ),
+        ),
+      );
+      return;
+    }
     final amount = double.parse(
       _amountController.text.replaceAll(',', '.'),
     );
@@ -935,7 +1040,9 @@ class _EditRowSheetState extends State<_EditRowSheet> {
             FinancoSubmitBar(
               label: t.general.save,
               onSubmit: _save,
-              isEnabled: _isValid,
+              // Always tappable: `_save` shows a snackbar with the missing
+              // fields when invalid. Disabling silently was misleading
+              // users into thinking the form had no problem.
             ),
           ],
         ),

@@ -122,12 +122,16 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     TransactionsImportRowsConfirmed event,
     Emitter<TransactionsState> emit,
   ) async {
-    emit(const TransactionsLoading());
+    emit(TransactionsImporting(processed: 0, total: event.rows.length));
 
     final result = await _importTransactionsCsv.importRows(
       rows: event.rows,
       userId: _userId,
       skippedCount: event.skippedCount,
+      onProgress: (processed, total) {
+        if (emit.isDone) return;
+        emit(TransactionsImporting(processed: processed, total: total));
+      },
     );
 
     result.fold(

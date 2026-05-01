@@ -86,7 +86,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
       ),
       body: BlocBuilder<CategoriesCubit, CategoriesState>(
         builder: (context, state) {
-          if (state is CategoriesLoading) return const LoadingShimmer();
+          if (state is CategoriesLoading || state is CategoriesImporting) {
+            return const LoadingShimmer();
+          }
           if (state is CategoriesError) {
             return ErrorView(
               message: state.failure.message,

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
@@ -29,12 +30,15 @@ class AccountFormCubit extends Cubit<AccountFormState> {
   void updateType(AccountType type) => emit(state.copyWith(type: type));
 
   void updateBalance(String value) {
-    final balance = double.tryParse(value) ?? 0;
+    // Accept both "-431,72" (BR) and "-431.72" (EN) — `double.tryParse`
+    // alone rejects the comma decimal and the user's edit silently
+    // becomes 0.
+    final balance = parseDecimalAmount(value) ?? 0;
     emit(state.copyWith(balance: balance));
   }
 
   void updateCreditLimit(String value) {
-    final limit = double.tryParse(value) ?? 0;
+    final limit = parseDecimalAmount(value) ?? 0;
     emit(state.copyWith(creditLimit: limit));
   }
 

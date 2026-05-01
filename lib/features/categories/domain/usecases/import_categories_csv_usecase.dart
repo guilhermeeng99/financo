@@ -130,10 +130,16 @@ class ImportCategoriesCsvUseCase {
   ///
   /// Children whose parent is missing (deleted from the preview before
   /// import) are silently skipped, matching the CSV-only flow.
+  ///
+  /// [onProgress] is called after each item has been processed (created or
+  /// skipped) with `(processedCount, total)` so the caller can render a
+  /// determinate progress UI. The callback is invoked synchronously between
+  /// awaits, so emitting cubit state from inside it is safe.
   Future<Either<Failure, CategoryImportResult>> importItems({
     required List<CategoryImportPreviewItem> items,
     required String userId,
     int duplicateCount = 0,
+    void Function(int processed, int total)? onProgress,
   }) async {
     final existingResult = await _repository.getCategories(userId: userId);
 
@@ -155,6 +161,8 @@ class ImportCategoriesCsvUseCase {
       existingRoots[_rootKey(category.name, category.type)] = category.id;
     }
 
+    final total = items.length;
+    var processed = 0;
     var importedCount = 0;
     final rootsToCreate = items.where((item) => !item.isSubcategory);
     final childrenToCreate = items.where((item) => item.isSubcategory);
@@ -178,12 +186,18 @@ class ImportCategoriesCsvUseCase {
         existingRoots[_rootKey(item.name, item.type)] = created.id;
         importedCount++;
       });
+      processed++;
+      onProgress?.call(processed, total);
     }
 
     for (final item in childrenToCreate) {
       final parentKey = _rootKey(item.parentName!, item.type);
       final parentId = existingRoots[parentKey];
-      if (parentId == null) continue;
+      if (parentId == null) {
+        processed++;
+        onProgress?.call(processed, total);
+        continue;
+      }
 
       final result = await _repository.createCategory(
         CategoryEntity(
@@ -201,6 +215,8 @@ class ImportCategoriesCsvUseCase {
       if (failure != null) return Left(failure);
 
       result.fold((_) {}, (_) => importedCount++);
+      processed++;
+      onProgress?.call(processed, total);
     }
 
     return Right(
@@ -220,18 +236,18 @@ class ImportCategoriesCsvUseCase {
     final items = <CategoryImportPreviewItem>[];
     final seenRoots = <String>{};
     var colorIndex = 0;
+    var rowNumber = 1; // header row
     for (final row in rows.skip(1)) {
+      rowNumber++;
       if (row.length < 3) continue;
 
       final category = '${row[0] ?? ''}'.trim();
       final subcategory = '${row[1] ?? ''}'.trim();
-      final typeStr = '${row[2] ?? ''}'.trim().toLowerCase();
+      final typeStr = '${row[2] ?? ''}'.trim();
 
       if (category.isEmpty) continue;
 
-      final type = typeStr == 'income'
-          ? CategoryType.income
-          : CategoryType.expense;
+      final type = _parseType(typeStr, rowNumber);
 
       final rootKey = '${type.name}:${category.toLowerCase()}';
       if (seenRoots.add(rootKey)) {
@@ -304,6 +320,28 @@ class ImportCategoriesCsvUseCase {
     }
 
     return CategoryImportPreview(toCreate: toCreate, duplicates: duplicates);
+  }
+
+  /// Maps a type column value to [CategoryType]. Accepts English
+  /// (`income`/`expense`) and Portuguese (`receita`/`despesa`) so users can
+  /// import CSVs exported in either language. Empty or unrecognized values
+  /// raise a [FormatException] tagged with the offending [csvRow] so the UI
+  /// can point the user to the exact row to fix.
+  CategoryType _parseType(String raw, int csvRow) {
+    switch (raw.toLowerCase()) {
+      case 'income':
+      case 'receita':
+        return CategoryType.income;
+      case 'expense':
+      case 'despesa':
+        return CategoryType.expense;
+    }
+    final detail = raw.isEmpty
+        ? 'type column is empty'
+        : 'invalid type "$raw"';
+    throw FormatException(
+      'Row $csvRow: $detail. Use Receita, Despesa, Income or Expense.',
+    );
   }
 
   String _rootKey(String name, CategoryType type) =>

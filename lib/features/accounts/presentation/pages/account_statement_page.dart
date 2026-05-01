@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
@@ -39,13 +40,13 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final accountsState = context.read<AccountsCubit>().state;
-      if (accountsState is AccountsLoaded) {
-        final account = accountsState.accounts
-            .where((a) => a.id == widget.accountId)
-            .firstOrNull;
-        if (account != null) _triggerLoad(account);
-      }
+      final account = context
+          .read<AccountsCubit>()
+          .state
+          .accountsOrEmpty
+          .where((a) => a.id == widget.accountId)
+          .firstOrNull;
+      if (account != null) _triggerLoad(account);
     });
   }
 
@@ -61,22 +62,39 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
     );
   }
 
+  Future<void> _openAddTransaction() async {
+    // Same destination as the dashboard FAB, but pre-selects this account
+    // via a query param so users don't re-pick the account they're
+    // already viewing.
+    await context.push(
+      '${AppRoutes.addTransaction}?accountId=${widget.accountId}',
+    );
+    if (!mounted || _account == null) return;
+    _triggerLoad(_account!);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     return Scaffold(
       backgroundColor: colors.background,
+      floatingActionButton: LiftedFab(
+        child: FloatingActionButton(
+          heroTag: 'account_statement_fab',
+          onPressed: _openAddTransaction,
+          tooltip: t.transactions.addTransaction,
+          child: const FaIcon(FontAwesomeIcons.plus),
+        ),
+      ),
       body: MultiBlocListener(
         listeners: [
           BlocListener<AccountsCubit, AccountsState>(
             listener: (context, state) {
-              if (state is AccountsLoaded) {
-                final account = state.accounts
-                    .where((a) => a.id == widget.accountId)
-                    .firstOrNull;
-                if (account != null && account != _account) {
-                  _triggerLoad(account);
-                }
+              final account = state.accountsOrEmpty
+                  .where((a) => a.id == widget.accountId)
+                  .firstOrNull;
+              if (account != null && account != _account) {
+                _triggerLoad(account);
               }
             },
           ),
@@ -316,14 +334,14 @@ class _TransactionsSide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final categoriesState = context.watch<CategoriesCubit>().state;
-    final categoryMap = categoriesState is CategoriesLoaded
-        ? {for (final c in categoriesState.categories) c.id: c}
-        : <String, CategoryEntity>{};
-    final accountsState = context.watch<AccountsCubit>().state;
-    final accountMap = accountsState is AccountsLoaded
-        ? {for (final a in accountsState.accounts) a.id: a}
-        : <String, AccountEntity>{};
+    final categoryMap = {
+      for (final c in context.watch<CategoriesCubit>().state.categoriesOrEmpty)
+        c.id: c,
+    };
+    final accountMap = {
+      for (final a in context.watch<AccountsCubit>().state.accountsOrEmpty)
+        a.id: a,
+    };
 
     if (state.transactions.isEmpty) {
       return Center(

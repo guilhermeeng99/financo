@@ -91,14 +91,14 @@ class _CategoryDetailsDialogState extends State<_CategoryDetailsDialog>
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final categoriesState = context.watch<CategoriesCubit>().state;
-    final categoryMap = categoriesState is CategoriesLoaded
-        ? {for (final c in categoriesState.categories) c.id: c}
-        : <String, CategoryEntity>{};
-    final accountsState = context.watch<AccountsCubit>().state;
-    final accountMap = accountsState is AccountsLoaded
-        ? {for (final a in accountsState.accounts) a.id: a}
-        : <String, AccountEntity>{};
+    final categoryMap = {
+      for (final c in context.watch<CategoriesCubit>().state.categoriesOrEmpty)
+        c.id: c,
+    };
+    final accountMap = {
+      for (final a in context.watch<AccountsCubit>().state.accountsOrEmpty)
+        a.id: a,
+    };
 
     final categoryTransactions =
         widget.periodTransactions

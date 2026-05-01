@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -27,6 +28,62 @@ abstract class ChatRemoteDataSource {
   Future<void> saveChatMessage(ChatMessageModel message);
 }
 
+// Strips app-generated assistant messages (action results, e.g.
+// "Transaction X created successfully!") before sending the history to the
+// AI. Without this, Gemini mimics the pattern in subsequent turns —
+// emitting fake success text without the [TRANSACTION_DATA] block, which
+// produces bubbles with no action card and no actual write to Firestore.
+//
+// Two-pronged: the metadata tag handles new messages, while the regex
+// covers messages persisted before the tag existed (legacy data already in
+// the user's Firestore history).
+bool _shouldSendToAi(ChatMessageEntity m) {
+  final kind = m.metadata?['kind'];
+  if (kind == 'actionResult' || kind == 'actionRejected') return false;
+  if (m.role == ChatRole.assistant &&
+      _legacyResultPattern.hasMatch(m.content)) {
+    return false;
+  }
+  return true;
+}
+
+final RegExp _legacyResultPattern = RegExp(
+  '^(Transaction|Account|Category|Bill|Transação|Conta|Categoria) '
+  '.*(created successfully|deleted successfully|updated|paid|'
+  'criada com sucesso|removida com sucesso|scheduled for)',
+  caseSensitive: false,
+);
+
+// Reconstructs the action block (e.g. [TRANSACTION_DATA]{...}[/...]) from
+// a saved assistant message's metadata before sending it back to Gemini.
+//
+// The Cloud Function strips action blocks from the response text before
+// persisting (only metadata survives — see chat spec). Without this
+// reconstruction, the AI sees its own past replies as plain
+// "Pronto, confirma o gasto?" with no block, learns that pattern, and
+// stops emitting the block in subsequent turns — producing bubbles with
+// no action card and no actual write.
+String _historyContent(ChatMessageEntity m) {
+  final meta = m.metadata;
+  if (meta == null) return m.content;
+  final actionType = meta['actionType'] as String?;
+  if (actionType == null) return m.content;
+  final tag = _actionTag(actionType);
+  if (tag == null) return m.content;
+  final data = Map<String, dynamic>.from(meta)
+    ..remove('actionType')
+    ..remove('kind');
+  return '${m.content}\n[$tag]\n${jsonEncode(data)}\n[/$tag]';
+}
+
+String? _actionTag(String actionType) => switch (actionType) {
+  'transaction' => 'TRANSACTION_DATA',
+  'account' => 'ACCOUNT_ACTION',
+  'category' => 'CATEGORY_ACTION',
+  'bill' => 'BILL_ACTION',
+  _ => null,
+};
+
 class ChatBackendDataSourceImpl implements ChatBackendDataSource {
   ChatBackendDataSourceImpl({required FirebaseFunctions functions})
     : _callable = functions.httpsCallable('chatSend'),
@@ -43,13 +100,14 @@ class ChatBackendDataSourceImpl implements ChatBackendDataSource {
     ChatImageAttachment? image,
   }) async {
     try {
+      final filteredHistory = history.where(_shouldSendToAi).toList();
       final payload = <String, dynamic>{
         'content': content,
-        'history': history
+        'history': filteredHistory
             .map(
               (m) => {
                 'role': m.role == ChatRole.user ? 'user' : 'assistant',
-                'content': m.content,
+                'content': _historyContent(m),
               },
             )
             .toList(),

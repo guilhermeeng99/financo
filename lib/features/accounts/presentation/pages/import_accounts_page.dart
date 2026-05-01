@@ -143,13 +143,10 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    final accountsState = context.watch<AccountsCubit>().state;
-    final existingCheckingNames = accountsState is AccountsLoaded
-        ? {
-            for (final a in accountsState.accounts)
-              if (a.type == AccountType.checking) a.name.toLowerCase(),
-          }
-        : <String>{};
+    final existingCheckingNames = {
+      for (final a in context.watch<AccountsCubit>().state.accountsOrEmpty)
+        if (a.type == AccountType.checking) a.name.toLowerCase(),
+    };
 
     final inImportCheckingNames = {
       for (final it in _items)
@@ -178,44 +175,59 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
           subtitle: t.accounts.importPageSubtitle,
           showBack: true,
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: FinancoPillToggle<AccountType>(
-                selected: _filter,
-                onChanged: (f) => setState(() => _filter = f),
-                options: [
-                  FinancoPillToggleOption(
-                    value: AccountType.checking,
-                    label: t.accounts.importTabChecking(
-                      count: _countFor(AccountType.checking),
-                    ),
-                    icon: FontAwesomeIcons.buildingColumns,
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: FinancoPillToggle<AccountType>(
+                    selected: _filter,
+                    onChanged: (f) => setState(() => _filter = f),
+                    options: [
+                      FinancoPillToggleOption(
+                        value: AccountType.checking,
+                        label: t.accounts.importTabChecking(
+                          count: _countFor(AccountType.checking),
+                        ),
+                        icon: FontAwesomeIcons.buildingColumns,
+                      ),
+                      FinancoPillToggleOption(
+                        value: AccountType.creditCard,
+                        label: t.accounts.importTabCreditCard(
+                          count: _countFor(AccountType.creditCard),
+                        ),
+                        icon: FontAwesomeIcons.creditCard,
+                      ),
+                    ],
                   ),
-                  FinancoPillToggleOption(
-                    value: AccountType.creditCard,
-                    label: t.accounts.importTabCreditCard(
-                      count: _countFor(AccountType.creditCard),
-                    ),
-                    icon: FontAwesomeIcons.creditCard,
+                ),
+                if (missingLinkedFor.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: _MissingLinkBanner(missing: missingLinkedFor),
                   ),
-                ],
-              ),
+                Expanded(
+                  child: _ImportList(
+                    items: _items,
+                    duplicates: widget.preview.duplicates,
+                    filter: _filter,
+                    onTap: _editItem,
+                    onRemove: _removeItem,
+                  ),
+                ),
+              ],
             ),
-            if (missingLinkedFor.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: _MissingLinkBanner(missing: missingLinkedFor),
-              ),
-            Expanded(
-              child: _ImportList(
-                items: _items,
-                duplicates: widget.preview.duplicates,
-                filter: _filter,
-                onTap: _editItem,
-                onRemove: _removeItem,
-              ),
+            BlocBuilder<AccountsCubit, AccountsState>(
+              buildWhen: (previous, current) =>
+                  previous is AccountsImporting ||
+                  current is AccountsImporting,
+              builder: (context, state) {
+                if (state is! AccountsImporting) {
+                  return const SizedBox.shrink();
+                }
+                return _ImportProgressOverlay(state: state);
+              },
             ),
           ],
         ),
@@ -224,9 +236,88 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
             label: _items.isEmpty
                 ? t.accounts.importNothingLeft
                 : t.accounts.importSubmit(count: _items.length),
-            isLoading: state is AccountsLoading,
+            isLoading:
+                state is AccountsLoading || state is AccountsImporting,
             isEnabled: canImport,
             onSubmit: _onSubmit,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Modal-style overlay rendered on top of the import preview while the
+/// cubit is in the [AccountsImporting] state. Blocks interaction with the
+/// list (an in-flight import shouldn't be edited) and shows a determinate
+/// progress bar with a `processed of total` counter so the user knows how
+/// long the operation still has to run.
+class _ImportProgressOverlay extends StatelessWidget {
+  const _ImportProgressOverlay({required this.state});
+
+  final AccountsImporting state;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
+
+    return ColoredBox(
+      color: Colors.black.withValues(alpha: 0.45),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  t.accounts.importInProgressTitle,
+                  style: context.textTheme.titleMedium?.copyWith(
+                    color: colors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: state.progress,
+                    minHeight: 8,
+                    backgroundColor: colors.surfaceVariant,
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      t.accounts.importProgressCounter(
+                        processed: state.processed,
+                        total: state.total,
+                      ),
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    Text(
+                      '$percent%',
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -536,7 +627,9 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       text: _draft.initialBalance.toStringAsFixed(2),
     );
     _limitController = TextEditingController(
-      text: (_draft.creditLimit ?? 0) > 0
+      // Show whatever the CSV gave us (including 0,00) so the user can see
+      // the field is "set but invalid" instead of just empty placeholder.
+      text: _draft.creditLimit != null
           ? _draft.creditLimit!.toStringAsFixed(2)
           : '',
     );
@@ -591,13 +684,13 @@ class _EditItemSheetState extends State<_EditItemSheet> {
   }
 
   Future<void> _pickLinkedAccount() async {
-    final accountsState = context.read<AccountsCubit>().state;
-    final existing = accountsState is AccountsLoaded
-        ? accountsState.accounts
-              .where((a) => a.type == AccountType.checking)
-              .map((a) => a.name)
-              .toList()
-        : <String>[];
+    final existing = context
+        .read<AccountsCubit>()
+        .state
+        .accountsOrEmpty
+        .where((a) => a.type == AccountType.checking)
+        .map((a) => a.name)
+        .toList();
 
     final candidates = <String>{...existing, ...widget.otherCheckingNames}
         .toList();
@@ -621,21 +714,40 @@ class _EditItemSheetState extends State<_EditItemSheet> {
     setState(() => _draft = _draft.copyWith(linkedAccountName: picked));
   }
 
-  bool get _isValid {
-    if (_nameController.text.trim().isEmpty) return false;
+  /// Returns the localized labels for fields the user still has to fill.
+  /// Used both to gate the Save button (`isEmpty`) and to spell out the
+  /// reason in a snackbar when the user taps Save anyway.
+  List<String> _missingFields() {
+    final missing = <String>[];
+    if (_nameController.text.trim().isEmpty) {
+      missing.add(t.accounts.name);
+    }
     if (_draft.isCreditCard) {
-      if ((_draft.creditLimit ?? 0) <= 0) return false;
-      if (_draft.closingDay == null || _draft.dueDay == null) return false;
+      final limit =
+          double.tryParse(_limitController.text.replaceAll(',', '.'));
+      if (limit == null || limit <= 0) missing.add(t.accounts.creditLimit);
+      if (_draft.closingDay == null) missing.add(t.accounts.closingDay);
+      if (_draft.dueDay == null) missing.add(t.accounts.dueDay);
       if (_draft.linkedAccountName == null ||
           _draft.linkedAccountName!.isEmpty) {
-        return false;
+        missing.add(t.accounts.linkedAccount);
       }
     }
-    return true;
+    return missing;
   }
 
   void _save() {
-    if (!_isValid) return;
+    final missing = _missingFields();
+    if (missing.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t.accounts.importMissingFields(fields: missing.join(', ')),
+          ),
+        ),
+      );
+      return;
+    }
     final balance =
         double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0;
     final limit =
@@ -802,7 +914,9 @@ class _EditItemSheetState extends State<_EditItemSheet> {
             FinancoSubmitBar(
               label: t.general.save,
               onSubmit: _save,
-              isEnabled: _isValid,
+              // Always tappable: `_save` shows a snackbar with the missing
+              // fields when invalid. Disabling silently was misleading
+              // users into thinking the form had no problem.
             ),
           ],
         ),

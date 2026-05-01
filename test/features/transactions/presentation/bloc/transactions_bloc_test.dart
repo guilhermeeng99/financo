@@ -317,19 +317,24 @@ void main() {
 
     group('TransactionsImportRowsConfirmed', () {
       blocTest<TransactionsBloc, TransactionsState>(
-        'emits [Loading, Imported] when importRows succeeds',
+        'emits Importing progress + Imported when importRows succeeds',
         setUp: () {
           when(
             () => mockImportTransactionsCsv.importRows(
               rows: any(named: 'rows'),
               userId: any(named: 'userId'),
               skippedCount: any(named: 'skippedCount'),
+              onProgress: any(named: 'onProgress'),
             ),
-          ).thenAnswer(
-            (_) async => const Right(
+          ).thenAnswer((invocation) async {
+            final onProgress =
+                invocation.namedArguments[const Symbol('onProgress')]
+                    as void Function(int, int)?;
+            onProgress?.call(1, 1);
+            return const Right(
               TransactionImportResult(importedCount: 7, skippedCount: 2),
-            ),
-          );
+            );
+          });
         },
         build: buildBloc,
         act: (bloc) => bloc.add(
@@ -348,7 +353,12 @@ void main() {
           ),
         ),
         expect: () => [
-          isA<TransactionsLoading>(),
+          isA<TransactionsImporting>()
+              .having((s) => s.processed, 'processed', 0)
+              .having((s) => s.total, 'total', 1),
+          isA<TransactionsImporting>()
+              .having((s) => s.processed, 'processed', 1)
+              .having((s) => s.total, 'total', 1),
           isA<TransactionsImported>()
               .having((s) => s.importedCount, 'importedCount', 7)
               .having((s) => s.skippedCount, 'skippedCount', 2),
@@ -356,13 +366,14 @@ void main() {
       );
 
       blocTest<TransactionsBloc, TransactionsState>(
-        'emits [Loading, Error] when importRows fails',
+        'emits Importing + Error when importRows fails',
         setUp: () {
           when(
             () => mockImportTransactionsCsv.importRows(
               rows: any(named: 'rows'),
               userId: any(named: 'userId'),
               skippedCount: any(named: 'skippedCount'),
+              onProgress: any(named: 'onProgress'),
             ),
           ).thenAnswer(
             (_) async => const Left(ServerFailure('boom')),
@@ -373,7 +384,9 @@ void main() {
           const TransactionsImportRowsConfirmed(rows: []),
         ),
         expect: () => [
-          isA<TransactionsLoading>(),
+          isA<TransactionsImporting>()
+              .having((s) => s.processed, 'processed', 0)
+              .having((s) => s.total, 'total', 0),
           isA<TransactionsError>()
               .having((s) => s.failure.message, 'message', 'boom'),
         ],

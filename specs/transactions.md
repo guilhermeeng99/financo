@@ -179,23 +179,23 @@ submit():
 
 ### CSV Format
 
-Header: `Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência`
+The parser locates each field by **header name** (accent- and case-insensitive), not by column position — extra/reordered columns are tolerated, and unknown columns are ignored. The first row must include each required header below.
 
-| Column | Description | Format |
+| Logical field | Accepted headers (any of) | Description / Format |
 |---|---|---|
-| Tipo | Transaction kind | `Despesa` (expense), `Receita` (income), `Transferência` (transfer), `Pagamento` (credit card payment → transfer) |
-| Data | Date | `DD/MM/YYYY` |
-| Valor | Amount | Brazilian format: `"-9,99"` or `"-1.234,56"` (quoted, negative, comma decimal) |
-| Descrição | Description | Free text, may be empty |
-| Categoria | Category | `ParentName/SubcategoryName` or `CategoryName`. Ignored for Transferência/Pagamento |
-| Conta | Source account | Account name (must exist) |
-| Conta transferência | Destination account | Only for Transferência/Pagamento (must exist) |
+| type (required) | `Tipo`, `Type`, `Kind` | `Despesa` / `Expense` (expense), `Receita` / `Income` (income), `Transferência` / `Transfer` (transfer), `Pagamento` / `Payment` (credit card payment → transfer). Accent- and case-tolerant. **Empty or unrecognized values reject the whole import** with a `ValidationFailure` whose message points to the offending row and lists accepted values. |
+| date (required) | `Data`, `Date` | `DD/MM/YYYY`. Invalid values reject the whole import with row detail. |
+| amount (required) | `Valor`, `Value`, `Amount` | Number — accepts both Brazilian (`"-9,99"`, `"1.234,56"`) and English (`-9.99`, `1,234.56`) decimal styles. Stored as `abs()` since the type column carries the sign. Zero or non-numeric values reject the whole import with row detail. |
+| description (optional) | `Descrição`, `Description`, `Memo`, `Notes` | Free text, may be empty |
+| category (optional) | `Categoria`, `Category` | `ParentName/SubcategoryName` or `CategoryName`. Ignored for Transferência/Pagamento. |
+| account (required) | `Conta`, `Account`, `Origem` | Account name (must exist at import time). Empty value rejects with row detail. |
+| destination (optional) | `Conta transferência`, `Conta destino`, `Destination`, `Transfer Account` | Only used for Transferência/Pagamento (must exist at import time) |
 
 ### Parsing Rules
 
-16. **Category notation** — `"Saúde/Plano de saúde"` means parent category "Saúde" and subcategory "Plano de saúde". Split on first `/`, trim both parts.
+16. **Category notation** — `"Saúde/Plano de saúde"` means parent category "Saúde" and subcategory "Plano de saúde". Split on first `/` not surrounded by spaces, trim both parts. `"Mercado / Almoço"` (spaces around `/`) is treated as a single category name.
 17. **Amount is always stored positive** — `abs()` of parsed value. Type is determined by the `Tipo` column.
-18. **Brazilian number format** — remove quotes, replace `.` (thousands separator) with empty, replace `,` (decimal separator) with `.`, then `double.parse`.
+18. **Decimal flexibility** — the rightmost separator (`,` or `.`) is treated as the decimal point; the other one as a thousands grouper and stripped. Quotes are removed before parsing.
 19. **Date format** — `DD/MM/YYYY` parsed to `DateTime`.
 20. **Pagamento = transfer** — creates a linked expense+income pair, same as Transferência.
 21. **Transfers have empty categoryId** — the `Categoria` column is ignored for Transferência and Pagamento rows.
@@ -204,8 +204,12 @@ Header: `Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência`
 ### Validation Rules
 
 23. **Entire import is blocked** if ANY referenced category, subcategory, or account does not exist — no partial imports.
-24. **Malformed rows** (fewer than 7 columns) are skipped silently.
-25. **CSV must have at least one valid data row** after the header — otherwise `ValidationFailure`.
+24. **Too-short rows** (fewer cells than the largest required-column index) are skipped silently and counted in `skippedRows` — handles trailing blank lines / ragged CSVs.
+25. **Bad data inside otherwise complete rows** (unknown type, invalid date, zero/non-numeric amount, empty account) rejects the whole import with `ValidationFailure: Row N: ...` so the user can fix the source.
+26. **CSV must have at least one valid data row** after the header — otherwise `ValidationFailure`.
+27. **Missing required header** (`type`, `date`, `amount`, `account`) raises `ValidationFailure: CSV is missing the required "X" column.` The dialog surfaces parse failures as an `AlertDialog` so the user can read the full detail.
+28. **Mirror transfers are deduplicated**: many exporters (Mobills, etc.) emit each transfer twice — a negative leg on the source row and a positive mirror on the destination row (same date, same `|amount|`, accounts swapped). Both legs collapse to a single import row. Pairing is 1:1 by canonical key `(date, |amount|, sorted account pair)`, so three real transfers of the same amount/day still come through as three rows. The negative leg wins (its `Conta` is already the source); each discarded mirror is counted in `skippedRows`.
+29. **Unpaired positive transfer rows have their account fields swapped**: a lone positive row's `Conta` is the destination (where money landed), `Conta transferência` is the source. The parser flips them so the rest of the pipeline can keep treating `accountName` as the source.
 
 ### Import Flow
 
@@ -242,9 +246,19 @@ Events:
   TransactionsImportRowsConfirmed { rows, skippedCount }
 
 States:
-  → Loading → TransactionsImported { importedCount, skippedCount }
-           → Error { failure }
+  TransactionsImportCsvRequested
+    → Loading → TransactionsImported | TransactionsError
+
+  TransactionsImportRowsConfirmed
+    → TransactionsImporting(processed: 0, total: rows.length)
+    → TransactionsImporting(processed: i, total: rows.length)  // for each i
+    → TransactionsImported { importedCount, skippedCount } | TransactionsError
 ```
+
+### Progress Reporting
+
+33. **`importRows` accepts an optional `onProgress(processed, total)` callback** invoked after every processed row (created or skipped). `total` equals the input `rows.length`; rows whose account/category cannot be resolved still tick the counter so the bar reaches 100%.
+34. **The bloc translates progress into `TransactionsImporting` states** so the import-transactions page renders a determinate `LinearProgressIndicator` overlay (with a `processed of total` counter and percentage) until the import resolves. The list page treats `TransactionsImporting` as a loading state.
 
 Public method on bloc: `previewCsv(String csvContent)` — delegates to use case `preview()`, returns `Either` directly (same pattern as `CategoriesCubit.previewCsv`).
 

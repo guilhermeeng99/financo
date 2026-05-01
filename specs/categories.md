@@ -169,6 +169,15 @@ Initial state (edit mode):
 
 The CSV import flow has two stages: **parse + preview** and **confirm**. The preview is rendered on a dedicated page (not a dialog) so the user can review and adjust each item before committing.
 
+### CSV format
+
+Header row is required and skipped (column labels are free-form). Columns, in order: `Categoria`, `Subcategoria` (may be empty for root rows), `Tipo`. The type column is matched case-insensitively against:
+
+- **Income**: `income` (EN) or `receita` (PT-BR)
+- **Expense**: `expense` (EN) or `despesa` (PT-BR)
+
+Empty or unrecognized type values cause the whole import to be rejected with a `ValidationFailure` whose message points to the offending CSV row (1-based, header counted as row 1) and lists the accepted values. The dialog surfaces this as an `AlertDialog` so the user can read the full error.
+
 ### Preview item
 
 ```
@@ -197,9 +206,16 @@ CategoryImportPreviewItem {
 confirmImport({
   required List<CategoryImportPreviewItem> items,
   int duplicateCount = 0,
-}) → Loading → CategoriesImported(categories, importedCount, duplicateCount)
-                                | CategoriesError(failure)
+}) → CategoriesImporting(processed: 0, total: items.length)
+   → CategoriesImporting(processed: i, total: items.length)  // for each i
+   → CategoriesImported(categories, importedCount, duplicateCount)
+   | CategoriesError(failure)
 ```
+
+### Progress reporting
+
+26. **`importItems` accepts an optional `onProgress(processed, total)` callback** invoked after every processed item (created or skipped). `total` equals the input `items.length`; orphan children that are skipped still tick the counter so the bar reaches 100%.
+27. **The cubit translates progress into `CategoriesImporting` states** so the import-categories page renders a determinate `LinearProgressIndicator` overlay (with a `processed of total` counter and percentage) until the import resolves. The list page treats `CategoriesImporting` as a loading state.
 
 ## 7. Model Serialization
 

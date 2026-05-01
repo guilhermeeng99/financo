@@ -6,7 +6,6 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
@@ -61,7 +60,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
           },
           child: BlocBuilder<TransactionsBloc, TransactionsState>(
             builder: (context, state) {
-              if (state is TransactionsLoading) return const LoadingShimmer();
+              if (state is TransactionsLoading ||
+                  state is TransactionsImporting) {
+                return const LoadingShimmer();
+              }
               if (state is TransactionsError) {
                 return ErrorView(
                   message: state.failure.message,
@@ -122,14 +124,14 @@ class _TransactionsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoriesState = context.watch<CategoriesCubit>().state;
-    final categoryMap = categoriesState is CategoriesLoaded
-        ? {for (final c in categoriesState.categories) c.id: c}
-        : <String, CategoryEntity>{};
-    final accountsState = context.watch<AccountsCubit>().state;
-    final accountMap = accountsState is AccountsLoaded
-        ? {for (final a in accountsState.accounts) a.id: a}
-        : <String, AccountEntity>{};
+    final categoryMap = {
+      for (final c in context.watch<CategoriesCubit>().state.categoriesOrEmpty)
+        c.id: c,
+    };
+    final accountMap = {
+      for (final a in context.watch<AccountsCubit>().state.accountsOrEmpty)
+        a.id: a,
+    };
 
     final groups = _groupByDay(state.transactions);
 

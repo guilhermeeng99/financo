@@ -161,6 +161,108 @@ export const executeTransactionAction = async (
   return `Transação "${description}" de R$ ${amount.toFixed(2)} criada com sucesso!`;
 };
 
+// Two-tier account name resolution: exact case-insensitive, then word-set
+// match (every query word appears as substring of some account-name word
+// or vice-versa). Mirrors the app-side helper in chat_bloc.dart so the AI
+// emitting "cartão mila" still resolves to "Cartão Nubank Mila", but
+// without silently writing to a wrong account when the name is
+// unrecognizable.
+const resolveAccount = (
+  accounts: AccountDoc[],
+  rawQuery: string,
+): { match?: AccountDoc; error?: string } => {
+  const query = rawQuery.trim().toLowerCase();
+  if (!query) {
+    return { error: 'Qual conta? Por favor diga o nome da conta.' };
+  }
+  const exact = accounts.filter((a) => a.name.toLowerCase() === query);
+  if (exact.length === 1) return { match: exact[0] };
+  const tokens = (s: string) => s.split(/\s+/).filter(Boolean);
+  const queryWords = tokens(query);
+  const fuzzy = accounts.filter((a) => {
+    const accWords = tokens(a.name.toLowerCase());
+    if (!queryWords.length || !accWords.length) return false;
+    const qInA = queryWords.every((w) => accWords.some((aw) => aw.includes(w)));
+    const aInQ = accWords.every((aw) => queryWords.some((w) => w.includes(aw)));
+    return qInA || aInQ;
+  });
+  if (fuzzy.length === 1) return { match: fuzzy[0] };
+  if (fuzzy.length === 0) {
+    return {
+      error:
+        `Conta "${rawQuery}" não encontrada. Crie-a primeiro ou use o nome exato.`,
+    };
+  }
+  const names = fuzzy.map((a) => `"${a.name}"`).join(', ');
+  return {
+    error: `Múltiplas contas correspondem a "${rawQuery}": ${names}. Seja mais específico.`,
+  };
+};
+
+export const executeTransferAction = async (
+  userId: string,
+  meta: ActionMetadata,
+): Promise<string> => {
+  const amount = Number(meta.amount ?? 0);
+  if (!(amount > 0)) return 'Valor inválido.';
+
+  const fromName = (meta.from as string | undefined) ?? '';
+  const toName = (meta.to as string | undefined) ?? '';
+  if (!fromName || !toName) {
+    return 'Transferência precisa de conta de origem e destino.';
+  }
+
+  const accounts = await fetchAccounts(userId);
+  if (accounts.length < 2) {
+    return 'Transferência requer ao menos duas contas.';
+  }
+
+  const fromR = resolveAccount(accounts, fromName);
+  if (fromR.error || !fromR.match) return fromR.error ?? 'Conta de origem não encontrada.';
+  const toR = resolveAccount(accounts, toName);
+  if (toR.error || !toR.match) return toR.error ?? 'Conta de destino não encontrada.';
+  if (fromR.match.id === toR.match.id) {
+    return 'Origem e destino devem ser contas diferentes.';
+  }
+
+  const description = (meta.description as string | undefined) ?? '';
+  const rawDate = meta.date as string | undefined;
+  const date = rawDate ? new Date(rawDate) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const createdAt = now();
+  const dateTs = Timestamp().fromDate(safeDate);
+
+  const expenseRef = await db().collection('transactions').add({
+    userId,
+    accountId: fromR.match.id,
+    categoryId: '',
+    type: 'expense',
+    amount,
+    description,
+    date: dateTs,
+    notes: null,
+    linkedTransactionId: null,
+    createdAt,
+    updatedAt: createdAt,
+  });
+  const incomeRef = await db().collection('transactions').add({
+    userId,
+    accountId: toR.match.id,
+    categoryId: '',
+    type: 'income',
+    amount,
+    description,
+    date: dateTs,
+    notes: null,
+    linkedTransactionId: expenseRef.id,
+    createdAt,
+    updatedAt: createdAt,
+  });
+  await expenseRef.update({ linkedTransactionId: incomeRef.id });
+
+  return `Transferência de R$ ${amount.toFixed(2)} de "${fromR.match.name}" para "${toR.match.name}" criada com sucesso!`;
+};
+
 export const executeAction = async (
   userId: string,
   metadata: ActionMetadata,
@@ -172,6 +274,8 @@ export const executeAction = async (
     return executeCategoryAction(userId, metadata);
   case 'transaction':
     return executeTransactionAction(userId, metadata);
+  case 'transfer':
+    return executeTransferAction(userId, metadata);
   default:
     return 'Tipo de ação desconhecido.';
   }

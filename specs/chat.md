@@ -95,12 +95,17 @@ saveChatMessage(ChatMessageModel) → Future<void>
    - **WhatsApp**: user taps the interactive reply button → backend runs the executor via Admin SDK (see `specs/whatsapp.md`).
 4. **User context injection (intelligence)**: on every `chatSend` / WhatsApp turn, the backend builds a snapshot of the user's accounts and categories via `buildUserContext(userId)` and appends it to the system instruction. The snapshot is a point-in-time view at turn start — newly created entities (e.g. a category created in this same confirmation flow) are picked up on the NEXT turn.
 5. **Verify-before-confirm**: the AI must NOT emit a `[TRANSACTION_DATA]` block if the referenced category or account is absent from the snapshot. It emits a `[CATEGORY_ACTION]` or `[ACCOUNT_ACTION]` create block first and resumes the transaction on the next turn once creation is confirmed.
-6. **Single-match auto-resolution**: when filters applied to the user's phrasing leave exactly one account (e.g. user said "cartão de crédito" and only one `creditCard` exists), the AI uses it without asking.
-7. **Filtering signals**:
+6. **Exact-name discipline**: `account`, `category`, and `linkedAccountName` fields in any action block MUST contain the **exact name** as stored in the snapshot — not the user's shortened phrasing. Example: user typed `"cartão mila"`, snapshot has `"Cartão Nubank Mila"` → emit `"Cartão Nubank Mila"`. The bloc's word-set matcher (see edge case 10) is a safety net, not a license to guess.
+7. **Ask over guess**: when any required field cannot be confidently determined, the AI asks a single specific question instead of fabricating a placeholder. Generic descriptions like `"Transação"`, `"Gasto"`, `"Compra"` are NOT acceptable — derive from the user's wording or the chosen category, or ask. Date defaults silently to today when unmentioned (do not ask for it). Account/category ambiguity is always resolved by asking with a numbered list of EXISTING options.
+8. **Single-match auto-resolution**: when filters applied to the user's phrasing leave exactly one account (e.g. user said "cartão de crédito" and only one `creditCard` exists), the AI uses it without asking.
+9. **Filtering signals**:
    - "cartão" / "crédito" / "cartão de crédito" → account type filter `creditCard`.
    - "conta" / "débito" / "corrente" → account type filter `checking`.
    - Bank name (e.g. "nubank") → filter accounts by `bank`.
-8. **Option lists**: when multiple candidates remain after filtering, the AI presents a short numbered list of EXISTING accounts/categories (not generic examples).
+10. **Option lists**: when multiple candidates remain after filtering, the AI presents a short numbered list of EXISTING accounts/categories (not generic examples).
+11. **App-generated messages excluded from AI history**: assistant messages produced by the app/executor (e.g. "Transaction X created successfully!", "Ação cancelada.") are tagged with `metadata.kind = 'actionResult'` when persisted. The chat data source filters these out before sending the history to Gemini — otherwise the model mimics the result pattern in subsequent turns and emits fake success text without the action block, producing bubbles with no Confirm button and no actual write. Legacy messages without the tag are caught by a content-pattern fallback (regex matching the standard result phrasings).
+12. **Action block reconstruction in AI history**: the Cloud Function strips action blocks (`[TRANSACTION_DATA]{...}[/TRANSACTION_DATA]`, etc.) from response text before persisting — only `metadata` survives. Before sending history back to Gemini, the data source (app) and the WhatsApp pipeline reconstruct the block from `metadata.actionType` + the remaining metadata fields (excluding `kind`) and append it to the message content. Without this, the model sees its own past replies as plain text without blocks, learns to skip the block in subsequent turns, and produces bubbles with no Confirm button.
+13. **Action card persistence after decision**: the `ChatActionCard` stays visible after the user taps Confirm or Cancel; only the footer changes (buttons → status badge "Confirmed"/"Cancelled"). Confirmed status is derived by scanning messages for a result message whose `metadata.originActionId` points back at the proposal — survives chat reload. Cancelled status is page-level state only (a cancelled action never wrote anything, so re-pending after reload is benign).
 
 ## Use Cases
 
@@ -191,8 +196,16 @@ Thin delegators:
 **Transaction create:**
 1. Parse type, amount (validate > 0), description, date (ISO 8601 or now)
 2. Resolve category by name (case-insensitive) — "not found" if missing
-3. Resolve account by name (case-insensitive) — fallback to first account if no match
+3. Resolve account by name with two-tier matching: exact case-insensitive first, then substring either direction (covers AI emitting `"Cartão Mila"` for `"Cartão Nubank Mila"`). Returns an error if zero matches OR multiple substring matches — NEVER falls back silently to another account, since that would write the transaction to the wrong card and still emit a success message.
 4. Call `createTransaction` → success message with description + formatted amount
+
+**Transfer create:** (action block `[TRANSFER_DATA]`, actionType `'transfer'`)
+1. Parse amount (validate > 0), description (default empty), date (ISO 8601 or now).
+2. Validate `from` and `to` are both present (non-empty).
+3. Resolve `from` and `to` accounts using the same two-tier matcher as transactions. Reject if either is unresolvable or ambiguous.
+4. Reject if resolved `from.id == to.id` (must be different accounts).
+5. Build linked expense (in `from`, `categoryId: ''`) + income (in `to`, `categoryId: ''`) and call `createTransfer`. The repository links them with `linkedTransactionId` on each side.
+6. Success message: `Transfer of R$ X from "From Account" to "To Account" created successfully!`. The action triggers `shouldRefreshTransactions: true`.
 
 ## Image input (receipts, notifications, invoices)
 
@@ -228,7 +241,11 @@ Thin delegators:
 7. **User message persist failure**: non-blocking, continues with AI call.
 8. **Action confirm save failure**: non-blocking, state still emitted.
 9. **Category not found for transaction**: returns descriptive error asking user to create first.
-10. **No accounts for transaction**: returns "No accounts found. Please create an account first."
+10. **Transaction account not resolvable**:
+    - User has zero accounts → "No accounts found. Please create an account first."
+    - AI-emitted name doesn't match any account (exact or word-set fuzzy: every query word appears as a substring of some account-name word, or vice-versa) → "Account 'X' not found. Please create it first or use the exact name."
+    - Word-set match is ambiguous (multiple accounts match) → "Multiple accounts match 'X': ...". Asks the user to be more specific.
+    - NEVER silently falls back to another account — that masks wrong-account writes and produces misleading success messages.
 11. **Legacy messages without `channel` field**: load as `ChatChannel.app` (default).
 12. **Cross-channel history**: messages from WhatsApp and app appear interleaved in `ChatLoaded.messages`, ordered by `createdAt`.
 13. **Audio transcription failure**: snack/no-op — the user can retry or type manually.
@@ -237,3 +254,5 @@ Thin delegators:
 16. **Image + empty caption**: content saved as `📷 Imagem anexada`; backend still processes the image and extracts transaction info.
 17. **Image larger than callable 10MB limit**: `image_picker` compression (quality 75, maxWidth 1920) keeps typical receipt photos under 1MB base64; heavier cases would bubble up as `AiFailure` via `FirebaseFunctionsException`.
 18. **Non-receipt image**: Gemini returns a polite "couldn't identify" message; no `[TRANSACTION_DATA]` emitted.
+19. **AI mimics result text**: would-be regression — Gemini learns from history that "Pronto, confirma o gasto?" is followed by "Transaction X created successfully!" and emits BOTH in one assistant message without the action block. Mitigated by (a) tagging app-generated messages with `metadata.kind = 'actionResult'` and stripping them from history before the AI call, (b) explicit "Never echo app result text" rule in the system prompt, (c) regex fallback for legacy untagged messages.
+20. **Preflight on AI-proposed actions**: when an assistant message arrives with `metadata.actionType`, the bloc validates the action against current data BEFORE the action card is rendered (transactions: category exists, account resolvable; transfers: both accounts resolvable, distinct). On failure, a rejection bubble is appended with `metadata = { kind: 'actionRejected', originActionId: <proposalId> }` and the timeline suppresses the card for that proposal. Rationale: confirming a card and then seeing a "not found" error breaks the contract the card sets up — if the card is shown, Confirm should always succeed (modulo network/server failures). Rejection bubbles are filtered from the AI history (same rule as action results) to avoid the model mimicking them.

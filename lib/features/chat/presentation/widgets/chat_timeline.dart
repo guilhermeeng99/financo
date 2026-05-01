@@ -14,8 +14,8 @@ class ChatTimeline extends StatelessWidget {
   const ChatTimeline({
     required this.messages,
     required this.isTyping,
-    required this.handledActionIds,
-    required this.onActionDismissed,
+    required this.cancelledActionIds,
+    required this.onActionCancelled,
     required this.scrollController,
     super.key,
   });
@@ -23,11 +23,13 @@ class ChatTimeline extends StatelessWidget {
   final List<ChatMessageEntity> messages;
   final bool isTyping;
 
-  /// IDs of AI messages whose action card has been confirmed or cancelled.
-  /// Tracked in the page (not the bloc) so phase 1 can land without bloc
-  /// changes.
-  final Set<String> handledActionIds;
-  final ValueChanged<String> onActionDismissed;
+  /// IDs of AI messages whose action card the user dismissed via Cancel.
+  /// Confirmed actions are derived from the messages list itself (via
+  /// `metadata.originActionId` on the result message), so they survive a
+  /// chat reload. Cancellation never touches Firestore — losing the
+  /// cancelled state on reload is benign (the action wasn't executed).
+  final Set<String> cancelledActionIds;
+  final ValueChanged<String> onActionCancelled;
   final ScrollController scrollController;
 
   @override
@@ -50,6 +52,18 @@ class ChatTimeline extends StatelessWidget {
   /// Builds the entries top-down, then reverses — easier to reason about
   /// burst boundaries and day-divider insertion in chronological order.
   List<Widget> _buildEntries(BuildContext context) {
+    final confirmedActionIds = _deriveActionIdsByKind(
+      messages,
+      'actionResult',
+    );
+    // Proposals that failed preflight: the card is suppressed entirely —
+    // the rejection bubble (already in `messages`) carries the explanation.
+    // Confirming a card the bloc would have rejected is the exact UX bug
+    // this set prevents.
+    final rejectedActionIds = _deriveActionIdsByKind(
+      messages,
+      'actionRejected',
+    );
     final widgets = <Widget>[];
     DateTime? lastDay;
     ChatRole? lastRole;
@@ -77,22 +91,33 @@ class ChatTimeline extends StatelessWidget {
         ),
       );
 
-      final hasAction = m.role == ChatRole.assistant &&
+      final isProposal = m.role == ChatRole.assistant &&
           m.metadata != null &&
-          (m.metadata!['actionType'] as String?) != null &&
-          !handledActionIds.contains(m.id);
+          (m.metadata!['actionType'] as String?) != null;
 
-      if (hasAction) {
+      if (isProposal && !rejectedActionIds.contains(m.id)) {
+        final ChatActionStatus? status;
+        if (confirmedActionIds.contains(m.id)) {
+          status = ChatActionStatus.confirmed;
+        } else if (cancelledActionIds.contains(m.id)) {
+          status = ChatActionStatus.cancelled;
+        } else {
+          status = null;
+        }
+
         widgets.add(
           ChatActionCard(
             metadata: m.metadata!,
-            onConfirm: () {
-              context.read<ChatBloc>().add(
-                ChatActionConfirmed(m.metadata!),
-              );
-              onActionDismissed(m.id);
-            },
-            onCancel: () => onActionDismissed(m.id),
+            status: status,
+            onConfirm: status == null
+                ? () => context.read<ChatBloc>().add(
+                      ChatActionConfirmed(
+                        actionMessageId: m.id,
+                        metadata: m.metadata!,
+                      ),
+                    )
+                : null,
+            onCancel: status == null ? () => onActionCancelled(m.id) : null,
           ),
         );
       }
@@ -101,6 +126,19 @@ class ChatTimeline extends StatelessWidget {
     }
 
     return widgets.reversed.toList();
+  }
+
+  static Set<String> _deriveActionIdsByKind(
+    List<ChatMessageEntity> messages,
+    String kind,
+  ) {
+    final ids = <String>{};
+    for (final m in messages) {
+      if (m.metadata?['kind'] != kind) continue;
+      final originId = m.metadata?['originActionId'] as String?;
+      if (originId != null) ids.add(originId);
+    }
+    return ids;
   }
 
   static bool _isSameDay(DateTime a, DateTime b) =>

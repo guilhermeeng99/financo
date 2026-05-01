@@ -49,12 +49,14 @@ class _BillCategoryPickerSheet extends StatelessWidget {
     final wantedType = billType == BillType.receivable
         ? CategoryType.income
         : CategoryType.expense;
-    final state = context.watch<CategoriesCubit>().state;
-    final categories = state is CategoriesLoaded
-        ? organizeCategoriesForDisplay(
-            state.categories.where((c) => c.type == wantedType).toList(),
-          )
-        : <CategoryEntity>[];
+    final categories = organizeCategoriesForDisplay(
+      context
+          .watch<CategoriesCubit>()
+          .state
+          .categoriesOrEmpty
+          .where((c) => c.type == wantedType)
+          .toList(),
+    );
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,

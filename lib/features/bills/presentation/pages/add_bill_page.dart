@@ -419,13 +419,15 @@ class _CategoryRowField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final categoriesState = context.watch<CategoriesCubit>().state;
     final wantedType = billType == BillType.receivable
         ? CategoryType.income
         : CategoryType.expense;
-    final categories = categoriesState is CategoriesLoaded
-        ? categoriesState.categories.where((c) => c.type == wantedType).toList()
-        : <CategoryEntity>[];
+    final categories = context
+        .watch<CategoriesCubit>()
+        .state
+        .categoriesOrEmpty
+        .where((c) => c.type == wantedType)
+        .toList();
     final selected = selectedId != null
         ? categories.where((c) => c.id == selectedId).toList()
         : <CategoryEntity>[];

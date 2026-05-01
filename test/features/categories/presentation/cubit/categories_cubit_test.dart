@@ -170,19 +170,24 @@ void main() {
     );
 
     blocTest<CategoriesCubit, CategoriesState>(
-      'emits [Loading, CategoriesImported] when confirmImport succeeds',
+      'emits Importing progress + Imported when confirmImport succeeds',
       setUp: () {
         when(
           () => mockImportCategoriesCsv.importItems(
             items: any(named: 'items'),
             userId: userId,
             duplicateCount: any(named: 'duplicateCount'),
+            onProgress: any(named: 'onProgress'),
           ),
-        ).thenAnswer(
-          (_) async => const Right(
+        ).thenAnswer((invocation) async {
+          final onProgress =
+              invocation.namedArguments[const Symbol('onProgress')]
+                  as void Function(int, int)?;
+          onProgress?.call(1, 1);
+          return const Right(
             CategoryImportResult(importedCount: 2, duplicateCount: 1),
-          ),
-        );
+          );
+        });
         when(
           () => mockGetCategories(userId: userId, forceRefresh: true),
         ).thenAnswer((_) async => Right(CategoryFactory.list()));
@@ -200,7 +205,12 @@ void main() {
         duplicateCount: 1,
       ),
       expect: () => [
-        isA<CategoriesLoading>(),
+        isA<CategoriesImporting>()
+            .having((s) => s.processed, 'processed', 0)
+            .having((s) => s.total, 'total', 1),
+        isA<CategoriesImporting>()
+            .having((s) => s.processed, 'processed', 1)
+            .having((s) => s.total, 'total', 1),
         isA<CategoriesImported>()
             .having((s) => s.importedCount, 'importedCount', 2)
             .having((s) => s.duplicateCount, 'duplicateCount', 1),

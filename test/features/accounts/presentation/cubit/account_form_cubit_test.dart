@@ -123,6 +123,21 @@ void main() {
       );
 
       blocTest<AccountFormCubit, AccountFormState>(
+        'updateBalance accepts Brazilian negative decimal',
+        // Regression: typing "-431,72" used to parse as null and silently
+        // reset the balance to 0 — overdraft accounts couldn't be edited.
+        build: buildCubit,
+        act: (cubit) => cubit.updateBalance('-431,72'),
+        expect: () => [
+          isA<AccountFormState>().having(
+            (s) => s.balance,
+            'balance',
+            closeTo(-431.72, 0.001),
+          ),
+        ],
+      );
+
+      blocTest<AccountFormCubit, AccountFormState>(
         'updateBank emits state with new bank',
         build: buildCubit,
         act: (cubit) => cubit.updateBank(BankType.others),

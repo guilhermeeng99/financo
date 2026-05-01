@@ -72,6 +72,21 @@ final class TransactionsLoading extends TransactionsState {
   const TransactionsLoading();
 }
 
+/// Active state during a confirmed CSV import. Carries the number of rows
+/// already processed and the total so the UI can render a determinate
+/// progress bar instead of a plain spinner.
+final class TransactionsImporting extends TransactionsState {
+  const TransactionsImporting({required this.processed, required this.total});
+
+  final int processed;
+  final int total;
+
+  double get progress => total == 0 ? 1 : processed / total;
+
+  @override
+  List<Object> get props => [processed, total];
+}
+
 final class TransactionsLoaded extends TransactionsState {
   const TransactionsLoaded(
     this.transactions, {

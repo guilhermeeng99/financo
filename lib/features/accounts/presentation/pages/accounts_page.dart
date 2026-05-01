@@ -95,7 +95,9 @@ class _AccountsPageState extends State<AccountsPage> {
         },
         child: BlocBuilder<AccountsCubit, AccountsState>(
           builder: (context, state) {
-            if (state is AccountsLoading) return const LoadingShimmer();
+            if (state is AccountsLoading || state is AccountsImporting) {
+              return const LoadingShimmer();
+            }
             if (state is AccountsError) {
               return ErrorView(
                 message: state.failure.message,

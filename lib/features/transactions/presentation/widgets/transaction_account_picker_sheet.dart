@@ -43,12 +43,12 @@ class _AccountPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final state = context.watch<AccountsCubit>().state;
-    final accounts = state is AccountsLoaded
-        ? state.accounts
-              .where((a) => excludeId == null || a.id != excludeId)
-              .toList()
-        : <AccountEntity>[];
+    final accounts = context
+        .watch<AccountsCubit>()
+        .state
+        .accountsOrEmpty
+        .where((a) => excludeId == null || a.id != excludeId)
+        .toList();
 
     return DraggableScrollableSheet(
       minChildSize: 0.3,

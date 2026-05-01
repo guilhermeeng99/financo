@@ -97,11 +97,28 @@ Future<void> _pickAndImport(BuildContext context) async {
   );
 
   if (previewFailure != null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(previewFailure!.message)),
-    );
+    await _showImportErrorDialog(context, previewFailure!.message);
     return;
   }
 
   await context.push(AppRoutes.importAccounts, extra: preview);
+}
+
+Future<void> _showImportErrorDialog(
+  BuildContext context,
+  String message,
+) async {
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(t.accounts.importCsvErrorTitle),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(t.general.ok),
+        ),
+      ],
+    ),
+  );
 }

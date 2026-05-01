@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
@@ -24,7 +25,10 @@ class BillFormCubit extends Cubit<BillFormState> {
       emit(state.copyWith(description: value));
 
   void updateAmount(String value) {
-    final amount = double.tryParse(value) ?? 0;
+    // Accept both BR (`421,95`) and EN (`421.95`) decimal styles. Negative
+    // values flow through and are caught by validation (amount must be >
+    // 0) — silently `.abs()`'ing them would mask user typos.
+    final amount = parseDecimalAmount(value) ?? 0;
     emit(state.copyWith(amount: amount));
   }
 

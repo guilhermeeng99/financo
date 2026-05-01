@@ -202,8 +202,15 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.addTransaction,
           builder: (context, state) {
             final existing = state.extra as TransactionEntity?;
+            // Optional `?accountId=` — used by the account-statement FAB
+            // so a new transaction opens with the current account already
+            // selected. Edit mode (non-null `existing`) ignores it.
+            final prefillAccountId = state.uri.queryParameters['accountId'];
             return SubPageScope(
-              child: AddTransactionPage(existingTransaction: existing),
+              child: AddTransactionPage(
+                existingTransaction: existing,
+                prefillAccountId: prefillAccountId,
+              ),
             );
           },
         ),

@@ -48,16 +48,24 @@ class AccountsCubit extends Cubit<AccountsState> {
   /// Confirms the import for the (possibly user-edited) preview items.
   /// Used by the import-accounts page after the user reviews/edits the
   /// parsed CSV preview.
+  ///
+  /// Emits [AccountsImporting] for each item processed so the UI can show
+  /// a determinate progress bar; on completion transitions to
+  /// [AccountsImported] (or [AccountsError] on failure).
   Future<void> confirmImport({
     required List<AccountImportPreviewItem> items,
     int duplicateCount = 0,
   }) async {
-    emit(const AccountsLoading());
+    emit(AccountsImporting(processed: 0, total: items.length));
 
     final result = await _importAccountsCsv.importItems(
       items: items,
       userId: _userId,
       duplicateCount: duplicateCount,
+      onProgress: (processed, total) {
+        if (isClosed) return;
+        emit(AccountsImporting(processed: processed, total: total));
+      },
     );
 
     await result.fold(
@@ -97,6 +105,21 @@ final class AccountsLoading extends AccountsState {
   const AccountsLoading();
 }
 
+/// Active state during a confirmed CSV import. Carries the number of items
+/// already processed and the total so the UI can render a determinate
+/// progress bar instead of a plain spinner.
+final class AccountsImporting extends AccountsState {
+  const AccountsImporting({required this.processed, required this.total});
+
+  final int processed;
+  final int total;
+
+  double get progress => total == 0 ? 1 : processed / total;
+
+  @override
+  List<Object> get props => [processed, total];
+}
+
 final class AccountsLoaded extends AccountsState {
   const AccountsLoaded(this.accounts);
 
@@ -128,4 +151,16 @@ final class AccountsImported extends AccountsState {
 
   @override
   List<Object> get props => [accounts, importedCount, duplicateCount];
+}
+
+extension AccountsStateData on AccountsState {
+  /// Returns the accounts carried by states that have a list (Loaded and
+  /// Imported), or an empty list otherwise. Use this everywhere the
+  /// caller "just wants the accounts" — `is AccountsLoaded` alone drops
+  /// the post-import list and silently breaks lookups.
+  List<AccountEntity> get accountsOrEmpty => switch (this) {
+        AccountsLoaded(:final accounts) => accounts,
+        AccountsImported(:final accounts) => accounts,
+        _ => const <AccountEntity>[],
+      };
 }

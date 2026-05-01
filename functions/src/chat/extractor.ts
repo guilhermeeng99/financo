@@ -11,6 +11,10 @@ const ACTIONS: ActionDefinition[] = [
     pattern: /\[TRANSACTION_DATA\]\s*([\s\S]*?)\s*\[\/TRANSACTION_DATA\]/,
   },
   {
+    type: 'transfer',
+    pattern: /\[TRANSFER_DATA\]\s*([\s\S]*?)\s*\[\/TRANSFER_DATA\]/,
+  },
+  {
     type: 'account',
     pattern: /\[ACCOUNT_ACTION\]\s*([\s\S]*?)\s*\[\/ACCOUNT_ACTION\]/,
   },
@@ -25,7 +29,7 @@ const ACTIONS: ActionDefinition[] = [
 ];
 
 const STRIP_PATTERN =
-  /\[(TRANSACTION_DATA|ACCOUNT_ACTION|CATEGORY_ACTION|BILL_ACTION)\][\s\S]*?\[\/\1\]/g;
+  /\[(TRANSACTION_DATA|TRANSFER_DATA|ACCOUNT_ACTION|CATEGORY_ACTION|BILL_ACTION)\][\s\S]*?\[\/\1\]/g;
 
 export interface ExtractionResult {
   cleanText: string;

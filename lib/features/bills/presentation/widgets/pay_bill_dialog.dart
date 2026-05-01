@@ -14,26 +14,25 @@ Future<void> showPayBillDialog({
   required BuildContext context,
   required BillEntity bill,
 }) async {
-  final accountsState = context.read<AccountsCubit>().state;
-  final categoriesState = context.read<CategoriesCubit>().state;
-
   // Receivable bills accept any account that can hold a balance — for now
   // that's checking accounts only (we don't deposit incoming money into a
   // credit card). Same set as the payable case, but the "no category" error
   // changes wording.
-  final accounts = accountsState is AccountsLoaded
-      ? accountsState.accounts
-            .where((a) => a.type == AccountType.checking)
-            .toList()
-      : <AccountEntity>[];
+  final accounts = context
+      .read<AccountsCubit>()
+      .state
+      .accountsOrEmpty
+      .where((a) => a.type == AccountType.checking)
+      .toList();
   final wantedCategoryType = bill.isReceivable
       ? CategoryType.income
       : CategoryType.expense;
-  final categories = categoriesState is CategoriesLoaded
-      ? categoriesState.categories
-            .where((c) => c.type == wantedCategoryType)
-            .toList()
-      : <CategoryEntity>[];
+  final categories = context
+      .read<CategoriesCubit>()
+      .state
+      .categoriesOrEmpty
+      .where((c) => c.type == wantedCategoryType)
+      .toList();
 
   final dialogTitle = bill.isReceivable
       ? t.bills.receiveDialogTitle

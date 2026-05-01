@@ -11,12 +11,17 @@ import 'package:get_it/get_it.dart';
 
 /// Bottom sheet that lists the user's checking accounts so a credit card
 /// can be linked to one. Replaces the stock `DropdownButtonFormField`.
-Future<String?> showLinkedAccountPicker({
+///
+/// Returns the picked [AccountEntity] (or null if dismissed). Returning the
+/// whole entity — instead of just the id — lets the caller render the name
+/// without re-querying for it, which matters for the add-account page that
+/// is mounted outside the shell's `AccountsCubit` scope.
+Future<AccountEntity?> showLinkedAccountPicker({
   required BuildContext context,
   required String userId,
   required String? selectedId,
 }) {
-  return showModalBottomSheet<String>(
+  return showModalBottomSheet<AccountEntity>(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
@@ -114,7 +119,7 @@ class _LinkedAccountPickerSheetState
                             account: accounts[i],
                             isSelected: accounts[i].id == widget.selectedId,
                             onTap: () =>
-                                Navigator.pop(context, accounts[i].id),
+                                Navigator.pop(context, accounts[i]),
                           ),
                         ),
             ),

@@ -151,10 +151,16 @@ class ImportAccountsCsvUseCase {
   /// Credit cards whose `linkedAccountName` cannot be resolved are
   /// silently skipped — the import-preview page is expected to surface
   /// these as validation errors before invoking this method.
+  ///
+  /// [onProgress] is called after each item is processed (created or
+  /// skipped) with `(processedCount, total)` so the caller can render a
+  /// determinate progress UI. The callback is invoked synchronously
+  /// between awaits, so emitting cubit state from inside it is safe.
   Future<Either<Failure, AccountImportResult>> importItems({
     required List<AccountImportPreviewItem> items,
     required String userId,
     int duplicateCount = 0,
+    void Function(int processed, int total)? onProgress,
   }) async {
     final existingResult = await _repository.getAccounts(userId: userId);
 
@@ -175,6 +181,8 @@ class ImportAccountsCsvUseCase {
     }
 
     final now = DateTime.now();
+    final total = items.length;
+    var processed = 0;
     var importedCount = 0;
 
     final checkingItems = items.where((it) => !it.isCreditCard);
@@ -199,12 +207,18 @@ class ImportAccountsCsvUseCase {
         checkingIds[item.name.toLowerCase()] = created.id;
         importedCount++;
       });
+      processed++;
+      onProgress?.call(processed, total);
     }
 
     for (final item in creditItems) {
       final linkedKey = item.linkedAccountName?.toLowerCase();
       final linkedId = linkedKey == null ? null : checkingIds[linkedKey];
-      if (linkedId == null) continue;
+      if (linkedId == null) {
+        processed++;
+        onProgress?.call(processed, total);
+        continue;
+      }
 
       final account = AccountEntity(
         id: '',
@@ -225,6 +239,8 @@ class ImportAccountsCsvUseCase {
       if (failure != null) return Left(failure);
 
       result.fold((_) {}, (_) => importedCount++);
+      processed++;
+      onProgress?.call(processed, total);
     }
 
     return Right(
@@ -241,24 +257,34 @@ class ImportAccountsCsvUseCase {
       throw const FormatException('CSV file is empty or invalid.');
     }
 
+    final colIndex = _mapHeaderColumns(rows.first);
+    for (final required in const ['name', 'balance', 'type', 'bank']) {
+      if (!colIndex.containsKey(required)) {
+        throw FormatException(
+          'CSV is missing the required "$required" column.',
+        );
+      }
+    }
+
     final items = <AccountImportPreviewItem>[];
     final seenNames = <String>{};
+    var rowNumber = 1; // header
     for (final row in rows.skip(1)) {
-      if (row.length < 4) continue;
-
-      final name = '${row[0] ?? ''}'.trim();
-      final balanceStr = '${row[1] ?? ''}'.trim();
-      final typeStr = '${row[2] ?? ''}'.trim();
-      final bankStr = '${row[3] ?? ''}'.trim();
-      final limitStr = row.length > 4 ? '${row[4] ?? ''}'.trim() : '';
-      final dueStr = row.length > 5 ? '${row[5] ?? ''}'.trim() : '';
-      final closingStr = row.length > 6 ? '${row[6] ?? ''}'.trim() : '';
-
+      rowNumber++;
+      final name = _readCell(row, colIndex['name']);
       if (name.isEmpty) continue;
+
       final key = name.toLowerCase();
       if (!seenNames.add(key)) continue;
 
-      final type = _parseType(typeStr);
+      final balanceStr = _readCell(row, colIndex['balance']);
+      final typeStr = _readCell(row, colIndex['type']);
+      final bankStr = _readCell(row, colIndex['bank']);
+      final limitStr = _readCell(row, colIndex['limit']);
+      final dueStr = _readCell(row, colIndex['due']);
+      final closingStr = _readCell(row, colIndex['closing']);
+
+      final type = _parseType(typeStr, rowNumber);
       final bank = _parseBank(bankStr);
       final balance = _parseAmount(balanceStr);
 
@@ -290,6 +316,53 @@ class ImportAccountsCsvUseCase {
     return items;
   }
 
+  /// Resolves header columns to logical field keys so the parser tolerates
+  /// extra columns (e.g. `Data Saldo Inicial` from Mobills exports), a
+  /// reordered layout, or English headers. Matching is accent- and
+  /// case-insensitive via [_normalize].
+  Map<String, int> _mapHeaderColumns(List<dynamic> header) {
+    const synonyms = <String, List<String>>{
+      'name': ['nome', 'name', 'account name', 'apelido'],
+      'balance': [
+        'saldo inicial',
+        'saldo',
+        'initial balance',
+        'balance',
+        'opening balance',
+      ],
+      'type': ['tipo', 'type', 'kind'],
+      'bank': ['banco', 'bank'],
+      'limit': ['limite', 'credit limit', 'limit'],
+      'due': [
+        'proximo vencimento',
+        'vencimento',
+        'due date',
+        'due day',
+        'next due',
+      ],
+      'closing': ['fechamento', 'closing day', 'closing', 'closing date'],
+    };
+
+    final out = <String, int>{};
+    for (var i = 0; i < header.length; i++) {
+      final norm = _normalize('${header[i] ?? ''}');
+      if (norm.isEmpty) continue;
+      for (final entry in synonyms.entries) {
+        if (out.containsKey(entry.key)) continue;
+        if (entry.value.contains(norm)) {
+          out[entry.key] = i;
+          break;
+        }
+      }
+    }
+    return out;
+  }
+
+  String _readCell(List<dynamic> row, int? index) {
+    if (index == null || index >= row.length) return '';
+    return '${row[index] ?? ''}'.trim();
+  }
+
   AccountImportPreview _buildPreview(
     List<AccountImportPreviewItem> parsed,
     List<AccountEntity> existing,
@@ -311,15 +384,32 @@ class ImportAccountsCsvUseCase {
     return AccountImportPreview(toCreate: toCreate, duplicates: duplicates);
   }
 
-  AccountType _parseType(String raw) {
+  /// Maps the `Tipo` column to an [AccountType]. Accepts PT-BR
+  /// ("Conta Corrente", "Cartão de Crédito") and EN ("Checking",
+  /// "Credit Card") via accent-insensitive substring match. Empty or
+  /// unrecognized values raise a [FormatException] tagged with the
+  /// offending [csvRow] so the UI can point the user to the exact row.
+  AccountType _parseType(String raw, int csvRow) {
     final normalized = _normalize(raw);
+    if (normalized.isEmpty) {
+      throw FormatException(
+        'Row $csvRow: type column is empty. '
+        'Use Conta Corrente or Cartão de Crédito.',
+      );
+    }
+    if (normalized.contains('corrente') || normalized.contains('checking')) {
+      return AccountType.checking;
+    }
     if (normalized.contains('credito') ||
         normalized.contains('credit') ||
         normalized.contains('cartao') ||
         normalized.contains('card')) {
       return AccountType.creditCard;
     }
-    return AccountType.checking;
+    throw FormatException(
+      'Row $csvRow: invalid type "$raw". '
+      'Use Conta Corrente or Cartão de Crédito.',
+    );
   }
 
   BankType _parseBank(String raw) {
@@ -328,12 +418,33 @@ class ImportAccountsCsvUseCase {
     return BankType.others;
   }
 
-  // Brazilian number format: "421,95" or "1.234,56" — strip thousands `.`
-  // then swap the decimal `,` for `.` so `double.parse` accepts it.
+  // Accepts either Brazilian ("421,95" / "1.234,56") or English-style
+  // ("421.95" / "1,234.56") number formats. The rightmost separator is
+  // assumed to be the decimal point; the other one is treated as a
+  // thousands grouper and stripped.
   double _parseAmount(String raw) {
     var cleaned = raw.replaceAll('"', '').trim();
     if (cleaned.isEmpty) return 0;
-    cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+
+    final hasComma = cleaned.contains(',');
+    final hasDot = cleaned.contains('.');
+
+    if (hasComma && hasDot) {
+      final lastComma = cleaned.lastIndexOf(',');
+      final lastDot = cleaned.lastIndexOf('.');
+      if (lastComma > lastDot) {
+        // BR: 1.234,56 — `.` is the thousands grouper.
+        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+      } else {
+        // EN: 1,234.56 — `,` is the thousands grouper.
+        cleaned = cleaned.replaceAll(',', '');
+      }
+    } else if (hasComma) {
+      // BR-only: "421,95" — comma is the decimal point.
+      cleaned = cleaned.replaceAll(',', '.');
+    }
+    // hasDot-only ("421.95") and integer cases parse directly.
+
     return double.tryParse(cleaned) ?? 0;
   }
 

@@ -56,6 +56,96 @@ Salary,,Income
       verify(() => mockRepository.createCategory(any())).called(4);
     });
 
+    test('should import categories from a Portuguese csv', () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      final created = <CategoryEntity>[];
+      when(() => mockRepository.createCategory(any())).thenAnswer((
+        invocation,
+      ) async {
+        final category = invocation.positionalArguments.first as CategoryEntity;
+        created.add(category);
+        return Right<Failure, CategoryEntity>(
+          category.copyWith(id: 'created-${created.length}'),
+        );
+      });
+
+      const csv = '''
+Categoria,Subcategoria,Tipo
+Alimentação,Mercado,DESPESA
+Alimentação,Restaurante,DESPESA
+Salário,,RECEITA
+Investimentos,CDB,RECEITA
+''';
+
+      final result = await useCase(csvContent: csv, userId: userId);
+
+      expect(
+        result,
+        const Right<Failure, CategoryImportResult>(
+          CategoryImportResult(importedCount: 6, duplicateCount: 0),
+        ),
+      );
+
+      final byName = {for (final c in created) c.name: c};
+      expect(byName['Alimentação']?.type, CategoryType.expense);
+      expect(byName['Mercado']?.type, CategoryType.expense);
+      expect(byName['Salário']?.type, CategoryType.income);
+      expect(byName['Investimentos']?.type, CategoryType.income);
+      expect(byName['CDB']?.type, CategoryType.income);
+    });
+
+    test('rejects unknown type values with row + value detail', () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      const csv = '''
+Categoria,Subcategoria,Tipo
+Alimentação,,DESPESA
+Salário,,RENDA
+''';
+
+      final result = await useCase(csvContent: csv, userId: userId);
+
+      expect(result, isA<Left<Failure, CategoryImportResult>>());
+      result.fold(
+        (failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(failure.message, contains('Row 3'));
+          expect(failure.message, contains('RENDA'));
+        },
+        (_) => fail('Expected ValidationFailure'),
+      );
+      verifyNever(() => mockRepository.createCategory(any()));
+    });
+
+    test('rejects rows where the type column is empty', () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      const csv = '''
+Categoria,Subcategoria,Tipo
+Alimentação,Mercado,
+''';
+
+      final result = await useCase(csvContent: csv, userId: userId);
+
+      expect(result, isA<Left<Failure, CategoryImportResult>>());
+      result.fold(
+        (failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(failure.message, contains('Row 2'));
+          expect(failure.message, contains('empty'));
+        },
+        (_) => fail('Expected ValidationFailure'),
+      );
+      verifyNever(() => mockRepository.createCategory(any()));
+    });
+
     test('should return ValidationFailure for invalid csv content', () async {
       const csv = 'Category,Subcategory,Type';
 
@@ -144,6 +234,105 @@ Food,,Expense
       expect(created[1].icon, 9001);
       expect(created[1].color, 0xFFAA0001);
       expect(created[1].parentId, 'created-1');
+    });
+
+    test('reports progress for each processed item via onProgress', () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+
+      var createdCount = 0;
+      when(() => mockRepository.createCategory(any())).thenAnswer((
+        invocation,
+      ) async {
+        final category = invocation.positionalArguments.first as CategoryEntity;
+        createdCount++;
+        return Right<Failure, CategoryEntity>(
+          category.copyWith(id: 'created-$createdCount'),
+        );
+      });
+
+      final items = [
+        const CategoryImportPreviewItem(
+          name: 'Food',
+          type: CategoryType.expense,
+          icon: 1,
+          color: 1,
+        ),
+        const CategoryImportPreviewItem(
+          name: 'Restaurants',
+          type: CategoryType.expense,
+          parentName: 'Food',
+          icon: 2,
+          color: 2,
+        ),
+        const CategoryImportPreviewItem(
+          name: 'Salary',
+          type: CategoryType.income,
+          icon: 3,
+          color: 3,
+        ),
+      ];
+
+      final progressEvents = <List<int>>[];
+      await useCase.importItems(
+        items: items,
+        userId: userId,
+        onProgress: (processed, total) =>
+            progressEvents.add([processed, total]),
+      );
+
+      expect(progressEvents, [
+        [1, 3],
+        [2, 3],
+        [3, 3],
+      ]);
+    });
+
+    test('still ticks progress for skipped (orphan) children', () async {
+      when(
+        () => mockRepository.getCategories(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
+      when(() => mockRepository.createCategory(any())).thenAnswer(
+        (_) async => const Right(
+          CategoryEntity(
+            id: 'created-1',
+            name: 'Food',
+            icon: 1,
+            color: 1,
+            type: CategoryType.expense,
+          ),
+        ),
+      );
+
+      final items = [
+        const CategoryImportPreviewItem(
+          name: 'Food',
+          type: CategoryType.expense,
+          icon: 1,
+          color: 1,
+        ),
+        const CategoryImportPreviewItem(
+          name: 'Tacos',
+          type: CategoryType.expense,
+          parentName: 'Missing',
+          icon: 2,
+          color: 2,
+        ),
+      ];
+
+      final progressEvents = <List<int>>[];
+      await useCase.importItems(
+        items: items,
+        userId: userId,
+        onProgress: (processed, total) =>
+            progressEvents.add([processed, total]),
+      );
+
+      expect(progressEvents, [
+        [1, 2],
+        [2, 2],
+      ]);
     });
 
     test('skips children whose parent was removed from the items list',

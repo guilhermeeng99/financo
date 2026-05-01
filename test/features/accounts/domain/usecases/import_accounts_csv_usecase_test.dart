@@ -94,6 +94,94 @@ Nubank Mila,0,Conta Corrente,nubank,,,
         (_) => fail('Expected ValidationFailure'),
       );
     });
+
+    test('rejects unknown type values with row + value detail', () async {
+      when(() => mockRepository.getAccounts(userId: userId))
+          .thenAnswer((_) async => const Right([]));
+
+      const csv = '''
+Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento
+Nubank Gui,0,Conta Corrente,nubank,,,
+Poupança Mila,0,Conta Poupança,nubank,,,
+''';
+
+      final result = await useCase.preview(
+        csvContent: csv,
+        userId: userId,
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(failure.message, contains('Row 3'));
+          expect(failure.message, contains('Conta Poupança'));
+        },
+        (_) => fail('Expected ValidationFailure'),
+      );
+    });
+
+    test('tolerates extra columns and resolves layout by header', () async {
+      // The Mobills export adds an extra `Data Saldo Inicial` column
+      // between `Tipo` and `Banco`, plus uses `.` as the decimal
+      // separator. The parser must follow the header, not column index.
+      when(() => mockRepository.getAccounts(userId: userId))
+          .thenAnswer((_) async => const Right([]));
+
+      const csv = '''
+Nome,Saldo inicial,Tipo,Data Saldo Inicial,Banco,Limite,Próximo Vencimento,Fechamento
+Cartão Nubank Gui,0,Cartão de Crédito,,nubank,4450,08/05/2026,7
+Nu Invest,421.95,Conta Corrente,30/06/2021,nubank,,,
+''';
+
+      final result = await useCase.preview(
+        csvContent: csv,
+        userId: userId,
+      );
+
+      expect(result.isRight(), isTrue);
+      result.fold((_) => fail('Expected Right'), (preview) {
+        expect(preview.toCreate, hasLength(2));
+
+        final card = preview.toCreate[0];
+        expect(card.name, 'Cartão Nubank Gui');
+        expect(card.type, AccountType.creditCard);
+        expect(card.bank, BankType.nubank);
+        expect(card.creditLimit, 4450);
+        expect(card.dueDay, 8);
+        expect(card.closingDay, 7);
+
+        final invest = preview.toCreate[1];
+        expect(invest.name, 'Nu Invest');
+        expect(invest.type, AccountType.checking);
+        expect(invest.initialBalance, closeTo(421.95, 0.001));
+      });
+    });
+
+    test('rejects rows where the type column is empty', () async {
+      when(() => mockRepository.getAccounts(userId: userId))
+          .thenAnswer((_) async => const Right([]));
+
+      const csv = '''
+Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento
+Sem Tipo,0,,nubank,,,
+''';
+
+      final result = await useCase.preview(
+        csvContent: csv,
+        userId: userId,
+      );
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(failure.message, contains('Row 2'));
+          expect(failure.message, contains('empty'));
+        },
+        (_) => fail('Expected ValidationFailure'),
+      );
+    });
   });
 
   group('ImportAccountsCsvUseCase.importItems', () {
@@ -165,6 +253,65 @@ Nubank Mila,0,Conta Corrente,nubank,,,
         expect(created[1].linkedAccountId, 'created-1');
       },
     );
+
+    test('reports progress for each processed item via onProgress', () async {
+      when(() => mockRepository.getAccounts(userId: userId))
+          .thenAnswer((_) async => const Right([]));
+
+      var createdCount = 0;
+      when(() => mockRepository.createAccount(any())).thenAnswer((
+        invocation,
+      ) async {
+        final account = invocation.positionalArguments.first as AccountEntity;
+        createdCount++;
+        return Right<Failure, AccountEntity>(
+          account.copyWith(id: 'created-$createdCount'),
+        );
+      });
+
+      const items = [
+        AccountImportPreviewItem(
+          name: 'Nubank Gui',
+          type: AccountType.checking,
+          bank: BankType.nubank,
+          initialBalance: 0,
+        ),
+        AccountImportPreviewItem(
+          name: 'Cartão Gui',
+          type: AccountType.creditCard,
+          bank: BankType.nubank,
+          initialBalance: 0,
+          creditLimit: 1000,
+          closingDay: 7,
+          dueDay: 14,
+          linkedAccountName: 'Nubank Gui',
+        ),
+        AccountImportPreviewItem(
+          name: 'Cartão Órfão',
+          type: AccountType.creditCard,
+          bank: BankType.nubank,
+          initialBalance: 0,
+          creditLimit: 500,
+          closingDay: 5,
+          dueDay: 10,
+          linkedAccountName: 'Inexistente',
+        ),
+      ];
+
+      final progressEvents = <List<int>>[];
+      await useCase.importItems(
+        items: items,
+        userId: userId,
+        onProgress: (processed, total) =>
+            progressEvents.add([processed, total]),
+      );
+
+      expect(progressEvents, [
+        [1, 3],
+        [2, 3],
+        [3, 3],
+      ]);
+    });
 
     test('skips credit cards whose linked account cannot be resolved',
         () async {

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
@@ -13,6 +14,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     required CreateTransferUseCase createTransfer,
     required String userId,
     TransactionEntity? existingTransaction,
+    String? prefillAccountId,
   }) : _createTransaction = createTransaction,
        _updateTransaction = updateTransaction,
        _createTransfer = createTransfer,
@@ -20,6 +22,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
          TransactionFormState.initial(
            userId: userId,
            existing: existingTransaction,
+           prefillAccountId: prefillAccountId,
          ),
        );
 
@@ -30,7 +33,10 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void updateType(TransactionType type) => emit(state.copyWith(type: type));
 
   void updateAmount(String value) {
-    final amount = double.tryParse(value) ?? 0;
+    // Accept both BR (`421,95`) and EN (`421.95`) decimal styles. Negative
+    // values flow through and are caught by `isValid` (amount must be > 0)
+    // — silently `.abs()`'ing them would mask user typos.
+    final amount = parseDecimalAmount(value) ?? 0;
     emit(state.copyWith(amount: amount));
   }
 
@@ -153,6 +159,7 @@ class TransactionFormState extends Equatable {
   factory TransactionFormState.initial({
     required String userId,
     TransactionEntity? existing,
+    String? prefillAccountId,
   }) {
     return TransactionFormState(
       userId: userId,
@@ -160,7 +167,9 @@ class TransactionFormState extends Equatable {
       amount: existing?.amount ?? 0,
       description: existing?.description ?? '',
       date: existing?.date ?? DateTime.now(),
-      accountId: existing?.accountId ?? '',
+      // Prefill only matters in create mode — when editing, the existing
+      // accountId always wins so we never silently rewrite it.
+      accountId: existing?.accountId ?? prefillAccountId ?? '',
       categoryId: existing?.categoryId ?? '',
       notes: existing?.notes ?? '',
       status: FormStatus.initial,

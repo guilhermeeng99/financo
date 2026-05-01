@@ -201,10 +201,16 @@ class ImportTransactionsCsvUseCase {
   /// Rows with unresolved account or category references are silently
   /// skipped — the caller (import-preview page) is expected to surface
   /// these as validation errors before invoking this method.
+  ///
+  /// [onProgress] is called after each row is processed (created or
+  /// skipped) with `(processedCount, total)` so the caller can render a
+  /// determinate progress UI. The callback is invoked synchronously
+  /// between awaits, so emitting cubit/bloc state from inside it is safe.
   Future<Either<Failure, TransactionImportResult>> importRows({
     required List<TransactionImportRow> rows,
     required String userId,
     int skippedCount = 0,
+    void Function(int processed, int total)? onProgress,
   }) async {
     final categoriesResult = await _categoryRepository.getCategories(
       userId: userId,
@@ -218,6 +224,8 @@ class ImportTransactionsCsvUseCase {
         final categoryLookup = _buildCategoryLookup(categories);
         final accountLookup = _buildAccountLookup(accounts);
         final now = DateTime.now();
+        final total = rows.length;
+        var processed = 0;
         var importedCount = 0;
 
         for (final row in rows) {
@@ -226,7 +234,11 @@ class ImportTransactionsCsvUseCase {
             final destId =
                 accountLookup[row.destinationAccountName?.toLowerCase() ?? ''];
 
-            if (sourceId == null || destId == null) continue;
+            if (sourceId == null || destId == null) {
+              processed++;
+              onProgress?.call(processed, total);
+              continue;
+            }
 
             final expense = TransactionEntity(
               id: '',
@@ -271,7 +283,11 @@ class ImportTransactionsCsvUseCase {
             );
 
             final accountId = accountLookup[row.accountName.toLowerCase()];
-            if (categoryId == null || accountId == null) continue;
+            if (categoryId == null || accountId == null) {
+              processed++;
+              onProgress?.call(processed, total);
+              continue;
+            }
 
             final type = row.csvType == CsvTransactionType.receita
                 ? TransactionType.income
@@ -299,6 +315,8 @@ class ImportTransactionsCsvUseCase {
 
             importedCount++;
           }
+          processed++;
+          onProgress?.call(processed, total);
         }
 
         return Right(
@@ -319,39 +337,68 @@ class ImportTransactionsCsvUseCase {
       throw const FormatException('CSV file is empty or invalid.');
     }
 
-    final rows = <TransactionImportRow>[];
-    var skippedRows = 0;
+    final colIndex = _mapHeaderColumns(decoded.first);
+    for (final required in const ['type', 'date', 'amount', 'account']) {
+      if (!colIndex.containsKey(required)) {
+        throw FormatException(
+          'CSV is missing the required "$required" column.',
+        );
+      }
+    }
+    final maxRequiredIdx = [
+      colIndex['type']!,
+      colIndex['date']!,
+      colIndex['amount']!,
+      colIndex['account']!,
+    ].reduce((a, b) => a > b ? a : b);
 
+    final rows = <TransactionImportRow>[];
+    // Mobills (and similar) exports each transfer twice: once as a
+    // negative on the source account and once as a positive on the
+    // destination — same date, same |amount|, accounts swapped. We group
+    // both halves and emit a single canonical row per unique pair.
+    final transferGroups = <String, _TransferGroup>{};
+    var skippedRows = 0;
+    var rowNumber = 1; // header
     for (final row in decoded.skip(1)) {
-      if (row.length < 7) {
+      rowNumber++;
+      // Truly short/incomplete row (e.g. trailing blank line) — skip
+      // silently rather than rejecting the whole CSV. Bad data inside
+      // an otherwise complete row is still rejected below.
+      if (row.length <= maxRequiredIdx) {
         skippedRows++;
         continue;
       }
 
-      final tipoStr = '${row[0] ?? ''}'.trim().toLowerCase();
-      final dataStr = '${row[1] ?? ''}'.trim();
-      final valorStr = '${row[2] ?? ''}'.trim();
-      final descricao = '${row[3] ?? ''}'.trim();
-      final categoriaStr = '${row[4] ?? ''}'.trim();
-      final contaStr = '${row[5] ?? ''}'.trim();
-      final contaTransfStr = '${row[6] ?? ''}'.trim();
+      final tipoStr = _readCell(row, colIndex['type']);
+      final dataStr = _readCell(row, colIndex['date']);
+      final valorStr = _readCell(row, colIndex['amount']);
+      final descricao = _readCell(row, colIndex['description']);
+      final categoriaStr = _readCell(row, colIndex['category']);
+      final contaStr = _readCell(row, colIndex['account']);
+      final contaTransfStr = _readCell(row, colIndex['destination']);
 
-      final csvType = _parseTipo(tipoStr);
-      if (csvType == null || contaStr.isEmpty) {
-        skippedRows++;
-        continue;
+      final csvType = _parseTipo(tipoStr, rowNumber);
+
+      if (contaStr.isEmpty) {
+        throw FormatException(
+          'Row $rowNumber: account column is empty.',
+        );
       }
 
       final amount = _parseAmount(valorStr);
       if (amount <= 0) {
-        skippedRows++;
-        continue;
+        throw FormatException(
+          'Row $rowNumber: invalid or zero amount "$valorStr".',
+        );
       }
+      final wasNegative = valorStr.replaceAll('"', '').trim().startsWith('-');
 
       final date = _parseDate(dataStr);
       if (date == null) {
-        skippedRows++;
-        continue;
+        throw FormatException(
+          'Row $rowNumber: invalid date "$dataStr". Use DD/MM/YYYY.',
+        );
       }
 
       String? categoryName;
@@ -371,20 +418,66 @@ class ImportTransactionsCsvUseCase {
         }
       }
 
-      rows.add(
-        TransactionImportRow(
-          csvType: csvType,
-          amount: amount,
-          description: descricao,
-          date: date,
-          categoryName: categoryName,
-          subcategoryName: subcategoryName,
-          accountName: contaStr,
-          destinationAccountName: contaTransfStr.isNotEmpty
-              ? contaTransfStr
-              : null,
-        ),
+      final newRow = TransactionImportRow(
+        csvType: csvType,
+        amount: amount,
+        description: descricao,
+        date: date,
+        categoryName: categoryName,
+        subcategoryName: subcategoryName,
+        accountName: contaStr,
+        destinationAccountName: contaTransfStr.isNotEmpty
+            ? contaTransfStr
+            : null,
       );
+
+      if (_isTransferType(csvType)) {
+        final key = _transferDedupKey(
+          date: date,
+          amount: amount,
+          source: contaStr,
+          destination: contaTransfStr,
+        );
+        final group = transferGroups.putIfAbsent(key, _TransferGroup.new);
+        if (wasNegative) {
+          group.negatives.add(newRow);
+        } else {
+          group.positives.add(newRow);
+        }
+      } else {
+        rows.add(newRow);
+      }
+    }
+
+    // Resolve transfer groups: pair up negatives with positives 1:1
+    // (the canonical representation lives on the negative leg, since its
+    // `Conta` is already the source). Any unpaired positive is kept but
+    // its source/destination are swapped — for those rows the CSV's
+    // `Conta` is actually the destination.
+    for (final group in transferGroups.values) {
+      final pairs = group.negatives.length < group.positives.length
+          ? group.negatives.length
+          : group.positives.length;
+
+      for (var i = 0; i < pairs; i++) {
+        rows.add(group.negatives[i]);
+      }
+      // Each discarded positive mirror counts as skipped so the user
+      // sees the CSV-row → import-row reduction in the preview.
+      skippedRows += pairs;
+
+      for (var i = pairs; i < group.negatives.length; i++) {
+        rows.add(group.negatives[i]);
+      }
+      for (var i = pairs; i < group.positives.length; i++) {
+        final pos = group.positives[i];
+        rows.add(
+          pos.copyWith(
+            accountName: pos.destinationAccountName ?? pos.accountName,
+            destinationAccountName: pos.accountName,
+          ),
+        );
+      }
     }
 
     if (rows.isEmpty) {
@@ -394,23 +487,138 @@ class ImportTransactionsCsvUseCase {
     return (rows: rows, skippedRows: skippedRows);
   }
 
-  CsvTransactionType? _parseTipo(String tipo) {
-    return switch (tipo) {
-      'despesa' => CsvTransactionType.despesa,
-      'receita' => CsvTransactionType.receita,
-      'transferência' || 'transferencia' => CsvTransactionType.transferencia,
-      'pagamento' => CsvTransactionType.pagamento,
-      _ => null,
+  /// Canonical key used to detect mirror transfer rows. The key is
+  /// independent of which account is reported as the "Conta" — both the
+  /// outgoing (-X on source) and incoming (+X on destination) rows of a
+  /// single Mobills-style transfer hash to the same value.
+  String _transferDedupKey({
+    required DateTime date,
+    required double amount,
+    required String source,
+    required String destination,
+  }) {
+    final dateKey = '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+    final accounts = [source.toLowerCase(), destination.toLowerCase()]..sort();
+    return '$dateKey|${amount.toStringAsFixed(2)}|'
+        '${accounts[0]}|${accounts[1]}';
+  }
+
+  /// Resolves header columns to logical field keys so the parser tolerates
+  /// extra columns (e.g. an `Observações` column added by another finance
+  /// app) and reordered/English layouts. Matching is accent- and
+  /// case-insensitive via [_normalize].
+  Map<String, int> _mapHeaderColumns(List<dynamic> header) {
+    const synonyms = <String, List<String>>{
+      'type': ['tipo', 'type', 'kind'],
+      'date': ['data', 'date'],
+      'amount': ['valor', 'value', 'amount'],
+      'description': [
+        'descricao',
+        'description',
+        'descrição',
+        'memo',
+        'notes',
+      ],
+      'category': ['categoria', 'category'],
+      'account': ['conta', 'account', 'source account', 'origem'],
+      'destination': [
+        'conta transferencia',
+        'conta transferência',
+        'conta destino',
+        'destination',
+        'destination account',
+        'transfer account',
+      ],
     };
+
+    final out = <String, int>{};
+    for (var i = 0; i < header.length; i++) {
+      final norm = _normalize('${header[i] ?? ''}');
+      if (norm.isEmpty) continue;
+      for (final entry in synonyms.entries) {
+        if (out.containsKey(entry.key)) continue;
+        if (entry.value.contains(norm)) {
+          out[entry.key] = i;
+          break;
+        }
+      }
+    }
+    return out;
+  }
+
+  String _readCell(List<dynamic> row, int? index) {
+    if (index == null || index >= row.length) return '';
+    return '${row[index] ?? ''}'.trim();
+  }
+
+  /// Maps the `Tipo` column to a [CsvTransactionType]. Accepts PT-BR
+  /// (`Despesa`, `Receita`, `Transferência`, `Pagamento`) and EN
+  /// (`Expense`, `Income`, `Transfer`, `Payment`) via accent- and
+  /// case-insensitive match. Empty or unrecognized values raise a
+  /// [FormatException] tagged with [csvRow] so the UI can point the user
+  /// to the exact offending row.
+  CsvTransactionType _parseTipo(String tipo, int csvRow) {
+    final normalized = _normalize(tipo);
+    switch (normalized) {
+      case 'despesa':
+      case 'expense':
+        return CsvTransactionType.despesa;
+      case 'receita':
+      case 'income':
+        return CsvTransactionType.receita;
+      case 'transferencia':
+      case 'transfer':
+        return CsvTransactionType.transferencia;
+      case 'pagamento':
+      case 'payment':
+        return CsvTransactionType.pagamento;
+    }
+    if (normalized.isEmpty) {
+      throw FormatException(
+        'Row $csvRow: type column is empty. '
+        'Use Despesa, Receita, Transferência or Pagamento.',
+      );
+    }
+    throw FormatException(
+      'Row $csvRow: invalid type "$tipo". '
+      'Use Despesa, Receita, Transferência or Pagamento.',
+    );
   }
 
   bool _isTransferType(CsvTransactionType type) =>
       type == CsvTransactionType.transferencia ||
       type == CsvTransactionType.pagamento;
 
+  // Accepts either Brazilian ("421,95" / "1.234,56") or English-style
+  // ("421.95" / "1,234.56") number formats. The rightmost separator is
+  // assumed to be the decimal point; the other one is a thousands grouper
+  // and stripped. Returns `abs()` since the type column carries the sign.
   double _parseAmount(String raw) {
     var cleaned = raw.replaceAll('"', '').trim();
-    cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+    if (cleaned.isEmpty) return 0;
+    final negative = cleaned.startsWith('-');
+    if (negative) cleaned = cleaned.substring(1);
+
+    final hasComma = cleaned.contains(',');
+    final hasDot = cleaned.contains('.');
+
+    if (hasComma && hasDot) {
+      final lastComma = cleaned.lastIndexOf(',');
+      final lastDot = cleaned.lastIndexOf('.');
+      if (lastComma > lastDot) {
+        // BR: 1.234,56
+        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
+      } else {
+        // EN: 1,234.56
+        cleaned = cleaned.replaceAll(',', '');
+      }
+    } else if (hasComma) {
+      cleaned = cleaned.replaceAll(',', '.');
+    }
+    // hasDot-only or integer falls through unchanged.
+
     final value = double.tryParse(cleaned) ?? 0;
     return value.abs();
   }
@@ -427,6 +635,32 @@ class ImportTransactionsCsvUseCase {
     if (month < 1 || month > 12 || day < 1 || day > 31) return null;
 
     return DateTime(year, month, day);
+  }
+
+  // Lowercase + strip Portuguese accents so "Cartão de Crédito" matches
+  // "cartao de credito" etc. without keeping a brittle synonym list.
+  String _normalize(String raw) {
+    final lower = raw.trim().toLowerCase();
+    const map = {
+      'á': 'a',
+      'à': 'a',
+      'â': 'a',
+      'ã': 'a',
+      'é': 'e',
+      'ê': 'e',
+      'í': 'i',
+      'ó': 'o',
+      'ô': 'o',
+      'õ': 'o',
+      'ú': 'u',
+      'ü': 'u',
+      'ç': 'c',
+    };
+    final buf = StringBuffer();
+    for (final c in lower.split('')) {
+      buf.write(map[c] ?? c);
+    }
+    return buf.toString();
   }
 
   TransactionImportPreview _buildPreview({
@@ -531,4 +765,13 @@ class ImportTransactionsCsvUseCase {
 
     return parentMap[null];
   }
+}
+
+/// Bucket of transfer rows that share a canonical key (same date,
+/// |amount| and account pair, regardless of direction). Used by
+/// `_parseCsv` to fold Mobills-style mirror exports into a single row
+/// per real transfer.
+class _TransferGroup {
+  final List<TransactionImportRow> negatives = [];
+  final List<TransactionImportRow> positives = [];
 }

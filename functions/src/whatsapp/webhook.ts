@@ -49,8 +49,54 @@ const extractMessages = (payload: WhatsAppWebhookPayload): WhatsAppIncomingMessa
 const normalizePhone = (from: string): string =>
   from.startsWith('+') ? from : `+${from}`;
 
+// Strips app/executor-generated assistant messages before sending the
+// history to Gemini. Without this, the model mimics the result-text
+// pattern in subsequent turns and emits fake confirmations without the
+// action block — see chat spec edge case 19.
+const LEGACY_RESULT_RE = new RegExp(
+  '^(Transaction|Account|Category|Bill|Transação|Conta|Categoria) ' +
+    '.*(created successfully|deleted successfully|updated|paid|' +
+    'criada com sucesso|removida com sucesso|scheduled for)',
+  'i',
+);
+
+const isAppGenerated = (m: ChatMessage): boolean => {
+  if (m.metadata && (m.metadata as Record<string, any>).kind === 'actionResult') return true;
+  if (m.role === 'assistant' && LEGACY_RESULT_RE.test(m.content)) return true;
+  return false;
+};
+
+const ACTION_TAG: Record<string, string> = {
+  transaction: 'TRANSACTION_DATA',
+  transfer: 'TRANSFER_DATA',
+  account: 'ACCOUNT_ACTION',
+  category: 'CATEGORY_ACTION',
+  bill: 'BILL_ACTION',
+};
+
+// Reconstructs the action block from saved metadata. The pipeline strips
+// the bracketed JSON before persisting the assistant message, so without
+// this Gemini sees its own past replies as plain "Pronto, confirma..."
+// and learns to skip the block — producing bubbles with no Confirm button
+// and no executor write. See chat spec edge case 19.
+const historyContent = (m: ChatMessage): string => {
+  const meta = m.metadata as Record<string, any> | null;
+  const actionType = meta?.actionType as string | undefined;
+  if (!actionType) return m.content;
+  const tag = ACTION_TAG[actionType];
+  if (!tag) return m.content;
+  const data: Record<string, any> = {};
+  for (const [k, v] of Object.entries(meta as Record<string, any>)) {
+    if (k === 'actionType' || k === 'kind') continue;
+    data[k] = v;
+  }
+  return `${m.content}\n[${tag}]\n${JSON.stringify(data)}\n[/${tag}]`;
+};
+
 const buildHistoryTurns = (messages: ChatMessage[]): HistoryTurn[] =>
-  messages.map((m) => ({ role: m.role, content: m.content }));
+  messages
+    .filter((m) => !isAppGenerated(m))
+    .map((m) => ({ role: m.role, content: historyContent(m) }));
 
 const handleTextMessage = async (
   message: WhatsAppIncomingMessage,
@@ -114,7 +160,7 @@ const handleButtonReply = async (
       userId,
       role: 'assistant',
       content: 'Ação cancelada.',
-      metadata: null,
+      metadata: { kind: 'actionResult' },
       channel: 'whatsapp',
       createdAt: new Date(),
     };
@@ -147,7 +193,7 @@ const handleButtonReply = async (
     userId,
     role: 'assistant',
     content: resultText,
-    metadata: null,
+    metadata: { kind: 'actionResult' },
     channel: 'whatsapp',
     createdAt: new Date(),
   };

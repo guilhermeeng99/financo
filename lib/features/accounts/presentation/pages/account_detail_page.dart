@@ -25,9 +25,8 @@ class AccountDetailPage extends StatelessWidget {
     final colors = context.appColors;
     return BlocBuilder<AccountsCubit, AccountsState>(
       builder: (context, state) {
-        final accounts = state is AccountsLoaded ? state.accounts : null;
-        final account =
-            accounts?.where((a) => a.id == accountId).firstOrNull;
+        final accounts = state.accountsOrEmpty;
+        final account = accounts.where((a) => a.id == accountId).firstOrNull;
 
         if (account == null) {
           return Scaffold(
@@ -68,7 +67,6 @@ class AccountDetailPage extends StatelessWidget {
                     value: account.bankLabel,
                   ),
                   if (account.type == AccountType.creditCard &&
-                      accounts != null &&
                       account.linkedAccountId != null)
                     AccountDetailRow(
                       label: t.accounts.linkedAccount,

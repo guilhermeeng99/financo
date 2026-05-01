@@ -27,6 +27,7 @@ import 'package:financo/features/chat/presentation/widgets/chat_timeline.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -55,6 +56,7 @@ class ChatPage extends StatelessWidget {
         getCategories: GetIt.I<GetCategoriesUseCase>(),
         deleteCategory: GetIt.I<DeleteCategoryUseCase>(),
         createTransaction: GetIt.I<CreateTransactionUseCase>(),
+        createTransfer: GetIt.I<CreateTransferUseCase>(),
         getBills: GetIt.I<GetBillsUseCase>(),
         createBill: GetIt.I<CreateBillUseCase>(),
         updateBill: GetIt.I<UpdateBillUseCase>(),
@@ -77,7 +79,11 @@ class _ChatView extends StatefulWidget {
 class _ChatViewState extends State<_ChatView> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  final _handledActionIds = <String>{};
+  // Confirmed actions are derived from the messages list (via the result
+  // message's `originActionId`). Only cancellation needs ephemeral page
+  // state — losing it on reload is benign since cancelled actions never
+  // touched any data.
+  final _cancelledActionIds = <String>{};
   String? _appliedTranscript;
 
   @override
@@ -112,8 +118,8 @@ class _ChatViewState extends State<_ChatView> {
     );
   }
 
-  void _markActionHandled(String messageId) {
-    setState(() => _handledActionIds.add(messageId));
+  void _markActionCancelled(String messageId) {
+    setState(() => _cancelledActionIds.add(messageId));
   }
 
   void _onChatStateChanged(BuildContext context, ChatState state) {
@@ -164,8 +170,8 @@ class _ChatViewState extends State<_ChatView> {
                   return ChatTimeline(
                     messages: state.messages,
                     isTyping: state.isTyping,
-                    handledActionIds: _handledActionIds,
-                    onActionDismissed: _markActionHandled,
+                    cancelledActionIds: _cancelledActionIds,
+                    onActionCancelled: _markActionCancelled,
                     scrollController: _scrollController,
                   );
                 }

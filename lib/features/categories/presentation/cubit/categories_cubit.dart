@@ -59,16 +59,24 @@ class CategoriesCubit extends Cubit<CategoriesState> {
   /// Confirms the import for the (possibly user-edited) preview items.
   /// Used by the import-categories page after the user reviews/edits the
   /// parsed CSV preview.
+  ///
+  /// Emits [CategoriesImporting] for each item processed so the UI can show
+  /// a determinate progress bar; on completion transitions to
+  /// [CategoriesImported] (or [CategoriesError] on failure).
   Future<void> confirmImport({
     required List<CategoryImportPreviewItem> items,
     int duplicateCount = 0,
   }) async {
-    emit(const CategoriesLoading());
+    emit(CategoriesImporting(processed: 0, total: items.length));
 
     final result = await _importCategoriesCsv.importItems(
       items: items,
       userId: _userId,
       duplicateCount: duplicateCount,
+      onProgress: (processed, total) {
+        if (isClosed) return;
+        emit(CategoriesImporting(processed: processed, total: total));
+      },
     );
 
     await _emitImportResult(result);
@@ -114,6 +122,21 @@ final class CategoriesLoading extends CategoriesState {
   const CategoriesLoading();
 }
 
+/// Active state during a confirmed CSV import. Carries the number of items
+/// already processed and the total so the UI can render a determinate
+/// progress bar instead of a plain spinner.
+final class CategoriesImporting extends CategoriesState {
+  const CategoriesImporting({required this.processed, required this.total});
+
+  final int processed;
+  final int total;
+
+  double get progress => total == 0 ? 1 : processed / total;
+
+  @override
+  List<Object> get props => [processed, total];
+}
+
 final class CategoriesLoaded extends CategoriesState {
   const CategoriesLoaded(this.categories);
 
@@ -145,4 +168,16 @@ final class CategoriesImported extends CategoriesState {
 
   @override
   List<Object> get props => [categories, importedCount, duplicateCount];
+}
+
+extension CategoriesStateData on CategoriesState {
+  /// Returns the categories carried by states that have a list (Loaded
+  /// and Imported), or an empty list otherwise. Use this everywhere the
+  /// caller "just wants the categories" — `is CategoriesLoaded` alone
+  /// drops the post-import list and silently breaks lookups.
+  List<CategoryEntity> get categoriesOrEmpty => switch (this) {
+        CategoriesLoaded(:final categories) => categories,
+        CategoriesImported(:final categories) => categories,
+        _ => const <CategoryEntity>[],
+      };
 }

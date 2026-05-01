@@ -38,9 +38,18 @@ _Mode _modeFromState(TransactionFormState state) {
 }
 
 class AddTransactionPage extends StatelessWidget {
-  const AddTransactionPage({super.key, this.existingTransaction});
+  const AddTransactionPage({
+    super.key,
+    this.existingTransaction,
+    this.prefillAccountId,
+  });
 
   final TransactionEntity? existingTransaction;
+
+  /// In create mode, pre-selects this account so users coming from an
+  /// account-statement page don't have to re-pick the account they're
+  /// already viewing. Ignored when editing (the existing accountId wins).
+  final String? prefillAccountId;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +63,7 @@ class AddTransactionPage extends StatelessWidget {
         createTransfer: GetIt.I<CreateTransferUseCase>(),
         userId: userId,
         existingTransaction: existingTransaction,
+        prefillAccountId: prefillAccountId,
       ),
       child: const _AddTransactionView(),
     );
@@ -470,12 +480,14 @@ class _AccountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final accountsState = context.watch<AccountsCubit>().state;
-    final selected = accountsState is AccountsLoaded && selectedId.isNotEmpty
-        ? accountsState.accounts
+    final selected = selectedId.isEmpty
+        ? null
+        : context
+              .watch<AccountsCubit>()
+              .state
+              .accountsOrEmpty
               .where((a) => a.id == selectedId)
-              .firstOrNull
-        : null;
+              .firstOrNull;
     final hasValue = selected != null;
 
     return InkWell(
@@ -550,10 +562,14 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final state = context.watch<CategoriesCubit>().state;
-    final selected = state is CategoriesLoaded && selectedId.isNotEmpty
-        ? state.categories.where((c) => c.id == selectedId).firstOrNull
-        : null;
+    final selected = selectedId.isEmpty
+        ? null
+        : context
+              .watch<CategoriesCubit>()
+              .state
+              .categoriesOrEmpty
+              .where((c) => c.id == selectedId)
+              .firstOrNull;
     final hasValue = selected != null;
 
     return InkWell(

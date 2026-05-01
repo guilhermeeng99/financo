@@ -9,9 +9,9 @@ import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
-import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
 import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
@@ -61,6 +61,13 @@ class _AddAccountViewState extends State<_AddAccountView> {
   final _balanceController = TextEditingController();
   final _creditLimitController = TextEditingController();
 
+  /// Display name for the linked checking account. Held in local state
+  /// (not the cubit) because this page is mounted on the root navigator,
+  /// outside the shell's `AccountsCubit` scope, so we can't resolve names
+  /// from cached state. Populated by the picker on selection and, in edit
+  /// mode, by an async lookup against `GetAccountsUseCase`.
+  String? _linkedAccountName;
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +78,21 @@ class _AddAccountViewState extends State<_AddAccountView> {
       if (state.creditLimit > 0) {
         _creditLimitController.text = state.creditLimit.toStringAsFixed(2);
       }
+      if (state.linkedAccountId.isNotEmpty) {
+        unawaited(_loadLinkedAccountName(state.userId, state.linkedAccountId));
+      }
     }
+  }
+
+  Future<void> _loadLinkedAccountName(String userId, String linkedId) async {
+    final result = await GetIt.I<GetAccountsUseCase>()(userId: userId);
+    if (!mounted) return;
+    final match = result
+        .fold<List<AccountEntity>>((_) => const [], (all) => all)
+        .where((a) => a.id == linkedId)
+        .firstOrNull;
+    if (match == null) return;
+    setState(() => _linkedAccountName = match.name);
   }
 
   @override
@@ -154,7 +175,9 @@ class _AddAccountViewState extends State<_AddAccountView> {
       userId: state.userId,
       selectedId: state.linkedAccountId.isEmpty ? null : state.linkedAccountId,
     );
-    if (picked != null) cubit.updateLinkedAccountId(picked);
+    if (picked == null) return;
+    cubit.updateLinkedAccountId(picked.id);
+    setState(() => _linkedAccountName = picked.name);
   }
 
   void _onSubmit() {
@@ -255,9 +278,14 @@ class _AddAccountViewState extends State<_AddAccountView> {
                           controller: _balanceController,
                           label: t.accounts.balanceLabel,
                           hintText: t.accounts.balanceHint,
+                          // signed: true so accounts that start in
+                          // overdraft (negative balance) can be entered
+                          // on mobile — desktop already accepts `-` from
+                          // the physical keyboard.
                           keyboardType:
                               const TextInputType.numberWithOptions(
                                 decimal: true,
+                                signed: true,
                               ),
                           onChanged: cubit.updateBalance,
                         ),
@@ -270,10 +298,9 @@ class _AddAccountViewState extends State<_AddAccountView> {
                         children: [
                           _RowSelector(
                             label: t.accounts.linkedAccount,
-                            value: _resolveLinkedName(
-                              context,
-                              state.linkedAccountId,
-                            ),
+                            value: state.linkedAccountId.isEmpty
+                                ? null
+                                : _linkedAccountName,
                             placeholder: t.accounts.pickLinkedAccount,
                             icon: FontAwesomeIcons.link,
                             onTap: _pickLinkedAccount,
@@ -372,18 +399,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
   }
 
-  /// Looks up the linked account's name from the AccountsCubit cache so the
-  /// row reads "Nubank Conta" instead of an opaque id. Returns null when no
-  /// id is set yet (the row then renders its placeholder).
-  String? _resolveLinkedName(BuildContext context, String id) {
-    if (id.isEmpty) return null;
-    final accountsState = context.read<AccountsCubit>().state;
-    if (accountsState is! AccountsLoaded) return null;
-    final match = accountsState.accounts
-        .where((a) => a.id == id)
-        .firstOrNull;
-    return match?.name;
-  }
 }
 
 class _RowSelector extends StatelessWidget {
