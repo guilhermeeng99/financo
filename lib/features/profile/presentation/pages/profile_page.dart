@@ -16,6 +16,7 @@ import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:financo/features/profile/presentation/widgets/app_version_footer.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_header_card.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_row.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_section.dart';
@@ -287,7 +288,9 @@ class _ProfileContent extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 80),
+        const SizedBox(height: 32),
+        const AppVersionFooter(),
+        const SizedBox(height: 48),
       ],
     );
   }

@@ -1,22 +1,28 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AccountsCubit extends Cubit<AccountsState> {
   AccountsCubit({
     required GetAccountsUseCase getAccounts,
+    required GetTransactionsUseCase getTransactions,
     required ImportAccountsCsvUseCase importAccountsCsv,
     required String userId,
   }) : _getAccounts = getAccounts,
+       _getTransactions = getTransactions,
        _importAccountsCsv = importAccountsCsv,
        _userId = userId,
        super(const AccountsInitial());
 
   final GetAccountsUseCase _getAccounts;
+  final GetTransactionsUseCase _getTransactions;
   final ImportAccountsCsvUseCase _importAccountsCsv;
   final String _userId;
 
@@ -24,16 +30,36 @@ class AccountsCubit extends Cubit<AccountsState> {
     if (forceRefresh || state is! AccountsLoaded) {
       emit(const AccountsLoading());
     }
-
-    final result = await _getAccounts(
-      userId: _userId,
-      forceRefresh: forceRefresh,
-    );
-
+    final result = await _loadEnriched(forceRefresh: forceRefresh);
     result.fold(
       (failure) => emit(AccountsError(failure)),
       (accounts) => emit(AccountsLoaded(accounts)),
     );
+  }
+
+  /// Fetches accounts + all-time transactions in parallel and returns
+  /// accounts with `currentBalance` populated. The credit-usage bar
+  /// reads from this so it reflects actual spending instead of staying
+  /// frozen on the seed `initialBalance`. If transactions fail we still
+  /// surface the accounts — stale credit usage beats an empty list.
+  Future<Either<Failure, List<AccountEntity>>> _loadEnriched({
+    bool forceRefresh = false,
+  }) async {
+    final results = await Future.wait([
+      _getAccounts(userId: _userId, forceRefresh: forceRefresh),
+      _getTransactions(userId: _userId, forceRefresh: forceRefresh),
+    ]);
+    final accountsResult =
+        results[0] as Either<Failure, List<AccountEntity>>;
+    final transactionsResult =
+        results[1] as Either<Failure, List<TransactionEntity>>;
+    return accountsResult.map((accounts) {
+      final transactions = transactionsResult.fold(
+        (_) => const <TransactionEntity>[],
+        (txs) => txs,
+      );
+      return applyTransactionsToAccounts(accounts, transactions);
+    });
   }
 
   Future<Either<Failure, AccountImportPreview>> previewCsv(
@@ -71,10 +97,7 @@ class AccountsCubit extends Cubit<AccountsState> {
     await result.fold(
       (failure) async => emit(AccountsError(failure)),
       (importResult) async {
-        final refreshResult = await _getAccounts(
-          userId: _userId,
-          forceRefresh: true,
-        );
+        final refreshResult = await _loadEnriched(forceRefresh: true);
         refreshResult.fold(
           (failure) => emit(AccountsError(failure)),
           (accounts) => emit(

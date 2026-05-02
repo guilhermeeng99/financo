@@ -415,8 +415,8 @@ class TranslationsTransactionsEn {
 	/// en: 'Amount'
 	String get amount => 'Amount';
 
-	/// en: 'Amount (R\$)'
-	String get amountLabel => 'Amount (R\$)';
+	/// en: 'Amount'
+	String get amountLabel => 'Amount';
 
 	/// en: '0.00'
 	String get amountHint => '0.00';
@@ -709,6 +709,15 @@ class TranslationsAccountsEn {
 	/// en: 'Linked checking account'
 	String get pickLinkedAccount => 'Linked checking account';
 
+	/// en: 'Pick a bank'
+	String get pickBank => 'Pick a bank';
+
+	/// en: 'Search bank'
+	String get bankSearchHint => 'Search bank';
+
+	/// en: 'No banks match your search.'
+	String get bankSearchNoResults => 'No banks match your search.';
+
 	/// en: 'Create a checking account first.'
 	String get noLinkedCandidates => 'Create a checking account first.';
 
@@ -849,6 +858,15 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Select color'
 	String get selectColor => 'Select color';
+
+	/// en: 'Choose icon'
+	String get chooseIcon => 'Choose icon';
+
+	/// en: 'Search (e.g. car, carro)'
+	String get iconSearchHint => 'Search (e.g. car, carro)';
+
+	/// en: 'No icons match your search.'
+	String get iconSearchNoResults => 'No icons match your search.';
 
 	/// en: 'Parent category'
 	String get parentCategory => 'Parent category';
@@ -1100,8 +1118,8 @@ class TranslationsBillsEn {
 	/// en: 'Amount'
 	String get amount => 'Amount';
 
-	/// en: 'Amount (R\$)'
-	String get amountLabel => 'Amount (R\$)';
+	/// en: 'Amount'
+	String get amountLabel => 'Amount';
 
 	/// en: 'Due date'
 	String get dueDate => 'Due date';
@@ -1332,6 +1350,9 @@ class TranslationsProfileEn {
 
 	/// en: 'Appearance'
 	String get appearance => 'Appearance';
+
+	/// en: 'Version'
+	String get version => 'Version';
 }
 
 // Path: startup
@@ -1651,7 +1672,7 @@ extension on Translations {
 			'transactions.income' => 'Income',
 			'transactions.expense' => 'Expense',
 			'transactions.amount' => 'Amount',
-			'transactions.amountLabel' => 'Amount (R\$)',
+			'transactions.amountLabel' => 'Amount',
 			'transactions.amountHint' => '0.00',
 			'transactions.description' => 'Description',
 			'transactions.descriptionHint' => 'e.g. Grocery shopping',
@@ -1746,6 +1767,9 @@ extension on Translations {
 			'accounts.pickClosingDay' => 'Closing day',
 			'accounts.pickDueDay' => 'Due day',
 			'accounts.pickLinkedAccount' => 'Linked checking account',
+			'accounts.pickBank' => 'Pick a bank',
+			'accounts.bankSearchHint' => 'Search bank',
+			'accounts.bankSearchNoResults' => 'No banks match your search.',
 			'accounts.noLinkedCandidates' => 'Create a checking account first.',
 			'accounts.addFirst' => 'Add your first account',
 			'accounts.emptyTitle' => 'No accounts yet',
@@ -1790,6 +1814,9 @@ extension on Translations {
 			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
+			'categories.chooseIcon' => 'Choose icon',
+			'categories.iconSearchHint' => 'Search (e.g. car, carro)',
+			'categories.iconSearchNoResults' => 'No icons match your search.',
 			'categories.parentCategory' => 'Parent category',
 			'categories.noParent' => 'No parent',
 			'categories.subcategoryLabel' => 'Subcategory',
@@ -1909,7 +1936,7 @@ extension on Translations {
 			'bills.description' => 'Description',
 			'bills.descriptionHint' => 'e.g. Electricity',
 			'bills.amount' => 'Amount',
-			'bills.amountLabel' => 'Amount (R\$)',
+			'bills.amountLabel' => 'Amount',
 			'bills.dueDate' => 'Due date',
 			'bills.recurrence' => 'Recurrence',
 			'bills.oneShot' => 'One-time',
@@ -1986,6 +2013,7 @@ extension on Translations {
 			'profile.sectionAccount' => 'Account',
 			'profile.sectionDangerZone' => 'Danger zone',
 			'profile.appearance' => 'Appearance',
+			'profile.version' => 'Version',
 			'startup.tagline' => 'Your finances, in flow.',
 			'startup.stepCheckingAuth' => 'Checking your account',
 			'startup.stepSyncingData' => 'Syncing your data',

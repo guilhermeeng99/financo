@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/category_form_cubit.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -275,7 +276,7 @@ void main() {
 
       test('default color is first palette color', () {
         final cubit = buildCubit();
-        expect(cubit.state.color, 4294198070);
+        expect(cubit.state.color, CategoryColors.palette.first);
         addTearDown(cubit.close);
       });
 

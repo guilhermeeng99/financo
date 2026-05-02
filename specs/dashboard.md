@@ -104,6 +104,21 @@ Extends `Equatable`.
 4. **Same month no-op**: DashboardLoadRequested with same year/month skipped unless forceRefresh.
 5. **Account with no transactions**: adjustment = 0, balance stays as initialBalance.
 
+## Account selection (dashboard "Total")
+
+The dashboard's "Total Balance" is no longer shown as a hero number on top of the page. Instead, the **Account Balances** (checking) section trails a **Total** row that lives below the list and reflects the sum of the **selected** accounts.
+
+`DashboardAccountSelectionCubit` (in `lib/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart`) owns the selection:
+
+- State: `Set<String> excludedIds` — accounts the user has muted from the total.
+- `toggle(accountId)` — flips inclusion and persists immediately.
+- Persistence: `SharedPreferences`, keyed by `dashboard.excluded_accounts:<userId>` so two users on the same device don't share selections.
+- Default: empty set (every account counts toward the total). Newly created accounts therefore opt-in automatically.
+
+Each row in the checking section renders a leading `Checkbox`. Unticking it adds the account to `excludedIds` and visually mutes the row (50% opacity) without removing it from the list — the user can see what they hid and re-enable it without leaving the page. Credit card rows do not show the checkbox; they have no live total.
+
+The `summary.totalBalance` field on `DashboardSummary` is still computed (sum of all adjusted accounts) for the entity contract, but it is no longer displayed.
+
 ## Category drill-down dialog
 
 Tapping a row in the **Expenses by Category** list opens a modal dialog scoped to that parent category. The dialog has two tabs:

@@ -35,6 +35,7 @@ import 'package:financo/features/categories/presentation/pages/import_categories
 import 'package:financo/features/chat/presentation/pages/chat_page.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
@@ -52,6 +53,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -122,6 +124,12 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               ),
             ),
             BlocProvider(
+              create: (_) => DashboardAccountSelectionCubit(
+                prefs: GetIt.I<SharedPreferences>(),
+                userId: userId,
+              ),
+            ),
+            BlocProvider(
               create: (_) => TransactionsBloc(
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
                 deleteTransaction: GetIt.I<DeleteTransactionUseCase>(),
@@ -133,6 +141,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = AccountsCubit(
                   getAccounts: GetIt.I<GetAccountsUseCase>(),
+                  getTransactions: GetIt.I<GetTransactionsUseCase>(),
                   importAccountsCsv: GetIt.I<ImportAccountsCsvUseCase>(),
                   userId: userId,
                 );

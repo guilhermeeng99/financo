@@ -369,7 +369,9 @@ class _TransactionsSide extends StatelessWidget {
         return TransactionTile(
           transaction: tx,
           categoryLabel: label,
-          onTap: () => context.go(AppRoutes.addTransaction, extra: tx),
+          // `push` (not `go`) so the edit page has a back arrow and
+          // pop(true) returns to this statement after Update.
+          onTap: () => context.push(AppRoutes.addTransaction, extra: tx),
         );
       },
     );

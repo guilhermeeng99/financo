@@ -1,6 +1,7 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -49,7 +50,80 @@ class CategoryBreakdownList extends StatelessWidget {
                 : () => onCategoryTap!(data[i]),
           ),
         ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Container(
+            height: 0.5,
+            color: context.appColors.surfaceVariant,
+          ),
+        ),
+        _BreakdownTotalRow(
+          total: total,
+          isExpense: isExpense,
+          // Mirror the chevron column on rows that have one so the
+          // total amount lines up vertically with the amounts above.
+          hasChevron: onCategoryTap != null,
+        ),
       ],
+    );
+  }
+}
+
+/// Trailing summary row for [CategoryBreakdownList]. Mirrors the
+/// structure of [_BreakdownRow] (dot column → label → amount → optional
+/// chevron gutter) so its amount lands in the same X column as the rows
+/// above. No progress bar — the total is a summary, not a category.
+class _BreakdownTotalRow extends StatelessWidget {
+  const _BreakdownTotalRow({
+    required this.total,
+    required this.isExpense,
+    required this.hasChevron,
+  });
+
+  final double total;
+  final bool isExpense;
+  final bool hasChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final amountText = isExpense
+        ? '-${formatCurrency(total)}'
+        : formatCurrency(total);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Row(
+        children: [
+          // Dot (10) + gap (10) on the regular row — replaced here by an
+          // empty 20px gutter so "Total" aligns with the category names.
+          const SizedBox(width: 20),
+          Expanded(
+            child: Text(
+              t.dashboard.total,
+              style: context.textTheme.labelMedium?.copyWith(
+                color: colors.onBackgroundLight,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            amountText,
+            style: context.textTheme.titleMedium?.copyWith(
+              color: isExpense ? colors.expense : colors.income,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (hasChevron) ...[
+            const SizedBox(width: 6),
+            // Phantom chevron — width matches the FaIcon size used in
+            // _BreakdownRow so amounts align exactly.
+            const SizedBox(width: 10),
+          ],
+        ],
+      ),
     );
   }
 }

@@ -16,7 +16,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-const _collapsedWidth = 104.0;
+const _collapsedWidth = 80.0;
 const _expandedWidth = 240.0;
 const _animDuration = Duration(milliseconds: 240);
 const Curve _animCurve = Curves.easeOutCubic;
@@ -126,13 +126,12 @@ class _BrandRow extends StatelessWidget {
     return SizedBox(
       height: 44,
       child: Row(
-        mainAxisAlignment: expanded
-            ? MainAxisAlignment.start
-            : MainAxisAlignment.spaceBetween,
         children: [
-          _BrandMark(onTap: onToggle),
-          if (expanded) ...[
-            const SizedBox(width: 12),
+          SizedBox(
+            width: 52,
+            child: Center(child: _BrandMark(onTap: onToggle)),
+          ),
+          if (expanded)
             Expanded(
               child: Text(
                 AppConstants.appName,
@@ -144,8 +143,6 @@ class _BrandRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-          ],
-          _ToggleButton(expanded: expanded, onTap: onToggle),
         ],
       ),
     );
@@ -185,42 +182,6 @@ class _BrandMark extends StatelessWidget {
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
                 height: 1,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ToggleButton extends StatelessWidget {
-  const _ToggleButton({required this.expanded, required this.onTap});
-
-  final bool expanded;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.surfaceVariant,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 32,
-          height: 32,
-          child: Center(
-            child: AnimatedRotation(
-              turns: expanded ? 0.5 : 0,
-              duration: _animDuration,
-              curve: _animCurve,
-              child: FaIcon(
-                FontAwesomeIcons.chevronRight,
-                size: 11,
-                color: colors.onBackgroundLight,
               ),
             ),
           ),
@@ -395,8 +356,18 @@ class _DateScope extends StatelessWidget {
 
   static String _shortMonth(int m) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[m - 1];
   }

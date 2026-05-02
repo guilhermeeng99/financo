@@ -50,7 +50,7 @@ class AccountDetailPage extends StatelessWidget {
                 account: account,
                 balance: account.type == AccountType.creditCard
                     ? account.availableCredit
-                    : account.initialBalance,
+                    : account.effectiveBalance,
               ),
               const SizedBox(height: 24),
               AccountDetailSection(

@@ -1,6 +1,10 @@
 import 'dart:async';
 
+import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_currency_field.dart';
+import 'package:financo/app/widgets/financo_date_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
@@ -22,7 +26,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 class AddBillPage extends StatelessWidget {
   const AddBillPage({super.key, this.existingBill});
@@ -65,7 +68,10 @@ class _AddBillViewState extends State<_AddBillView> {
     final state = context.read<BillFormCubit>().state;
     _descriptionController.text = state.description;
     if (state.amount > 0) {
-      _amountController.text = state.amount.toStringAsFixed(2);
+      // Pre-format so the field opens already as "2.000,00" in BR
+      // style — the formatter only runs on user keystrokes, not on
+      // controller.text assignments.
+      _amountController.text = BrlCurrencyInputFormatter.format(state.amount);
     }
     _notesController.text = state.notes;
   }
@@ -296,21 +302,17 @@ class _FormBody extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: FinancoTextField(
+                          child: FinancoCurrencyField(
                             controller: amountController,
                             label: t.bills.amountLabel,
-                            hintText: '0.00',
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
+                            hintText: '0,00',
                             validator: Validators.amount,
                             onChanged: cubit.updateAmount,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _DateField(
+                          child: FinancoDateField(
                             label: t.bills.dueDate,
                             value: state.dueDate,
                             onTap: onPickDate,
@@ -365,46 +367,6 @@ class _FormBody extends StatelessWidget {
   }
 }
 
-class _DateField extends StatelessWidget {
-  const _DateField({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
-
-  final String label;
-  final DateTime value;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FaIcon(
-              FontAwesomeIcons.calendar,
-              size: 14,
-              color: context.appColors.onBackgroundLight,
-            ),
-          ),
-        ),
-        child: Text(
-          DateFormat('dd/MM/yyyy').format(value),
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackground,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _CategoryRowField extends StatelessWidget {
   const _CategoryRowField({
     required this.billType,
@@ -418,7 +380,6 @@ class _CategoryRowField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final wantedType = billType == BillType.receivable
         ? CategoryType.income
         : CategoryType.expense;
@@ -428,91 +389,23 @@ class _CategoryRowField extends StatelessWidget {
         .categoriesOrEmpty
         .where((c) => c.type == wantedType)
         .toList();
-    final selected = selectedId != null
-        ? categories.where((c) => c.id == selectedId).toList()
-        : <CategoryEntity>[];
-    final hasSelection = selected.isNotEmpty;
-    final isMissing = selectedId != null && !hasSelection;
-
-    return InkWell(
+    final selected = selectedId == null
+        ? null
+        : categories.where((c) => c.id == selectedId).firstOrNull;
+    final isMissing = selectedId != null && selected == null;
+    return FinancoPickerField(
+      label: t.bills.category,
+      // Subcategories render as "Parent › Child" (e.g. "Moradia ›
+      // Aluguel"). The `allCategories` list is the type-filtered one
+      // here, but the parent of an expense subcategory is itself an
+      // expense category, so the lookup still resolves.
+      value: selected?.displayPath(categories),
+      placeholder: isMissing ? t.bills.categoryRequired : t.bills.pickCategory,
+      isError: isMissing,
+      leading: selected == null
+          ? null
+          : FinancoCategoryAvatar(category: selected),
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: colors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            if (hasSelection) ...[
-              _CategoryDot(category: selected.first),
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.bills.category,
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasSelection
-                        ? selected.first.name
-                        : isMissing
-                            ? t.bills.categoryRequired
-                            : t.bills.pickCategory,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: hasSelection
-                          ? colors.onBackground
-                          : colors.onBackgroundLight,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            FaIcon(
-              FontAwesomeIcons.chevronRight,
-              size: 12,
-              color: colors.onBackgroundLight,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryDot extends StatelessWidget {
-  const _CategoryDot({required this.category});
-
-  final CategoryEntity category;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Color(category.color);
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Icon(
-          IconData(category.icon, fontFamily: 'MaterialIcons'),
-          size: 18,
-          color: color,
-        ),
-      ),
     );
   }
 }

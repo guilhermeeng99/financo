@@ -4,20 +4,19 @@ import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// Hero of the dashboard — the question users open this page to answer.
-/// Top half: total balance (big number). Bottom half: month's income,
-/// expenses and net result as inline chips so the user gets a snapshot
-/// without scrolling.
+/// Top-of-dashboard summary strip: month income, expenses, and net
+/// result. The "total balance" number used to sit on top of these chips
+/// but moved into the Account Balances section as a live total of the
+/// selected checking accounts, so the user can mute accounts they don't
+/// want counted (e.g. shared, joint, dormant).
 class DashboardHero extends StatelessWidget {
   const DashboardHero({
-    required this.totalBalance,
     required this.income,
     required this.expenses,
     required this.netResult,
     super.key,
   });
 
-  final double totalBalance;
   final double income;
   final double expenses;
   final double netResult;
@@ -46,60 +45,37 @@ class DashboardHero extends StatelessWidget {
 
     return Container(
       decoration: decoration,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(16),
+      child: Row(
         children: [
-          Text(
-            t.dashboard.totalBalance.toUpperCase(),
-            style: context.textTheme.labelSmall?.copyWith(
-              color: colors.onBackgroundLight,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
+          Expanded(
+            child: _MetricChip(
+              icon: FontAwesomeIcons.arrowDown,
+              label: t.dashboard.income,
+              amount: income,
+              color: colors.income,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            formatCurrency(totalBalance),
-            style: context.textTheme.displaySmall?.copyWith(
-              color: colors.onBackground,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
+          const SizedBox(width: 8),
+          Expanded(
+            child: _MetricChip(
+              icon: FontAwesomeIcons.arrowUp,
+              label: t.dashboard.expenses,
+              amount: expenses,
+              color: colors.expense,
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _MetricChip(
-                  icon: FontAwesomeIcons.arrowDown,
-                  label: t.dashboard.income,
-                  amount: income,
-                  color: colors.income,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MetricChip(
-                  icon: FontAwesomeIcons.arrowUp,
-                  label: t.dashboard.expenses,
-                  amount: expenses,
-                  color: colors.expense,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MetricChip(
-                  icon: netResult >= 0
-                      ? FontAwesomeIcons.chartLine
-                      : FontAwesomeIcons.triangleExclamation,
-                  label: t.dashboard.netResult,
-                  amount: netResult,
-                  color: netResult >= 0 ? colors.income : colors.expense,
-                  signed: true,
-                ),
-              ),
-            ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: _MetricChip(
+              icon: netResult >= 0
+                  ? FontAwesomeIcons.chartLine
+                  : FontAwesomeIcons.triangleExclamation,
+              label: t.dashboard.netResult,
+              amount: netResult,
+              color: netResult >= 0 ? colors.income : colors.expense,
+              signed: true,
+            ),
           ),
         ],
       ),

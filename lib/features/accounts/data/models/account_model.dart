@@ -14,6 +14,7 @@ class AccountModel extends AccountEntity {
     super.closingDay,
     super.dueDay,
     super.linkedAccountId,
+    super.currentBalance,
   });
 
   factory AccountModel.fromFirestore(DocumentSnapshot doc) {

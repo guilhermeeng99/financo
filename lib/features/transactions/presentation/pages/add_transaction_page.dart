@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_currency_field.dart';
+import 'package:financo/app/widgets/financo_date_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
@@ -27,7 +31,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 enum _Mode { expense, income, transfer }
 
@@ -90,7 +93,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     if (state.isEditing) {
       _descriptionController.text = state.description;
       _amountController.text = state.amount > 0
-          ? state.amount.toStringAsFixed(2)
+          ? BrlCurrencyInputFormatter.format(state.amount)
           : '';
       _notesController.text = state.notes;
     }
@@ -278,21 +281,18 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: FinancoTextField(
+                              child: FinancoCurrencyField(
                                 controller: _amountController,
                                 label: t.transactions.amountLabel,
                                 hintText: t.transactions.amountHint,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
                                 onChanged: cubit.updateAmount,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _DateField(
-                                date: state.date,
+                              child: FinancoDateField(
+                                label: t.transactions.date,
+                                value: state.date,
                                 onTap: _pickDate,
                               ),
                             ),
@@ -431,41 +431,6 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   }
 }
 
-class _DateField extends StatelessWidget {
-  const _DateField({required this.date, required this.onTap});
-
-  final DateTime date;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: t.transactions.date,
-          suffixIcon: Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FaIcon(
-              FontAwesomeIcons.calendar,
-              size: 14,
-              color: context.appColors.onBackgroundLight,
-            ),
-          ),
-        ),
-        child: Text(
-          DateFormat('dd/MM/yyyy').format(date),
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackground,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _AccountRow extends StatelessWidget {
   const _AccountRow({
     required this.label,
@@ -488,62 +453,18 @@ class _AccountRow extends StatelessWidget {
               .accountsOrEmpty
               .where((a) => a.id == selectedId)
               .firstOrNull;
-    final hasValue = selected != null;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: colors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            FaIcon(
-              selected?.type == AccountType.creditCard
-                  ? FontAwesomeIcons.creditCard
-                  : FontAwesomeIcons.buildingColumns,
-              size: 14,
-              color: colors.onBackgroundLight,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasValue ? selected.name : t.transactions.account,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: hasValue
-                          ? colors.onBackground
-                          : colors.onBackgroundLight,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 4),
-            FaIcon(
-              FontAwesomeIcons.chevronRight,
-              size: 11,
-              color: colors.onBackgroundLight,
-            ),
-          ],
-        ),
+    return FinancoPickerField(
+      label: label,
+      value: selected?.name,
+      placeholder: t.transactions.account,
+      leading: FaIcon(
+        selected?.type == AccountType.creditCard
+            ? FontAwesomeIcons.creditCard
+            : FontAwesomeIcons.buildingColumns,
+        size: 14,
+        color: colors.onBackgroundLight,
       ),
+      onTap: onTap,
     );
   }
 }
@@ -562,97 +483,25 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final categories =
+        context.watch<CategoriesCubit>().state.categoriesOrEmpty;
     final selected = selectedId.isEmpty
         ? null
-        : context
-              .watch<CategoriesCubit>()
-              .state
-              .categoriesOrEmpty
-              .where((c) => c.id == selectedId)
-              .firstOrNull;
-    final hasValue = selected != null;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: colors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            if (hasValue)
-              _CategoryDot(category: selected)
-            else
-              FaIcon(
-                FontAwesomeIcons.tag,
-                size: 14,
-                color: colors.onBackgroundLight,
-              ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    t.transactions.category,
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasValue ? selected.name : t.bills.pickCategory,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: hasValue
-                          ? colors.onBackground
-                          : colors.onBackgroundLight,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 4),
-            FaIcon(
-              FontAwesomeIcons.chevronRight,
-              size: 11,
+        : categories.where((c) => c.id == selectedId).firstOrNull;
+    return FinancoPickerField(
+      label: t.transactions.category,
+      // Subcategories render as "Parent › Child" so the user sees where
+      // the bucket lives (e.g. "Moradia › Aluguel").
+      value: selected?.displayPath(categories),
+      placeholder: t.bills.pickCategory,
+      leading: selected != null
+          ? FinancoCategoryAvatar(category: selected, size: 28)
+          : FaIcon(
+              FontAwesomeIcons.tag,
+              size: 14,
               color: colors.onBackgroundLight,
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryDot extends StatelessWidget {
-  const _CategoryDot({required this.category});
-
-  final CategoryEntity category;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Color(category.color);
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Icon(
-          IconData(category.icon, fontFamily: 'MaterialIcons'),
-          size: 14,
-          color: color,
-        ),
-      ),
+      onTap: onTap,
     );
   }
 }

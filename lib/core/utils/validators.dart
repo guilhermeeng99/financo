@@ -1,3 +1,4 @@
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 
 class Validators {
@@ -35,7 +36,10 @@ class Validators {
     if (value == null || value.trim().isEmpty) {
       return t.validators.amountRequired;
     }
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    // The previous `replaceAll(',', '.')` blew up on BR values with a
+    // thousands grouper — `2.000,00` became `2.000.00` and parsed as
+    // null. `parseDecimalAmount` handles both BR and EN styles.
+    final parsed = parseDecimalAmount(value);
     if (parsed == null || parsed <= 0) {
       return t.validators.amountInvalid;
     }

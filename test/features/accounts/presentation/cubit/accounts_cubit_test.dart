@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
@@ -12,17 +13,28 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockGetAccountsUseCase mockGetAccounts;
+  late MockGetTransactionsUseCase mockGetTransactions;
   late MockImportAccountsCsvUseCase mockImportAccountsCsv;
 
   setUp(() {
     mockGetAccounts = MockGetAccountsUseCase();
+    mockGetTransactions = MockGetTransactionsUseCase();
     mockImportAccountsCsv = MockImportAccountsCsvUseCase();
+    // Default: transactions stub returns empty so balance computation
+    // is a no-op unless a test overrides it.
+    when(
+      () => mockGetTransactions(
+        userId: any(named: 'userId'),
+        forceRefresh: any(named: 'forceRefresh'),
+      ),
+    ).thenAnswer((_) async => const Right([]));
   });
 
   const userId = 'user-1';
 
   AccountsCubit buildCubit() => AccountsCubit(
     getAccounts: mockGetAccounts,
+    getTransactions: mockGetTransactions,
     importAccountsCsv: mockImportAccountsCsv,
     userId: userId,
   );
@@ -75,7 +87,11 @@ void main() {
         ).thenAnswer((_) async => Right(AccountFactory.list()));
       },
       build: buildCubit,
-      seed: () => AccountsLoaded(AccountFactory.list()),
+      // Seed with the same shape the cubit will emit (currentBalance
+      // populated by the calculator) so Equatable dedupes the no-op.
+      seed: () => AccountsLoaded(
+        applyTransactionsToAccounts(AccountFactory.list(), const []),
+      ),
       act: (cubit) async => cubit.loadAccounts(),
       expect: () => <AccountsState>[],
       verify: (_) {

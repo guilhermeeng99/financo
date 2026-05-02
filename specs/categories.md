@@ -37,7 +37,7 @@
 7. **Deleting a category requires transaction reassignment**: when deleting, user must choose another category to receive the deleted category's transactions.
 8. **Cannot delete last category**: if only one category remains, deletion is blocked.
 9. **Default icon**: code point 58332 (shopping_cart).
-10. **Default color**: 4280391411 (blue).
+10. **Default color**: 4280391411 (blue). The auto-assignment cycles through `CategoryColors.palette` modulo its length, so adding swatches to the palette never breaks existing categories.
 11. **Default type for new categories**: `expense`.
 12. **List ordered alphabetically by name**.
 13. **Subcategories**: A category may optionally have a `parentId` referencing another category (its parent). A category with no `parentId` is a "root" category.
@@ -217,7 +217,21 @@ confirmImport({
 26. **`importItems` accepts an optional `onProgress(processed, total)` callback** invoked after every processed item (created or skipped). `total` equals the input `items.length`; orphan children that are skipped still tick the counter so the bar reaches 100%.
 27. **The cubit translates progress into `CategoriesImporting` states** so the import-categories page renders a determinate `LinearProgressIndicator` overlay (with a `processed of total` counter and percentage) until the import resolves. The list page treats `CategoriesImporting` as a loading state.
 
-## 7. Model Serialization
+## 7. Icon & color picker UX
+
+The form's "Appearance" section is composed of three controls:
+
+28. **Color picker** is a wrapping grid (`Wrap`) over `CategoryColors.palette`. Every swatch is visible without horizontal scrolling.
+29. **Icon picker is a bottom sheet**, not an inline grid. The form shows a launcher tile (current icon + "Choose icon" label) that opens `showCategoryIconPicker`. The picker takes up to 95% of the viewport, has a sticky search field, and dismisses on selection returning the chosen `int` code point.
+30. **Icon catalog is curated** in `category_icon_catalog.dart`. Each entry tags an `IconData` with a flat, space-separated keyword string covering both English and Portuguese (without diacritics) — e.g. `'car carro vehicle veiculo auto'`.
+31. **Search is bilingual and accent-insensitive.** `searchCategoryIcons(query, options)`:
+    - normalises the query (lowercase + strips Latin diacritics),
+    - splits on whitespace into AND-tokens,
+    - matches when every token is a prefix of any of the entry's keywords.
+    Empty/whitespace queries return the full catalog so the grid always shows something.
+32. **No-results state** renders a centred "No icons match your search." message when the filter empties the list.
+
+## 8. Model Serialization
 
 ### CategoryModel
 

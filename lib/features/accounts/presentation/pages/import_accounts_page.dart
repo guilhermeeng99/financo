@@ -11,6 +11,7 @@ import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/accounts/presentation/widgets/bank_picker_field.dart';
 import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -848,7 +849,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
-                      _BankToggle(
+                      BankPickerField(
                         selected: _draft.bank,
                         onChanged: (b) =>
                             setState(() => _draft = _draft.copyWith(bank: b)),
@@ -921,25 +922,6 @@ class _EditItemSheetState extends State<_EditItemSheet> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BankToggle extends StatelessWidget {
-  const _BankToggle({required this.selected, required this.onChanged});
-
-  final BankType selected;
-  final ValueChanged<BankType> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return FinancoPillToggle<BankType>(
-      selected: selected,
-      onChanged: onChanged,
-      options: const [
-        FinancoPillToggleOption(value: BankType.nubank, label: 'Nubank'),
-        FinancoPillToggleOption(value: BankType.others, label: 'Others'),
-      ],
     );
   }
 }

@@ -156,7 +156,7 @@ void main() {
   });
 
   group('AccountEntity', () {
-    test('availableCredit returns creditLimit - initialBalance', () {
+    test('availableCredit falls back to seed when currentBalance is null', () {
       final account = AccountFactory.creditCard(
         creditLimit: 8000,
         initialBalance: 3000,
@@ -164,9 +164,38 @@ void main() {
       expect(account.availableCredit, 5000);
     });
 
+    test('availableCredit reflects currentBalance once populated', () {
+      final account = AccountFactory.creditCard(
+        creditLimit: 1000,
+        initialBalance: 0,
+      ).copyWith(currentBalance: 250);
+      expect(account.usedCredit, 250);
+      expect(account.availableCredit, 750);
+    });
+
+    test('usedCredit clamps to limit when over-limit', () {
+      final account = AccountFactory.creditCard(
+        creditLimit: 1000,
+        initialBalance: 0,
+      ).copyWith(currentBalance: 1500);
+      expect(account.usedCredit, 1000);
+      expect(account.availableCredit, 0);
+    });
+
     test('availableCredit returns 0 for checking account', () {
       final account = AccountFactory.checking();
       expect(account.availableCredit, 0);
+    });
+
+    test('effectiveBalance returns currentBalance when set', () {
+      final account = AccountFactory.checking(initialBalance: 100)
+          .copyWith(currentBalance: 320);
+      expect(account.effectiveBalance, 320);
+    });
+
+    test('effectiveBalance falls back to initialBalance when null', () {
+      final account = AccountFactory.checking(initialBalance: 100);
+      expect(account.effectiveBalance, 100);
     });
 
     test('bankLabel returns human-readable label', () {

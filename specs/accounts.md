@@ -8,19 +8,47 @@ AccountEntity {
   userId:          String   (required, owner)
   name:            String   (required, non-empty)
   type:            AccountType (required: checking | creditCard)
-  bank:            BankType (required: nubank | others)
+  bank:            BankType (required: see BankBrand registry — Brazilian banks + others)
   initialBalance:  double   (required, seed balance at account creation)
   creditLimit:     double?  (null for checking, required for creditCard)
   closingDay:      int?     (null for checking, required for creditCard, 1–31)
   dueDay:          int?     (null for checking, required for creditCard, 1–31)
   linkedAccountId: String?  (null for checking, required for creditCard — the checking account that pays the bill)
   createdAt:       DateTime (required, set on creation)
+  currentBalance:  double?  (runtime-only, populated by AccountsCubit from live transactions; null = not yet loaded)
 }
 ```
 
+### Live balance semantics
+
+`initialBalance` is the immutable seed entered when the account was created — it lives in Firestore. `currentBalance` is a runtime-only field set by `AccountsCubit.loadAccounts` after fetching all-time transactions (it is **not** persisted). Sign convention is type-specific so the same getter works for both:
+
+- **Checking**: `currentBalance = initialBalance + Σincome − Σexpense`. Positive means money in the account.
+- **Credit card**: `currentBalance = initialBalance + Σexpense − Σincome`. Positive means the amount currently owed; spending raises it, payments (transfers in, refunds) lower it.
+
+The pure helper `applyTransactionsToAccounts(accounts, transactions)` in `lib/features/accounts/domain/account_balance_calculator.dart` is the single source of truth for the math. Transactions that target an unknown `accountId` are ignored.
+
 **Computed properties:**
-- `availableCredit` → `creditLimit - initialBalance` (0 if no creditLimit)
-- `bankLabel` → human-readable bank name ("Nubank", "Others")
+- `effectiveBalance` → `currentBalance ?? initialBalance` — the value widgets should display.
+- `usedCredit` → for credit cards, `effectiveBalance.clamp(0, creditLimit)`; 0 for checking.
+- `availableCredit` → `(creditLimit - usedCredit).clamp(0, creditLimit)`. When `currentBalance` is null this collapses to the legacy `creditLimit - initialBalance` formula, preserving the previous behavior on stale entities.
+- `bankLabel` → delegates to `BankBrand.of(bank).label` so the entity has no hardcoded copy of bank names.
+
+The credit usage bar on the accounts list reads `account.usedCredit`, so it now updates as expenses post to the card instead of staying frozen on the seed value.
+
+### BankBrand registry
+
+`BankBrand` (in `lib/features/accounts/domain/bank_brand.dart`) is the single source of truth for every bank's display identity:
+
+- `label` — human-readable name (`"Itaú"`, `"Banco do Brasil"`, `"Others"`).
+- `abbreviation` — 2–4 chars rendered inside the avatar circle. Foreground text color is auto-picked from background luminance, so light brands (yellow, lime) get black text and dark brands get white.
+- `color` — ARGB int with the brand color used as the avatar background.
+
+`BankAvatar` always renders the same way: a solid coloured circle with the abbreviation. `BankType.others` is the one exception — it shows a generic `buildingColumns` icon instead of a letter abbreviation.
+
+Adding a new bank means: append a value to `BankType`, add a matching entry in `BankBrand._registry`, and append it to `_BankPickerSheet._displayOrder` so it appears in the picker.
+
+`BankBrand.resolveAlias(input)` parses free-text bank labels (CSV cells, AI tool calls, user typing in the picker search field) into a `BankType?`. Matching is case- and accent-insensitive against the registry label, the `enum.name` string, and a hand-curated alias map (`"nu"` → Nubank, `"bb"` → Banco do Brasil, `"cef"` → Caixa, etc.). Returns `null` when nothing matches; callers default to `BankType.others`.
 
 ## Business Rules
 
@@ -168,7 +196,7 @@ The parser locates each field by **header name** (accent- and case-insensitive),
 | name (required) | `Nome`, `Name`, `Account Name`, `Apelido` | Free text, required |
 | balance (required) | `Saldo inicial`, `Saldo`, `Initial balance`, `Balance`, `Opening balance` | Number — accepts both Brazilian (`421,95`, `1.234,56`) and English (`421.95`, `1,234.56`) decimal styles. The rightmost separator is treated as the decimal point. |
 | type (required) | `Tipo`, `Type`, `Kind` | `Conta Corrente` / `Checking` for checking, `Cartão de Crédito` / `Credit Card` for credit card. Accent- and case-tolerant. **Empty or unrecognized values reject the whole import** with a `ValidationFailure` whose message points to the offending row and lists accepted values. |
-| bank (required) | `Banco`, `Bank` | `nubank` (case-insensitive) maps to `BankType.nubank`; anything else maps to `BankType.others`. |
+| bank (required) | `Banco`, `Bank` | Resolved via `BankBrand.resolveAlias` — case- and accent-insensitive, accepts labels (`"Banco do Brasil"`), enum names (`"bancoDoBrasil"`) and curated short aliases (`"nu"`, `"bb"`, `"cef"`). Anything unresolved defaults to `BankType.others`. |
 | limit (optional) | `Limite`, `Credit limit`, `Limit` | Number, same format rules as balance. Only used for credit cards. |
 | due (optional) | `Próximo Vencimento`, `Vencimento`, `Due date`, `Due day`, `Next due` | `DD/MM/YYYY` or a bare day number. Only the day is used, populating `dueDay`. Only used for credit cards. |
 | closing (optional) | `Fechamento`, `Closing day`, `Closing`, `Closing date` | Integer 1–31. Only used for credit cards. |

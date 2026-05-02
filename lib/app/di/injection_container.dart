@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
+import 'package:financo/core/app_info/app_info_service.dart';
+import 'package:financo/core/app_info/app_info_service_impl.dart';
+import 'package:financo/core/app_info/app_version.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
@@ -89,6 +92,12 @@ final GetIt sl = GetIt.instance;
 Future<void> initDependencies() async {
   final prefs = await SharedPreferences.getInstance();
 
+  // Read package metadata once at startup so the rest of the app can
+  // depend on a synchronous AppVersion singleton (used by the profile
+  // footer to show the user which build they're on).
+  final appInfo = AppInfoServiceImpl();
+  final appVersion = await appInfo.getAppVersion();
+
   // Only initialize GoogleSignIn on mobile.
   // On web, Firebase Auth's signInWithPopup handles Google auth directly.
   // Calling GoogleSignIn.initialize() on web conflicts with Firebase's
@@ -104,6 +113,9 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => FirebaseFunctions.instance)
     ..registerLazySingleton(() => prefs)
     ..registerLazySingleton(() => GoogleSignIn.instance)
+    // ─── App Info ───────────────────────────────────────────
+    ..registerLazySingleton<AppInfoService>(() => appInfo)
+    ..registerSingleton<AppVersion>(appVersion)
     // ─── Local Database ─────────────────────────────────────
     ..registerLazySingleton(AppDatabase.new)
     ..registerLazySingleton(() => UsersDao(sl<AppDatabase>()))

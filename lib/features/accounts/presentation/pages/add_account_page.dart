@@ -12,6 +12,7 @@ import 'package:financo/features/accounts/domain/usecases/delete_account_usecase
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
+import 'package:financo/features/accounts/presentation/widgets/bank_picker_field.dart';
 import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
 import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
@@ -257,21 +258,9 @@ class _AddAccountViewState extends State<_AddAccountView> {
                           onChanged: cubit.updateName,
                         ),
                         const SizedBox(height: 12),
-                        FinancoPillToggle<BankType>(
+                        BankPickerField(
                           selected: state.bank,
                           onChanged: cubit.updateBank,
-                          options: const [
-                            FinancoPillToggleOption(
-                              value: BankType.nubank,
-                              label: 'Nubank',
-                              icon: FontAwesomeIcons.buildingColumns,
-                            ),
-                            FinancoPillToggleOption(
-                              value: BankType.others,
-                              label: 'Others',
-                              icon: FontAwesomeIcons.wallet,
-                            ),
-                          ],
                         ),
                         const SizedBox(height: 12),
                         FinancoTextField(

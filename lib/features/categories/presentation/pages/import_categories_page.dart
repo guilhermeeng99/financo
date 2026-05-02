@@ -711,7 +711,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  CategoryIconPicker(
+                  CategoryIconPickerLauncher(
                     selectedIcon: _icon,
                     color: _color,
                     onChanged: (i) => setState(() => _icon = i),

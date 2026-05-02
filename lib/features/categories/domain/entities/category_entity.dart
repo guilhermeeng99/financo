@@ -55,3 +55,21 @@ class CategoryEntity extends Equatable {
     parentId,
   ];
 }
+
+extension CategoryEntityDisplay on CategoryEntity {
+  /// Human-readable path to this category. Returns `name` for root
+  /// categories and `Parent › Child` for subcategories — the project's
+  /// standard breadcrumb format.
+  ///
+  /// [allCategories] is the resolved list (typically
+  /// `CategoriesCubit.state.categoriesOrEmpty`). If the parent isn't in
+  /// the list (orphan), falls back to `name` so the UI never shows a
+  /// dangling separator.
+  String displayPath(Iterable<CategoryEntity> allCategories) {
+    if (parentId == null) return name;
+    for (final c in allCategories) {
+      if (c.id == parentId) return '${c.name} › $name';
+    }
+    return name;
+  }
+}

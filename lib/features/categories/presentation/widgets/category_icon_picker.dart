@@ -1,18 +1,15 @@
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/categories/presentation/widgets/category_icon_picker_sheet.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-const _availableIcons = <int>[
-  59470, 59473, 58332, 58746, 58715, 58288, 59545, 58714, 59494, 58726,
-  58261, 59560, 58818, 58835, 59690, 59502, 58404, 59472, 58286, 58947,
-  58810, 58694, 58168, 58123, 58736, 58889, 58392, 59411, 58682, 59588,
-];
-
-/// Compact 6-column grid for picking a Material icon. The selected tile
-/// fills with the category's color so the user previews the final look
-/// while choosing. Color stays fixed to the auto-assigned palette entry.
-class CategoryIconPicker extends StatelessWidget {
-  const CategoryIconPicker({
+/// Inline tile that previews the currently selected icon and opens
+/// [showCategoryIconPicker] on tap. Replaces the old fixed 30-icon grid
+/// — the catalog is now too large to render inline, and the bottom-sheet
+/// picker also gives us a search field.
+class CategoryIconPickerLauncher extends StatelessWidget {
+  const CategoryIconPickerLauncher({
     required this.selectedIcon,
     required this.color,
     required this.onChanged,
@@ -23,84 +20,61 @@ class CategoryIconPicker extends StatelessWidget {
   final int color;
   final ValueChanged<int> onChanged;
 
-  @override
-  Widget build(BuildContext context) {
-    final tint = Color(color);
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 6,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-      ),
-      itemCount: _availableIcons.length,
-      itemBuilder: (_, i) {
-        final code = _availableIcons[i];
-        final isSelected = code == selectedIcon;
-        return _IconCell(
-          iconCode: code,
-          tint: tint,
-          isSelected: isSelected,
-          onTap: () => onChanged(code),
-        );
-      },
+  Future<void> _open(BuildContext context) async {
+    final picked = await showCategoryIconPicker(
+      context: context,
+      selectedIcon: selectedIcon,
+      color: color,
     );
+    if (picked != null) onChanged(picked);
   }
-}
-
-class _IconCell extends StatelessWidget {
-  const _IconCell({
-    required this.iconCode,
-    required this.tint,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final int iconCode;
-  final Color tint;
-  final bool isSelected;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final tint = Color(color);
     return Material(
-      color: isSelected ? tint : colors.surfaceVariant,
+      color: colors.surfaceVariant,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
-        onTap: onTap,
+        onTap: () => _open(context),
         borderRadius: BorderRadius.circular(14),
-        child: Stack(
-          children: [
-            Center(
-              child: Icon(
-                IconData(iconCode, fontFamily: 'MaterialIcons'),
-                color: isSelected ? Colors.white : colors.onBackgroundLight,
-                size: 20,
-              ),
-            ),
-            if (isSelected)
-              Positioned(
-                top: 6,
-                right: 6,
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: const BoxDecoration(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: tint,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Icon(
+                    IconData(selectedIcon, fontFamily: 'MaterialIcons'),
                     color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: FaIcon(
-                      FontAwesomeIcons.check,
-                      size: 8,
-                      color: tint,
-                    ),
+                    size: 20,
                   ),
                 ),
               ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  t.categories.chooseIcon,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: colors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              FaIcon(
+                FontAwesomeIcons.chevronRight,
+                size: 12,
+                color: colors.onBackgroundLight,
+              ),
+            ],
+          ),
         ),
       ),
     );

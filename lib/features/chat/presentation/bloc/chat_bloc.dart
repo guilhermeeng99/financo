@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
@@ -436,8 +437,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final action = meta['action'] as String?;
 
     if (action == 'create') {
-      final bankStr = (meta['bank'] as String?)?.toLowerCase() ?? 'others';
-      final bank = bankStr == 'nubank' ? BankType.nubank : BankType.others;
+      final bankStr = meta['bank'] as String? ?? '';
+      final bank = BankBrand.resolveAlias(bankStr) ?? BankType.others;
       final type = (meta['type'] as String?) == 'creditCard'
           ? AccountType.creditCard
           : AccountType.checking;

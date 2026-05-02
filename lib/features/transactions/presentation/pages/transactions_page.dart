@@ -203,11 +203,7 @@ class _TransactionsList extends StatelessWidget {
     if (categoryId.isEmpty) return null;
     final category = categoryMap[categoryId];
     if (category == null) return null;
-    if (category.parentId != null) {
-      final parent = categoryMap[category.parentId];
-      if (parent != null) return '${parent.name} › ${category.name}';
-    }
-    return category.name;
+    return category.displayPath(categoryMap.values);
   }
 
   static List<_DayGroup> _groupByDay(List<TransactionEntity> txs) {

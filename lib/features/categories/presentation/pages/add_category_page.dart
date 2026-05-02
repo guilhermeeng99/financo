@@ -327,7 +327,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        CategoryIconPicker(
+                        CategoryIconPickerLauncher(
                           selectedIcon: state.icon,
                           color: state.color,
                           onChanged: cubit.updateIcon,

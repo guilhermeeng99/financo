@@ -112,7 +112,9 @@ class _Amount extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final isCredit = account.type == AccountType.creditCard;
-    final amount = isCredit ? account.availableCredit : account.initialBalance;
+    final amount = isCredit
+        ? account.availableCredit
+        : account.effectiveBalance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -146,7 +148,7 @@ class _CreditUsageBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final limit = account.creditLimit ?? 0;
-    final used = account.initialBalance.clamp(0, limit).toDouble();
+    final used = account.usedCredit;
     final progress = limit == 0 ? 0.0 : (used / limit).clamp(0.0, 1.0);
     // Tints toward warning then expense as the user gets closer to limit.
     final accent = progress < 0.6

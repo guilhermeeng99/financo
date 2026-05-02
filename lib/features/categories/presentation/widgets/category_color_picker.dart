@@ -3,9 +3,10 @@ import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// Single-row chooser for the category accent color. Lets the user override
-/// the auto-assigned palette entry — a small but expected affordance for
-/// any "create category" flow in modern fintech apps.
+/// Wrapping grid of every color in [CategoryColors.palette]. We use Wrap
+/// (instead of a horizontal ListView) so all swatches are visible at once
+/// — with ~38 colors a horizontal scroll would push most of the palette
+/// off-screen.
 class CategoryColorPicker extends StatelessWidget {
   const CategoryColorPicker({
     required this.selected,
@@ -18,22 +19,17 @@ class CategoryColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 44,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        itemCount: CategoryColors.palette.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          final value = CategoryColors.palette[i];
-          return _Swatch(
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final value in CategoryColors.palette)
+          _Swatch(
             color: Color(value),
             isSelected: value == selected,
             onTap: () => onChanged(value),
-          );
-        },
-      ),
+          ),
+      ],
     );
   }
 }

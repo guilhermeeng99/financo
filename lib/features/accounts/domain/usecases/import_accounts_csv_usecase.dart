@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 
@@ -413,9 +414,7 @@ class ImportAccountsCsvUseCase {
   }
 
   BankType _parseBank(String raw) {
-    final normalized = raw.trim().toLowerCase();
-    if (normalized == 'nubank') return BankType.nubank;
-    return BankType.others;
+    return BankBrand.resolveAlias(raw) ?? BankType.others;
   }
 
   // Accepts either Brazilian ("421,95" / "1.234,56") or English-style
