@@ -14,6 +14,11 @@ class LocalBills extends Table {
   DateTimeColumn get paidAt => dateTime().nullable()();
   TextColumn get paidTransactionId => text().nullable()();
   TextColumn get parentBillId => text().nullable()();
+  // Comma-separated transaction ids the user has rejected as a match for
+  // this bill. Stored as a delimited string to keep the schema flat —
+  // we never query into it, only round-trip the whole list.
+  TextColumn get rejectedTransactionIds =>
+      text().withDefault(const Constant(''))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

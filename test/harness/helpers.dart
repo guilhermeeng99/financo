@@ -4,6 +4,7 @@ import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/bills/data/models/bill_model.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/categories/data/models/category_model.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/chat/data/models/chat_message_model.dart';
@@ -154,6 +155,7 @@ void registerBillFallbackValues() {
       updatedAt: DateTime(2026),
     ),
   );
+  registerFallbackValue(BillEditScope.onlyThis);
 }
 
 void registerAuthFallbackValues() {

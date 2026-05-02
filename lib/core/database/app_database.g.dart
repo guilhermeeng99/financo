@@ -2327,6 +2327,18 @@ class $LocalBillsTable extends LocalBills
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _rejectedTransactionIdsMeta =
+      const VerificationMeta('rejectedTransactionIds');
+  @override
+  late final GeneratedColumn<String> rejectedTransactionIds =
+      GeneratedColumn<String>(
+        'rejected_transaction_ids',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(''),
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2364,6 +2376,7 @@ class $LocalBillsTable extends LocalBills
     paidAt,
     paidTransactionId,
     parentBillId,
+    rejectedTransactionIds,
     createdAt,
     updatedAt,
   ];
@@ -2477,6 +2490,15 @@ class $LocalBillsTable extends LocalBills
         ),
       );
     }
+    if (data.containsKey('rejected_transaction_ids')) {
+      context.handle(
+        _rejectedTransactionIdsMeta,
+        rejectedTransactionIds.isAcceptableOrUnknown(
+          data['rejected_transaction_ids']!,
+          _rejectedTransactionIdsMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2554,6 +2576,10 @@ class $LocalBillsTable extends LocalBills
         DriftSqlType.string,
         data['${effectivePrefix}parent_bill_id'],
       ),
+      rejectedTransactionIds: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rejected_transaction_ids'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2585,6 +2611,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
   final DateTime? paidAt;
   final String? paidTransactionId;
   final String? parentBillId;
+  final String rejectedTransactionIds;
   final DateTime createdAt;
   final DateTime updatedAt;
   const LocalBill({
@@ -2601,6 +2628,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     this.paidAt,
     this.paidTransactionId,
     this.parentBillId,
+    required this.rejectedTransactionIds,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -2630,6 +2658,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     if (!nullToAbsent || parentBillId != null) {
       map['parent_bill_id'] = Variable<String>(parentBillId);
     }
+    map['rejected_transaction_ids'] = Variable<String>(rejectedTransactionIds);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -2660,6 +2689,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
       parentBillId: parentBillId == null && nullToAbsent
           ? const Value.absent()
           : Value(parentBillId),
+      rejectedTransactionIds: Value(rejectedTransactionIds),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -2686,6 +2716,9 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
         json['paidTransactionId'],
       ),
       parentBillId: serializer.fromJson<String?>(json['parentBillId']),
+      rejectedTransactionIds: serializer.fromJson<String>(
+        json['rejectedTransactionIds'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2707,6 +2740,9 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
       'paidAt': serializer.toJson<DateTime?>(paidAt),
       'paidTransactionId': serializer.toJson<String?>(paidTransactionId),
       'parentBillId': serializer.toJson<String?>(parentBillId),
+      'rejectedTransactionIds': serializer.toJson<String>(
+        rejectedTransactionIds,
+      ),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2726,6 +2762,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     Value<DateTime?> paidAt = const Value.absent(),
     Value<String?> paidTransactionId = const Value.absent(),
     Value<String?> parentBillId = const Value.absent(),
+    String? rejectedTransactionIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => LocalBill(
@@ -2744,6 +2781,8 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
         ? paidTransactionId.value
         : this.paidTransactionId,
     parentBillId: parentBillId.present ? parentBillId.value : this.parentBillId,
+    rejectedTransactionIds:
+        rejectedTransactionIds ?? this.rejectedTransactionIds,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2772,6 +2811,9 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
       parentBillId: data.parentBillId.present
           ? data.parentBillId.value
           : this.parentBillId,
+      rejectedTransactionIds: data.rejectedTransactionIds.present
+          ? data.rejectedTransactionIds.value
+          : this.rejectedTransactionIds,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2793,6 +2835,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
           ..write('paidAt: $paidAt, ')
           ..write('paidTransactionId: $paidTransactionId, ')
           ..write('parentBillId: $parentBillId, ')
+          ..write('rejectedTransactionIds: $rejectedTransactionIds, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2814,6 +2857,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
     paidAt,
     paidTransactionId,
     parentBillId,
+    rejectedTransactionIds,
     createdAt,
     updatedAt,
   );
@@ -2834,6 +2878,7 @@ class LocalBill extends DataClass implements Insertable<LocalBill> {
           other.paidAt == this.paidAt &&
           other.paidTransactionId == this.paidTransactionId &&
           other.parentBillId == this.parentBillId &&
+          other.rejectedTransactionIds == this.rejectedTransactionIds &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2852,6 +2897,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
   final Value<DateTime?> paidAt;
   final Value<String?> paidTransactionId;
   final Value<String?> parentBillId;
+  final Value<String> rejectedTransactionIds;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2869,6 +2915,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     this.paidAt = const Value.absent(),
     this.paidTransactionId = const Value.absent(),
     this.parentBillId = const Value.absent(),
+    this.rejectedTransactionIds = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2887,6 +2934,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     this.paidAt = const Value.absent(),
     this.paidTransactionId = const Value.absent(),
     this.parentBillId = const Value.absent(),
+    this.rejectedTransactionIds = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2913,6 +2961,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     Expression<DateTime>? paidAt,
     Expression<String>? paidTransactionId,
     Expression<String>? parentBillId,
+    Expression<String>? rejectedTransactionIds,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2931,6 +2980,8 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
       if (paidAt != null) 'paid_at': paidAt,
       if (paidTransactionId != null) 'paid_transaction_id': paidTransactionId,
       if (parentBillId != null) 'parent_bill_id': parentBillId,
+      if (rejectedTransactionIds != null)
+        'rejected_transaction_ids': rejectedTransactionIds,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2951,6 +3002,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     Value<DateTime?>? paidAt,
     Value<String?>? paidTransactionId,
     Value<String?>? parentBillId,
+    Value<String>? rejectedTransactionIds,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2969,6 +3021,8 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
       paidAt: paidAt ?? this.paidAt,
       paidTransactionId: paidTransactionId ?? this.paidTransactionId,
       parentBillId: parentBillId ?? this.parentBillId,
+      rejectedTransactionIds:
+          rejectedTransactionIds ?? this.rejectedTransactionIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -3017,6 +3071,11 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
     if (parentBillId.present) {
       map['parent_bill_id'] = Variable<String>(parentBillId.value);
     }
+    if (rejectedTransactionIds.present) {
+      map['rejected_transaction_ids'] = Variable<String>(
+        rejectedTransactionIds.value,
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -3045,6 +3104,7 @@ class LocalBillsCompanion extends UpdateCompanion<LocalBill> {
           ..write('paidAt: $paidAt, ')
           ..write('paidTransactionId: $paidTransactionId, ')
           ..write('parentBillId: $parentBillId, ')
+          ..write('rejectedTransactionIds: $rejectedTransactionIds, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -4210,6 +4270,7 @@ typedef $$LocalBillsTableCreateCompanionBuilder =
       Value<DateTime?> paidAt,
       Value<String?> paidTransactionId,
       Value<String?> parentBillId,
+      Value<String> rejectedTransactionIds,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -4229,6 +4290,7 @@ typedef $$LocalBillsTableUpdateCompanionBuilder =
       Value<DateTime?> paidAt,
       Value<String?> paidTransactionId,
       Value<String?> parentBillId,
+      Value<String> rejectedTransactionIds,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -4305,6 +4367,11 @@ class $$LocalBillsTableFilterComposer
 
   ColumnFilters<String> get parentBillId => $composableBuilder(
     column: $table.parentBillId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rejectedTransactionIds => $composableBuilder(
+    column: $table.rejectedTransactionIds,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4393,6 +4460,11 @@ class $$LocalBillsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get rejectedTransactionIds => $composableBuilder(
+    column: $table.rejectedTransactionIds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4462,6 +4534,11 @@ class $$LocalBillsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get rejectedTransactionIds => $composableBuilder(
+    column: $table.rejectedTransactionIds,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -4513,6 +4590,7 @@ class $$LocalBillsTableTableManager
                 Value<DateTime?> paidAt = const Value.absent(),
                 Value<String?> paidTransactionId = const Value.absent(),
                 Value<String?> parentBillId = const Value.absent(),
+                Value<String> rejectedTransactionIds = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4530,6 +4608,7 @@ class $$LocalBillsTableTableManager
                 paidAt: paidAt,
                 paidTransactionId: paidTransactionId,
                 parentBillId: parentBillId,
+                rejectedTransactionIds: rejectedTransactionIds,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -4549,6 +4628,7 @@ class $$LocalBillsTableTableManager
                 Value<DateTime?> paidAt = const Value.absent(),
                 Value<String?> paidTransactionId = const Value.absent(),
                 Value<String?> parentBillId = const Value.absent(),
+                Value<String> rejectedTransactionIds = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -4566,6 +4646,7 @@ class $$LocalBillsTableTableManager
                 paidAt: paidAt,
                 paidTransactionId: paidTransactionId,
                 parentBillId: parentBillId,
+                rejectedTransactionIds: rejectedTransactionIds,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Tint applied by the Android system to the monochrome notification
+      small icon (`ic_notification.xml`). Matches the brand primary used
+      across the app (Material color system + launcher background).
+    -->
+    <color name="notification_color">#6366F1</color>
+</resources>

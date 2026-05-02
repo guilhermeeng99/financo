@@ -27,6 +27,7 @@ class BillEntity extends Equatable {
     this.paidAt,
     this.paidTransactionId,
     this.parentBillId,
+    this.rejectedTransactionIds = const [],
   });
 
   final String id;
@@ -42,6 +43,12 @@ class BillEntity extends Equatable {
   final DateTime? paidAt;
   final String? paidTransactionId;
   final String? parentBillId;
+
+  /// Transactions the user has explicitly said are NOT this bill via the
+  /// match-suggestion flow. Used to silence already-rejected pairs on
+  /// every subsequent scan. New monthly occurrences start with `[]`,
+  /// so coincidences in future months prompt again.
+  final List<String> rejectedTransactionIds;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -49,6 +56,12 @@ class BillEntity extends Equatable {
   bool get isPaid => status == BillStatus.paid;
   bool get isPayable => type == BillType.payable;
   bool get isReceivable => type == BillType.receivable;
+
+  /// `true` when this entity is a not-yet-persisted projection (preview of
+  /// a future monthly occurrence). The empty-string id is the project's
+  /// canonical sentinel for "no Firestore document yet" — it's also used
+  /// transiently at creation time before the remote insert returns.
+  bool get isVirtual => id.isEmpty;
 
   bool get isOverdue {
     if (status != BillStatus.pending) return false;
@@ -76,6 +89,7 @@ class BillEntity extends Equatable {
     DateTime? paidAt,
     String? paidTransactionId,
     String? parentBillId,
+    List<String>? rejectedTransactionIds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -93,6 +107,8 @@ class BillEntity extends Equatable {
       paidAt: paidAt ?? this.paidAt,
       paidTransactionId: paidTransactionId ?? this.paidTransactionId,
       parentBillId: parentBillId ?? this.parentBillId,
+      rejectedTransactionIds:
+          rejectedTransactionIds ?? this.rejectedTransactionIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -113,6 +129,7 @@ class BillEntity extends Equatable {
     paidAt,
     paidTransactionId,
     parentBillId,
+    rejectedTransactionIds,
     createdAt,
     updatedAt,
   ];

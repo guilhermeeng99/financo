@@ -1,3 +1,4 @@
+import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/category_icon_catalog.dart';
 import 'package:financo/features/categories/domain/category_icon_option.dart';
@@ -69,9 +70,10 @@ class _CategoryIconPickerSheetState extends State<_CategoryIconPickerSheet> {
             const SizedBox(height: 8),
             _DragHandle(color: colors.onBackgroundLight),
             _Header(label: t.categories.selectIcon),
-            _SearchField(
+            FinancoSearchField(
               controller: _queryController,
               onChanged: (v) => setState(() => _query = v),
+              hintText: t.categories.iconSearchHint,
             ),
             const SizedBox(height: 8),
             Expanded(
@@ -126,63 +128,6 @@ class _Header extends StatelessWidget {
           style: context.textTheme.titleLarge?.copyWith(
             color: context.appColors.onBackground,
             fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: t.categories.iconSearchHint,
-          prefixIcon: SizedBox(
-            width: 44,
-            child: Center(
-              child: FaIcon(
-                FontAwesomeIcons.magnifyingGlass,
-                size: 14,
-                color: colors.onBackgroundLight,
-              ),
-            ),
-          ),
-          suffixIcon: ValueListenableBuilder<TextEditingValue>(
-            valueListenable: controller,
-            builder: (_, value, _) {
-              if (value.text.isEmpty) return const SizedBox.shrink();
-              return IconButton(
-                icon: FaIcon(
-                  FontAwesomeIcons.xmark,
-                  size: 14,
-                  color: colors.onBackgroundLight,
-                ),
-                onPressed: () {
-                  controller.clear();
-                  onChanged('');
-                },
-              );
-            },
-          ),
-          filled: true,
-          fillColor: colors.surfaceVariant,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
           ),
         ),
       ),

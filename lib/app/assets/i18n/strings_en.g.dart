@@ -415,8 +415,8 @@ class TranslationsTransactionsEn {
 	/// en: 'Amount'
 	String get amount => 'Amount';
 
-	/// en: 'Amount (R\$)'
-	String get amountLabel => 'Amount (R\$)';
+	/// en: 'Amount'
+	String get amountLabel => 'Amount';
 
 	/// en: '0.00'
 	String get amountHint => '0.00';
@@ -481,8 +481,8 @@ class TranslationsTransactionsEn {
 	/// en: 'Import transactions from CSV'
 	String get importCsvIntroTitle => 'Import transactions from CSV';
 
-	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.';
+	/// en: 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.';
 
 	/// en: 'Download example'
 	String get importCsvDownloadExample => 'Download example';
@@ -495,6 +495,18 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Couldn't save the example file.'
 	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
+	/// en: 'Importing transactions...'
+	String get importInProgressTitle => 'Importing transactions...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
+
+	/// en: 'Fill in: $fields'
+	String importMissingFields({required Object fields}) => 'Fill in: ${fields}';
 
 	/// en: 'Review import: $count transactions will be created.'
 	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
@@ -522,6 +534,39 @@ class TranslationsTransactionsEn {
 
 	/// en: '$count incomes'
 	String importIncomes({required Object count}) => '${count} incomes';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap a row to edit · trash to remove'
+	String get importPageSubtitle => 'Tap a row to edit · trash to remove';
+
+	/// en: 'Expense ($count)'
+	String importTabExpense({required Object count}) => 'Expense (${count})';
+
+	/// en: 'Income ($count)'
+	String importTabIncome({required Object count}) => 'Income (${count})';
+
+	/// en: 'Transfer ($count)'
+	String importTabTransfer({required Object count}) => 'Transfer (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Edit transaction'
+	String get importEditTitle => 'Edit transaction';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count transactions'
+	String importSubmit({required Object count}) => 'Import ${count} transactions';
+
+	/// en: 'Resolve missing references before importing:'
+	String get importMissingAfterEditPrefix => 'Resolve missing references before importing:';
+
+	/// en: '$count rows skipped'
+	String importSkippedRowsPill({required Object count}) => '${count} rows skipped';
 }
 
 // Path: accounts
@@ -664,6 +709,15 @@ class TranslationsAccountsEn {
 	/// en: 'Linked checking account'
 	String get pickLinkedAccount => 'Linked checking account';
 
+	/// en: 'Pick a bank'
+	String get pickBank => 'Pick a bank';
+
+	/// en: 'Search bank'
+	String get bankSearchHint => 'Search bank';
+
+	/// en: 'No banks match your search.'
+	String get bankSearchNoResults => 'No banks match your search.';
+
 	/// en: 'Create a checking account first.'
 	String get noLinkedCandidates => 'Create a checking account first.';
 
@@ -672,6 +726,72 @@ class TranslationsAccountsEn {
 
 	/// en: 'No accounts yet'
 	String get emptyTitle => 'No accounts yet';
+
+	/// en: 'Import accounts'
+	String get importCsv => 'Import accounts';
+
+	/// en: 'Import accounts from CSV'
+	String get importCsvIntroTitle => 'Import accounts from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap a row to edit · trash to remove'
+	String get importPageSubtitle => 'Tap a row to edit · trash to remove';
+
+	/// en: 'Checking ($count)'
+	String importTabChecking({required Object count}) => 'Checking (${count})';
+
+	/// en: 'Credit card ($count)'
+	String importTabCreditCard({required Object count}) => 'Credit card (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Will be skipped (already exists)'
+	String get importDuplicatesHeader => 'Will be skipped (already exists)';
+
+	/// en: 'Edit account'
+	String get importEditTitle => 'Edit account';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count accounts'
+	String importSubmit({required Object count}) => 'Import ${count} accounts';
+
+	/// en: 'Pick a linked checking account for:'
+	String get importMissingLinkPrefix => 'Pick a linked checking account for:';
+
+	/// en: 'Imported $imported accounts. Skipped $duplicates duplicates.'
+	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.';
+
+	/// en: 'Importing accounts...'
+	String get importInProgressTitle => 'Importing accounts...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
+
+	/// en: 'Fill in: $fields'
+	String importMissingFields({required Object fields}) => 'Fill in: ${fields}';
 }
 
 // Path: categories
@@ -739,6 +859,15 @@ class TranslationsCategoriesEn {
 	/// en: 'Select color'
 	String get selectColor => 'Select color';
 
+	/// en: 'Choose icon'
+	String get chooseIcon => 'Choose icon';
+
+	/// en: 'Search (e.g. car, carro)'
+	String get iconSearchHint => 'Search (e.g. car, carro)';
+
+	/// en: 'No icons match your search.'
+	String get iconSearchNoResults => 'No icons match your search.';
+
 	/// en: 'Parent category'
 	String get parentCategory => 'Parent category';
 
@@ -754,8 +883,8 @@ class TranslationsCategoriesEn {
 	/// en: 'Import categories from CSV'
 	String get importCsvIntroTitle => 'Import categories from CSV';
 
-	/// en: 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.';
+	/// en: 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.';
 
 	/// en: 'Download example'
 	String get importCsvDownloadExample => 'Download example';
@@ -769,6 +898,9 @@ class TranslationsCategoriesEn {
 	/// en: 'Couldn't save the example file.'
 	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
 
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
 	/// en: 'Imported $count categories.'
 	String importSuccess({required Object count}) => 'Imported ${count} categories.';
 
@@ -780,6 +912,45 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
 	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
+
+	/// en: 'Review import'
+	String get importPageTitle => 'Review import';
+
+	/// en: 'Tap an item to edit · swipe trash to remove'
+	String get importPageSubtitle => 'Tap an item to edit · swipe trash to remove';
+
+	/// en: 'Expense ($count)'
+	String importTabExpense({required Object count}) => 'Expense (${count})';
+
+	/// en: 'Income ($count)'
+	String importTabIncome({required Object count}) => 'Income (${count})';
+
+	/// en: 'Nothing to import in this tab.'
+	String get importEmptyTab => 'Nothing to import in this tab.';
+
+	/// en: 'Will be skipped (already exists)'
+	String get importDuplicatesHeader => 'Will be skipped (already exists)';
+
+	/// en: 'Edit category'
+	String get importEditTitle => 'Edit category';
+
+	/// en: 'Remove $name and its $count subcategories?'
+	String importDeleteRoot({required Object name, required Object count}) => 'Remove ${name} and its ${count} subcategories?';
+
+	/// en: 'Remove'
+	String get importDeleteRootConfirm => 'Remove';
+
+	/// en: 'Nothing left to import.'
+	String get importNothingLeft => 'Nothing left to import.';
+
+	/// en: 'Import $count items'
+	String importSubmit({required Object count}) => 'Import ${count} items';
+
+	/// en: 'Importing categories...'
+	String get importInProgressTitle => 'Importing categories...';
+
+	/// en: '$processed of $total'
+	String importProgressCounter({required Object processed, required Object total}) => '${processed} of ${total}';
 
 	/// en: 'Type'
 	String get formSectionType => 'Type';
@@ -947,8 +1118,8 @@ class TranslationsBillsEn {
 	/// en: 'Amount'
 	String get amount => 'Amount';
 
-	/// en: 'Amount (R\$)'
-	String get amountLabel => 'Amount (R\$)';
+	/// en: 'Amount'
+	String get amountLabel => 'Amount';
 
 	/// en: 'Due date'
 	String get dueDate => 'Due date';
@@ -1179,6 +1350,9 @@ class TranslationsProfileEn {
 
 	/// en: 'Appearance'
 	String get appearance => 'Appearance';
+
+	/// en: 'Version'
+	String get version => 'Version';
 }
 
 // Path: startup
@@ -1221,6 +1395,15 @@ class TranslationsChatActionEn {
 
 	/// en: 'Confirm income'
 	String get transactionIncome => 'Confirm income';
+
+	/// en: 'Confirm transfer'
+	String get transfer => 'Confirm transfer';
+
+	/// en: 'From'
+	String get fieldFromAccount => 'From';
+
+	/// en: 'To'
+	String get fieldToAccount => 'To';
 
 	/// en: 'Create account'
 	String get accountCreate => 'Create account';
@@ -1299,6 +1482,12 @@ class TranslationsChatActionEn {
 
 	/// en: 'Cancel'
 	String get cancel => 'Cancel';
+
+	/// en: 'Confirmed'
+	String get statusConfirmed => 'Confirmed';
+
+	/// en: 'Cancelled'
+	String get statusCancelled => 'Cancelled';
 }
 
 // Path: chat.audio
@@ -1483,7 +1672,7 @@ extension on Translations {
 			'transactions.income' => 'Income',
 			'transactions.expense' => 'Expense',
 			'transactions.amount' => 'Amount',
-			'transactions.amountLabel' => 'Amount (R\$)',
+			'transactions.amountLabel' => 'Amount',
 			'transactions.amountHint' => '0.00',
 			'transactions.description' => 'Description',
 			'transactions.descriptionHint' => 'e.g. Grocery shopping',
@@ -1505,11 +1694,15 @@ extension on Translations {
 			'transactions.deleted' => 'Transaction deleted.',
 			'transactions.importCsv' => 'Import transactions',
 			'transactions.importCsvIntroTitle' => 'Import transactions from CSV',
-			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência). Download the example to see how it works.',
+			'transactions.importCsvIntroBody' => 'Your file must follow the expected format (columns Tipo, Data, Valor, Descrição, Categoria, Conta, Conta transferência — where Tipo is Despesa/Receita/Transferência/Pagamento). Download the example to see how it works.',
 			'transactions.importCsvDownloadExample' => 'Download example',
 			'transactions.importCsvSelectFile' => 'Select file',
 			'transactions.importCsvExampleDownloaded' => 'Example saved.',
 			'transactions.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'transactions.importCsvErrorTitle' => 'Couldn\'t import the CSV',
+			'transactions.importInProgressTitle' => 'Importing transactions...',
+			'transactions.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
+			'transactions.importMissingFields' => ({required Object fields}) => 'Fill in: ${fields}',
 			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
 			'transactions.importMissingCategories' => 'Missing categories:',
 			'transactions.importMissingAccounts' => 'Missing accounts:',
@@ -1519,6 +1712,17 @@ extension on Translations {
 			'transactions.importTransfers' => ({required Object count}) => '${count} transfers',
 			'transactions.importExpenses' => ({required Object count}) => '${count} expenses',
 			'transactions.importIncomes' => ({required Object count}) => '${count} incomes',
+			'transactions.importPageTitle' => 'Review import',
+			'transactions.importPageSubtitle' => 'Tap a row to edit · trash to remove',
+			'transactions.importTabExpense' => ({required Object count}) => 'Expense (${count})',
+			'transactions.importTabIncome' => ({required Object count}) => 'Income (${count})',
+			'transactions.importTabTransfer' => ({required Object count}) => 'Transfer (${count})',
+			'transactions.importEmptyTab' => 'Nothing to import in this tab.',
+			'transactions.importEditTitle' => 'Edit transaction',
+			'transactions.importNothingLeft' => 'Nothing left to import.',
+			'transactions.importSubmit' => ({required Object count}) => 'Import ${count} transactions',
+			'transactions.importMissingAfterEditPrefix' => 'Resolve missing references before importing:',
+			'transactions.importSkippedRowsPill' => ({required Object count}) => '${count} rows skipped',
 			'accounts.title' => 'Accounts',
 			'accounts.addAccount' => 'New Account',
 			'accounts.editAccount' => 'Edit Account',
@@ -1563,9 +1767,34 @@ extension on Translations {
 			'accounts.pickClosingDay' => 'Closing day',
 			'accounts.pickDueDay' => 'Due day',
 			'accounts.pickLinkedAccount' => 'Linked checking account',
+			'accounts.pickBank' => 'Pick a bank',
+			'accounts.bankSearchHint' => 'Search bank',
+			'accounts.bankSearchNoResults' => 'No banks match your search.',
 			'accounts.noLinkedCandidates' => 'Create a checking account first.',
 			'accounts.addFirst' => 'Add your first account',
 			'accounts.emptyTitle' => 'No accounts yet',
+			'accounts.importCsv' => 'Import accounts',
+			'accounts.importCsvIntroTitle' => 'Import accounts from CSV',
+			'accounts.importCsvIntroBody' => 'Your file must follow the expected format (columns Nome, Saldo inicial, Tipo, Banco, Limite, Próximo Vencimento, Fechamento — where Tipo is Conta Corrente or Cartão de Crédito). Download the example to see how it works.',
+			'accounts.importCsvDownloadExample' => 'Download example',
+			'accounts.importCsvSelectFile' => 'Select file',
+			'accounts.importCsvExampleDownloaded' => 'Example saved.',
+			'accounts.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'accounts.importCsvErrorTitle' => 'Couldn\'t import the CSV',
+			'accounts.importPageTitle' => 'Review import',
+			'accounts.importPageSubtitle' => 'Tap a row to edit · trash to remove',
+			'accounts.importTabChecking' => ({required Object count}) => 'Checking (${count})',
+			'accounts.importTabCreditCard' => ({required Object count}) => 'Credit card (${count})',
+			'accounts.importEmptyTab' => 'Nothing to import in this tab.',
+			'accounts.importDuplicatesHeader' => 'Will be skipped (already exists)',
+			'accounts.importEditTitle' => 'Edit account',
+			'accounts.importNothingLeft' => 'Nothing left to import.',
+			'accounts.importSubmit' => ({required Object count}) => 'Import ${count} accounts',
+			'accounts.importMissingLinkPrefix' => 'Pick a linked checking account for:',
+			'accounts.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} accounts. Skipped ${duplicates} duplicates.',
+			'accounts.importInProgressTitle' => 'Importing accounts...',
+			'accounts.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
+			'accounts.importMissingFields' => ({required Object fields}) => 'Fill in: ${fields}',
 			'categories.title' => 'Categories',
 			'categories.addCategory' => 'Add Category',
 			'categories.editCategory' => 'Edit Category',
@@ -1585,20 +1814,37 @@ extension on Translations {
 			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
+			'categories.chooseIcon' => 'Choose icon',
+			'categories.iconSearchHint' => 'Search (e.g. car, carro)',
+			'categories.iconSearchNoResults' => 'No icons match your search.',
 			'categories.parentCategory' => 'Parent category',
 			'categories.noParent' => 'No parent',
 			'categories.subcategoryLabel' => 'Subcategory',
 			'categories.importCsv' => 'Import categories',
 			'categories.importCsvIntroTitle' => 'Import categories from CSV',
-			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Category, Subcategory, Type — where Type is Income or Expense). Download the example to see how it works.',
+			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.',
 			'categories.importCsvDownloadExample' => 'Download example',
 			'categories.importCsvSelectFile' => 'Select file',
 			'categories.importCsvExampleDownloaded' => 'Example saved.',
 			'categories.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'categories.importCsvErrorTitle' => 'Couldn\'t import the CSV',
 			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
 			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
 			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
 			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
+			'categories.importPageTitle' => 'Review import',
+			'categories.importPageSubtitle' => 'Tap an item to edit · swipe trash to remove',
+			'categories.importTabExpense' => ({required Object count}) => 'Expense (${count})',
+			'categories.importTabIncome' => ({required Object count}) => 'Income (${count})',
+			'categories.importEmptyTab' => 'Nothing to import in this tab.',
+			'categories.importDuplicatesHeader' => 'Will be skipped (already exists)',
+			'categories.importEditTitle' => 'Edit category',
+			'categories.importDeleteRoot' => ({required Object name, required Object count}) => 'Remove ${name} and its ${count} subcategories?',
+			'categories.importDeleteRootConfirm' => 'Remove',
+			'categories.importNothingLeft' => 'Nothing left to import.',
+			'categories.importSubmit' => ({required Object count}) => 'Import ${count} items',
+			'categories.importInProgressTitle' => 'Importing categories...',
+			'categories.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
 			'categories.formSectionType' => 'Type',
 			'categories.formSectionDetails' => 'Details',
 			'categories.formSectionAppearance' => 'Appearance',
@@ -1626,6 +1872,9 @@ extension on Translations {
 			'chat.suggestion4' => 'Create a category called Leisure',
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
+			'chat.action.transfer' => 'Confirm transfer',
+			'chat.action.fieldFromAccount' => 'From',
+			'chat.action.fieldToAccount' => 'To',
 			'chat.action.accountCreate' => 'Create account',
 			'chat.action.accountDelete' => 'Delete account',
 			'chat.action.categoryCreate' => 'Create category',
@@ -1652,6 +1901,8 @@ extension on Translations {
 			'chat.action.fieldNotes' => 'Notes',
 			'chat.action.confirm' => 'Confirm',
 			'chat.action.cancel' => 'Cancel',
+			'chat.action.statusConfirmed' => 'Confirmed',
+			'chat.action.statusCancelled' => 'Cancelled',
 			'chat.audio.start' => 'Record voice message',
 			'chat.audio.stop' => 'Stop recording',
 			'chat.audio.cancel' => 'Cancel',
@@ -1685,7 +1936,7 @@ extension on Translations {
 			'bills.description' => 'Description',
 			'bills.descriptionHint' => 'e.g. Electricity',
 			'bills.amount' => 'Amount',
-			'bills.amountLabel' => 'Amount (R\$)',
+			'bills.amountLabel' => 'Amount',
 			'bills.dueDate' => 'Due date',
 			'bills.recurrence' => 'Recurrence',
 			'bills.oneShot' => 'One-time',
@@ -1762,6 +2013,7 @@ extension on Translations {
 			'profile.sectionAccount' => 'Account',
 			'profile.sectionDangerZone' => 'Danger zone',
 			'profile.appearance' => 'Appearance',
+			'profile.version' => 'Version',
 			'startup.tagline' => 'Your finances, in flow.',
 			'startup.stepCheckingAuth' => 'Checking your account',
 			'startup.stepSyncingData' => 'Syncing your data',

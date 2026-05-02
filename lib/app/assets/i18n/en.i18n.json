@@ -104,6 +104,8 @@
     "empty": "No transactions. Add your first transaction to get started.",
     "addTransaction": "New Transaction",
     "editTransaction": "Edit Transaction",
+    "confirmPaymentTitle": "Confirm payment",
+    "confirmReceiptTitle": "Confirm receipt",
     "transactionDetails": "Transaction Details",
     "transaction": "Transaction",
     "transactionNotFound": "Transaction not found",
@@ -292,6 +294,8 @@
     "formSectionDetails": "Details",
     "formSectionAppearance": "Appearance",
     "pickParent": "Parent category",
+    "searchHint": "Search categories",
+    "searchNoResults": "No categories match your search.",
     "noParentChosen": "None",
     "addFirst": "Add your first category",
     "emptyTitle": "No categories yet"
@@ -447,7 +451,31 @@
       "title": "You have $count bill(s) to pay",
       "bodyDueToday": "$description ($amount) is due today",
       "bodyOverdue": "$description ($amount) is overdue"
-    }
+    },
+    "match": {
+      "bannerTitle": "$count possible payment(s) detected",
+      "bannerSubtitle": "Tap to confirm if any existing transaction settles a pending bill",
+      "sheetTitle": "Confirm payments",
+      "sheetIntro": "We found transactions that could be paying your pending bills. Confirm one by one.",
+      "candidateQuestion": "Was this transaction this bill?",
+      "yesItWas": "Yes",
+      "notThisOne": "No",
+      "matchAccepted": "Bill marked as settled",
+      "matchRejected": "Got it — we'll stop suggesting this one",
+      "billLabel": "Bill",
+      "transactionLabel": "Transaction",
+      "fieldDescription": "Description",
+      "fieldCategory": "Category",
+      "fieldAmount": "Amount",
+      "fieldDate": "Date",
+      "fieldEmpty": "—"
+    },
+    "virtualBlocked": "Pague a ocorrência atual primeiro",
+    "preview": "Preview",
+    "editScopeTitle": "Aplicar a quais ocorrências?",
+    "editScopeDescription": "Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).",
+    "editScopeOnlyThis": "Apenas esta",
+    "editScopeAlsoSubsequents": "Esta e as subsequentes"
   },
   "profile": {
     "title": "Profile",

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Wraps Firebase Cloud Messaging + flutter_local_notifications so the rest
@@ -34,6 +35,16 @@ class NotificationService {
   static const _channelDescription =
       'Alerts when a bill is due or overdue.';
 
+  /// Drawable resource name (no `@drawable/` prefix) for the small icon
+  /// shown in the status bar. Must match `ic_notification.xml` and the
+  /// `default_notification_icon` meta-data in AndroidManifest so cold
+  /// FCM messages and foreground local notifications look identical.
+  static const _smallIcon = 'ic_notification';
+
+  /// Tint applied to `_smallIcon`. Matches the launcher background and
+  /// the `notification_color` resource.
+  static const Color _accent = Color(0xFF6366F1);
+
   bool _initialized = false;
   String? _currentToken;
 
@@ -47,8 +58,10 @@ class NotificationService {
     await _messaging.requestPermission();
 
     // Local notifications init (used to display foreground messages on
-    // Android, and as the channel registration target).
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // Android, and as the channel registration target). The default
+    // small icon is the monochrome silhouette — using the colored
+    // launcher icon would render as the system bell on Android 5+.
+    const androidInit = AndroidInitializationSettings(_smallIcon);
     const iosInit = DarwinInitializationSettings();
     await _local.initialize(
       settings: const InitializationSettings(
@@ -152,6 +165,13 @@ class NotificationService {
           channelDescription: _channelDescription,
           importance: Importance.high,
           priority: Priority.high,
+          // Pin the small-icon + tint here too — without this Android
+          // would otherwise grab whatever the AppCompat default is, and
+          // foreground notifications would diverge visually from the
+          // background ones delivered by FCM.
+          icon: _smallIcon,
+          color: _accent,
+          colorized: true,
         ),
         iOS: DarwinNotificationDetails(),
       ),

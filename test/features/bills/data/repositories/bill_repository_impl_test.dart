@@ -176,4 +176,271 @@ void main() {
       },
     );
   });
+
+  group('linkBillToExistingTransaction', () {
+    test(
+      'marks the bill paid against the existing tx without creating one',
+      () async {
+        final bill = BillFactory.pending(amount: 200);
+        when(() => dao.getBillById('bill-1')).thenAnswer((_) async => bill);
+
+        final existingTx = TransactionFactory.expense(
+          id: 'tx-existing',
+          amount: 200,
+        );
+        when(() => transactionRepo.getTransaction('tx-existing')).thenAnswer(
+          (_) async => Right<Failure, TransactionEntity>(existingTx),
+        );
+
+        when(() => remote.updateBill(any())).thenAnswer(
+          (invocation) async =>
+              invocation.positionalArguments.first as BillModel,
+        );
+
+        final result = await repository.linkBillToExistingTransaction(
+          billId: 'bill-1',
+          transactionId: 'tx-existing',
+        );
+
+        expect(result.isRight(), isTrue);
+        final payment = result.getOrElse(() => throw StateError('expected'));
+        expect(payment.transaction.id, 'tx-existing');
+        expect(payment.paidBill.status, BillStatus.paid);
+        expect(payment.paidBill.paidTransactionId, 'tx-existing');
+        verifyNever(() => transactionRepo.createTransaction(any()));
+      },
+    );
+
+    test('rejects when the bill is already paid', () async {
+      final paidBill = BillFactory.paid(id: 'bill-1');
+      when(() => dao.getBillById('bill-1')).thenAnswer((_) async => paidBill);
+
+      final result = await repository.linkBillToExistingTransaction(
+        billId: 'bill-1',
+        transactionId: 'tx-anything',
+      );
+
+      expect(result.isLeft(), isTrue);
+      expect(
+        result.swap().getOrElse(() => throw StateError('x')),
+        isA<ValidationFailure>(),
+      );
+      verifyNever(() => transactionRepo.getTransaction(any()));
+    });
+
+    test('monthly bill linked to tx still creates next occurrence', () async {
+      final monthly = BillFactory.monthly(dueDate: DateTime(2026, 1, 31));
+      when(() => dao.getBillById('bill-monthly'))
+          .thenAnswer((_) async => monthly);
+
+      final existingTx = TransactionFactory.expense(
+        id: 'tx-existing',
+        amount: monthly.amount,
+      );
+      when(() => transactionRepo.getTransaction('tx-existing')).thenAnswer(
+        (_) async => Right<Failure, TransactionEntity>(existingTx),
+      );
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+      when(() => remote.createBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      final result = await repository.linkBillToExistingTransaction(
+        billId: 'bill-monthly',
+        transactionId: 'tx-existing',
+      );
+
+      final payment = result.getOrElse(() => throw StateError('expected'));
+      expect(payment.nextOccurrence?.dueDate, DateTime(2026, 2, 28));
+      expect(payment.nextOccurrence?.parentBillId, 'bill-monthly');
+    });
+  });
+
+  group('updateBillAndSubsequents', () {
+    test('updates only the source when chain has no descendants', () async {
+      final lone = BillFactory.monthly(
+        id: 'bill-lone',
+        dueDate: DateTime(2026, 5),
+      );
+      when(() => dao.getBills(userId: any(named: 'userId')))
+          .thenAnswer((_) async => [lone]);
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      final edited = lone.copyWith(amount: 2500);
+      final result = await repository.updateBillAndSubsequents(edited);
+
+      expect(result.isRight(), isTrue);
+      // Single update — no subsequents to propagate to.
+      verify(() => remote.updateBill(any())).called(1);
+    });
+
+    test('propagates non-temporal fields + day-of-month to subsequents',
+        () async {
+      // Chain: mai (source) → jun → jul. User edits mai's amount + day.
+      final mai = BillFactory.monthly(
+        id: 'bill-mai',
+        amount: 2000,
+        dueDate: DateTime(2026, 5),
+      );
+      final jun = BillFactory.monthly(
+        id: 'bill-jun',
+        amount: 2000,
+        dueDate: DateTime(2026, 6),
+      ).copyWith(parentBillId: 'bill-mai');
+      final jul = BillFactory.monthly(
+        id: 'bill-jul',
+        amount: 2000,
+        dueDate: DateTime(2026, 7),
+      ).copyWith(parentBillId: 'bill-jun');
+
+      when(() => dao.getBills(userId: any(named: 'userId')))
+          .thenAnswer((_) async => [mai, jun, jul]);
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      // Edit: amount 2000 → 2500, dueDate from day 1 → day 5.
+      final edited = mai.copyWith(
+        amount: 2500,
+        dueDate: DateTime(2026, 5, 5),
+      );
+      final result = await repository.updateBillAndSubsequents(edited);
+
+      expect(result.isRight(), isTrue);
+      // Captured updates: source + jun + jul = 3 calls.
+      final captured = verify(
+        () => remote.updateBill(captureAny()),
+      ).captured.cast<BillModel>();
+      expect(captured, hasLength(3));
+
+      final byId = {for (final m in captured) m.id: m};
+      expect(byId['bill-mai']!.amount, 2500);
+      expect(byId['bill-mai']!.dueDate, DateTime(2026, 5, 5));
+      expect(byId['bill-jun']!.amount, 2500);
+      expect(byId['bill-jun']!.dueDate, DateTime(2026, 6, 5));
+      expect(byId['bill-jul']!.amount, 2500);
+      expect(byId['bill-jul']!.dueDate, DateTime(2026, 7, 5));
+    });
+
+    test('clamps day-of-month for descendants whose month is shorter',
+        () async {
+      // jan (source, day 31) → feb (April-like with 30 days actually, but
+      // we use Feb on purpose: 28 days in 2026 → must clamp 31 → 28).
+      final jan = BillFactory.monthly(
+        id: 'bill-jan',
+        dueDate: DateTime(2026, 1, 31),
+      );
+      final feb = BillFactory.monthly(
+        id: 'bill-feb',
+        dueDate: DateTime(2026, 2, 28),
+      ).copyWith(parentBillId: 'bill-jan');
+
+      when(() => dao.getBills(userId: any(named: 'userId')))
+          .thenAnswer((_) async => [jan, feb]);
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      // Source stays on day 31 — day 31 must clamp to Feb's last day (28).
+      final result = await repository.updateBillAndSubsequents(
+        jan.copyWith(amount: 2500),
+      );
+      expect(result.isRight(), isTrue);
+
+      final captured = verify(
+        () => remote.updateBill(captureAny()),
+      ).captured.cast<BillModel>();
+      final byId = {for (final m in captured) m.id: m};
+
+      expect(byId['bill-jan']!.dueDate, DateTime(2026, 1, 31));
+      // Feb 31 → clamped to Feb 28 (2026 is not a leap year).
+      expect(byId['bill-feb']!.dueDate, DateTime(2026, 2, 28));
+    });
+
+    test('does not mutate paid descendants', () async {
+      final mai = BillFactory.monthly(
+        id: 'bill-mai',
+        amount: 2000,
+        dueDate: DateTime(2026, 5),
+      );
+      final junPaid = BillFactory.paid(
+        id: 'bill-jun',
+        recurrence: BillRecurrence.monthly,
+        dueDate: DateTime(2026, 6),
+      ).copyWith(parentBillId: 'bill-mai');
+      final julPending = BillFactory.monthly(
+        id: 'bill-jul',
+        amount: 2000,
+        dueDate: DateTime(2026, 7),
+      ).copyWith(parentBillId: 'bill-jun');
+
+      when(() => dao.getBills(userId: any(named: 'userId')))
+          .thenAnswer((_) async => [mai, junPaid, julPending]);
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      final edited = mai.copyWith(amount: 2500);
+      final result = await repository.updateBillAndSubsequents(edited);
+      expect(result.isRight(), isTrue);
+
+      final captured = verify(() => remote.updateBill(captureAny())).captured
+          .cast<BillModel>();
+      final byId = {for (final m in captured) m.id: m};
+
+      // mai (source) and jul (descendant of paid jun) updated.
+      expect(byId.keys, containsAll(['bill-mai', 'bill-jul']));
+      // jun is paid → walked through but never written back.
+      expect(byId.containsKey('bill-jun'), isFalse);
+      expect(byId['bill-jul']!.amount, 2500);
+    });
+  });
+
+  group('rejectBillTransactionMatch', () {
+    test('appends the transaction id to rejectedTransactionIds', () async {
+      final bill = BillFactory.pending();
+      when(() => dao.getBillById('bill-1')).thenAnswer((_) async => bill);
+      when(() => remote.updateBill(any())).thenAnswer(
+        (invocation) async =>
+            invocation.positionalArguments.first as BillModel,
+      );
+
+      final result = await repository.rejectBillTransactionMatch(
+        billId: 'bill-1',
+        transactionId: 'tx-not-this',
+      );
+
+      expect(result.isRight(), isTrue);
+      final updated = result.getOrElse(() => throw StateError('expected'));
+      expect(updated.rejectedTransactionIds, contains('tx-not-this'));
+    });
+
+    test('is idempotent — rejecting the same tx twice keeps a single id',
+        () async {
+      final alreadyRejected = BillFactory.pending().copyWith(
+        rejectedTransactionIds: const ['tx-not-this'],
+      );
+      when(() => dao.getBillById('bill-1'))
+          .thenAnswer((_) async => alreadyRejected);
+
+      final result = await repository.rejectBillTransactionMatch(
+        billId: 'bill-1',
+        transactionId: 'tx-not-this',
+      );
+
+      expect(result.isRight(), isTrue);
+      // No remote write needed when the id is already rejected.
+      verifyNever(() => remote.updateBill(any()));
+    });
+  });
 }

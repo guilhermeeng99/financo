@@ -64,6 +64,7 @@ class BillsDao extends DatabaseAccessor<AppDatabase> with _$BillsDaoMixin {
     paidAt: Value(e.paidAt),
     paidTransactionId: Value(e.paidTransactionId),
     parentBillId: Value(e.parentBillId),
+    rejectedTransactionIds: Value(e.rejectedTransactionIds.join(',')),
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
   );
@@ -82,6 +83,9 @@ class BillsDao extends DatabaseAccessor<AppDatabase> with _$BillsDaoMixin {
     paidAt: row.paidAt,
     paidTransactionId: row.paidTransactionId,
     parentBillId: row.parentBillId,
+    rejectedTransactionIds: row.rejectedTransactionIds.isEmpty
+        ? const []
+        : row.rejectedTransactionIds.split(','),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

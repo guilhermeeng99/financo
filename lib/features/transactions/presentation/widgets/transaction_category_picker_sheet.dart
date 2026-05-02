@@ -1,7 +1,9 @@
+import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
+import 'package:financo/features/categories/presentation/utils/category_query_filter.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +29,7 @@ Future<String?> showTransactionCategoryPicker({
   );
 }
 
-class _CategoryPickerSheet extends StatelessWidget {
+class _CategoryPickerSheet extends StatefulWidget {
   const _CategoryPickerSheet({
     required this.transactionType,
     required this.selectedId,
@@ -37,19 +39,35 @@ class _CategoryPickerSheet extends StatelessWidget {
   final String? selectedId;
 
   @override
+  State<_CategoryPickerSheet> createState() => _CategoryPickerSheetState();
+}
+
+class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final wantedType = transactionType == TransactionType.income
+    final wantedType = widget.transactionType == TransactionType.income
         ? CategoryType.income
         : CategoryType.expense;
-    final categories = organizeCategoriesForDisplay(
-      context
-          .watch<CategoriesCubit>()
-          .state
-          .categoriesOrEmpty
-          .where((c) => c.type == wantedType)
-          .toList(),
-    );
+    final allOfType = context
+        .watch<CategoriesCubit>()
+        .state
+        .categoriesOrEmpty
+        .where((c) => c.type == wantedType)
+        .toList();
+    final filtered = filterCategoriesByQuery(all: allOfType, query: _query);
+    final categories = organizeCategoriesForDisplay(filtered);
+    final hasNoCategoriesAtAll = allOfType.isEmpty;
+    final hasNoSearchResults = !hasNoCategoriesAtAll && categories.isEmpty;
 
     return DraggableScrollableSheet(
       minChildSize: 0.3,
@@ -84,27 +102,37 @@ class _CategoryPickerSheet extends StatelessWidget {
                 ),
               ),
             ),
+            if (!hasNoCategoriesAtAll)
+              FinancoSearchField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _query = value),
+                hintText: t.categories.searchHint,
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              ),
             Expanded(
-              child: categories.isEmpty
+              child: hasNoCategoriesAtAll
                   ? _Empty(
-                      message: transactionType == TransactionType.income
+                      message: widget.transactionType == TransactionType.income
                           ? t.bills.noIncomeCategory
                           : t.bills.noExpenseCategory,
                     )
-                  : ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 4),
-                      itemBuilder: (_, i) {
-                        final c = categories[i];
-                        return _CategoryRow(
-                          category: c,
-                          isSelected: c.id == selectedId,
-                          onTap: () => Navigator.pop(context, c.id),
-                        );
-                      },
-                    ),
+                  : hasNoSearchResults
+                      ? _Empty(message: t.categories.searchNoResults)
+                      : ListView.separated(
+                          controller: scrollController,
+                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+                          itemCount: categories.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 4),
+                          itemBuilder: (_, i) {
+                            final c = categories[i];
+                            return _CategoryRow(
+                              category: c,
+                              isSelected: c.id == widget.selectedId,
+                              onTap: () => Navigator.pop(context, c.id),
+                            );
+                          },
+                        ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/app/widgets/nav_bills_badge.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/date_helpers.dart';
@@ -163,6 +164,7 @@ class FinancoBottomBar extends StatelessWidget {
               label: t.nav.bills,
               isActive: currentIndex == 1,
               onTap: () => onTap(1),
+              iconWrapper: (icon) => NavBillsBadge(child: icon),
             ),
             _NavItem(
               icon: FontAwesomeIcons.wandMagicSparkles,
@@ -196,6 +198,7 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
+    this.iconWrapper,
   });
 
   final FaIconData icon;
@@ -203,10 +206,17 @@ class _NavItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
+  /// Optional decorator applied to the rendered icon — used to overlay
+  /// adornments like a count badge without coupling this widget to the
+  /// specific feature that needs them.
+  final Widget Function(Widget icon)? iconWrapper;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final foreground = isActive ? colors.primary : colors.onBackgroundLight;
+    final iconWidget = FaIcon(icon, size: 16, color: foreground);
+    final wrappedIcon = iconWrapper?.call(iconWidget) ?? iconWidget;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -228,7 +238,7 @@ class _NavItem extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FaIcon(icon, size: 16, color: foreground),
+              wrappedIcon,
               ClipRect(
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 240),

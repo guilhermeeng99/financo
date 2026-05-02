@@ -53,6 +53,14 @@ const fetchUserTokens = async (userId: string): Promise<string[]> => {
   return snap.docs.map((d) => String(d.data().token ?? d.id)).filter(Boolean);
 };
 
+// BR currency formatter — yields strings like `R$ 2.000,00` instead of
+// the old `R$ 2000.00` produced by `toFixed`. The notification body is
+// user-facing in pt-BR, so locale-correct number formatting matters.
+const brCurrency = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
+
 const buildMessage = (
   bills: PendingBill[],
 ): { title: string; body: string } => {
@@ -62,12 +70,15 @@ const buildMessage = (
   if (bills.length === 1) {
     const bill = bills[0];
     const isOverdue = bill.dueDate < today;
-    const amount = `R$ ${bill.amount.toFixed(2)}`;
+    const amount = brCurrency.format(bill.amount);
+    // Description can be empty (now optional in the bill spec) — fall
+    // back to a generic noun so the body stays readable.
+    const desc = bill.description.trim() || 'Sua conta';
     return {
       title: isOverdue ? 'Conta atrasada' : 'Conta vence hoje',
       body: isOverdue
-        ? `${bill.description} (${amount}) está atrasada.`
-        : `${bill.description} (${amount}) vence hoje.`,
+        ? `${desc} (${amount}) está atrasada.`
+        : `${desc} (${amount}) vence hoje.`,
     };
   }
 
@@ -151,7 +162,15 @@ export const notifyBillsDue = onSchedule(
             type: 'bills_due',
           },
           android: {
-            notification: { channelId: 'bills_due', priority: 'high' },
+            notification: {
+              channelId: 'bills_due',
+              priority: 'high',
+              // Mirror the manifest default-icon/color meta-data so this
+              // payload renders identically even if the device's FCM
+              // SDK ignores those defaults for any reason.
+              icon: 'ic_notification',
+              color: '#6366F1',
+            },
           },
           apns: {
             payload: {

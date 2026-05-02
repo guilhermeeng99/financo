@@ -18,6 +18,7 @@ class BillModel extends BillEntity {
     super.paidAt,
     super.paidTransactionId,
     super.parentBillId,
+    super.rejectedTransactionIds,
   });
 
   factory BillModel.fromFirestore(DocumentSnapshot doc) {
@@ -33,13 +34,16 @@ class BillModel extends BillEntity {
   }) {
     // Legacy bills stored before BillType existed default to payable.
     final rawType = data['type'] as String?;
+    final rawRejected = data['rejectedTransactionIds'] as List<dynamic>?;
     return BillModel(
       id: id,
       userId: data['userId'] as String,
       type: rawType == null
           ? BillType.payable
           : BillType.values.byName(rawType),
-      description: data['description'] as String,
+      // Description is optional — pre-existing docs always wrote one,
+      // but the form no longer requires it, so we tolerate null/missing.
+      description: (data['description'] as String?) ?? '',
       amount: (data['amount'] as num).toDouble(),
       dueDate: (data['dueDate'] as Timestamp).toDate(),
       status: BillStatus.values.byName(data['status'] as String),
@@ -49,6 +53,8 @@ class BillModel extends BillEntity {
       paidAt: (data['paidAt'] as Timestamp?)?.toDate(),
       paidTransactionId: data['paidTransactionId'] as String?,
       parentBillId: data['parentBillId'] as String?,
+      rejectedTransactionIds:
+          rawRejected?.map((e) => e as String).toList() ?? const [],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -69,6 +75,7 @@ class BillModel extends BillEntity {
       paidAt: entity.paidAt,
       paidTransactionId: entity.paidTransactionId,
       parentBillId: entity.parentBillId,
+      rejectedTransactionIds: entity.rejectedTransactionIds,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -88,6 +95,7 @@ class BillModel extends BillEntity {
       'paidAt': paidAt == null ? null : Timestamp.fromDate(paidAt!),
       'paidTransactionId': paidTransactionId,
       'parentBillId': parentBillId,
+      'rejectedTransactionIds': rejectedTransactionIds,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

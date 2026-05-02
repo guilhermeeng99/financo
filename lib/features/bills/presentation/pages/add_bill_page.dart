@@ -15,7 +15,7 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/bills/presentation/cubit/bill_form_cubit.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_category_picker_sheet.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -40,7 +40,7 @@ class AddBillPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => BillFormCubit(
         createBill: GetIt.I<CreateBillUseCase>(),
-        updateBill: GetIt.I<UpdateBillUseCase>(),
+        updateBillScoped: GetIt.I<UpdateBillScopedUseCase>(),
         userId: userId,
         existingBill: existingBill,
       ),
@@ -137,10 +137,40 @@ class _AddBillViewState extends State<_AddBillView> {
     if (picked != null) cubit.updateCategoryId(picked);
   }
 
-  void _onSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      unawaited(context.read<BillFormCubit>().submit());
-    }
+  Future<void> _onSubmit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final cubit = context.read<BillFormCubit>();
+    final state = cubit.state;
+    // Scope dialog only matters for editing a monthly bill — new bills
+    // and one-shots have nothing to propagate.
+    final shouldAskScope =
+        state.isEditing && state.recurrence == BillRecurrence.monthly;
+    final scope = shouldAskScope
+        ? await _askEditScope()
+        : BillEditScope.onlyThis;
+    if (scope == null) return; // user dismissed the dialog
+    await cubit.submit(scope: scope);
+  }
+
+  Future<BillEditScope?> _askEditScope() {
+    return showDialog<BillEditScope>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.bills.editScopeTitle),
+        content: Text(t.bills.editScopeDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, BillEditScope.onlyThis),
+            child: Text(t.bills.editScopeOnlyThis),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(ctx, BillEditScope.alsoSubsequents),
+            child: Text(t.bills.editScopeAlsoSubsequents),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onFormStateChanged(BuildContext context, BillFormState state) {
@@ -190,7 +220,7 @@ class _AddBillViewState extends State<_AddBillView> {
               label: state.isEditing ? t.general.update : t.general.create,
               isLoading: state.status == BillFormStatus.submitting,
               isEnabled: state.isValid,
-              onSubmit: _onSubmit,
+              onSubmit: () => unawaited(_onSubmit()),
             );
           },
         ),
@@ -294,7 +324,6 @@ class _FormBody extends StatelessWidget {
                       controller: descriptionController,
                       label: t.bills.description,
                       hintText: t.bills.descriptionHint,
-                      validator: Validators.requiredField,
                       onChanged: cubit.updateDescription,
                     ),
                     const SizedBox(height: 12),

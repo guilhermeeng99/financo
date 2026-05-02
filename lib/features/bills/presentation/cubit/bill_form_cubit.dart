@@ -3,7 +3,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum BillFormStatus { initial, submitting, success, failure }
@@ -11,15 +11,15 @@ enum BillFormStatus { initial, submitting, success, failure }
 class BillFormCubit extends Cubit<BillFormState> {
   BillFormCubit({
     required CreateBillUseCase createBill,
-    required UpdateBillUseCase updateBill,
+    required UpdateBillScopedUseCase updateBillScoped,
     required String userId,
     BillEntity? existingBill,
   }) : _createBill = createBill,
-       _updateBill = updateBill,
+       _updateBillScoped = updateBillScoped,
        super(BillFormState.initial(userId: userId, existing: existingBill));
 
   final CreateBillUseCase _createBill;
-  final UpdateBillUseCase _updateBill;
+  final UpdateBillScopedUseCase _updateBillScoped;
 
   void updateDescription(String value) =>
       emit(state.copyWith(description: value));
@@ -55,7 +55,12 @@ class BillFormCubit extends Cubit<BillFormState> {
 
   void updateNotes(String value) => emit(state.copyWith(notes: value));
 
-  Future<void> submit() async {
+  /// Submits the form. For new bills `scope` is ignored; for edits on
+  /// monthly bills the page is expected to ask the user first and pass
+  /// the chosen scope. One-shot edits always behave as `onlyThis`.
+  Future<void> submit({
+    BillEditScope scope = BillEditScope.onlyThis,
+  }) async {
     if (!state.isValid) return;
     emit(state.copyWith(status: BillFormStatus.submitting));
 
@@ -78,12 +83,18 @@ class BillFormCubit extends Cubit<BillFormState> {
       updatedAt: now,
     );
 
-    (state.isEditing ? await _updateBill(bill) : await _createBill(bill)).fold(
-      (failure) => emit(
-        state.copyWith(status: BillFormStatus.failure, failure: failure),
-      ),
-      (_) => emit(state.copyWith(status: BillFormStatus.success)),
-    );
+    (state.isEditing
+            ? await _updateBillScoped(bill: bill, scope: scope)
+            : await _createBill(bill))
+        .fold(
+          (failure) => emit(
+            state.copyWith(
+              status: BillFormStatus.failure,
+              failure: failure,
+            ),
+          ),
+          (_) => emit(state.copyWith(status: BillFormStatus.success)),
+        );
   }
 }
 
@@ -153,7 +164,9 @@ class BillFormState extends Equatable {
   bool get isPaid => existingStatus == BillStatus.paid;
 
   bool get isValid {
-    if (description.trim().isEmpty) return false;
+    // Description is intentionally not validated — matches transactions
+    // (the bills list / match sheet show a type-based fallback when
+    // empty). See `specs/bills.md` → Business Rules.
     if (amount <= 0) return false;
     if (categoryId == null) return false;
     if (isEditing && isPaid) return false;

@@ -346,7 +346,9 @@ void main() {
         setUp: () {
           when(
             () => mockCreate(any()),
-          ).thenAnswer((_) async => Right(TransactionFactory.expense()));
+          ).thenAnswer(
+            (_) async => Right(TransactionFactory.expense(id: 'tx-saved')),
+          );
         },
         build: buildCubit,
         seed: () => TransactionFormState(
@@ -368,11 +370,15 @@ void main() {
             'status',
             FormStatus.submitting,
           ),
-          isA<TransactionFormState>().having(
-            (s) => s.status,
-            'status',
-            FormStatus.success,
-          ),
+          // The saved id is surfaced on success so callers can chain
+          // follow-up work (e.g. linking a settled bill to the new tx).
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.success)
+              .having(
+                (s) => s.savedTransactionId,
+                'savedTransactionId',
+                'tx-saved',
+              ),
         ],
         verify: (_) {
           verify(() => mockCreate(any())).called(1);

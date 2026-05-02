@@ -21,8 +21,11 @@ import 'package:financo/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/bills/presentation/pages/add_bill_page.dart';
 import 'package:financo/features/bills/presentation/pages/bills_page.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -167,12 +170,20 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               ),
             ),
             BlocProvider(
+              // Eagerly load bills so the nav badge (overdue + due-today
+              // count) is correct from any tab — not only after the user
+              // opens the Bills page. Cache-only read; the page itself
+              // can still force a refresh.
               create: (_) => BillsBloc(
                 getBills: GetIt.I<GetBillsUseCase>(),
                 deleteBill: GetIt.I<DeleteBillUseCase>(),
                 payBill: GetIt.I<PayBillUseCase>(),
+                getTransactions: GetIt.I<GetTransactionsUseCase>(),
+                linkBillToTransaction:
+                    GetIt.I<LinkBillToTransactionUseCase>(),
+                rejectBillMatch: GetIt.I<RejectBillMatchUseCase>(),
                 userId: userId,
-              ),
+              )..add(const BillsLoadRequested()),
             ),
           ],
           child: _ShellWithSidebar(child: child),
@@ -210,7 +221,14 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.addTransaction,
           builder: (context, state) {
-            final existing = state.extra as TransactionEntity?;
+            // `extra` is polymorphic on this route:
+            //   - `TransactionEntity` → editing an existing tx
+            //   - `BillEntity`        → creating a tx to settle a bill
+            //   - null                → blank create flow
+            final extra = state.extra;
+            final existing =
+                extra is TransactionEntity ? extra : null;
+            final prefillFromBill = extra is BillEntity ? extra : null;
             // Optional `?accountId=` — used by the account-statement FAB
             // so a new transaction opens with the current account already
             // selected. Edit mode (non-null `existing`) ignores it.
@@ -219,6 +237,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               child: AddTransactionPage(
                 existingTransaction: existing,
                 prefillAccountId: prefillAccountId,
+                prefillFromBill: prefillFromBill,
               ),
             );
           },

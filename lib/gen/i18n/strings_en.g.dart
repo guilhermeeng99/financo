@@ -394,6 +394,12 @@ class TranslationsTransactionsEn {
 	/// en: 'Edit Transaction'
 	String get editTransaction => 'Edit Transaction';
 
+	/// en: 'Confirm payment'
+	String get confirmPaymentTitle => 'Confirm payment';
+
+	/// en: 'Confirm receipt'
+	String get confirmReceiptTitle => 'Confirm receipt';
+
 	/// en: 'Transaction Details'
 	String get transactionDetails => 'Transaction Details';
 
@@ -964,6 +970,12 @@ class TranslationsCategoriesEn {
 	/// en: 'Parent category'
 	String get pickParent => 'Parent category';
 
+	/// en: 'Search categories'
+	String get searchHint => 'Search categories';
+
+	/// en: 'No categories match your search.'
+	String get searchNoResults => 'No categories match your search.';
+
 	/// en: 'None'
 	String get noParentChosen => 'None';
 
@@ -1275,6 +1287,25 @@ class TranslationsBillsEn {
 	String get pickCategory => 'Choose a category';
 
 	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
+	late final TranslationsBillsMatchEn match = TranslationsBillsMatchEn._(_root);
+
+	/// en: 'Pague a ocorrência atual primeiro'
+	String get virtualBlocked => 'Pague a ocorrência atual primeiro';
+
+	/// en: 'Preview'
+	String get preview => 'Preview';
+
+	/// en: 'Aplicar a quais ocorrências?'
+	String get editScopeTitle => 'Aplicar a quais ocorrências?';
+
+	/// en: 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).'
+	String get editScopeDescription => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).';
+
+	/// en: 'Apenas esta'
+	String get editScopeOnlyThis => 'Apenas esta';
+
+	/// en: 'Esta e as subsequentes'
+	String get editScopeAlsoSubsequents => 'Esta e as subsequentes';
 }
 
 // Path: profile
@@ -1565,6 +1596,63 @@ class TranslationsBillsNotificationEn {
 	String bodyOverdue({required Object description, required Object amount}) => '${description} (${amount}) is overdue';
 }
 
+// Path: bills.match
+class TranslationsBillsMatchEn {
+	TranslationsBillsMatchEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: '$count possible payment(s) detected'
+	String bannerTitle({required Object count}) => '${count} possible payment(s) detected';
+
+	/// en: 'Tap to confirm if any existing transaction settles a pending bill'
+	String get bannerSubtitle => 'Tap to confirm if any existing transaction settles a pending bill';
+
+	/// en: 'Confirm payments'
+	String get sheetTitle => 'Confirm payments';
+
+	/// en: 'We found transactions that could be paying your pending bills. Confirm one by one.'
+	String get sheetIntro => 'We found transactions that could be paying your pending bills. Confirm one by one.';
+
+	/// en: 'Was this transaction this bill?'
+	String get candidateQuestion => 'Was this transaction this bill?';
+
+	/// en: 'Yes'
+	String get yesItWas => 'Yes';
+
+	/// en: 'No'
+	String get notThisOne => 'No';
+
+	/// en: 'Bill marked as settled'
+	String get matchAccepted => 'Bill marked as settled';
+
+	/// en: 'Got it — we'll stop suggesting this one'
+	String get matchRejected => 'Got it — we\'ll stop suggesting this one';
+
+	/// en: 'Bill'
+	String get billLabel => 'Bill';
+
+	/// en: 'Transaction'
+	String get transactionLabel => 'Transaction';
+
+	/// en: 'Description'
+	String get fieldDescription => 'Description';
+
+	/// en: 'Category'
+	String get fieldCategory => 'Category';
+
+	/// en: 'Amount'
+	String get fieldAmount => 'Amount';
+
+	/// en: 'Date'
+	String get fieldDate => 'Date';
+
+	/// en: '—'
+	String get fieldEmpty => '—';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -1665,6 +1753,8 @@ extension on Translations {
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
 			'transactions.editTransaction' => 'Edit Transaction',
+			'transactions.confirmPaymentTitle' => 'Confirm payment',
+			'transactions.confirmReceiptTitle' => 'Confirm receipt',
 			'transactions.transactionDetails' => 'Transaction Details',
 			'transactions.transaction' => 'Transaction',
 			'transactions.transactionNotFound' => 'Transaction not found',
@@ -1849,6 +1939,8 @@ extension on Translations {
 			'categories.formSectionDetails' => 'Details',
 			'categories.formSectionAppearance' => 'Appearance',
 			'categories.pickParent' => 'Parent category',
+			'categories.searchHint' => 'Search categories',
+			'categories.searchNoResults' => 'No categories match your search.',
 			'categories.noParentChosen' => 'None',
 			'categories.addFirst' => 'Add your first category',
 			'categories.emptyTitle' => 'No categories yet',
@@ -1991,6 +2083,28 @@ extension on Translations {
 			'bills.notification.title' => ({required Object count}) => 'You have ${count} bill(s) to pay',
 			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) is due today',
 			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) is overdue',
+			'bills.match.bannerTitle' => ({required Object count}) => '${count} possible payment(s) detected',
+			'bills.match.bannerSubtitle' => 'Tap to confirm if any existing transaction settles a pending bill',
+			'bills.match.sheetTitle' => 'Confirm payments',
+			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
+			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
+			'bills.match.yesItWas' => 'Yes',
+			'bills.match.notThisOne' => 'No',
+			'bills.match.matchAccepted' => 'Bill marked as settled',
+			'bills.match.matchRejected' => 'Got it — we\'ll stop suggesting this one',
+			'bills.match.billLabel' => 'Bill',
+			'bills.match.transactionLabel' => 'Transaction',
+			'bills.match.fieldDescription' => 'Description',
+			'bills.match.fieldCategory' => 'Category',
+			'bills.match.fieldAmount' => 'Amount',
+			'bills.match.fieldDate' => 'Date',
+			'bills.match.fieldEmpty' => '—',
+			'bills.virtualBlocked' => 'Pague a ocorrência atual primeiro',
+			'bills.preview' => 'Preview',
+			'bills.editScopeTitle' => 'Aplicar a quais ocorrências?',
+			'bills.editScopeDescription' => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).',
+			'bills.editScopeOnlyThis' => 'Apenas esta',
+			'bills.editScopeAlsoSubsequents' => 'Esta e as subsequentes',
 			'profile.title' => 'Profile',
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',

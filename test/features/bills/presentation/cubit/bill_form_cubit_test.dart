@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/bills/presentation/cubit/bill_form_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -12,7 +13,7 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockCreateBillUseCase createBill;
-  late MockUpdateBillUseCase updateBill;
+  late MockUpdateBillScopedUseCase updateBillScoped;
 
   const userId = 'user-1';
 
@@ -20,24 +21,29 @@ void main() {
 
   setUp(() {
     createBill = MockCreateBillUseCase();
-    updateBill = MockUpdateBillUseCase();
+    updateBillScoped = MockUpdateBillScopedUseCase();
   });
 
   BillFormCubit build({BillEntity? existing}) => BillFormCubit(
     createBill: createBill,
-    updateBill: updateBill,
+    updateBillScoped: updateBillScoped,
     userId: userId,
     existingBill: existing,
   );
 
   group('validation', () {
-    test('isValid is false when description is empty', () {
-      final cubit = build();
-      expect(cubit.state.isValid, isFalse);
+    test('isValid is true with empty description (not required)', () {
+      // Description is intentionally optional — list/sheet show a
+      // type-based fallback when blank. Same behaviour as transactions.
+      final cubit = build()
+        ..updateAmount('120')
+        ..updateCategoryId('cat-1');
+      expect(cubit.state.isValid, isTrue);
+      expect(cubit.state.description, isEmpty);
       addTearDown(cubit.close);
     });
 
-    test('isValid is true once description, amount and category are set', () {
+    test('isValid is true once amount and category are set', () {
       final cubit = build()
         ..updateDescription('Internet')
         ..updateAmount('120')
@@ -50,6 +56,14 @@ void main() {
       final cubit = build()
         ..updateDescription('Internet')
         ..updateAmount('120');
+      expect(cubit.state.isValid, isFalse);
+      addTearDown(cubit.close);
+    });
+
+    test('isValid is false when amount is zero', () {
+      final cubit = build()
+        ..updateDescription('Internet')
+        ..updateCategoryId('cat-1');
       expect(cubit.state.isValid, isFalse);
       addTearDown(cubit.close);
     });
@@ -117,12 +131,17 @@ void main() {
     );
 
     blocTest<BillFormCubit, BillFormState>(
-      'edit path uses updateBill instead of createBill',
+      'edit path uses updateBillScoped instead of createBill',
       build: () => build(existing: BillFactory.pending()),
       setUp: () {
-        when(() => updateBill(any())).thenAnswer(
+        when(
+          () => updateBillScoped(
+            bill: any(named: 'bill'),
+            scope: any(named: 'scope'),
+          ),
+        ).thenAnswer(
           (invocation) async => Right<Failure, BillEntity>(
-            invocation.positionalArguments.first as BillEntity,
+            invocation.namedArguments[#bill] as BillEntity,
           ),
         );
       },
@@ -131,8 +150,44 @@ void main() {
         await cubit.submit();
       },
       verify: (_) {
-        verify(() => updateBill(any())).called(1);
+        verify(
+          () => updateBillScoped(
+            bill: any(named: 'bill'),
+            scope: any(named: 'scope'),
+          ),
+        ).called(1);
         verifyNever(() => createBill(any()));
+      },
+    );
+
+    blocTest<BillFormCubit, BillFormState>(
+      'edit path forwards the chosen scope to updateBillScoped',
+      build: () => build(
+        existing: BillFactory.pending(recurrence: BillRecurrence.monthly),
+      ),
+      setUp: () {
+        when(
+          () => updateBillScoped(
+            bill: any(named: 'bill'),
+            scope: any(named: 'scope'),
+          ),
+        ).thenAnswer(
+          (invocation) async => Right<Failure, BillEntity>(
+            invocation.namedArguments[#bill] as BillEntity,
+          ),
+        );
+      },
+      act: (cubit) async {
+        cubit.updateAmount('150');
+        await cubit.submit(scope: BillEditScope.alsoSubsequents);
+      },
+      verify: (_) {
+        verify(
+          () => updateBillScoped(
+            bill: any(named: 'bill'),
+            scope: BillEditScope.alsoSubsequents,
+          ),
+        ).called(1);
       },
     );
   });

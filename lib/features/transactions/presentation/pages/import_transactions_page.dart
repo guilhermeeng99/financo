@@ -688,11 +688,16 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   }
 
   Future<void> _pickDate() async {
+    final now = DateTime.now();
+    // Expand `lastDate` when the draft already has a future date —
+    // otherwise `showDatePicker`'s assert (`initialDate ≤ lastDate`)
+    // fires and the field becomes uneditable.
+    final lastDate = _draft.date.isAfter(now) ? _draft.date : now;
     final picked = await showDatePicker(
       context: context,
       initialDate: _draft.date,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: lastDate,
     );
     if (picked != null) setState(() => _draft = _draft.copyWith(date: picked));
   }

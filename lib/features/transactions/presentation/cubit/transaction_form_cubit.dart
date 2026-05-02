@@ -94,7 +94,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
               failure: failure,
             ),
           ),
-          (_) => emit(state.copyWith(status: FormStatus.success)),
+          // Surface the saved id so listeners (e.g. the bill-settlement
+          // flow) can chain follow-up work like linking the bill to
+          // this transaction. For updates it's just `existingId`.
+          (saved) => emit(
+            state.copyWith(
+              status: FormStatus.success,
+              savedTransactionId: saved.id,
+            ),
+          ),
         );
   }
 
@@ -153,6 +161,7 @@ class TransactionFormState extends Equatable {
     this.destinationAccountId = '',
     this.existingId,
     this.linkedTransactionId,
+    this.savedTransactionId,
     this.failure,
   });
 
@@ -192,6 +201,11 @@ class TransactionFormState extends Equatable {
   final String destinationAccountId;
   final String? existingId;
   final String? linkedTransactionId;
+
+  /// Set on `FormStatus.success` to the id of the row written by the
+  /// last submit (created or updated). Lets callers — e.g. the bill
+  /// settlement flow — chain follow-ups without re-fetching.
+  final String? savedTransactionId;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
@@ -224,6 +238,7 @@ class TransactionFormState extends Equatable {
     String? notes,
     FormStatus? status,
     bool? isTransfer,
+    String? savedTransactionId,
     Failure? failure,
   }) {
     return TransactionFormState(
@@ -240,6 +255,7 @@ class TransactionFormState extends Equatable {
       isTransfer: isTransfer ?? this.isTransfer,
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
+      savedTransactionId: savedTransactionId ?? this.savedTransactionId,
       failure: failure ?? this.failure,
     );
   }
@@ -259,6 +275,7 @@ class TransactionFormState extends Equatable {
     isTransfer,
     existingId,
     linkedTransactionId,
+    savedTransactionId,
     failure,
   ];
 }

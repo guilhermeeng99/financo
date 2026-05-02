@@ -105,5 +105,45 @@ void main() {
       );
       expect(pending.toJson()['paidAt'], isNull);
     });
+
+    test('rejectedTransactionIds round-trips through Firestore', () async {
+      final firestore = FakeFirebaseFirestore();
+      final original = BillModel(
+        id: '',
+        userId: 'user-1',
+        type: BillType.payable,
+        description: 'Aluguel',
+        amount: 2000,
+        dueDate: dueDate,
+        status: BillStatus.pending,
+        recurrence: BillRecurrence.monthly,
+        rejectedTransactionIds: const ['tx-not-this', 'tx-also-not'],
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+
+      final ref = await firestore.collection('bills').add(original.toJson());
+      final fetched = BillModel.fromFirestore(await ref.get());
+
+      expect(
+        fetched.rejectedTransactionIds,
+        ['tx-not-this', 'tx-also-not'],
+      );
+    });
+
+    test('legacy doc without rejectedTransactionIds defaults to empty', () {
+      final data = {
+        'userId': 'user-1',
+        'description': 'Internet',
+        'amount': 100.0,
+        'dueDate': Timestamp.fromDate(dueDate),
+        'status': 'pending',
+        'recurrence': 'oneShot',
+        'createdAt': Timestamp.fromDate(createdAt),
+        'updatedAt': Timestamp.fromDate(updatedAt),
+      };
+      final model = BillModel.fromMap(id: 'legacy', data: data);
+      expect(model.rejectedTransactionIds, isEmpty);
+    });
   });
 }

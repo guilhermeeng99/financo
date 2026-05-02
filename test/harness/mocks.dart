@@ -23,7 +23,10 @@ import 'package:financo/features/bills/domain/repositories/bill_repository.dart'
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
@@ -114,9 +117,18 @@ class MockCreateBillUseCase extends Mock implements CreateBillUseCase {}
 
 class MockUpdateBillUseCase extends Mock implements UpdateBillUseCase {}
 
+class MockUpdateBillScopedUseCase extends Mock
+    implements UpdateBillScopedUseCase {}
+
 class MockDeleteBillUseCase extends Mock implements DeleteBillUseCase {}
 
 class MockPayBillUseCase extends Mock implements PayBillUseCase {}
+
+class MockLinkBillToTransactionUseCase extends Mock
+    implements LinkBillToTransactionUseCase {}
+
+class MockRejectBillMatchUseCase extends Mock
+    implements RejectBillMatchUseCase {}
 
 // ── Use Cases: Transactions ──
 class MockGetTransactionsUseCase extends Mock
