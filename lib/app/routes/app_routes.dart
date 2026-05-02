@@ -24,6 +24,9 @@ class AppRoutes {
   static const bills = '/bills';
   static const addBill = '/bill/add';
   static const editBill = '/bill/edit';
+  static const budgets = '/budgets';
+  static const addBudget = '/budget/add';
+  static const editBudget = '/budget/edit';
 
   static String transactionById(String id) => '/transaction/$id';
   static String accountById(String id) => '/account/$id';

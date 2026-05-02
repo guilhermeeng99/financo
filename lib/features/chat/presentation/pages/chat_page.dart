@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -12,6 +14,11 @@ import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
+import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
+import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
@@ -62,6 +69,10 @@ class ChatPage extends StatelessWidget {
         updateBill: GetIt.I<UpdateBillUseCase>(),
         deleteBill: GetIt.I<DeleteBillUseCase>(),
         payBill: GetIt.I<PayBillUseCase>(),
+        getBudgets: GetIt.I<GetBudgetsUseCase>(),
+        createBudget: GetIt.I<CreateBudgetUseCase>(),
+        updateBudget: GetIt.I<UpdateBudgetUseCase>(),
+        deleteBudget: GetIt.I<DeleteBudgetUseCase>(),
         userId: userId,
       ),
       child: const _ChatView(),
@@ -135,6 +146,11 @@ class _ChatViewState extends State<_ChatView> {
     if (state.shouldRefreshBills) {
       context.read<BillsBloc>().add(
         const BillsLoadRequested(forceRefresh: true),
+      );
+    }
+    if (state.shouldRefreshBudgets) {
+      unawaited(
+        context.read<BudgetsCubit>().loadBudgets(forceRefresh: true),
       );
     }
     final transcript = state.pendingTranscript;

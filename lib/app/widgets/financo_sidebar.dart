@@ -95,6 +95,13 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 iconWrapper: (icon) => NavBillsBadge(child: icon),
               ),
               _NavItem(
+                icon: FontAwesomeIcons.bullseye,
+                expanded: _expanded,
+                label: t.nav.budgets,
+                onTap: () => context.go(AppRoutes.budgets),
+                isActive: location.startsWith(AppRoutes.budgets),
+              ),
+              _NavItem(
                 icon: FontAwesomeIcons.wandMagicSparkles,
                 expanded: _expanded,
                 label: t.nav.chat,

@@ -5,6 +5,8 @@ import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/bills/data/models/bill_model.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
+import 'package:financo/features/budgets/data/models/budget_model.dart';
+import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/categories/data/models/category_model.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/chat/data/models/chat_message_model.dart';
@@ -156,6 +158,29 @@ void registerBillFallbackValues() {
     ),
   );
   registerFallbackValue(BillEditScope.onlyThis);
+}
+
+void registerBudgetFallbackValues() {
+  registerFallbackValue(
+    BudgetEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      categoryId: 'fallback',
+      amount: 1,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    ),
+  );
+  registerFallbackValue(
+    BudgetModel(
+      id: 'fallback',
+      userId: 'fallback',
+      categoryId: 'fallback',
+      amount: 1,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    ),
+  );
 }
 
 void registerAuthFallbackValues() {

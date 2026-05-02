@@ -8,6 +8,9 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
@@ -187,8 +190,34 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
         fromCategoryId: categoryId,
         toCategoryId: targetId!,
       );
+      await _deleteBudgetsForCategory(
+        userId: cubitState.userId,
+        categoryId: categoryId,
+      );
       await deleteCategory(categoryId);
       if (mounted) context.pop(true);
+    }
+  }
+
+  /// Cascade-delete every budget that referenced [categoryId]. Failures
+  /// are intentionally swallowed: the category deletion is the user's
+  /// primary intent, and orphan budgets are tolerated by the overview
+  /// pipeline (see specs/budgets.md rule 8).
+  Future<void> _deleteBudgetsForCategory({
+    required String userId,
+    required String categoryId,
+  }) async {
+    final getBudgets = GetIt.I<GetBudgetsUseCase>();
+    final deleteBudget = GetIt.I<DeleteBudgetUseCase>();
+    final budgetsResult = await getBudgets(userId: userId);
+    final budgets = budgetsResult.fold<List<BudgetEntity>>(
+      (_) => const [],
+      (list) => list,
+    );
+    for (final b in budgets) {
+      if (b.categoryId == categoryId) {
+        await deleteBudget(b.id);
+      }
     }
   }
 

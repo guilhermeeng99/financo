@@ -7,6 +7,7 @@ import 'package:financo/core/app_info/app_version.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
+import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
@@ -45,6 +46,15 @@ import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+// Budgets
+import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
+import 'package:financo/features/budgets/data/repositories/budget_repository_impl.dart';
+import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
+import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 // Categories
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/data/repositories/category_repository_impl.dart';
@@ -126,6 +136,7 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => TransactionsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => CategoriesDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => BillsDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => BudgetsDao(sl<AppDatabase>()))
     // ─── Sync Service ───────────────────────────────────────
     ..registerLazySingleton(
       () => SyncService(
@@ -133,10 +144,12 @@ Future<void> initDependencies() async {
         transactionRemote: sl(),
         categoryRemote: sl(),
         billRemote: sl(),
+        budgetRemote: sl(),
         accountsDao: sl(),
         transactionsDao: sl(),
         categoriesDao: sl(),
         billsDao: sl(),
+        budgetsDao: sl(),
         usersDao: sl(),
         database: sl(),
       ),
@@ -160,6 +173,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<BillRemoteDataSource>(
       () => BillRemoteDataSourceImpl(firestore: sl()),
+    )
+    ..registerLazySingleton<BudgetRemoteDataSource>(
+      () => BudgetRemoteDataSourceImpl(firestore: sl()),
     )
     ..registerLazySingleton<ChatBackendDataSource>(
       () => ChatBackendDataSourceImpl(functions: sl()),
@@ -198,6 +214,12 @@ Future<void> initDependencies() async {
         remoteDataSource: sl(),
         billsDao: sl(),
         transactionRepository: sl(),
+      ),
+    )
+    ..registerLazySingleton<BudgetRepository>(
+      () => BudgetRepositoryImpl(
+        remoteDataSource: sl(),
+        budgetsDao: sl(),
       ),
     )
     ..registerLazySingleton<ChatRepository>(
@@ -284,6 +306,17 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => PayBillUseCase(sl()))
     ..registerLazySingleton(() => LinkBillToTransactionUseCase(sl()))
     ..registerLazySingleton(() => RejectBillMatchUseCase(sl()))
+    ..registerLazySingleton(() => GetBudgetsUseCase(sl()))
+    ..registerLazySingleton(() => CreateBudgetUseCase(sl()))
+    ..registerLazySingleton(() => UpdateBudgetUseCase(sl()))
+    ..registerLazySingleton(() => DeleteBudgetUseCase(sl()))
+    ..registerLazySingleton(
+      () => GetBudgetsOverviewUseCase(
+        budgetRepository: sl(),
+        categoryRepository: sl(),
+        transactionRepository: sl(),
+      ),
+    )
     ..registerLazySingleton(() => SendMessageUseCase(sl()))
     ..registerLazySingleton(
       () => GetChatHistoryUseCase(sl()),

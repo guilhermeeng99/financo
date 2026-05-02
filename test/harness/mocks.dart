@@ -1,5 +1,6 @@
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
+import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
@@ -28,6 +29,13 @@ import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
+import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
+import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
@@ -129,6 +137,25 @@ class MockLinkBillToTransactionUseCase extends Mock
 
 class MockRejectBillMatchUseCase extends Mock
     implements RejectBillMatchUseCase {}
+
+// ── Budgets ──
+class MockBudgetRepository extends Mock implements BudgetRepository {}
+
+class MockBudgetRemoteDataSource extends Mock
+    implements BudgetRemoteDataSource {}
+
+class MockBudgetsDao extends Mock implements BudgetsDao {}
+
+class MockGetBudgetsUseCase extends Mock implements GetBudgetsUseCase {}
+
+class MockCreateBudgetUseCase extends Mock implements CreateBudgetUseCase {}
+
+class MockUpdateBudgetUseCase extends Mock implements UpdateBudgetUseCase {}
+
+class MockDeleteBudgetUseCase extends Mock implements DeleteBudgetUseCase {}
+
+class MockGetBudgetsOverviewUseCase extends Mock
+    implements GetBudgetsOverviewUseCase {}
 
 // ── Use Cases: Transactions ──
 class MockGetTransactionsUseCase extends Mock

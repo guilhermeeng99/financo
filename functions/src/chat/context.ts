@@ -20,6 +20,13 @@ interface BillContext {
   status: 'pending' | 'paid' | string;
 }
 
+interface BudgetContext {
+  // Resolved category name — the AI uses *names*, not ids, when referencing
+  // budgets, so we resolve here and skip the snapshot id.
+  categoryName: string;
+  amount: number;
+}
+
 const db = (): admin.firestore.Firestore => admin.firestore();
 
 const fetchAccounts = async (userId: string): Promise<AccountContext[]> => {
@@ -109,12 +116,74 @@ const formatBillsBlock = (bills: BillContext[]): string => {
   return sections.length > 0 ? `\n\n${sections.join('\n\n')}` : '';
 };
 
+const fetchBudgets = async (
+  userId: string,
+  categories: CategoryContext[],
+): Promise<BudgetContext[]> => {
+  const snap = await db()
+    .collection('budgets')
+    .where('userId', '==', userId)
+    .get();
+  // Build an id→name map locally — the snapshot we already fetched gives us
+  // names, but it's keyed by name. The budgets reference categories by id,
+  // so we have to re-fetch with ids in this query. Cheaper path: do a second
+  // tiny query for the categories we need.
+  const categoryIds = snap.docs
+    .map((d) => d.data().categoryId as string | undefined)
+    .filter((v): v is string => typeof v === 'string' && v.length > 0);
+  const idToName = new Map<string, string>();
+  if (categoryIds.length > 0) {
+    // Firestore `in` queries are capped at 30 ids per query; chunk if needed.
+    const chunks: string[][] = [];
+    for (let i = 0; i < categoryIds.length; i += 30) {
+      chunks.push(categoryIds.slice(i, i + 30));
+    }
+    for (const chunk of chunks) {
+      const catSnap = await db()
+        .collection('categories')
+        .where(admin.firestore.FieldPath.documentId(), 'in', chunk)
+        .get();
+      catSnap.docs.forEach((d) => {
+        idToName.set(d.id, String(d.data().name ?? ''));
+      });
+    }
+  }
+  // Categories param kept in the signature so future changes can pivot to
+  // a name-keyed map without touching the call-site — for now we only need
+  // it to assert relevance and avoid emitting orphan budgets to the model.
+  void categories;
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      const categoryId = data.categoryId as string | undefined;
+      if (!categoryId) return null;
+      const name = idToName.get(categoryId);
+      if (!name) return null; // orphan — category was deleted
+      return {
+        categoryName: name,
+        amount: Number(data.amount ?? 0),
+      } as BudgetContext;
+    })
+    .filter((b): b is BudgetContext => b !== null);
+};
+
+const formatBudgetLine = (b: BudgetContext): string =>
+  `- "${b.categoryName}" → R$${b.amount.toFixed(2)}/mês`;
+
+const formatBudgetsBlock = (budgets: BudgetContext[]): string => {
+  if (budgets.length === 0) return '';
+  return `\n\nOrçamentos mensais ativos:\n${budgets.map(formatBudgetLine).join('\n')}`;
+};
+
 export const buildUserContext = async (userId: string): Promise<string> => {
   const [accounts, categories, bills] = await Promise.all([
     fetchAccounts(userId),
     fetchCategories(userId),
     fetchPendingBills(userId),
   ]);
+  // Budgets reference categories by id, so we need the resolved category list
+  // before we can format them.
+  const budgets = await fetchBudgets(userId, categories);
 
   const accountsBlock = accounts.length > 0
     ? accounts.map(formatAccountLine).join('\n')
@@ -125,12 +194,13 @@ export const buildUserContext = async (userId: string): Promise<string> => {
     : '(nenhuma categoria cadastrada)';
 
   const billsBlock = formatBillsBlock(bills);
+  const budgetsBlock = formatBudgetsBlock(budgets);
 
   return `=== USER CONTEXT (snapshot no início deste turno) ===
 Contas do usuário:
 ${accountsBlock}
 
 Categorias do usuário:
-${categoriesBlock}${billsBlock}
+${categoriesBlock}${billsBlock}${budgetsBlock}
 === END USER CONTEXT ===`;
 };

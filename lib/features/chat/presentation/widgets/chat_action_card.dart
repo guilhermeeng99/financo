@@ -360,6 +360,11 @@ class _ActionPreview {
         'update' => _ActionPreview.billUpdate(context, meta),
         _ => _ActionPreview.billCreate(context, meta),
       },
+      'budget' => switch (action) {
+        'delete' => _ActionPreview.budgetDelete(context, meta),
+        'update' => _ActionPreview.budgetUpdate(context, meta),
+        _ => _ActionPreview.budgetCreate(context, meta),
+      },
       _ => _ActionPreview(
         title: actionType ?? 'Action',
         icon: FontAwesomeIcons.bolt,
@@ -597,6 +602,53 @@ class _ActionPreview {
       icon: FontAwesomeIcons.trash,
       accent: context.appColors.error,
       headline: meta['description'] as String?,
+      destructive: true,
+    );
+  }
+
+  factory _ActionPreview.budgetCreate(
+    BuildContext context,
+    Map<String, dynamic> meta,
+  ) {
+    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+    return _ActionPreview(
+      title: t.chat.action.budgetCreate,
+      icon: FontAwesomeIcons.bullseye,
+      accent: context.appColors.primary,
+      amount: formatCurrency(amount),
+      headline: meta['category'] as String?,
+      fields: [
+        (label: t.chat.action.fieldCategory, value: '${meta['category']}'),
+      ],
+    );
+  }
+
+  factory _ActionPreview.budgetUpdate(
+    BuildContext context,
+    Map<String, dynamic> meta,
+  ) {
+    final amount = (meta['amount'] as num?)?.toDouble();
+    return _ActionPreview(
+      title: t.chat.action.budgetUpdate,
+      icon: FontAwesomeIcons.penToSquare,
+      accent: context.appColors.primary,
+      amount: amount != null ? formatCurrency(amount) : null,
+      headline: meta['category'] as String?,
+      fields: [
+        (label: t.chat.action.fieldCategory, value: '${meta['category']}'),
+      ],
+    );
+  }
+
+  factory _ActionPreview.budgetDelete(
+    BuildContext context,
+    Map<String, dynamic> meta,
+  ) {
+    return _ActionPreview(
+      title: t.chat.action.budgetDelete,
+      icon: FontAwesomeIcons.trash,
+      accent: context.appColors.error,
+      headline: meta['category'] as String?,
       destructive: true,
     );
   }

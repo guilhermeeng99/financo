@@ -28,6 +28,12 @@ import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/bills/presentation/pages/add_bill_page.dart';
 import 'package:financo/features/bills/presentation/pages/bills_page.dart';
+import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
+import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
+import 'package:financo/features/budgets/presentation/pages/add_budget_page.dart';
+import 'package:financo/features/budgets/presentation/pages/budgets_page.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
@@ -185,6 +191,13 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 userId: userId,
               )..add(const BillsLoadRequested()),
             ),
+            BlocProvider(
+              create: (_) => BudgetsCubit(
+                getOverview: GetIt.I<GetBudgetsOverviewUseCase>(),
+                deleteBudget: GetIt.I<DeleteBudgetUseCase>(),
+                userId: userId,
+              ),
+            ),
           ],
           child: _ShellWithSidebar(child: child),
         );
@@ -298,6 +311,28 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             final existing = state.extra as BillEntity?;
             return SubPageScope(
               child: AddBillPage(existingBill: existing),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.budgets,
+          builder: (context, state) => const BudgetsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.addBudget,
+          builder: (context, state) {
+            final existing = state.extra as BudgetEntity?;
+            return SubPageScope(
+              child: AddBudgetPage(existingBudget: existing),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.editBudget,
+          builder: (context, state) {
+            final existing = state.extra as BudgetEntity?;
+            return SubPageScope(
+              child: AddBudgetPage(existingBudget: existing),
             );
           },
         ),

@@ -2,11 +2,13 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
+import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
 import 'package:financo/core/database/tables/bills_table.dart';
+import 'package:financo/core/database/tables/budgets_table.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
 import 'package:financo/core/database/tables/users_table.dart';
@@ -20,14 +22,22 @@ part 'app_database.g.dart';
     LocalTransactions,
     LocalCategories,
     LocalBills,
+    LocalBudgets,
   ],
-  daos: [UsersDao, AccountsDao, TransactionsDao, CategoriesDao, BillsDao],
+  daos: [
+    UsersDao,
+    AccountsDao,
+    TransactionsDao,
+    CategoriesDao,
+    BillsDao,
+    BudgetsDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

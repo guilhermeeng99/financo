@@ -119,8 +119,10 @@ class FinancoBottomBar extends StatelessWidget {
         case 1:
           context.go(AppRoutes.bills);
         case 2:
-          context.go(AppRoutes.chat);
+          context.go(AppRoutes.budgets);
         case 3:
+          context.go(AppRoutes.chat);
+        case 4:
           context.go(AppRoutes.profile);
       }
     }
@@ -167,16 +169,22 @@ class FinancoBottomBar extends StatelessWidget {
               iconWrapper: (icon) => NavBillsBadge(child: icon),
             ),
             _NavItem(
-              icon: FontAwesomeIcons.wandMagicSparkles,
-              label: t.nav.chat,
+              icon: FontAwesomeIcons.bullseye,
+              label: t.nav.budgets,
               isActive: currentIndex == 2,
               onTap: () => onTap(2),
             ),
             _NavItem(
-              icon: FontAwesomeIcons.user,
-              label: t.nav.profile,
+              icon: FontAwesomeIcons.wandMagicSparkles,
+              label: t.nav.chat,
               isActive: currentIndex == 3,
               onTap: () => onTap(3),
+            ),
+            _NavItem(
+              icon: FontAwesomeIcons.user,
+              label: t.nav.profile,
+              isActive: currentIndex == 4,
+              onTap: () => onTap(4),
             ),
           ],
         ),
@@ -186,8 +194,9 @@ class FinancoBottomBar extends StatelessWidget {
 
   static int _resolveCurrentIndex(String location) {
     if (location.startsWith(AppRoutes.bills)) return 1;
-    if (location.startsWith(AppRoutes.chat)) return 2;
-    if (location.startsWith(AppRoutes.profile)) return 3;
+    if (location.startsWith(AppRoutes.budgets)) return 2;
+    if (location.startsWith(AppRoutes.chat)) return 3;
+    if (location.startsWith(AppRoutes.profile)) return 4;
     return 0;
   }
 }

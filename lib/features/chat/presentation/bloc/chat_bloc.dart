@@ -13,6 +13,11 @@ import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart'
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
+import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
+import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
@@ -105,6 +110,7 @@ final class ChatLoaded extends ChatState {
     this.isTyping = false,
     this.shouldRefreshTransactions = false,
     this.shouldRefreshBills = false,
+    this.shouldRefreshBudgets = false,
     this.isTranscribing = false,
     this.pendingTranscript,
   });
@@ -113,6 +119,7 @@ final class ChatLoaded extends ChatState {
   final bool isTyping;
   final bool shouldRefreshTransactions;
   final bool shouldRefreshBills;
+  final bool shouldRefreshBudgets;
   final bool isTranscribing;
   final String? pendingTranscript;
 
@@ -122,6 +129,7 @@ final class ChatLoaded extends ChatState {
     isTyping,
     shouldRefreshTransactions,
     shouldRefreshBills,
+    shouldRefreshBudgets,
     isTranscribing,
     pendingTranscript,
   ];
@@ -155,6 +163,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required UpdateBillUseCase updateBill,
     required DeleteBillUseCase deleteBill,
     required PayBillUseCase payBill,
+    required GetBudgetsUseCase getBudgets,
+    required CreateBudgetUseCase createBudget,
+    required UpdateBudgetUseCase updateBudget,
+    required DeleteBudgetUseCase deleteBudget,
     required String userId,
   }) : _sendMessage = sendMessage,
        _getChatHistory = getChatHistory,
@@ -173,6 +185,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
        _updateBill = updateBill,
        _deleteBill = deleteBill,
        _payBill = payBill,
+       _getBudgets = getBudgets,
+       _createBudget = createBudget,
+       _updateBudget = updateBudget,
+       _deleteBudget = deleteBudget,
        _userId = userId,
        super(const ChatInitial()) {
     on<ChatLoadRequested>(_onLoadRequested);
@@ -199,6 +215,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final UpdateBillUseCase _updateBill;
   final DeleteBillUseCase _deleteBill;
   final PayBillUseCase _payBill;
+  final GetBudgetsUseCase _getBudgets;
+  final CreateBudgetUseCase _createBudget;
+  final UpdateBudgetUseCase _updateBudget;
+  final DeleteBudgetUseCase _deleteBudget;
   final String _userId;
   static const _uuid = Uuid();
 
@@ -349,6 +369,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         resultText = await _handleTransferAction(meta);
       case 'bill':
         resultText = await _handleBillAction(meta);
+      case 'budget':
+        resultText = await _handleBudgetAction(meta);
       default:
         resultText = 'Unknown action type.';
     }
@@ -384,6 +406,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             actionType == 'transfer' ||
             actionType == 'bill',
         shouldRefreshBills: actionType == 'bill',
+        shouldRefreshBudgets: actionType == 'budget',
       ),
     );
   }
@@ -650,6 +673,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         return _preflightTransaction(meta);
       case 'transfer':
         return _preflightTransfer(meta);
+      case 'budget':
+        return _preflightBudget(meta);
       default:
         return null;
     }
@@ -946,6 +971,146 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
 
     return 'Unknown bill action.';
+  }
+
+  /// Validates a budget action against current categories + active budgets
+  /// before showing the Confirm card. Mirrors `_preflightTransaction` —
+  /// the user shouldn't tap Confirm on a card that's destined to fail.
+  Future<String?> _preflightBudget(Map<String, dynamic> meta) async {
+    final action = (meta['action'] as String?) ?? '';
+    final categoryName = (meta['category'] as String? ?? '').trim();
+    if (categoryName.isEmpty) {
+      return 'Categoria é obrigatória para orçamento.';
+    }
+
+    final catResult = await _getCategories(userId: _userId);
+    if (catResult.isLeft()) return null; // let it through; can't be sure
+    final categories = catResult.getOrElse(() => []);
+    final matched = categories
+        .where(
+          (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
+        )
+        .toList();
+    if (matched.isEmpty) {
+      return 'Categoria "$categoryName" não existe. Crie-a primeiro.';
+    }
+    final cat = matched.first;
+    if (cat.type != CategoryType.expense) {
+      return 'Orçamento só vale para categorias de despesa.';
+    }
+    if (cat.parentId != null) {
+      return 'Orçamento só pode ser criado em categoria-pai. '
+          'Use a categoria raiz "${categories.firstWhere(
+            (c) => c.id == cat.parentId,
+            orElse: () => cat,
+          ).name}".';
+    }
+
+    if (action == 'create' || action == 'update' || action == 'delete') {
+      final budgetsResult = await _getBudgets(userId: _userId);
+      if (budgetsResult.isLeft()) return null;
+      final budgets = budgetsResult.getOrElse(() => []);
+      final existing = budgets
+          .where((b) => b.categoryId == cat.id)
+          .toList();
+      if (action == 'create' && existing.isNotEmpty) {
+        return 'Já existe um orçamento para "$categoryName". '
+            'Use "atualizar" para mudar o valor.';
+      }
+      if ((action == 'update' || action == 'delete') && existing.isEmpty) {
+        return 'Não existe orçamento para "$categoryName" ainda. '
+            'Use "criar" para definir um.';
+      }
+    }
+
+    if (action == 'create' || action == 'update') {
+      final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+      if (amount <= 0) return 'Valor do orçamento deve ser maior que zero.';
+    }
+    return null;
+  }
+
+  Future<String> _handleBudgetAction(Map<String, dynamic> meta) async {
+    final action = meta['action'] as String?;
+    final categoryName = (meta['category'] as String? ?? '').trim();
+    if (categoryName.isEmpty) return 'Categoria é obrigatória.';
+
+    final catResult = await _getCategories(userId: _userId);
+    if (catResult.isLeft()) return 'Não foi possível carregar categorias.';
+    final categories = catResult.getOrElse(() => []);
+    final cat = categories
+        .where(
+          (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
+        )
+        .firstOrNull;
+    if (cat == null) {
+      return 'Categoria "$categoryName" não encontrada.';
+    }
+
+    if (action == 'create') {
+      final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+      if (amount <= 0) return 'Valor inválido.';
+      final now = DateTime.now();
+      final budget = BudgetEntity(
+        id: '',
+        userId: _userId,
+        categoryId: cat.id,
+        amount: amount,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final result = await _createBudget(budget);
+      return result.fold(
+        (f) => 'Falha ao criar orçamento: ${f.message}',
+        (b) =>
+            'Orçamento de R\$ ${b.amount.toStringAsFixed(2)} '
+            'em "${cat.name}" criado.',
+      );
+    }
+
+    if (action == 'update') {
+      final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
+      if (amount <= 0) return 'Valor inválido.';
+      final budgetsResult = await _getBudgets(userId: _userId);
+      if (budgetsResult.isLeft()) {
+        return 'Não foi possível carregar orçamentos.';
+      }
+      final budgets = budgetsResult.getOrElse(() => []);
+      final existing = budgets.where((b) => b.categoryId == cat.id).firstOrNull;
+      if (existing == null) {
+        return 'Nenhum orçamento ativo para "${cat.name}".';
+      }
+      final updated = existing.copyWith(
+        amount: amount,
+        updatedAt: DateTime.now(),
+      );
+      final result = await _updateBudget(updated);
+      return result.fold(
+        (f) => 'Falha ao atualizar orçamento: ${f.message}',
+        (b) =>
+            'Orçamento de "${cat.name}" atualizado para '
+            'R\$ ${b.amount.toStringAsFixed(2)}.',
+      );
+    }
+
+    if (action == 'delete') {
+      final budgetsResult = await _getBudgets(userId: _userId);
+      if (budgetsResult.isLeft()) {
+        return 'Não foi possível carregar orçamentos.';
+      }
+      final budgets = budgetsResult.getOrElse(() => []);
+      final existing = budgets.where((b) => b.categoryId == cat.id).firstOrNull;
+      if (existing == null) {
+        return 'Nenhum orçamento ativo para "${cat.name}".';
+      }
+      final result = await _deleteBudget(existing.id);
+      return result.fold(
+        (f) => 'Falha ao remover orçamento: ${f.message}',
+        (_) => 'Orçamento de "${cat.name}" removido.',
+      );
+    }
+
+    return 'Ação de orçamento desconhecida.';
   }
 
   static String _formatDateOnly(DateTime d) =>

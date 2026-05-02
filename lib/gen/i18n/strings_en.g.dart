@@ -52,6 +52,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsChatEn chat = TranslationsChatEn._(_root);
 	late final TranslationsReportsEn reports = TranslationsReportsEn._(_root);
 	late final TranslationsBillsEn bills = TranslationsBillsEn._(_root);
+	late final TranslationsBudgetsEn budgets = TranslationsBudgetsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
 	late final TranslationsStartupEn startup = TranslationsStartupEn._(_root);
 }
@@ -288,6 +289,9 @@ class TranslationsNavEn {
 
 	/// en: 'Bills'
 	String get bills => 'Bills';
+
+	/// en: 'Orçamento'
+	String get budgets => 'Orçamento';
 }
 
 // Path: dashboard
@@ -1308,6 +1312,111 @@ class TranslationsBillsEn {
 	String get editScopeAlsoSubsequents => 'Esta e as subsequentes';
 }
 
+// Path: budgets
+class TranslationsBudgetsEn {
+	TranslationsBudgetsEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Orçamento'
+	String get title => 'Orçamento';
+
+	/// en: 'Novo orçamento'
+	String get addBudget => 'Novo orçamento';
+
+	/// en: 'Editar orçamento'
+	String get editBudget => 'Editar orçamento';
+
+	/// en: 'Categoria'
+	String get category => 'Categoria';
+
+	/// en: 'Escolha uma categoria'
+	String get categoryHint => 'Escolha uma categoria';
+
+	/// en: 'Selecione uma categoria'
+	String get categoryRequired => 'Selecione uma categoria';
+
+	/// en: 'Valor mensal'
+	String get amount => 'Valor mensal';
+
+	/// en: '0,00'
+	String get amountHint => '0,00';
+
+	/// en: 'Resumo do mês'
+	String get summaryTitle => 'Resumo do mês';
+
+	/// en: 'Total orçado'
+	String get summaryCap => 'Total orçado';
+
+	/// en: 'Gasto'
+	String get summarySpent => 'Gasto';
+
+	/// en: 'Disponível'
+	String get summaryRemaining => 'Disponível';
+
+	/// en: '$spent de $cap'
+	String spentOf({required Object spent, required Object cap}) => '${spent} de ${cap}';
+
+	/// en: '$value% usado'
+	String percentageUsed({required Object value}) => '${value}% usado';
+
+	/// en: 'Restam $value'
+	String remainingOf({required Object value}) => 'Restam ${value}';
+
+	/// en: 'Estourou em $value'
+	String overBy({required Object value}) => 'Estourou em ${value}';
+
+	/// en: 'Tranquilo'
+	String get statusSafe => 'Tranquilo';
+
+	/// en: 'Atenção'
+	String get statusWarning => 'Atenção';
+
+	/// en: 'Estourou'
+	String get statusExceeded => 'Estourou';
+
+	/// en: 'Tem certeza que deseja excluir este orçamento?'
+	String get deleteConfirm => 'Tem certeza que deseja excluir este orçamento?';
+
+	/// en: 'Orçamento criado'
+	String get budgetCreated => 'Orçamento criado';
+
+	/// en: 'Orçamento atualizado'
+	String get budgetUpdated => 'Orçamento atualizado';
+
+	/// en: 'Orçamento excluído'
+	String get budgetDeleted => 'Orçamento excluído';
+
+	/// en: 'Já existe um orçamento para essa categoria.'
+	String get duplicateCategory => 'Já existe um orçamento para essa categoria.';
+
+	/// en: 'Crie ao menos uma categoria de despesa antes.'
+	String get noExpenseCategory => 'Crie ao menos uma categoria de despesa antes.';
+
+	/// en: 'Todas as categorias já têm orçamento.'
+	String get allCategoriesBudgeted => 'Todas as categorias já têm orçamento.';
+
+	/// en: 'Tome controle dos seus gastos'
+	String get emptyTitle => 'Tome controle dos seus gastos';
+
+	/// en: 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.'
+	String get emptyBody => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.';
+
+	/// en: 'Ex: R$ 1.500 em Alimentação, R$ 400 em Lazer, R$ 200 em Transporte.'
+	String get emptyExample => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.';
+
+	/// en: 'Criar primeiro orçamento'
+	String get emptyAction => 'Criar primeiro orçamento';
+
+	/// en: 'Detalhes'
+	String get formDetails => 'Detalhes';
+
+	/// en: 'Categoria'
+	String get formCategorySection => 'Categoria';
+}
+
 // Path: profile
 class TranslationsProfileEn {
 	TranslationsProfileEn._(this._root);
@@ -1459,6 +1568,15 @@ class TranslationsChatActionEn {
 
 	/// en: 'Delete bill'
 	String get billDelete => 'Delete bill';
+
+	/// en: 'Create budget'
+	String get budgetCreate => 'Create budget';
+
+	/// en: 'Update budget'
+	String get budgetUpdate => 'Update budget';
+
+	/// en: 'Delete budget'
+	String get budgetDelete => 'Delete budget';
 
 	/// en: 'Amount'
 	String get fieldAmount => 'Amount';
@@ -1724,6 +1842,7 @@ extension on Translations {
 			'nav.reports' => 'Reports',
 			'nav.profile' => 'Profile',
 			'nav.bills' => 'Bills',
+			'nav.budgets' => 'Orçamento',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -1975,6 +2094,9 @@ extension on Translations {
 			'chat.action.billUpdate' => 'Update bill',
 			'chat.action.billMarkPaid' => 'Mark bill as paid',
 			'chat.action.billDelete' => 'Delete bill',
+			'chat.action.budgetCreate' => 'Create budget',
+			'chat.action.budgetUpdate' => 'Update budget',
+			'chat.action.budgetDelete' => 'Delete budget',
 			'chat.action.fieldAmount' => 'Amount',
 			'chat.action.fieldDescription' => 'Description',
 			'chat.action.fieldCategory' => 'Category',
@@ -2105,6 +2227,38 @@ extension on Translations {
 			'bills.editScopeDescription' => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).',
 			'bills.editScopeOnlyThis' => 'Apenas esta',
 			'bills.editScopeAlsoSubsequents' => 'Esta e as subsequentes',
+			'budgets.title' => 'Orçamento',
+			'budgets.addBudget' => 'Novo orçamento',
+			'budgets.editBudget' => 'Editar orçamento',
+			'budgets.category' => 'Categoria',
+			'budgets.categoryHint' => 'Escolha uma categoria',
+			'budgets.categoryRequired' => 'Selecione uma categoria',
+			'budgets.amount' => 'Valor mensal',
+			'budgets.amountHint' => '0,00',
+			'budgets.summaryTitle' => 'Resumo do mês',
+			'budgets.summaryCap' => 'Total orçado',
+			'budgets.summarySpent' => 'Gasto',
+			'budgets.summaryRemaining' => 'Disponível',
+			'budgets.spentOf' => ({required Object spent, required Object cap}) => '${spent} de ${cap}',
+			'budgets.percentageUsed' => ({required Object value}) => '${value}% usado',
+			'budgets.remainingOf' => ({required Object value}) => 'Restam ${value}',
+			'budgets.overBy' => ({required Object value}) => 'Estourou em ${value}',
+			'budgets.statusSafe' => 'Tranquilo',
+			'budgets.statusWarning' => 'Atenção',
+			'budgets.statusExceeded' => 'Estourou',
+			'budgets.deleteConfirm' => 'Tem certeza que deseja excluir este orçamento?',
+			'budgets.budgetCreated' => 'Orçamento criado',
+			'budgets.budgetUpdated' => 'Orçamento atualizado',
+			'budgets.budgetDeleted' => 'Orçamento excluído',
+			'budgets.duplicateCategory' => 'Já existe um orçamento para essa categoria.',
+			'budgets.noExpenseCategory' => 'Crie ao menos uma categoria de despesa antes.',
+			'budgets.allCategoriesBudgeted' => 'Todas as categorias já têm orçamento.',
+			'budgets.emptyTitle' => 'Tome controle dos seus gastos',
+			'budgets.emptyBody' => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.',
+			'budgets.emptyExample' => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.',
+			'budgets.emptyAction' => 'Criar primeiro orçamento',
+			'budgets.formDetails' => 'Detalhes',
+			'budgets.formCategorySection' => 'Categoria',
 			'profile.title' => 'Profile',
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',

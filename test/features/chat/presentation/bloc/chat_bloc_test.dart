@@ -32,6 +32,10 @@ void main() {
   late MockUpdateBillUseCase mockUpdateBill;
   late MockDeleteBillUseCase mockDeleteBill;
   late MockPayBillUseCase mockPayBill;
+  late MockGetBudgetsUseCase mockGetBudgets;
+  late MockCreateBudgetUseCase mockCreateBudget;
+  late MockUpdateBudgetUseCase mockUpdateBudget;
+  late MockDeleteBudgetUseCase mockDeleteBudget;
 
   const userId = 'user-1';
 
@@ -60,6 +64,10 @@ void main() {
     mockUpdateBill = MockUpdateBillUseCase();
     mockDeleteBill = MockDeleteBillUseCase();
     mockPayBill = MockPayBillUseCase();
+    mockGetBudgets = MockGetBudgetsUseCase();
+    mockCreateBudget = MockCreateBudgetUseCase();
+    mockUpdateBudget = MockUpdateBudgetUseCase();
+    mockDeleteBudget = MockDeleteBudgetUseCase();
   });
 
   ChatBloc buildBloc() => ChatBloc(
@@ -80,6 +88,10 @@ void main() {
     updateBill: mockUpdateBill,
     deleteBill: mockDeleteBill,
     payBill: mockPayBill,
+    getBudgets: mockGetBudgets,
+    createBudget: mockCreateBudget,
+    updateBudget: mockUpdateBudget,
+    deleteBudget: mockDeleteBudget,
     userId: userId,
   );
 
