@@ -40,7 +40,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         ),
       );
     } else {
-      context.go(AppRoutes.signUp);
+      context.go(AppRoutes.signIn);
     }
   }
 
@@ -87,7 +87,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
               _BottomActions(
                 isLastStep: _index == 2,
                 onNext: _next,
-                onSignIn: () => context.go(AppRoutes.signIn),
               ),
               const SizedBox(height: 24),
             ],
@@ -156,12 +155,10 @@ class _BottomActions extends StatelessWidget {
   const _BottomActions({
     required this.isLastStep,
     required this.onNext,
-    required this.onSignIn,
   });
 
   final bool isLastStep;
   final VoidCallback onNext;
-  final VoidCallback onSignIn;
 
   @override
   Widget build(BuildContext context) {
@@ -198,16 +195,6 @@ class _BottomActions extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   const GoogleSignInButton(),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: onSignIn,
-                    child: Text(
-                      t.auth.hasAccount,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                  ),
                 ],
               ).animate().fadeIn(duration: 300.ms)
             : SizedBox(

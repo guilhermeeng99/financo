@@ -23,3 +23,13 @@ final class AiFailure extends Failure {
 final class ValidationFailure extends Failure {
   const ValidationFailure([super.message = 'Validation error.']);
 }
+
+/// Raised when a successfully authenticated user is not in the access
+/// allowlist (`allowed_emails/`) and is not the master. Carries the email
+/// so the UI can show the user which address to ask the master to enable.
+final class AccessDeniedFailure extends Failure {
+  const AccessDeniedFailure(this.email)
+    : super('Access restricted for this account.');
+
+  final String email;
+}

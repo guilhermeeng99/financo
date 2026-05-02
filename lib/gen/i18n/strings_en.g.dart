@@ -43,6 +43,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsGeneralEn general = TranslationsGeneralEn._(_root);
 	late final TranslationsValidatorsEn validators = TranslationsValidatorsEn._(_root);
 	late final TranslationsAuthEn auth = TranslationsAuthEn._(_root);
+	late final TranslationsAccessControlEn accessControl = TranslationsAccessControlEn._(_root);
+	late final TranslationsMasterPanelEn masterPanel = TranslationsMasterPanelEn._(_root);
 	late final TranslationsOnboardingEn onboarding = TranslationsOnboardingEn._(_root);
 	late final TranslationsNavEn nav = TranslationsNavEn._(_root);
 	late final TranslationsDashboardEn dashboard = TranslationsDashboardEn._(_root);
@@ -176,9 +178,6 @@ class TranslationsAuthEn {
 	/// en: 'Sign In'
 	String get signIn => 'Sign In';
 
-	/// en: 'Sign Up'
-	String get signUp => 'Sign Up';
-
 	/// en: 'Sign Out'
 	String get signOut => 'Sign Out';
 
@@ -188,41 +187,98 @@ class TranslationsAuthEn {
 	/// en: 'your@email.com'
 	String get emailHint => 'your@email.com';
 
-	/// en: 'Password'
-	String get password => 'Password';
-
-	/// en: '••••••••'
-	String get passwordHint => '••••••••';
-
-	/// en: 'Name'
-	String get name => 'Name';
-
-	/// en: 'Your full name'
-	String get nameHint => 'Your full name';
-
-	/// en: 'Forgot password?'
-	String get forgotPassword => 'Forgot password?';
-
-	/// en: 'Don't have an account? Sign Up'
-	String get noAccount => 'Don\'t have an account? Sign Up';
-
-	/// en: 'Already have an account? Sign In'
-	String get hasAccount => 'Already have an account? Sign In';
-
 	/// en: 'Welcome back'
 	String get welcomeBack => 'Welcome back';
 
-	/// en: 'Sign in to your account'
-	String get signInSubtitle => 'Sign in to your account';
-
-	/// en: 'Create account'
-	String get createAccount => 'Create account';
-
-	/// en: 'Start managing your finances today'
-	String get signUpSubtitle => 'Start managing your finances today';
+	/// en: 'Sign in with your Google account'
+	String get signInSubtitle => 'Sign in with your Google account';
 
 	/// en: 'Continue with Google'
 	String get continueWithGoogle => 'Continue with Google';
+
+	/// en: 'Access is by invite only.'
+	String get accessByInviteOnly => 'Access is by invite only.';
+}
+
+// Path: accessControl
+class TranslationsAccessControlEn {
+	TranslationsAccessControlEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Restricted access'
+	String get restrictedTitle => 'Restricted access';
+
+	/// en: 'Ask Guilherme to grant access for your email:'
+	String get restrictedBody => 'Ask Guilherme to grant access for your email:';
+
+	/// en: 'Back'
+	String get restrictedBack => 'Back';
+}
+
+// Path: masterPanel
+class TranslationsMasterPanelEn {
+	TranslationsMasterPanelEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Master panel'
+	String get title => 'Master panel';
+
+	/// en: 'Users'
+	String get tabUsers => 'Users';
+
+	/// en: 'Allowlist'
+	String get tabAllowlist => 'Allowlist';
+
+	/// en: 'No registered users yet.'
+	String get usersEmpty => 'No registered users yet.';
+
+	/// en: 'No emails authorized yet.'
+	String get allowlistEmpty => 'No emails authorized yet.';
+
+	/// en: 'MASTER'
+	String get masterBadge => 'MASTER';
+
+	/// en: 'Authorize email'
+	String get addEmailTitle => 'Authorize email';
+
+	/// en: 'Note (optional)'
+	String get addEmailNoteLabel => 'Note (optional)';
+
+	/// en: 'e.g. friend's name'
+	String get addEmailNoteHint => 'e.g. friend\'s name';
+
+	/// en: 'Email authorized.'
+	String get addEmailSuccess => 'Email authorized.';
+
+	/// en: 'Remove access'
+	String get removeEmailTitle => 'Remove access';
+
+	/// en: 'This removes access for $email. Their existing data is kept.'
+	String removeEmailBody({required Object email}) => 'This removes access for ${email}. Their existing data is kept.';
+
+	/// en: 'Remove'
+	String get removeEmailConfirm => 'Remove';
+
+	/// en: 'Email removed from allowlist.'
+	String get removeEmailSuccess => 'Email removed from allowlist.';
+
+	/// en: 'Delete user'
+	String get deleteUserTitle => 'Delete user';
+
+	/// en: 'This permanently deletes $name and all of their data. Type the email to confirm.'
+	String deleteUserBody({required Object name}) => 'This permanently deletes ${name} and all of their data. Type the email to confirm.';
+
+	/// en: 'Type the email'
+	String get deleteUserConfirmField => 'Type the email';
+
+	/// en: 'User deleted.'
+	String get deleteUserSuccess => 'User deleted.';
 }
 
 // Path: onboarding
@@ -1488,6 +1544,15 @@ class TranslationsProfileEn {
 	/// en: 'Danger zone'
 	String get sectionDangerZone => 'Danger zone';
 
+	/// en: 'Master'
+	String get sectionMaster => 'Master';
+
+	/// en: 'Master panel'
+	String get masterPanel => 'Master panel';
+
+	/// en: 'Manage users and the access allowlist'
+	String get masterPanelDescription => 'Manage users and the access allowlist';
+
 	/// en: 'Appearance'
 	String get appearance => 'Appearance';
 
@@ -1810,22 +1875,34 @@ extension on Translations {
 			'validators.selectAccount' => 'Select an account',
 			'validators.selectCategory' => 'Select a category',
 			'auth.signIn' => 'Sign In',
-			'auth.signUp' => 'Sign Up',
 			'auth.signOut' => 'Sign Out',
 			'auth.email' => 'Email',
 			'auth.emailHint' => 'your@email.com',
-			'auth.password' => 'Password',
-			'auth.passwordHint' => '••••••••',
-			'auth.name' => 'Name',
-			'auth.nameHint' => 'Your full name',
-			'auth.forgotPassword' => 'Forgot password?',
-			'auth.noAccount' => 'Don\'t have an account? Sign Up',
-			'auth.hasAccount' => 'Already have an account? Sign In',
 			'auth.welcomeBack' => 'Welcome back',
-			'auth.signInSubtitle' => 'Sign in to your account',
-			'auth.createAccount' => 'Create account',
-			'auth.signUpSubtitle' => 'Start managing your finances today',
+			'auth.signInSubtitle' => 'Sign in with your Google account',
 			'auth.continueWithGoogle' => 'Continue with Google',
+			'auth.accessByInviteOnly' => 'Access is by invite only.',
+			'accessControl.restrictedTitle' => 'Restricted access',
+			'accessControl.restrictedBody' => 'Ask Guilherme to grant access for your email:',
+			'accessControl.restrictedBack' => 'Back',
+			'masterPanel.title' => 'Master panel',
+			'masterPanel.tabUsers' => 'Users',
+			'masterPanel.tabAllowlist' => 'Allowlist',
+			'masterPanel.usersEmpty' => 'No registered users yet.',
+			'masterPanel.allowlistEmpty' => 'No emails authorized yet.',
+			'masterPanel.masterBadge' => 'MASTER',
+			'masterPanel.addEmailTitle' => 'Authorize email',
+			'masterPanel.addEmailNoteLabel' => 'Note (optional)',
+			'masterPanel.addEmailNoteHint' => 'e.g. friend\'s name',
+			'masterPanel.addEmailSuccess' => 'Email authorized.',
+			'masterPanel.removeEmailTitle' => 'Remove access',
+			'masterPanel.removeEmailBody' => ({required Object email}) => 'This removes access for ${email}. Their existing data is kept.',
+			'masterPanel.removeEmailConfirm' => 'Remove',
+			'masterPanel.removeEmailSuccess' => 'Email removed from allowlist.',
+			'masterPanel.deleteUserTitle' => 'Delete user',
+			'masterPanel.deleteUserBody' => ({required Object name}) => 'This permanently deletes ${name} and all of their data. Type the email to confirm.',
+			'masterPanel.deleteUserConfirmField' => 'Type the email',
+			'masterPanel.deleteUserSuccess' => 'User deleted.',
 			'onboarding.tagline' => 'Take control of your personal finances\nwith smart tracking and AI assistance.',
 			'onboarding.step1Title' => 'Track Your Finances',
 			'onboarding.step1Body' => 'Log income and expenses effortlessly. Keep a clear view of where your money goes.',
@@ -2279,7 +2356,12 @@ extension on Translations {
 			'profile.sectionPreferences' => 'Preferences',
 			'profile.sectionGetTheApp' => 'Get the app',
 			'profile.sectionAccount' => 'Account',
+			_ => null,
+		} ?? switch (path) {
 			'profile.sectionDangerZone' => 'Danger zone',
+			'profile.sectionMaster' => 'Master',
+			'profile.masterPanel' => 'Master panel',
+			'profile.masterPanelDescription' => 'Manage users and the access allowlist',
 			'profile.appearance' => 'Appearance',
 			'profile.version' => 'Version',
 			'startup.tagline' => 'Your finances, in flow.',

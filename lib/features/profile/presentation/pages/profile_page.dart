@@ -4,6 +4,7 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/core/constants/access_control.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/web_file_download.dart'
@@ -174,6 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 name: state.user.name,
                 email: state.user.email,
                 photoUrl: state.user.photoUrl,
+                isMaster: isMasterEmail(state.user.email),
                 onImportCsv: _importCsv,
                 onDownloadApk: _downloadApk,
                 onSignOut: _confirmSignOut,
@@ -194,6 +196,7 @@ class _ProfileContent extends StatelessWidget {
     required this.name,
     required this.email,
     required this.photoUrl,
+    required this.isMaster,
     required this.onImportCsv,
     required this.onDownloadApk,
     required this.onSignOut,
@@ -204,6 +207,7 @@ class _ProfileContent extends StatelessWidget {
   final String name;
   final String email;
   final String? photoUrl;
+  final bool isMaster;
   final Future<void> Function() onImportCsv;
   final VoidCallback onDownloadApk;
   final VoidCallback onSignOut;
@@ -259,6 +263,21 @@ class _ProfileContent extends StatelessWidget {
                   color: context.appColors.onBackgroundLight,
                 ),
                 onTap: onDownloadApk,
+              ),
+            ],
+          ),
+        ],
+        if (isMaster) ...[
+          const SizedBox(height: 20),
+          ProfileSection(
+            label: t.profile.sectionMaster,
+            children: [
+              ProfileRow(
+                icon: FontAwesomeIcons.shieldHalved,
+                title: t.profile.masterPanel,
+                subtitle: t.profile.masterPanelDescription,
+                accent: context.appColors.primary,
+                onTap: () => context.push(AppRoutes.masterPanel),
               ),
             ],
           ),

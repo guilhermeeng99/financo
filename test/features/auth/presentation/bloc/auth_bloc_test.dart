@@ -14,16 +14,12 @@ import '../../../../harness/factories/user_factory.dart';
 import '../../../../harness/mocks.dart';
 
 void main() {
-  late MockSignInUseCase mockSignIn;
-  late MockSignUpUseCase mockSignUp;
   late MockSignInWithGoogleUseCase mockSignInWithGoogle;
   late MockSignOutUseCase mockSignOut;
   late MockGetCurrentUserUseCase mockGetCurrentUser;
   late StreamController<UserEntity?> authStreamController;
 
   setUp(() {
-    mockSignIn = MockSignInUseCase();
-    mockSignUp = MockSignUpUseCase();
     mockSignInWithGoogle = MockSignInWithGoogleUseCase();
     mockSignOut = MockSignOutUseCase();
     mockGetCurrentUser = MockGetCurrentUserUseCase();
@@ -37,9 +33,7 @@ void main() {
   tearDown(() => authStreamController.close());
 
   AuthBloc buildBloc() => AuthBloc(
-    signInUseCase: mockSignIn,
     signInWithGoogleUseCase: mockSignInWithGoogle,
-    signUpUseCase: mockSignUp,
     signOutUseCase: mockSignOut,
     getCurrentUser: mockGetCurrentUser,
   );
@@ -77,7 +71,28 @@ void main() {
       );
 
       blocTest<AuthBloc, AuthState>(
-        'emits [Unauthenticated] on failure',
+        'emits [AccessDenied] when allowlist gate blocks',
+        setUp: () {
+          when(
+            () => mockGetCurrentUser(),
+          ).thenAnswer(
+            (_) async =>
+                const Left(AccessDeniedFailure('blocked@example.com')),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) => bloc.add(const AuthCheckRequested()),
+        expect: () => [
+          predicate<AuthState>(
+            (state) =>
+                state is AccessDenied &&
+                state.email == 'blocked@example.com',
+          ),
+        ],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [Unauthenticated] on generic failure',
         setUp: () {
           when(
             () => mockGetCurrentUser(),
@@ -86,110 +101,6 @@ void main() {
         build: buildBloc,
         act: (bloc) => bloc.add(const AuthCheckRequested()),
         expect: () => [isA<Unauthenticated>()],
-      );
-    });
-
-    group('AuthSignInRequested', () {
-      blocTest<AuthBloc, AuthState>(
-        'emits [Loading, Authenticated] on success',
-        setUp: () {
-          when(
-            () => mockSignIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            ),
-          ).thenAnswer((_) async => Right(UserFactory.entity()));
-        },
-        build: buildBloc,
-        act: (bloc) => bloc.add(
-          const AuthSignInRequested(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
-        ),
-        expect: () => [
-          isA<AuthLoading>(),
-          isA<Authenticated>(),
-        ],
-      );
-
-      blocTest<AuthBloc, AuthState>(
-        'emits [Loading, Error] on failure',
-        setUp: () {
-          when(
-            () => mockSignIn(
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            ),
-          ).thenAnswer(
-            (_) async => const Left(AuthFailure('Invalid credentials')),
-          );
-        },
-        build: buildBloc,
-        act: (bloc) => bloc.add(
-          const AuthSignInRequested(
-            email: 'test@example.com',
-            password: 'wrong',
-          ),
-        ),
-        expect: () => [
-          isA<AuthLoading>(),
-          isA<AuthError>(),
-        ],
-      );
-    });
-
-    group('AuthSignUpRequested', () {
-      blocTest<AuthBloc, AuthState>(
-        'emits [Loading, Authenticated] on success',
-        setUp: () {
-          when(
-            () => mockSignUp(
-              name: any(named: 'name'),
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            ),
-          ).thenAnswer((_) async => Right(UserFactory.entity()));
-        },
-        build: buildBloc,
-        act: (bloc) => bloc.add(
-          const AuthSignUpRequested(
-            name: 'Test User',
-            email: 'test@example.com',
-            password: 'password123',
-          ),
-        ),
-        expect: () => [
-          isA<AuthLoading>(),
-          isA<Authenticated>(),
-        ],
-      );
-
-      blocTest<AuthBloc, AuthState>(
-        'emits [Loading, Error] on failure',
-        setUp: () {
-          when(
-            () => mockSignUp(
-              name: any(named: 'name'),
-              email: any(named: 'email'),
-              password: any(named: 'password'),
-            ),
-          ).thenAnswer(
-            (_) async => const Left(AuthFailure('Email in use')),
-          );
-        },
-        build: buildBloc,
-        act: (bloc) => bloc.add(
-          const AuthSignUpRequested(
-            name: 'Test',
-            email: 'test@example.com',
-            password: 'password123',
-          ),
-        ),
-        expect: () => [
-          isA<AuthLoading>(),
-          isA<AuthError>(),
-        ],
       );
     });
 
@@ -210,7 +121,26 @@ void main() {
       );
 
       blocTest<AuthBloc, AuthState>(
-        'emits [Loading, Error] on failure',
+        'emits [Loading, AccessDenied] when allowlist gate blocks',
+        setUp: () {
+          when(() => mockSignInWithGoogle()).thenAnswer(
+            (_) async =>
+                const Left(AccessDeniedFailure('friend@example.com')),
+          );
+        },
+        build: buildBloc,
+        act: (bloc) => bloc.add(const AuthGoogleSignInRequested()),
+        expect: () => [
+          isA<AuthLoading>(),
+          predicate<AuthState>(
+            (state) => state is AccessDenied &&
+                state.email == 'friend@example.com',
+          ),
+        ],
+      );
+
+      blocTest<AuthBloc, AuthState>(
+        'emits [Loading, Error] on generic failure',
         setUp: () {
           when(
             () => mockSignInWithGoogle(),

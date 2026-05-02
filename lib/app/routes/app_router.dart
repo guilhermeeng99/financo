@@ -4,6 +4,10 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_mobile_nav.dart';
 import 'package:financo/app/widgets/financo_sidebar.dart';
 import 'package:financo/app/widgets/sub_page_scope.dart';
+import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/list_allowed_emails_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
+import 'package:financo/features/access_control/presentation/pages/access_restricted_page.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
@@ -17,7 +21,6 @@ import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:financo/features/auth/presentation/pages/sign_in_page.dart';
-import 'package:financo/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
@@ -46,6 +49,10 @@ import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
+import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
+import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
+import 'package:financo/features/master_panel/presentation/pages/master_panel_page.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/features/profile/presentation/pages/profile_page.dart';
@@ -74,9 +81,9 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     final authState = authBloc.state;
     final isOnStartup = state.matchedLocation == AppRoutes.startup;
     final isOnOnboarding = state.matchedLocation == AppRoutes.onboarding;
-    final isOnAuth =
-        state.matchedLocation == AppRoutes.signIn ||
-        state.matchedLocation == AppRoutes.signUp;
+    final isOnAuth = state.matchedLocation == AppRoutes.signIn;
+    final isOnAccessRestricted =
+        state.matchedLocation == AppRoutes.accessRestricted;
 
     // Startup is always accessible.
     if (isOnStartup) return null;
@@ -86,6 +93,12 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       return AppRoutes.startup;
     }
 
+    // AccessDenied keeps the user on the restricted page until they
+    // tap "back" (which dispatches sign-out).
+    if (authState is AccessDenied) {
+      return isOnAccessRestricted ? null : AppRoutes.accessRestricted;
+    }
+
     // Unauthenticated users can stay on auth/onboarding pages.
     if (authState is Unauthenticated) {
       if (isOnAuth || isOnOnboarding) return null;
@@ -93,8 +106,11 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     }
 
     // Authenticated users on auth/onboarding pages go through startup
-    // so the data sync happens before entering the app.
-    if (authState is Authenticated && (isOnAuth || isOnOnboarding)) {
+    // so the data sync happens before entering the app. Same applies
+    // for the access-restricted page (e.g. user came back from sign-out
+    // and was re-authenticated successfully).
+    if (authState is Authenticated &&
+        (isOnAuth || isOnOnboarding || isOnAccessRestricted)) {
       return AppRoutes.startup;
     }
 
@@ -115,8 +131,8 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       builder: (context, state) => const SignInPage(),
     ),
     GoRoute(
-      path: AppRoutes.signUp,
-      builder: (context, state) => const SignUpPage(),
+      path: AppRoutes.accessRestricted,
+      builder: (context, state) => const AccessRestrictedPage(),
     ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
@@ -214,6 +230,21 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.profile,
           builder: (context, state) => const ProfilePage(),
+        ),
+        GoRoute(
+          path: AppRoutes.masterPanel,
+          builder: (context, state) => SubPageScope(
+            child: BlocProvider(
+              create: (_) => MasterPanelCubit(
+                listAllUsers: GetIt.I<ListAllUsersUseCase>(),
+                listAllowedEmails: GetIt.I<ListAllowedEmailsUseCase>(),
+                addAllowedEmail: GetIt.I<AddAllowedEmailUseCase>(),
+                removeAllowedEmail: GetIt.I<RemoveAllowedEmailUseCase>(),
+                deleteUserAsAdmin: GetIt.I<DeleteUserAsAdminUseCase>(),
+              ),
+              child: const MasterPanelPage(),
+            ),
+          ),
         ),
         GoRoute(
           path: AppRoutes.accountDetail,

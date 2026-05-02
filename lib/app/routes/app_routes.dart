@@ -4,7 +4,8 @@ class AppRoutes {
   static const startup = '/startup';
   static const onboarding = '/onboarding';
   static const signIn = '/sign-in';
-  static const signUp = '/sign-up';
+  static const accessRestricted = '/access-restricted';
+  static const masterPanel = '/master-panel';
   static const dashboard = '/';
   static const transactions = '/transactions';
   static const chat = '/chat';

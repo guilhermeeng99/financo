@@ -14,6 +14,14 @@ import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/notifications/notification_service.dart';
 import 'package:financo/core/sync/sync_service.dart';
+// Access Control
+import 'package:financo/features/access_control/data/datasources/access_control_remote_datasource.dart';
+import 'package:financo/features/access_control/data/repositories/access_control_repository_impl.dart';
+import 'package:financo/features/access_control/domain/repositories/access_control_repository.dart';
+import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/is_email_allowed_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/list_allowed_emails_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
 // Accounts
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/accounts/data/repositories/account_repository_impl.dart';
@@ -28,10 +36,8 @@ import 'package:financo/features/auth/data/datasources/auth_remote_datasource.da
 import 'package:financo/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
-import 'package:financo/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 // Bills
@@ -76,6 +82,12 @@ import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.d
 import 'package:financo/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+// Master Panel
+import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
+import 'package:financo/features/master_panel/data/repositories/master_users_repository_impl.dart';
+import 'package:financo/features/master_panel/domain/repositories/master_users_repository.dart';
+import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
+import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 // Profile
 import 'package:financo/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
@@ -155,6 +167,15 @@ Future<void> initDependencies() async {
       ),
     )
     // ─── Datasources ────────────────────────────────────────
+    ..registerLazySingleton<AccessControlRemoteDataSource>(
+      () => AccessControlRemoteDataSourceImpl(firestore: sl()),
+    )
+    ..registerLazySingleton<MasterUsersRemoteDataSource>(
+      () => MasterUsersRemoteDataSourceImpl(
+        firestore: sl(),
+        functions: sl(),
+      ),
+    )
     ..registerLazySingleton<AuthRemoteDataSource>(
       () => AuthRemoteDataSourceImpl(
         firebaseAuth: sl(),
@@ -184,11 +205,18 @@ Future<void> initDependencies() async {
       () => ChatRemoteDataSourceImpl(firestore: sl()),
     )
     // ─── Repositories ───────────────────────────────────────
+    ..registerLazySingleton<AccessControlRepository>(
+      () => AccessControlRepositoryImpl(remoteDataSource: sl()),
+    )
+    ..registerLazySingleton<MasterUsersRepository>(
+      () => MasterUsersRepositoryImpl(remoteDataSource: sl()),
+    )
     ..registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(
         remoteDataSource: sl(),
         usersDao: sl(),
         syncService: sl(),
+        accessControlRepository: sl(),
       ),
     )
     ..registerLazySingleton<TransactionRepository>(
@@ -242,11 +270,15 @@ Future<void> initDependencies() async {
       ),
     )
     // ─── Use Cases ──────────────────────────────────────────
-    ..registerLazySingleton(() => SignInUseCase(sl()))
+    ..registerLazySingleton(() => IsEmailAllowedUseCase(sl()))
+    ..registerLazySingleton(() => ListAllowedEmailsUseCase(sl()))
+    ..registerLazySingleton(() => AddAllowedEmailUseCase(sl()))
+    ..registerLazySingleton(() => RemoveAllowedEmailUseCase(sl()))
+    ..registerLazySingleton(() => ListAllUsersUseCase(sl()))
+    ..registerLazySingleton(() => DeleteUserAsAdminUseCase(sl()))
     ..registerLazySingleton(
       () => SignInWithGoogleUseCase(sl()),
     )
-    ..registerLazySingleton(() => SignUpUseCase(sl()))
     ..registerLazySingleton(() => SignOutUseCase(sl()))
     ..registerLazySingleton(() => GetCurrentUserUseCase(sl()))
     ..registerLazySingleton(
@@ -337,9 +369,7 @@ Future<void> initDependencies() async {
     // ─── Blocs / Cubits (global singletons) ─────────────────
     ..registerLazySingleton(
       () => AuthBloc(
-        signInUseCase: sl(),
         signInWithGoogleUseCase: sl(),
-        signUpUseCase: sl(),
         signOutUseCase: sl(),
         getCurrentUser: sl(),
         notificationService: kIsWeb ? null : sl<NotificationService>(),

@@ -7,13 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart'
     show GoogleSignIn, GoogleSignInException;
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> signIn({required String email, required String password});
   Future<UserModel> signInWithGoogle();
-  Future<UserModel> signUp({
-    required String name,
-    required String email,
-    required String password,
-  });
   Future<void> signOut();
   Future<UserModel?> getCurrentUser();
   Stream<UserModel?> get authStateChanges;
@@ -31,26 +25,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
-
-  @override
-  Future<UserModel> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final result = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final user = result.user;
-      if (user == null) throw const AuthException('Sign in failed.');
-
-      final doc = await _firestore.collection('users').doc(user.uid).get();
-      return UserModel.fromFirestore(doc);
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Authentication failed.');
-    }
-  }
 
   @override
   Future<UserModel> signInWithGoogle() async {
@@ -126,35 +100,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       rethrow;
     } on Exception catch (e) {
       throw AuthException('Google sign-in failed: $e');
-    }
-  }
-
-  @override
-  Future<UserModel> signUp({
-    required String name,
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final result = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      final user = result.user;
-      if (user == null) throw const AuthException('Sign up failed.');
-
-      final model = UserModel(
-        id: user.uid,
-        name: name,
-        email: email,
-        createdAt: DateTime.now(),
-      );
-
-      await _firestore.collection('users').doc(user.uid).set(model.toJson());
-
-      return model;
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(e.message ?? 'Registration failed.');
     }
   }
 

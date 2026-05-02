@@ -5,6 +5,12 @@ import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/sync/sync_service.dart';
+import 'package:financo/features/access_control/data/datasources/access_control_remote_datasource.dart';
+import 'package:financo/features/access_control/domain/repositories/access_control_repository.dart';
+import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/is_email_allowed_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/list_allowed_emails_usecase.dart';
+import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -15,10 +21,8 @@ import 'package:financo/features/accounts/domain/usecases/update_account_usecase
 import 'package:financo/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
-import 'package:financo/features/auth/domain/usecases/sign_in_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
-import 'package:financo/features/auth/domain/usecases/sign_up_usecase.dart';
 import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
 import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
@@ -192,16 +196,31 @@ class MockUsersDao extends Mock implements UsersDao {}
 class MockSyncService extends Mock implements SyncService {}
 
 // ── Use Cases: Auth ──
-class MockSignInUseCase extends Mock implements SignInUseCase {}
-
-class MockSignUpUseCase extends Mock implements SignUpUseCase {}
-
 class MockSignInWithGoogleUseCase extends Mock
     implements SignInWithGoogleUseCase {}
 
 class MockSignOutUseCase extends Mock implements SignOutUseCase {}
 
 class MockGetCurrentUserUseCase extends Mock implements GetCurrentUserUseCase {}
+
+// ── Repositories / Data Sources: Access Control ──
+class MockAccessControlRepository extends Mock
+    implements AccessControlRepository {}
+
+class MockAccessControlRemoteDataSource extends Mock
+    implements AccessControlRemoteDataSource {}
+
+// ── Use Cases: Access Control ──
+class MockIsEmailAllowedUseCase extends Mock implements IsEmailAllowedUseCase {}
+
+class MockListAllowedEmailsUseCase extends Mock
+    implements ListAllowedEmailsUseCase {}
+
+class MockAddAllowedEmailUseCase extends Mock
+    implements AddAllowedEmailUseCase {}
+
+class MockRemoveAllowedEmailUseCase extends Mock
+    implements RemoveAllowedEmailUseCase {}
 
 // ── Use Cases: Profile ──
 class MockGetProfileUseCase extends Mock implements GetProfileUseCase {}

@@ -3,7 +3,6 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions/v2';
 import {
-  isUidAllowed,
   META_APP_SECRET,
   WHATSAPP_ACCESS_TOKEN,
   WHATSAPP_PHONE_ID,
@@ -12,6 +11,8 @@ import {
 import { runChatTurn } from './chat/pipeline';
 import { transcribeAudio } from './chat/transcribe';
 import type { HistoryTurn } from './chat/types';
+import { isEmailAllowed } from './access/allowlist';
+import { deleteUserAsAdmin as deleteUserAsAdminImpl } from './admin/deleteUser';
 import { verifySignature } from './whatsapp/signature';
 import { processWebhookPayload } from './whatsapp/webhook';
 import { notifyBillsDue } from './bills/notifyBillsDue';
@@ -35,10 +36,11 @@ export const chatSend = onCall<ChatSendRequest>(
   },
   async (request) => {
     const userId = request.auth?.uid;
+    const email = request.auth?.token?.email as string | undefined;
     if (!userId) {
       throw new HttpsError('unauthenticated', 'Sign-in required to use chat.');
     }
-    if (!isUidAllowed(userId)) {
+    if (!(await isEmailAllowed(email))) {
       throw new HttpsError('permission-denied', 'Not allowed.');
     }
 
@@ -78,6 +80,30 @@ export const chatSend = onCall<ChatSendRequest>(
   },
 );
 
+interface DeleteUserAsAdminCallableRequest {
+  targetUid: string;
+}
+
+export const deleteUserAsAdmin = onCall<DeleteUserAsAdminCallableRequest>(
+  {
+    region: 'us-central1',
+    memory: '256MiB',
+    timeoutSeconds: 120,
+    invoker: 'public',
+  },
+  async (request) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError('unauthenticated', 'Sign-in required.');
+    }
+    const callerEmail = request.auth.token?.email as string | undefined;
+    return deleteUserAsAdminImpl(
+      request.data,
+      callerEmail,
+      request.auth.uid,
+    );
+  },
+);
+
 interface TranscribeRequest {
   audio: { data: string; mimeType: string };
 }
@@ -93,7 +119,8 @@ export const transcribeChatAudio = onCall<TranscribeRequest>(
     if (!request.auth?.uid) {
       throw new HttpsError('unauthenticated', 'Sign-in required.');
     }
-    if (!isUidAllowed(request.auth.uid)) {
+    const email = request.auth.token?.email as string | undefined;
+    if (!(await isEmailAllowed(email))) {
       throw new HttpsError('permission-denied', 'Not allowed.');
     }
     const audio = request.data?.audio;

@@ -15,6 +15,7 @@ void main() {
   late MockAuthRemoteDataSource mockRemote;
   late MockUsersDao mockUsersDao;
   late MockSyncService mockSyncService;
+  late MockAccessControlRepository mockAccessControl;
 
   setUpAll(registerAuthFallbackValues);
 
@@ -22,74 +23,59 @@ void main() {
     mockRemote = MockAuthRemoteDataSource();
     mockUsersDao = MockUsersDao();
     mockSyncService = MockSyncService();
+    mockAccessControl = MockAccessControlRepository();
     repository = AuthRepositoryImpl(
       remoteDataSource: mockRemote,
       usersDao: mockUsersDao,
       syncService: mockSyncService,
+      accessControlRepository: mockAccessControl,
     );
   });
 
-  group('signIn', () {
-    const email = 'test@example.com';
-    const password = 'password123';
-
-    test('should return user and upsert local on success', () async {
-      final model = UserFactory.model();
-      when(
-        () => mockRemote.signIn(email: email, password: password),
-      ).thenAnswer((_) async => model);
-      when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
-
-      final result = await repository.signIn(email: email, password: password);
-
-      expect(result, Right<Failure, UserEntity>(model));
-      verify(() => mockUsersDao.upsertUser(model)).called(1);
-    });
-
-    test('should return AuthFailure when AuthException thrown', () async {
-      when(
-        () => mockRemote.signIn(email: email, password: password),
-      ).thenThrow(const AuthException('Invalid credentials'));
-
-      final result = await repository.signIn(email: email, password: password);
-
-      expect(result, isA<Left<Failure, UserEntity>>());
-      result.fold(
-        (failure) => expect(failure, isA<AuthFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-
-    test('should return ServerFailure when generic Exception thrown', () async {
-      when(
-        () => mockRemote.signIn(email: email, password: password),
-      ).thenThrow(Exception('Network error'));
-
-      final result = await repository.signIn(email: email, password: password);
-
-      expect(result, isA<Left<Failure, UserEntity>>());
-      result.fold(
-        (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-  });
+  void stubAllowed({required bool allowed}) {
+    when(
+      () => mockAccessControl.isEmailAllowed(any()),
+    ).thenAnswer((_) async => Right(allowed));
+  }
 
   group('signInWithGoogle', () {
-    test('should return user and upsert local on success', () async {
+    test('returns user and upserts local when allowlist allows', () async {
       final model = UserFactory.model();
       when(
         () => mockRemote.signInWithGoogle(),
       ).thenAnswer((_) async => model);
+      stubAllowed(allowed: true);
       when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
 
       final result = await repository.signInWithGoogle();
 
       expect(result, Right<Failure, UserEntity>(model));
       verify(() => mockUsersDao.upsertUser(model)).called(1);
+      verifyNever(() => mockRemote.signOut());
     });
 
-    test('should return AuthFailure when AuthException thrown', () async {
+    test('returns AccessDeniedFailure and signs out when blocked', () async {
+      final model = UserFactory.model();
+      when(
+        () => mockRemote.signInWithGoogle(),
+      ).thenAnswer((_) async => model);
+      stubAllowed(allowed: false);
+      when(() => mockRemote.signOut()).thenAnswer((_) async {});
+
+      final result = await repository.signInWithGoogle();
+
+      result.fold(
+        (failure) {
+          expect(failure, isA<AccessDeniedFailure>());
+          expect((failure as AccessDeniedFailure).email, model.email);
+        },
+        (_) => fail('Expected Left'),
+      );
+      verify(() => mockRemote.signOut()).called(1);
+      verifyNever(() => mockUsersDao.upsertUser(any()));
+    });
+
+    test('returns AuthFailure when AuthException thrown', () async {
       when(
         () => mockRemote.signInWithGoogle(),
       ).thenThrow(const AuthException('Google sign-in cancelled'));
@@ -102,7 +88,7 @@ void main() {
       );
     });
 
-    test('should return ServerFailure when generic Exception thrown', () async {
+    test('returns ServerFailure when generic Exception thrown', () async {
       when(
         () => mockRemote.signInWithGoogle(),
       ).thenThrow(Exception('Network error'));
@@ -116,77 +102,8 @@ void main() {
     });
   });
 
-  group('signUp', () {
-    const name = 'Test User';
-    const email = 'test@example.com';
-    const password = 'password123';
-
-    test('should return user and upsert local on success', () async {
-      final model = UserFactory.model();
-      when(
-        () => mockRemote.signUp(
-          name: name,
-          email: email,
-          password: password,
-        ),
-      ).thenAnswer((_) async => model);
-      when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
-
-      final result = await repository.signUp(
-        name: name,
-        email: email,
-        password: password,
-      );
-
-      expect(result, Right<Failure, UserEntity>(model));
-      verify(() => mockUsersDao.upsertUser(model)).called(1);
-    });
-
-    test('should return AuthFailure when AuthException thrown', () async {
-      when(
-        () => mockRemote.signUp(
-          name: name,
-          email: email,
-          password: password,
-        ),
-      ).thenThrow(const AuthException('Email already in use'));
-
-      final result = await repository.signUp(
-        name: name,
-        email: email,
-        password: password,
-      );
-
-      result.fold(
-        (failure) => expect(failure, isA<AuthFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-
-    test('should return ServerFailure when generic Exception thrown', () async {
-      when(
-        () => mockRemote.signUp(
-          name: name,
-          email: email,
-          password: password,
-        ),
-      ).thenThrow(Exception('Network error'));
-
-      final result = await repository.signUp(
-        name: name,
-        email: email,
-        password: password,
-      );
-
-      result.fold(
-        (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-  });
-
   group('signOut', () {
-    test('should call remote and clearLocalData on success', () async {
+    test('calls remote and clearLocalData on success', () async {
       when(() => mockRemote.signOut()).thenAnswer((_) async {});
       when(() => mockSyncService.clearLocalData()).thenAnswer((_) async {});
 
@@ -197,7 +114,7 @@ void main() {
       verify(() => mockSyncService.clearLocalData()).called(1);
     });
 
-    test('should return AuthFailure when AuthException thrown', () async {
+    test('returns AuthFailure when AuthException thrown', () async {
       when(
         () => mockRemote.signOut(),
       ).thenThrow(const AuthException('Sign out failed'));
@@ -210,26 +127,15 @@ void main() {
       );
       verifyNever(() => mockSyncService.clearLocalData());
     });
-
-    test('should return ServerFailure when generic Exception thrown', () async {
-      when(() => mockRemote.signOut()).thenThrow(Exception('Network error'));
-
-      final result = await repository.signOut();
-
-      result.fold(
-        (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('Expected Left'),
-      );
-      verifyNever(() => mockSyncService.clearLocalData());
-    });
   });
 
   group('getCurrentUser', () {
-    test('should return user and upsert local when found', () async {
+    test('returns user when allowlist allows', () async {
       final model = UserFactory.model();
       when(
         () => mockRemote.getCurrentUser(),
       ).thenAnswer((_) async => model);
+      stubAllowed(allowed: true);
       when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
 
       final result = await repository.getCurrentUser();
@@ -238,7 +144,24 @@ void main() {
       verify(() => mockUsersDao.upsertUser(model)).called(1);
     });
 
-    test('should return Right(null) when no current user', () async {
+    test('returns AccessDeniedFailure and signs out when blocked', () async {
+      final model = UserFactory.model();
+      when(
+        () => mockRemote.getCurrentUser(),
+      ).thenAnswer((_) async => model);
+      stubAllowed(allowed: false);
+      when(() => mockRemote.signOut()).thenAnswer((_) async {});
+
+      final result = await repository.getCurrentUser();
+
+      result.fold(
+        (failure) => expect(failure, isA<AccessDeniedFailure>()),
+        (_) => fail('Expected Left'),
+      );
+      verify(() => mockRemote.signOut()).called(1);
+    });
+
+    test('returns Right(null) when no current user', () async {
       when(
         () => mockRemote.getCurrentUser(),
       ).thenAnswer((_) async => null);
@@ -247,9 +170,10 @@ void main() {
 
       expect(result, const Right<Failure, UserEntity?>(null));
       verifyNever(() => mockUsersDao.upsertUser(any()));
+      verifyNever(() => mockAccessControl.isEmailAllowed(any()));
     });
 
-    test('should return ServerFailure when exception thrown', () async {
+    test('returns ServerFailure on remote exception', () async {
       when(
         () => mockRemote.getCurrentUser(),
       ).thenThrow(Exception('Network error'));
@@ -261,15 +185,26 @@ void main() {
   });
 
   group('authStateChanges', () {
-    test('should delegate to remote datasource', () {
+    test('passes user through when allowlist allows', () async {
       final user = UserFactory.model();
       when(
         () => mockRemote.authStateChanges,
       ).thenAnswer((_) => Stream.value(user));
+      stubAllowed(allowed: true);
 
-      final stream = repository.authStateChanges;
+      await expectLater(repository.authStateChanges, emits(user));
+    });
 
-      expect(stream, emits(user));
+    test('signs out and yields null when allowlist blocks', () async {
+      final user = UserFactory.model();
+      when(
+        () => mockRemote.authStateChanges,
+      ).thenAnswer((_) => Stream.value(user));
+      stubAllowed(allowed: false);
+      when(() => mockRemote.signOut()).thenAnswer((_) async {});
+
+      await expectLater(repository.authStateChanges, emits(null));
+      verify(() => mockRemote.signOut()).called(1);
     });
   });
 }

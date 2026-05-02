@@ -30,6 +30,18 @@ final class Unauthenticated extends AuthState {
   const Unauthenticated();
 }
 
+/// Successfully authenticated with Google but blocked by the access
+/// allowlist. Carries the email so the restricted-access page can show
+/// the user which address to ask the master to enable.
+final class AccessDenied extends AuthState {
+  const AccessDenied(this.email);
+
+  final String email;
+
+  @override
+  List<Object> get props => [email];
+}
+
 final class AuthError extends AuthState {
   const AuthError(this.failure);
 

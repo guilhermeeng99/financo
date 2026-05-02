@@ -3,68 +3,97 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ─── Helpers ───────────────────────────────────────────
+    // Master email is hardcoded in three places that must stay in sync:
+    //   - this file
+    //   - lib/core/constants/access_control.dart (kMasterEmail)
+    //   - functions/src/config.ts (MASTER_EMAIL)
+    // A unit test asserts the three are equal.
+    function isMaster() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'guilhermeeng99@gmail.com';
+    }
+
+    function isAllowed() {
+      return request.auth != null && (
+        isMaster() ||
+        exists(/databases/$(database)/documents/allowed_emails/$(request.auth.token.email.lower()))
+      );
+    }
+
+    function ownsResource() {
+      return resource.data.userId == request.auth.uid;
+    }
+
+    function ownsCreate() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
     // ─── Users ──────────────────────────────────────────────
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null
-        && request.auth.uid == userId;
-      allow create: if request.auth != null
-        && request.auth.uid == userId;
+      allow read, update, delete: if (isAllowed() && request.auth.uid == userId)
+        || isMaster();
+      allow create: if (isAllowed() && request.auth.uid == userId)
+        || isMaster();
 
       // FCM push tokens (one doc per device, doc id == token).
       match /fcmTokens/{tokenId} {
-        allow read, write, delete: if request.auth != null
-          && request.auth.uid == userId;
+        allow read, write, delete: if (isAllowed() && request.auth.uid == userId)
+          || isMaster();
       }
+    }
+
+    // ─── Allowlist ─────────────────────────────────────────
+    // Any allowed user may read so the client gate can verify itself.
+    // Only master may mutate.
+    match /allowed_emails/{email} {
+      allow read: if isAllowed();
+      allow create, update, delete: if isMaster();
     }
 
     // ─── Accounts ───────────────────────────────────────────
     match /accounts/{accountId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
 
     // ─── Transactions ───────────────────────────────────────
     match /transactions/{transactionId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
 
     // ─── Categories ─────────────────────────────────────────
     match /categories/{categoryId} {
-      // Default categories (userId == null) are readable by all auth users
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // Default categories (userId == null) are readable by all allowed users.
+      allow read: if isAllowed();
+      allow create: if isAllowed() && ownsCreate();
+      allow update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
 
     // ─── Chat Messages ─────────────────────────────────────
     match /chat_messages/{messageId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && ownsCreate();
+      allow read, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
 
     // ─── Bills ──────────────────────────────────────────────
     match /bills/{billId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
 
     // ─── Budgets ────────────────────────────────────────────
     match /budgets/{budgetId} {
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
     }
   }
 }
