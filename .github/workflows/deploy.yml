@@ -40,6 +40,7 @@ jobs:
         run: |
           flutter build web --release --no-tree-shake-icons \
             --base-href /financo/ \
+            --build-number=$GITHUB_RUN_NUMBER \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       - name: Decode Android keystore
@@ -65,6 +66,7 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           flutter build apk --release --no-tree-shake-icons \
+            --build-number=$GITHUB_RUN_NUMBER \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       - name: Bundle APK with web build
