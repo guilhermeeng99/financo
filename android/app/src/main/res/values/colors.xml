@@ -6,4 +6,5 @@
       across the app (Material color system + launcher background).
     -->
     <color name="notification_color">#6366F1</color>
+	<color name="ic_launcher_background">#6C63FF</color>
 </resources>

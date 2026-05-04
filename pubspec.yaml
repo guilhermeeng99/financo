@@ -80,6 +80,7 @@ dev_dependencies:
   fake_cloud_firestore: ^4.1.0+1
   bloc_test: ^10.0.0
   drift_dev: ^2.32.1
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
@@ -87,3 +88,16 @@ flutter:
   assets:
     - lib/app/assets/images/
     - lib/app/assets/samples/
+
+flutter_launcher_icons:
+  image_path: lib/app/assets/images/logo.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: lib/app/assets/images/logo.png
+    background_color: "#6C63FF"
+    theme_color: "#6C63FF"
+  adaptive_icon_background: "#6C63FF"
+  adaptive_icon_foreground: lib/app/assets/images/logo.png
