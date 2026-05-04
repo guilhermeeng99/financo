@@ -1,5 +1,7 @@
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_large_app_bar.dart';
+import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
@@ -56,6 +58,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      appBar: FinancoLargeAppBar(title: t.dashboard.title),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
           heroTag: 'dashboard_fab',
@@ -142,6 +145,8 @@ class _DashboardContent extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
+        const Center(child: FinancoMonthFilterPill()),
+        const SizedBox(height: 16),
         DashboardHero(
           income: summary.totalIncome,
           expenses: summary.totalExpenses,

@@ -2,98 +2,12 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/nav_bills_badge.dart';
-import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-
-/// Mobile AppBar shown on the dashboard. Compact month-stepper centered in
-/// the bar — blends with the scaffold background, no shadow.
-class FinancoMobileAppBar extends StatelessWidget
-    implements PreferredSizeWidget {
-  const FinancoMobileAppBar({super.key});
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    final dateFilter = context.watch<DateFilterCubit>().state;
-    final colors = context.appColors;
-    final label = formatMonthYear(
-      DateTime(dateFilter.year, dateFilter.month),
-    );
-
-    return AppBar(
-      backgroundColor: colors.background,
-      surfaceTintColor: Colors.transparent,
-      scrolledUnderElevation: 0,
-      elevation: 0,
-      centerTitle: true,
-      automaticallyImplyLeading: false,
-      title: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: colors.surfaceVariant,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _MonthStepperButton(
-              icon: FontAwesomeIcons.chevronLeft,
-              onTap: () => context.read<DateFilterCubit>().previousMonth(),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: context.textTheme.labelLarge?.copyWith(
-                color: colors.onBackground,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 12),
-            _MonthStepperButton(
-              icon: FontAwesomeIcons.chevronRight,
-              onTap: () => context.read<DateFilterCubit>().nextMonth(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MonthStepperButton extends StatelessWidget {
-  const _MonthStepperButton({required this.icon, required this.onTap});
-
-  final FaIconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        unawaited(HapticFeedback.selectionClick());
-        onTap();
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: FaIcon(
-          icon,
-          size: 12,
-          color: context.appColors.onBackgroundLight,
-        ),
-      ),
-    );
-  }
-}
 
 /// Floating pill-shaped bottom navigation. The active item expands into a
 /// labeled pill while inactive items stay as compact icons — same trick

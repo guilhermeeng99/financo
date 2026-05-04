@@ -1,3 +1,7 @@
 base_locale: en
 input_directory: lib/app/assets/i18n
 output_directory: lib/gen/i18n
+# Bundle every locale into the main chunk. Deferred loading would force us
+# to await loadLibrary() before each setLocaleSync, which broke language
+# switching on web.
+lazy: false

@@ -1,13 +1,15 @@
 name: financo
 description: "Personal finance manager with AI-powered data entry."
 publish_to: 'none'
-version: 1.0.3+8
+version: 1.0.4+8
 
 environment:
   sdk: ^3.11.4
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
 
   # State Management

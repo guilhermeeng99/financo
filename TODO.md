@@ -1,2 +1,2 @@
-- Colocar opção para esconder os dados financeiros
-- Melhor light mode
+- De alguma forma a IA trazer insights para o usuario, exemplo: Muitas subscriptions atoa ou ver se o usuario está seguindo corretamente a regra do 50, 30, 20.
+- Painel para gerenciar os investimentos.

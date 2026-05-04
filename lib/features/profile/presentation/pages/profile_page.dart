@@ -19,6 +19,8 @@ import 'package:financo/features/profile/domain/usecases/clear_account_data_usec
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/features/profile/presentation/widgets/app_version_footer.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_header_card.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_language_row.dart';
+import 'package:financo/features/profile/presentation/widgets/profile_palette_picker.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_row.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_section.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_theme_row.dart';
@@ -245,7 +247,11 @@ class _ProfileContent extends StatelessWidget {
         const SizedBox(height: 20),
         ProfileSection(
           label: t.profile.sectionPreferences,
-          children: const [ProfileThemeRow()],
+          children: const [
+            ProfileThemeRow(),
+            ProfilePalettePicker(),
+            ProfileLanguageRow(),
+          ],
         ),
         if (kIsWeb) ...[
           const SizedBox(height: 20),
@@ -309,7 +315,7 @@ class _ProfileContent extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         const AppVersionFooter(),
-        const SizedBox(height: 48),
+        const SizedBox(height: 60),
       ],
     );
   }

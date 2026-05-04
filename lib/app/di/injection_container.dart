@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:financo/app/i18n/app_locale_cubit.dart';
+import 'package:financo/app/theme/dark_palette_cubit.dart';
+import 'package:financo/app/theme/light_palette_cubit.dart';
 import 'package:financo/app/theme/theme_cubit.dart';
 import 'package:financo/core/app_info/app_info_service.dart';
 import 'package:financo/core/app_info/app_info_service_impl.dart';
@@ -383,6 +386,15 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => ThemeCubit(prefs: sl()),
+    )
+    ..registerLazySingleton(
+      () => LightPaletteCubit(prefs: sl()),
+    )
+    ..registerLazySingleton(
+      () => DarkPaletteCubit(prefs: sl()),
+    )
+    ..registerLazySingleton(
+      () => AppLocaleCubit(prefs: sl()),
     )
     ..registerLazySingleton(DateFilterCubit.new)
     ..registerLazySingleton(NotificationService.new);

@@ -2,6 +2,7 @@ import 'package:financo/app/app_widget.dart';
 import 'package:financo/app/di/injection_container.dart';
 import 'package:financo/core/notifications/notification_service.dart';
 import 'package:financo/firebase_options.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Pre-resolve to the device locale so the very first frame already
+  // renders translated text. AppLocaleCubit (built inside initDependencies)
+  // overrides this with the user's saved choice if any.
+  await LocaleSettings.useDeviceLocale();
   await initDependencies();
 
   // Push notifications are not supported on web in this app.
@@ -19,5 +24,5 @@ Future<void> main() async {
     await sl<NotificationService>().init();
   }
 
-  runApp(const FinancoApp());
+  runApp(TranslationProvider(child: const FinancoApp()));
 }

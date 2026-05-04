@@ -445,15 +445,6 @@ class _ShellWithSidebarState extends State<_ShellWithSidebar> {
     if (mounted) setState(() {});
   }
 
-  /// Shell-level matched location — used only to gate the dashboard
-  /// month filter, which lives on a tab route reached via `context.go`
-  /// (and is therefore reliably reflected here).
-  String _shellLocation() {
-    final config = _router?.routerDelegate.currentConfiguration;
-    if (config == null) return '';
-    return config.uri.path;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isMobile =
@@ -464,8 +455,6 @@ class _ShellWithSidebarState extends State<_ShellWithSidebar> {
         valueListenable: subPageDepthListenable,
         builder: (context, depth, _) {
           final isOnSubPage = depth > 0;
-          final showMonthFilter =
-              !isOnSubPage && _shellLocation() == AppRoutes.dashboard;
           final showBottomBar = !isOnSubPage;
 
           return Scaffold(
@@ -473,7 +462,6 @@ class _ShellWithSidebarState extends State<_ShellWithSidebar> {
             // so it visually "lifts" off the page instead of clipping the
             // body.
             extendBody: true,
-            appBar: showMonthFilter ? const FinancoMobileAppBar() : null,
             body: widget.child,
             bottomNavigationBar:
                 showBottomBar ? const FinancoBottomBar() : null,

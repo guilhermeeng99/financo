@@ -334,8 +334,8 @@ class TranslationsNavEn {
 	/// en: 'Bills'
 	String get bills => 'Bills';
 
-	/// en: 'Orçamento'
-	String get budgets => 'Orçamento';
+	/// en: 'Budgets'
+	String get budgets => 'Budgets';
 }
 
 // Path: dashboard
@@ -1337,23 +1337,23 @@ class TranslationsBillsEn {
 	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
 	late final TranslationsBillsMatchEn match = TranslationsBillsMatchEn._(_root);
 
-	/// en: 'Pague a ocorrência atual primeiro'
-	String get virtualBlocked => 'Pague a ocorrência atual primeiro';
+	/// en: 'Pay the current occurrence first'
+	String get virtualBlocked => 'Pay the current occurrence first';
 
 	/// en: 'Preview'
 	String get preview => 'Preview';
 
-	/// en: 'Aplicar a quais ocorrências?'
-	String get editScopeTitle => 'Aplicar a quais ocorrências?';
+	/// en: 'Apply to which occurrences?'
+	String get editScopeTitle => 'Apply to which occurrences?';
 
-	/// en: 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).'
-	String get editScopeDescription => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).';
+	/// en: 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).'
+	String get editScopeDescription => 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).';
 
-	/// en: 'Apenas esta'
-	String get editScopeOnlyThis => 'Apenas esta';
+	/// en: 'Only this one'
+	String get editScopeOnlyThis => 'Only this one';
 
-	/// en: 'Esta e as subsequentes'
-	String get editScopeAlsoSubsequents => 'Esta e as subsequentes';
+	/// en: 'This and the following'
+	String get editScopeAlsoSubsequents => 'This and the following';
 }
 
 // Path: budgets
@@ -1364,101 +1364,101 @@ class TranslationsBudgetsEn {
 
 	// Translations
 
-	/// en: 'Orçamento'
-	String get title => 'Orçamento';
+	/// en: 'Budgets'
+	String get title => 'Budgets';
 
-	/// en: 'Novo orçamento'
-	String get addBudget => 'Novo orçamento';
+	/// en: 'New budget'
+	String get addBudget => 'New budget';
 
-	/// en: 'Editar orçamento'
-	String get editBudget => 'Editar orçamento';
+	/// en: 'Edit budget'
+	String get editBudget => 'Edit budget';
 
-	/// en: 'Categoria'
-	String get category => 'Categoria';
+	/// en: 'Category'
+	String get category => 'Category';
 
-	/// en: 'Escolha uma categoria'
-	String get categoryHint => 'Escolha uma categoria';
+	/// en: 'Pick a category'
+	String get categoryHint => 'Pick a category';
 
-	/// en: 'Selecione uma categoria'
-	String get categoryRequired => 'Selecione uma categoria';
+	/// en: 'Select a category'
+	String get categoryRequired => 'Select a category';
 
-	/// en: 'Valor mensal'
-	String get amount => 'Valor mensal';
+	/// en: 'Monthly cap'
+	String get amount => 'Monthly cap';
 
-	/// en: '0,00'
-	String get amountHint => '0,00';
+	/// en: '0.00'
+	String get amountHint => '0.00';
 
-	/// en: 'Resumo do mês'
-	String get summaryTitle => 'Resumo do mês';
+	/// en: 'This month'
+	String get summaryTitle => 'This month';
 
-	/// en: 'Total orçado'
-	String get summaryCap => 'Total orçado';
+	/// en: 'Total budgeted'
+	String get summaryCap => 'Total budgeted';
 
-	/// en: 'Gasto'
-	String get summarySpent => 'Gasto';
+	/// en: 'Spent'
+	String get summarySpent => 'Spent';
 
-	/// en: 'Disponível'
-	String get summaryRemaining => 'Disponível';
+	/// en: 'Available'
+	String get summaryRemaining => 'Available';
 
-	/// en: '$spent de $cap'
-	String spentOf({required Object spent, required Object cap}) => '${spent} de ${cap}';
+	/// en: '$spent of $cap'
+	String spentOf({required Object spent, required Object cap}) => '${spent} of ${cap}';
 
-	/// en: '$value% usado'
-	String percentageUsed({required Object value}) => '${value}% usado';
+	/// en: '$value% used'
+	String percentageUsed({required Object value}) => '${value}% used';
 
-	/// en: 'Restam $value'
-	String remainingOf({required Object value}) => 'Restam ${value}';
+	/// en: '$value remaining'
+	String remainingOf({required Object value}) => '${value} remaining';
 
-	/// en: 'Estourou em $value'
-	String overBy({required Object value}) => 'Estourou em ${value}';
+	/// en: 'Over by $value'
+	String overBy({required Object value}) => 'Over by ${value}';
 
-	/// en: 'Tranquilo'
-	String get statusSafe => 'Tranquilo';
+	/// en: 'On track'
+	String get statusSafe => 'On track';
 
-	/// en: 'Atenção'
-	String get statusWarning => 'Atenção';
+	/// en: 'Watch out'
+	String get statusWarning => 'Watch out';
 
-	/// en: 'Estourou'
-	String get statusExceeded => 'Estourou';
+	/// en: 'Over budget'
+	String get statusExceeded => 'Over budget';
 
-	/// en: 'Tem certeza que deseja excluir este orçamento?'
-	String get deleteConfirm => 'Tem certeza que deseja excluir este orçamento?';
+	/// en: 'Are you sure you want to delete this budget?'
+	String get deleteConfirm => 'Are you sure you want to delete this budget?';
 
-	/// en: 'Orçamento criado'
-	String get budgetCreated => 'Orçamento criado';
+	/// en: 'Budget created'
+	String get budgetCreated => 'Budget created';
 
-	/// en: 'Orçamento atualizado'
-	String get budgetUpdated => 'Orçamento atualizado';
+	/// en: 'Budget updated'
+	String get budgetUpdated => 'Budget updated';
 
-	/// en: 'Orçamento excluído'
-	String get budgetDeleted => 'Orçamento excluído';
+	/// en: 'Budget deleted'
+	String get budgetDeleted => 'Budget deleted';
 
-	/// en: 'Já existe um orçamento para essa categoria.'
-	String get duplicateCategory => 'Já existe um orçamento para essa categoria.';
+	/// en: 'There's already a budget for this category.'
+	String get duplicateCategory => 'There\'s already a budget for this category.';
 
-	/// en: 'Crie ao menos uma categoria de despesa antes.'
-	String get noExpenseCategory => 'Crie ao menos uma categoria de despesa antes.';
+	/// en: 'Create at least one expense category first.'
+	String get noExpenseCategory => 'Create at least one expense category first.';
 
-	/// en: 'Todas as categorias já têm orçamento.'
-	String get allCategoriesBudgeted => 'Todas as categorias já têm orçamento.';
+	/// en: 'All categories already have a budget.'
+	String get allCategoriesBudgeted => 'All categories already have a budget.';
 
-	/// en: 'Tome controle dos seus gastos'
-	String get emptyTitle => 'Tome controle dos seus gastos';
+	/// en: 'Take control of your spending'
+	String get emptyTitle => 'Take control of your spending';
 
-	/// en: 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.'
-	String get emptyBody => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.';
+	/// en: 'Set a monthly cap per expense category. Financo tracks how much you've spent, how much is left, and warns you upfront when you're about to go over.'
+	String get emptyBody => 'Set a monthly cap per expense category. Financo tracks how much you\'ve spent, how much is left, and warns you upfront when you\'re about to go over.';
 
-	/// en: 'Ex: R$ 1.500 em Alimentação, R$ 400 em Lazer, R$ 200 em Transporte.'
-	String get emptyExample => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.';
+	/// en: 'Ex: R$ 1,500 on Food, R$ 400 on Leisure, R$ 200 on Transport.'
+	String get emptyExample => 'Ex: R\$ 1,500 on Food, R\$ 400 on Leisure, R\$ 200 on Transport.';
 
-	/// en: 'Criar primeiro orçamento'
-	String get emptyAction => 'Criar primeiro orçamento';
+	/// en: 'Create your first budget'
+	String get emptyAction => 'Create your first budget';
 
-	/// en: 'Detalhes'
-	String get formDetails => 'Detalhes';
+	/// en: 'Details'
+	String get formDetails => 'Details';
 
-	/// en: 'Categoria'
-	String get formCategorySection => 'Categoria';
+	/// en: 'Category'
+	String get formCategorySection => 'Category';
 }
 
 // Path: profile
@@ -1546,6 +1546,24 @@ class TranslationsProfileEn {
 
 	/// en: 'Version'
 	String get version => 'Version';
+
+	/// en: 'Light palette'
+	String get lightPalette => 'Light palette';
+
+	/// en: 'Dark palette'
+	String get darkPalette => 'Dark palette';
+
+	/// en: 'Language'
+	String get language => 'Language';
+
+	/// en: 'System'
+	String get languageSystem => 'System';
+
+	/// en: 'English'
+	String get languageEnglish => 'English';
+
+	/// en: 'Português'
+	String get languagePortuguese => 'Português';
 }
 
 // Path: startup
@@ -1903,7 +1921,7 @@ extension on Translations {
 			'nav.reports' => 'Reports',
 			'nav.profile' => 'Profile',
 			'nav.bills' => 'Bills',
-			'nav.budgets' => 'Orçamento',
+			'nav.budgets' => 'Budgets',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -2282,44 +2300,44 @@ extension on Translations {
 			'bills.match.fieldAmount' => 'Amount',
 			'bills.match.fieldDate' => 'Date',
 			'bills.match.fieldEmpty' => '—',
-			'bills.virtualBlocked' => 'Pague a ocorrência atual primeiro',
+			'bills.virtualBlocked' => 'Pay the current occurrence first',
 			'bills.preview' => 'Preview',
-			'bills.editScopeTitle' => 'Aplicar a quais ocorrências?',
-			'bills.editScopeDescription' => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).',
-			'bills.editScopeOnlyThis' => 'Apenas esta',
-			'bills.editScopeAlsoSubsequents' => 'Esta e as subsequentes',
-			'budgets.title' => 'Orçamento',
-			'budgets.addBudget' => 'Novo orçamento',
-			'budgets.editBudget' => 'Editar orçamento',
-			'budgets.category' => 'Categoria',
-			'budgets.categoryHint' => 'Escolha uma categoria',
-			'budgets.categoryRequired' => 'Selecione uma categoria',
-			'budgets.amount' => 'Valor mensal',
-			'budgets.amountHint' => '0,00',
-			'budgets.summaryTitle' => 'Resumo do mês',
-			'budgets.summaryCap' => 'Total orçado',
-			'budgets.summarySpent' => 'Gasto',
-			'budgets.summaryRemaining' => 'Disponível',
-			'budgets.spentOf' => ({required Object spent, required Object cap}) => '${spent} de ${cap}',
-			'budgets.percentageUsed' => ({required Object value}) => '${value}% usado',
-			'budgets.remainingOf' => ({required Object value}) => 'Restam ${value}',
-			'budgets.overBy' => ({required Object value}) => 'Estourou em ${value}',
-			'budgets.statusSafe' => 'Tranquilo',
-			'budgets.statusWarning' => 'Atenção',
-			'budgets.statusExceeded' => 'Estourou',
-			'budgets.deleteConfirm' => 'Tem certeza que deseja excluir este orçamento?',
-			'budgets.budgetCreated' => 'Orçamento criado',
-			'budgets.budgetUpdated' => 'Orçamento atualizado',
-			'budgets.budgetDeleted' => 'Orçamento excluído',
-			'budgets.duplicateCategory' => 'Já existe um orçamento para essa categoria.',
-			'budgets.noExpenseCategory' => 'Crie ao menos uma categoria de despesa antes.',
-			'budgets.allCategoriesBudgeted' => 'Todas as categorias já têm orçamento.',
-			'budgets.emptyTitle' => 'Tome controle dos seus gastos',
-			'budgets.emptyBody' => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.',
-			'budgets.emptyExample' => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.',
-			'budgets.emptyAction' => 'Criar primeiro orçamento',
-			'budgets.formDetails' => 'Detalhes',
-			'budgets.formCategorySection' => 'Categoria',
+			'bills.editScopeTitle' => 'Apply to which occurrences?',
+			'bills.editScopeDescription' => 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).',
+			'bills.editScopeOnlyThis' => 'Only this one',
+			'bills.editScopeAlsoSubsequents' => 'This and the following',
+			'budgets.title' => 'Budgets',
+			'budgets.addBudget' => 'New budget',
+			'budgets.editBudget' => 'Edit budget',
+			'budgets.category' => 'Category',
+			'budgets.categoryHint' => 'Pick a category',
+			'budgets.categoryRequired' => 'Select a category',
+			'budgets.amount' => 'Monthly cap',
+			'budgets.amountHint' => '0.00',
+			'budgets.summaryTitle' => 'This month',
+			'budgets.summaryCap' => 'Total budgeted',
+			'budgets.summarySpent' => 'Spent',
+			'budgets.summaryRemaining' => 'Available',
+			'budgets.spentOf' => ({required Object spent, required Object cap}) => '${spent} of ${cap}',
+			'budgets.percentageUsed' => ({required Object value}) => '${value}% used',
+			'budgets.remainingOf' => ({required Object value}) => '${value} remaining',
+			'budgets.overBy' => ({required Object value}) => 'Over by ${value}',
+			'budgets.statusSafe' => 'On track',
+			'budgets.statusWarning' => 'Watch out',
+			'budgets.statusExceeded' => 'Over budget',
+			'budgets.deleteConfirm' => 'Are you sure you want to delete this budget?',
+			'budgets.budgetCreated' => 'Budget created',
+			'budgets.budgetUpdated' => 'Budget updated',
+			'budgets.budgetDeleted' => 'Budget deleted',
+			'budgets.duplicateCategory' => 'There\'s already a budget for this category.',
+			'budgets.noExpenseCategory' => 'Create at least one expense category first.',
+			'budgets.allCategoriesBudgeted' => 'All categories already have a budget.',
+			'budgets.emptyTitle' => 'Take control of your spending',
+			'budgets.emptyBody' => 'Set a monthly cap per expense category. Financo tracks how much you\'ve spent, how much is left, and warns you upfront when you\'re about to go over.',
+			'budgets.emptyExample' => 'Ex: R\$ 1,500 on Food, R\$ 400 on Leisure, R\$ 200 on Transport.',
+			'budgets.emptyAction' => 'Create your first budget',
+			'budgets.formDetails' => 'Details',
+			'budgets.formCategorySection' => 'Category',
 			'profile.title' => 'Profile',
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',
@@ -2348,6 +2366,12 @@ extension on Translations {
 		} ?? switch (path) {
 			'profile.appearance' => 'Appearance',
 			'profile.version' => 'Version',
+			'profile.lightPalette' => 'Light palette',
+			'profile.darkPalette' => 'Dark palette',
+			'profile.language' => 'Language',
+			'profile.languageSystem' => 'System',
+			'profile.languageEnglish' => 'English',
+			'profile.languagePortuguese' => 'Português',
 			'startup.tagline' => 'Your finances, in flow.',
 			'startup.stepCheckingAuth' => 'Checking your account',
 			'startup.stepSyncingData' => 'Syncing your data',

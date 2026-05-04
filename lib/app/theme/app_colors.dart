@@ -37,7 +37,13 @@ class AppColorsData {
 class AppColors {
   const AppColors._();
 
-  static const light = AppColorsData(
+  // The active palettes are mutable so the user can pick any of the
+  // catalog options at runtime (LightPaletteCubit / DarkPaletteCubit drive
+  // these). Defaults are the originals.
+  static AppColorsData light = defaultLight;
+  static AppColorsData dark = defaultDark;
+
+  static const defaultLight = AppColorsData(
     primary: Color(0xFF5B5FEF),
     primaryLight: Color(0xFF7C83FF),
     primaryDark: Color(0xFF3F43C9),
@@ -59,7 +65,7 @@ class AppColors {
     error: Color(0xFFEF4444),
   );
 
-  static const dark = AppColorsData(
+  static const defaultDark = AppColorsData(
     primary: Color(0xFF7C83FF),
     primaryLight: Color(0xFFA5ABFF),
     primaryDark: Color(0xFF5B5FEF),
