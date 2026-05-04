@@ -45,10 +45,10 @@ service cloud.firestore {
     }
 
     // ─── Allowlist ─────────────────────────────────────────
-    // Any allowed user may read so the client gate can verify itself.
-    // Only master may mutate.
+    // Only master may read or mutate the full allowlist.
+    // Other users verify themselves via the get() call inside isAllowed().
     match /allowed_emails/{email} {
-      allow read: if isAllowed();
+      allow read: if isMaster();
       allow create, update, delete: if isMaster();
     }
 

@@ -36,12 +36,10 @@ jobs:
             "https://github.com/simolus3/drift/releases/download/drift-2.32.1/drift_worker.js"
       - name: Build web
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           flutter build web --release --no-tree-shake-icons \
             --base-href /financo/ \
-            --dart-define="GEMINI_API_KEY=$GEMINI_API_KEY" \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       - name: Decode Android keystore
@@ -64,11 +62,9 @@ jobs:
 
       - name: Build Android APK
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           flutter build apk --release --no-tree-shake-icons \
-            --dart-define="GEMINI_API_KEY=$GEMINI_API_KEY" \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       - name: Bundle APK with web build
@@ -79,3 +75,24 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: build/web
+
+      - name: Generate release notes from commit
+        id: release_notes
+        run: |
+          {
+            echo 'notes<<RELEASE_NOTES_EOF'
+            echo "Commit: ${GITHUB_SHA::7}"
+            echo ""
+            git log -1 --pretty=format:"%s%n%n%b"
+            echo ""
+            echo 'RELEASE_NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: '1:356891758869:android:028ae37486c30b8f4dd91c'
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ANDROID }}
+          groups: testers
+          file: build/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: ${{ steps.release_notes.outputs.notes }}
