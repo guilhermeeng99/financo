@@ -40,7 +40,7 @@ export const isMasterEmail = (email?: string | null): boolean =>
 
 ### Authentication
 
-1. **Google-only sign-in** — the only auth path. `AuthRepository.signIn(email, password)` and `signUp(...)` are removed; the `/sign-up` route and `SignUpPage` are deleted; `SignInPage` becomes a single Google button (renamed conceptually to "auth landing").
+1. **Google-only sign-in** — the only auth path. `AuthRepository.signIn(email, password)` and `signUp(...)` are removed; the `/sign-up` and `/sign-in` routes are deleted; the `OnboardingPage` doubles as the auth landing — its final slide hosts the single `GoogleSignInButton` plus the "access by invite only" disclaimer.
 2. **Post-sign-in allowlist gate** — after Firebase Auth succeeds and the Firestore profile is fetched/created, the repository checks `isMasterEmail(user.email)` first; if false, it queries `allowed_emails/{user.email.toLowerCase()}` and returns `Left(AccessDeniedFailure)` if the doc does not exist. On `AccessDeniedFailure` the repository **must call `signOut`** before returning, so the Firebase Auth session is not left dangling.
 3. **Allowlist gate on session resume** — `getCurrentUser` and `authStateChanges` apply the same gate. If a previously-allowed user is removed from the allowlist while they had a live session, their next stream tick / app restart signs them out.
 4. **`AccessDeniedFailure`** — new sealed `Failure` with the requesting email as its single field. Drives the `AccessRestrictedPage` UI.
@@ -141,7 +141,7 @@ States gain `AccessDenied(email)` (extends `Unauthenticated` semantically — ro
 ```
 Authenticated(user) ──allowlist removed remotely──→ AccessDenied(email)
                                                   → router pushes AccessRestrictedPage
-                                                  → user taps "back" → SignOut → SignInPage
+                                                  → user taps "back" → SignOut → OnboardingPage
 ```
 
 `AuthGoogleSignInRequested`:
@@ -170,6 +170,7 @@ Actions emit `MasterPanelLoading` while running, then re-load:
 ## Routes
 
 - `AppRoutes.signUp` — **removed** (no public sign-up)
+- `AppRoutes.signIn` — **removed**; the unauthenticated landing is now `AppRoutes.onboarding` and the Google button lives on the onboarding's final slide.
 - `AppRoutes.accessRestricted = '/access-restricted'` — **added**, root navigator, no shell
 - `AppRoutes.masterPanel = '/master-panel'` — **added**, sub-page in shell, master-only
 
@@ -179,9 +180,9 @@ Router redirect:
 
 ## UI
 
-### `SignInPage` (rewritten)
+### Auth landing
 
-Single `GoogleSignInButton` centered on a clean background. Welcome copy + tagline. No form fields, no dividers, no "no account?" link.
+There is no dedicated `SignInPage`. The `OnboardingPage` is the auth landing: a 3-step feature carousel whose final slide replaces the previous "Get Started" CTA with a single `GoogleSignInButton` plus the "access by invite only" disclaimer. The `Skip` action animates the pager to the final slide rather than navigating away. No form fields, no dividers, no "no account?" link.
 
 ### `AccessRestrictedPage` (new)
 

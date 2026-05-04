@@ -2,7 +2,9 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/presentation/widgets/chat_avatar.dart';
 import 'package:financo/features/chat/presentation/widgets/chat_channel_badge.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Single conversation turn — speech-bubble layout with a tail on the side
 /// nearest the speaker. AI bubbles get an avatar (only on the first message
@@ -92,9 +94,31 @@ class _UserBubble extends StatelessWidget {
 
   final ChatMessageEntity message;
 
+  // Cap the bubble width at ~360 logical px on wide layouts (web/desktop)
+  // so portrait screenshots don't blow up to half the viewport. On phones
+  // 72 % of width is already tighter than the cap, so the cap is a no-op.
+  static const _kMaxBubbleWidth = 360.0;
+  // Tall portrait images get reined in to a comfortable WhatsApp-ish
+  // thumbnail size — wide images stay constrained by the bubble width.
+  static const _kMaxImageHeight = 320.0;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final imageBytes = message.inlineImageBytes;
+    // After a chat reload the original bytes are gone (per spec: image
+    // bytes are not persisted) but `metadata.hadImage` survives, so the
+    // bubble can render a small placeholder tile instead of an empty
+    // bubble. Honest signal: "you sent an image here" without trying to
+    // fake the original content.
+    final hadImageInHistory = message.metadata?['hadImage'] == true;
+    final hasImage = imageBytes != null || hadImageInHistory;
+    final hasText = message.content.trim().isNotEmpty;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bubbleMaxWidth = screenWidth * 0.72 < _kMaxBubbleWidth
+        ? screenWidth * 0.72
+        : _kMaxBubbleWidth;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8, left: 40),
       child: Column(
@@ -103,13 +127,7 @@ class _UserBubble extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.72,
-              ),
+              constraints: BoxConstraints(maxWidth: bubbleMaxWidth),
               decoration: BoxDecoration(
                 color: colors.primary,
                 borderRadius: const BorderRadius.only(
@@ -119,16 +137,86 @@ class _UserBubble extends StatelessWidget {
                   bottomRight: Radius.circular(4),
                 ),
               ),
-              child: Text(
-                message.content,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white,
-                  height: 1.4,
+              // Thumbnail flush to the bubble edges (WhatsApp style); when a
+              // caption follows, the text sits below with its own padding.
+              child: Padding(
+                padding: hasImage
+                    ? const EdgeInsets.all(4)
+                    : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasImage)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: imageBytes != null
+                            ? ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxHeight: _kMaxImageHeight,
+                                ),
+                                child: Image.memory(
+                                  imageBytes,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : const _MissingImagePlaceholder(),
+                      ),
+                    if (hasImage && hasText) const SizedBox(height: 6),
+                    if (hasText)
+                      Padding(
+                        padding: hasImage
+                            ? const EdgeInsets.fromLTRB(8, 0, 8, 6)
+                            : EdgeInsets.zero,
+                        child: Text(
+                          message.content,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
           ),
           if (message.channel == ChatChannel.whatsapp) const ChatChannelBadge(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Tile shown in place of the image after a chat reload — original bytes
+/// were never persisted (per chat spec), but `metadata.hadImage` flagged
+/// that there was one. Honest signal: photo icon + "Image not available"
+/// so the user understands the gap rather than seeing an empty bubble.
+class _MissingImagePlaceholder extends StatelessWidget {
+  const _MissingImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 200,
+      height: 130,
+      color: Colors.white.withValues(alpha: 0.12),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FaIcon(
+            FontAwesomeIcons.image,
+            size: 28,
+            color: Colors.white.withValues(alpha: 0.85),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            t.chat.image.missing,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
         ],
       ),
     );

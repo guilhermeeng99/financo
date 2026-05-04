@@ -1,0 +1,2 @@
+- Colocar opção para esconder os dados financeiros
+- Melhor light mode

@@ -22,6 +22,7 @@ import 'package:financo/features/categories/presentation/cubit/categories_cubit.
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
@@ -162,10 +163,29 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         ],
       ),
     );
-    if (confirmed == true && mounted) {
-      context.read<TransactionsBloc>().add(TransactionDeleteRequested(id));
-      _navigateBack();
-    }
+    if (confirmed != true || !mounted) return;
+
+    // Await the actual delete *before* popping so callers that reload on
+    // return (e.g. AccountStatementPage) don't refresh against stale data.
+    // We invoke the use case directly here and then ask the global
+    // TransactionsBloc to refresh its cache — dispatching only the bloc
+    // event would be fire-and-forget and lose the await guarantee.
+    final result = await GetIt.I<DeleteTransactionUseCase>().call(id);
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(failure.message)),
+        );
+      },
+      (_) {
+        context.read<TransactionsBloc>().add(
+          TransactionsLoadRequested(forceRefresh: true),
+        );
+        _navigateBack();
+      },
+    );
   }
 
   void _navigateBack() {

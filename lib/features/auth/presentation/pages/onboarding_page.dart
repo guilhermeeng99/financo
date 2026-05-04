@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -32,16 +30,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _next() {
-    if (_index < 2) {
-      unawaited(
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-        ),
-      );
-    } else {
-      context.go(AppRoutes.signIn);
-    }
+    if (_index >= 2) return;
+    unawaited(
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  void _skipToEnd() {
+    unawaited(
+      _pageController.animateToPage(
+        2,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+      ),
+    );
   }
 
   @override
@@ -54,7 +59,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         body: SafeArea(
           child: Column(
             children: [
-              _Header(onSkip: () => context.go(AppRoutes.signIn)),
+              _Header(onSkip: _skipToEnd, isLastStep: _index == 2),
               Expanded(
                 child: PageView(
                   controller: _pageController,
@@ -112,39 +117,45 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.onSkip});
+  const _Header({required this.onSkip, required this.isLastStep});
 
   final VoidCallback onSkip;
+  final bool isLastStep;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    // Reserve the same vertical footprint when Skip is hidden so the
+    // pager doesn't jump on the final step.
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              onTap: onSkip,
+          if (!isLastStep)
+            Material(
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                child: Text(
-                  t.onboarding.skip,
-                  style: context.textTheme.labelLarge?.copyWith(
-                    color: colors.onBackgroundLight,
-                    fontWeight: FontWeight.w600,
+              child: InkWell(
+                onTap: onSkip,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  child: Text(
+                    t.onboarding.skip,
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: colors.onBackgroundLight,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            )
+          else
+            const SizedBox(height: 40),
         ],
       ),
     );
@@ -173,28 +184,15 @@ class _BottomActions extends StatelessWidget {
                 key: const ValueKey('last'),
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    height: 52,
-                    child: FilledButton(
-                      onPressed: onNext,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        t.onboarding.getStarted,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
-                      ),
+                  const GoogleSignInButton(),
+                  const SizedBox(height: 12),
+                  Text(
+                    t.auth.accessByInviteOnly,
+                    textAlign: TextAlign.center,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: colors.onBackgroundLight,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const GoogleSignInButton(),
                 ],
               ).animate().fadeIn(duration: 300.ms)
             : SizedBox(

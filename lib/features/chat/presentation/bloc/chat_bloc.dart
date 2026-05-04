@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
@@ -47,13 +48,18 @@ final class ChatLoadRequested extends ChatEvent {
 }
 
 final class ChatMessageSent extends ChatEvent {
-  const ChatMessageSent(this.content, {this.image});
+  const ChatMessageSent(this.content, {this.image, this.imageBytes});
 
   final String content;
   final ChatImageAttachment? image;
 
+  /// Original image bytes from the picker, kept alongside the base64-encoded
+  /// [image] so the user-bubble can render the thumbnail without re-decoding
+  /// base64 on every rebuild. Always non-null when [image] is non-null.
+  final Uint8List? imageBytes;
+
   @override
-  List<Object?> get props => [content, image];
+  List<Object?> get props => [content, image, imageBytes];
 }
 
 final class ChatActionConfirmed extends ChatEvent {
@@ -72,6 +78,10 @@ final class ChatActionConfirmed extends ChatEvent {
   List<Object> get props => [actionMessageId, metadata];
 }
 
+/// Transcribes the recorded audio and immediately sends the resulting
+/// text as a regular user message. Mirrors WhatsApp-style voice notes:
+/// the user records, the transcript appears as the user bubble, the AI
+/// confirms what it understood. There is no separate review step.
 final class ChatAudioTranscriptionRequested extends ChatEvent {
   const ChatAudioTranscriptionRequested({
     required this.base64Data,
@@ -83,10 +93,6 @@ final class ChatAudioTranscriptionRequested extends ChatEvent {
 
   @override
   List<Object> get props => [base64Data, mimeType];
-}
-
-final class ChatTranscriptCancelled extends ChatEvent {
-  const ChatTranscriptCancelled();
 }
 
 sealed class ChatState extends Equatable {
@@ -112,7 +118,6 @@ final class ChatLoaded extends ChatState {
     this.shouldRefreshBills = false,
     this.shouldRefreshBudgets = false,
     this.isTranscribing = false,
-    this.pendingTranscript,
   });
 
   final List<ChatMessageEntity> messages;
@@ -121,7 +126,6 @@ final class ChatLoaded extends ChatState {
   final bool shouldRefreshBills;
   final bool shouldRefreshBudgets;
   final bool isTranscribing;
-  final String? pendingTranscript;
 
   @override
   List<Object?> get props => [
@@ -131,7 +135,6 @@ final class ChatLoaded extends ChatState {
     shouldRefreshBills,
     shouldRefreshBudgets,
     isTranscribing,
-    pendingTranscript,
   ];
 }
 
@@ -195,7 +198,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatMessageSent>(_onMessageSent);
     on<ChatActionConfirmed>(_onActionConfirmed);
     on<ChatAudioTranscriptionRequested>(_onAudioTranscriptionRequested);
-    on<ChatTranscriptCancelled>(_onTranscriptCancelled);
   }
 
   final SendMessageUseCase _sendMessage;
@@ -247,11 +249,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     final hasImage = event.image != null;
+    // When there's an image, the bubble renders a thumbnail above the text —
+    // an empty caption renders as just the image, no placeholder needed.
+    // The placeholder string only kicks in when an image somehow arrives
+    // without thumbnail bytes (defensive — shouldn't happen in normal flow).
     final displayContent = event.content.trim().isNotEmpty
         ? event.content
-        : hasImage
+        : hasImage && event.imageBytes == null
             ? '📷 Image attached.'
             : event.content;
+
+    // Flag the message as "had an image" so reloads can render a small
+    // placeholder tile instead of an empty bubble — the original bytes are
+    // never persisted (per spec), but this tag tells the UI there was one.
+    final userMetadata = hasImage ? <String, dynamic>{'hadImage': true} : null;
 
     final userMessage = ChatMessageEntity(
       id: _uuid.v4(),
@@ -259,6 +270,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       role: ChatRole.user,
       content: displayContent,
       createdAt: DateTime.now(),
+      metadata: userMetadata,
+      inlineImageBytes: event.imageBytes,
     );
 
     _messages.add(userMessage);
@@ -427,31 +440,30 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       mimeType: event.mimeType,
     );
 
-    result.fold(
-      (failure) {
-        log(
-          'ChatBloc: transcription failed — ${failure.message}',
-          name: 'ChatBloc',
-          error: failure,
-        );
-        emit(ChatLoaded(messages: List.unmodifiable(_messages)));
-      },
-      (transcript) {
-        emit(
-          ChatLoaded(
-            messages: List.unmodifiable(_messages),
-            pendingTranscript: transcript,
-          ),
-        );
-      },
-    );
-  }
+    final transcript = result.fold((_) => null, (t) => t.trim());
+    if (transcript == null) {
+      final failure = result.fold((f) => f, (_) => null)!;
+      log(
+        'ChatBloc: transcription failed — ${failure.message}',
+        name: 'ChatBloc',
+        error: failure,
+      );
+      emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+      return;
+    }
+    if (transcript.isEmpty) {
+      // Nothing intelligible was captured — drop back to idle without
+      // dispatching an empty user message that the AI would reject.
+      emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+      return;
+    }
 
-  void _onTranscriptCancelled(
-    ChatTranscriptCancelled event,
-    Emitter<ChatState> emit,
-  ) {
-    emit(ChatLoaded(messages: List.unmodifiable(_messages)));
+    // Send the transcript as a regular user turn so the AI processes it
+    // and confirms the action — same path as a typed message. We delegate
+    // by invoking the message handler directly with the same emitter so
+    // the user bubble appears immediately (an `add()` here would queue the
+    // event behind the current handler completing).
+    await _onMessageSent(ChatMessageSent(transcript), emit);
   }
 
   Future<String> _handleAccountAction(

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 enum ChatRole { user, assistant }
@@ -13,6 +15,7 @@ class ChatMessageEntity extends Equatable {
     required this.createdAt,
     this.metadata,
     this.channel = ChatChannel.app,
+    this.inlineImageBytes,
   });
 
   final String id;
@@ -23,6 +26,12 @@ class ChatMessageEntity extends Equatable {
   final ChatChannel channel;
   final DateTime createdAt;
 
+  /// In-memory only. Set when the user attaches an image to a message so the
+  /// bubble can render the thumbnail alongside the caption (WhatsApp style).
+  /// Image bytes are intentionally NOT persisted to Firestore — reloading the
+  /// chat history shows the caption text only. See chat spec §"Image input".
+  final Uint8List? inlineImageBytes;
+
   @override
   List<Object?> get props => [
     id,
@@ -32,5 +41,6 @@ class ChatMessageEntity extends Equatable {
     metadata,
     channel,
     createdAt,
+    inlineImageBytes,
   ];
 }

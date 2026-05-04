@@ -34,12 +34,9 @@
     "selectCategory": "Select a category"
   },
   "auth": {
-    "signIn": "Sign In",
     "signOut": "Sign Out",
     "email": "Email",
     "emailHint": "your@email.com",
-    "welcomeBack": "Welcome back",
-    "signInSubtitle": "Sign in with your Google account",
     "continueWithGoogle": "Continue with Google",
     "accessByInviteOnly": "Access is by invite only."
   },
@@ -76,7 +73,6 @@
     "step2Body": "Just type naturally — our AI chat extracts transaction data for you automatically.",
     "step3Title": "Insightful Reports",
     "step3Body": "Beautiful charts and summaries help you understand your spending habits.",
-    "getStarted": "Get Started",
     "next": "Next",
     "skip": "Skip"
   },
@@ -380,7 +376,6 @@
       "cancel": "Cancel",
       "recording": "Recording",
       "transcribing": "Transcribing...",
-      "reviewHint": "Review transcript and send",
       "permissionDenied": "Microphone permission required to record voice.",
       "recordError": "Failed to record audio"
     },
@@ -389,7 +384,8 @@
       "takePhoto": "Take photo",
       "fromGallery": "Choose from gallery",
       "remove": "Remove image",
-      "pickError": "Could not pick image"
+      "pickError": "Could not pick image",
+      "missing": "Image not available"
     }
   },
   "reports": {

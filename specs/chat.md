@@ -124,8 +124,7 @@ Thin delegators:
 | ChatLoadRequested | — | Page init |
 | ChatMessageSent | content: String, image: ChatImageAttachment? | User sends message (optionally with attached image) |
 | ChatActionConfirmed | metadata: Map<String,dynamic> | User taps Confirm button |
-| ChatAudioTranscriptionRequested | base64Data: String, mimeType: String | User stopped voice recording |
-| ChatTranscriptCancelled | — | User discarded the pending transcript preview |
+| ChatAudioTranscriptionRequested | base64Data: String, mimeType: String | User stopped voice recording — transcribes and forwards as a regular user turn in one shot |
 
 ### States
 
@@ -133,7 +132,7 @@ Thin delegators:
 |-------|--------|-------|
 | ChatInitial | — | Before load |
 | ChatLoading | — | Loading history |
-| ChatLoaded | messages, isTyping, shouldRefreshTransactions, isTranscribing, pendingTranscript? | Main state. `isTranscribing` shows transcribing spinner in the input. `pendingTranscript` non-null shows the editable preview with cancel/send. |
+| ChatLoaded | messages, isTyping, shouldRefreshTransactions, isTranscribing | Main state. `isTranscribing` shows transcribing spinner in the input while the audio is being converted to text; once the transcript is ready it is dispatched as a regular `ChatMessageSent` turn — there is no editable preview. |
 | ChatError | failure: Failure | Load failure only |
 
 ### Transitions
@@ -165,12 +164,9 @@ Thin delegators:
 **ChatAudioTranscriptionRequested:**
 1. Emit `ChatLoaded(isTranscribing: true)`
 2. Call `TranscribeAudioUseCase(base64Data, mimeType)`
-3. On success → emit `ChatLoaded(pendingTranscript: transcript)` — the view fills the input field with the transcript so the user can edit/send
-4. On failure → log and emit plain `ChatLoaded` (no pending transcript; no extra message added)
-
-**ChatTranscriptCancelled:**
-1. Emit plain `ChatLoaded` — clears `pendingTranscript`.
-2. The view clears the text field.
+3. On failure → log and emit plain `ChatLoaded` (no message added).
+4. On success with empty/whitespace transcript → emit plain `ChatLoaded` (nothing was understood; do not dispatch an empty turn that the AI would reject).
+5. On success with non-empty transcript → invoke the `ChatMessageSent(transcript)` handler **inline** with the same emitter (not via `add()` — that would queue behind the current handler and the user bubble would only appear after the AI typing-indicator already started). The transcript becomes the user's bubble, the AI processes it normally and confirms what it understood. WhatsApp-style "fire and trust" — there is no review step.
 
 ### Action Handlers
 
@@ -212,23 +208,23 @@ Thin delegators:
 1. User taps the paperclip/attach button in the message input. A bottom sheet offers "Take photo" (camera) and "Choose from gallery".
 2. The widget uses `image_picker` to capture a JPEG (`imageQuality: 75`, `maxWidth: 1920`) — reasonable for receipts while keeping the payload under 1-2 MB base64.
 3. A thumbnail preview appears above the text field with an `X` to remove. User may type an optional caption.
-4. On send, the picked image is base64-encoded and attached to `ChatMessageSent`. The bloc forwards it through `SendMessageUseCase → ChatRepository → ChatBackendDataSource → chatSend` callable.
-5. Backend `chatSend` accepts an optional `image: { data, mimeType }` and forwards it as an inline `inlineData` part to Gemini alongside the text content. System prompt instructs Gemini to extract amount/description/date/category from receipt/notification/invoice images.
-6. The user's message is persisted with the user's typed caption, or `📷 Imagem anexada` if caption was empty. The image bytes are NOT persisted — they're used for the single turn and discarded.
-7. When the image is NOT a recognizable receipt/notification, Gemini politely says it couldn't identify a transaction and asks what the user wants to record.
-8. Platform permissions: Android `CAMERA`, iOS `NSCameraUsageDescription` + `NSPhotoLibraryUsageDescription`, macOS `com.apple.security.device.camera`.
-9. Web is supported — `image_picker_for_web` opens a file picker (mobile browsers expose camera capture inside it, desktop browsers show file chooser).
+4. On send, the picked image is base64-encoded for the backend AND the original `Uint8List` bytes are attached to `ChatMessageSent` (`imageBytes`) so the user-bubble can render the thumbnail without re-decoding base64 on every rebuild. The bloc stores the bytes on the user `ChatMessageEntity.inlineImageBytes` (transient, in-memory only) and forwards the base64 payload through `SendMessageUseCase → ChatRepository → ChatBackendDataSource → chatSend`.
+5. Backend `chatSend` accepts an optional `image: { data, mimeType }` and forwards it as an inline `inlineData` part to Gemini alongside the text content. The system prompt's "Image input" section explicitly tells Gemini that **image + caption are complementary, not exclusive** — image is the source-of-truth for amount/merchant/date, the caption fills in account/category/payment-method context. Conflicts (e.g. caption says R$50 but receipt shows R$30) are surfaced in the reply rather than silently picked.
+6. The user-bubble renders WhatsApp-style: the thumbnail flush to the bubble edges with the optional caption below it. With no caption, only the image shows (no `📷 Image attached.` placeholder). The placeholder is only used as a defensive fallback when an image somehow arrives without bytes (shouldn't happen in normal flow).
+7. The user's message is persisted with the typed caption AND a `metadata.hadImage = true` flag. Image bytes never reach Firestore. After a chat reload, when `inlineImageBytes` is gone, the bubble checks `metadata.hadImage` and renders a small placeholder tile (photo icon + "Image not available") instead of an empty bubble — honest signal that an image was sent without trying to fake the original content. The flag is `metadata`-only — it is NOT an `actionType` so the AI history filter (`_historyContent`) ignores it; the AI never sees this tag.
+8. When the image is NOT a recognizable receipt/notification, Gemini politely says it couldn't identify a transaction and asks what the user wants to record.
+9. Platform permissions: Android `CAMERA`, iOS `NSCameraUsageDescription` + `NSPhotoLibraryUsageDescription`, macOS `com.apple.security.device.camera`.
+10. Web is supported — `image_picker_for_web` opens a file picker (mobile browsers expose camera capture inside it, desktop browsers show file chooser).
 
 ## Voice input (audio)
 
 1. The user taps the microphone button in the message input. The widget uses the `record` package to capture AAC audio to a temp file.
 2. User taps stop. The widget reads the file bytes, base64-encodes them, fires `ChatAudioTranscriptionRequested`, and deletes the temp file.
-3. Backend `transcribeChatAudio` callable passes the audio inline to Gemini (multimodal) with a transcription-only instruction; returns the transcript text.
-4. Bloc emits `ChatLoaded(pendingTranscript: text)`. The view fills the message text field with the transcript and shows a red `X` (cancel) button on the left.
-5. User can edit the text and tap the send icon — that triggers the normal `ChatMessageSent` flow. The audio is never persisted anywhere; only the final (possibly edited) text hits Firestore via the regular user-message save path.
-6. Tapping cancel fires `ChatTranscriptCancelled` which clears the pending transcript state and the text field.
-7. Web is supported — `record_web` uses `MediaRecorder`. On web `AudioRecorder.start` ignores the `path` parameter and `stop()` returns a blob URL; the widget fetches the bytes via `http.get(Uri.parse(blobUrl))` and tags them as `audio/webm`. On mobile/desktop the widget writes to a temp file (`path_provider` + `dart:io File`) and deletes it after reading, tagging the mimetype as `audio/mp4`.
-8. Platform permissions: Android `RECORD_AUDIO`, iOS `NSMicrophoneUsageDescription`, macOS `com.apple.security.device.audio-input`.
+3. Backend `transcribeChatAudio` callable passes the audio inline to Gemini (multimodal) with a transcription-only instruction; returns the transcript text. The instruction includes a small glossary of canonical Brazilian-finance terms (Nubank, Itaú, Bradesco, PicPay, etc.) that the speech model frequently breaks apart phonetically (e.g. "Nubank" → "No Bank Geek") — biasing the decoder toward the right spelling.
+4. Bloc dispatches the transcript as a regular `ChatMessageSent` turn (see ChatAudioTranscriptionRequested transition). The user sees their bubble appear with the transcript, and the AI replies normally — including any action card needed to confirm the request.
+5. The audio bytes are never persisted; only the transcript text hits Firestore via the regular user-message save path. There is no review/edit step — if the transcript is wrong, the user can send a follow-up message correcting it.
+6. Web is supported — `record_web` uses `MediaRecorder`. On web `AudioRecorder.start` ignores the `path` parameter and `stop()` returns a blob URL; the widget fetches the bytes via `http.get(Uri.parse(blobUrl))` and tags them as `audio/webm`. On mobile/desktop the widget writes to a temp file (`path_provider` + `dart:io File`) and deletes it after reading, tagging the mimetype as `audio/mp4`.
+7. Platform permissions: Android `RECORD_AUDIO`, iOS `NSMicrophoneUsageDescription`, macOS `com.apple.security.device.audio-input`.
 
 ## Edge Cases
 

@@ -175,9 +175,6 @@ class TranslationsAuthEn {
 
 	// Translations
 
-	/// en: 'Sign In'
-	String get signIn => 'Sign In';
-
 	/// en: 'Sign Out'
 	String get signOut => 'Sign Out';
 
@@ -186,12 +183,6 @@ class TranslationsAuthEn {
 
 	/// en: 'your@email.com'
 	String get emailHint => 'your@email.com';
-
-	/// en: 'Welcome back'
-	String get welcomeBack => 'Welcome back';
-
-	/// en: 'Sign in with your Google account'
-	String get signInSubtitle => 'Sign in with your Google account';
 
 	/// en: 'Continue with Google'
 	String get continueWithGoogle => 'Continue with Google';
@@ -309,9 +300,6 @@ class TranslationsOnboardingEn {
 
 	/// en: 'Beautiful charts and summaries help you understand your spending habits.'
 	String get step3Body => 'Beautiful charts and summaries help you understand your spending habits.';
-
-	/// en: 'Get Started'
-	String get getStarted => 'Get Started';
 
 	/// en: 'Next'
 	String get next => 'Next';
@@ -1727,9 +1715,6 @@ class TranslationsChatAudioEn {
 	/// en: 'Transcribing...'
 	String get transcribing => 'Transcribing...';
 
-	/// en: 'Review transcript and send'
-	String get reviewHint => 'Review transcript and send';
-
 	/// en: 'Microphone permission required to record voice.'
 	String get permissionDenied => 'Microphone permission required to record voice.';
 
@@ -1759,6 +1744,9 @@ class TranslationsChatImageEn {
 
 	/// en: 'Could not pick image'
 	String get pickError => 'Could not pick image';
+
+	/// en: 'Image not available'
+	String get missing => 'Image not available';
 }
 
 // Path: bills.notification
@@ -1874,12 +1862,9 @@ extension on Translations {
 			'validators.dateInFuture' => 'Date cannot be in the future.',
 			'validators.selectAccount' => 'Select an account',
 			'validators.selectCategory' => 'Select a category',
-			'auth.signIn' => 'Sign In',
 			'auth.signOut' => 'Sign Out',
 			'auth.email' => 'Email',
 			'auth.emailHint' => 'your@email.com',
-			'auth.welcomeBack' => 'Welcome back',
-			'auth.signInSubtitle' => 'Sign in with your Google account',
 			'auth.continueWithGoogle' => 'Continue with Google',
 			'auth.accessByInviteOnly' => 'Access is by invite only.',
 			'accessControl.restrictedTitle' => 'Restricted access',
@@ -1910,7 +1895,6 @@ extension on Translations {
 			'onboarding.step2Body' => 'Just type naturally — our AI chat extracts transaction data for you automatically.',
 			'onboarding.step3Title' => 'Insightful Reports',
 			'onboarding.step3Body' => 'Beautiful charts and summaries help you understand your spending habits.',
-			'onboarding.getStarted' => 'Get Started',
 			'onboarding.next' => 'Next',
 			'onboarding.skip' => 'Skip',
 			'nav.dashboard' => 'Dashboard',
@@ -2199,7 +2183,6 @@ extension on Translations {
 			'chat.audio.cancel' => 'Cancel',
 			'chat.audio.recording' => 'Recording',
 			'chat.audio.transcribing' => 'Transcribing...',
-			'chat.audio.reviewHint' => 'Review transcript and send',
 			'chat.audio.permissionDenied' => 'Microphone permission required to record voice.',
 			'chat.audio.recordError' => 'Failed to record audio',
 			'chat.image.attach' => 'Attach image',
@@ -2207,6 +2190,7 @@ extension on Translations {
 			'chat.image.fromGallery' => 'Choose from gallery',
 			'chat.image.remove' => 'Remove image',
 			'chat.image.pickError' => 'Could not pick image',
+			'chat.image.missing' => 'Image not available',
 			'reports.title' => 'Reports',
 			'reports.incomeVsExpenses' => 'Income vs Expenses',
 			'reports.expensesByCategory' => 'Expenses by Category',
@@ -2356,12 +2340,12 @@ extension on Translations {
 			'profile.sectionPreferences' => 'Preferences',
 			'profile.sectionGetTheApp' => 'Get the app',
 			'profile.sectionAccount' => 'Account',
-			_ => null,
-		} ?? switch (path) {
 			'profile.sectionDangerZone' => 'Danger zone',
 			'profile.sectionMaster' => 'Master',
 			'profile.masterPanel' => 'Master panel',
 			'profile.masterPanelDescription' => 'Manage users and the access allowlist',
+			_ => null,
+		} ?? switch (path) {
 			'profile.appearance' => 'Appearance',
 			'profile.version' => 'Version',
 			'startup.tagline' => 'Your finances, in flow.',

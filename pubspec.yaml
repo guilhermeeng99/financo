@@ -68,7 +68,7 @@ dependencies:
   http: ^1.3.0
 
   # App metadata (cross-platform package version)
-  package_info_plus: ^8.3.0
+  package_info_plus: ^9.0.0
 
 dev_dependencies:
   flutter_test:

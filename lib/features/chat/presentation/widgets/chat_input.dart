@@ -24,21 +24,18 @@ import 'package:record/record.dart';
 ///   typed text → paper plane (sends). The trailing button morphs between
 ///   the two icons with a small scale/fade swap.
 /// • Recording: cancel button on the left, animated waveform + timer in
-///   the middle, stop-and-transcribe button on the right.
-/// • Transcribing: spinner + label.
-/// • Pending transcript: same as default, but the leading icon swaps to a
-///   red cancel that drops the transcript.
+///   the middle, stop-and-send button on the right.
+/// • Transcribing: spinner + label. Stops once the transcript is sent
+///   automatically as a regular user message — no review step.
 class ChatInput extends StatefulWidget {
   const ChatInput({
     required this.controller,
     required this.onAfterSend,
-    required this.onCancelTranscript,
     super.key,
   });
 
   final TextEditingController controller;
   final VoidCallback onAfterSend;
-  final VoidCallback onCancelTranscript;
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -53,6 +50,13 @@ class _ChatInputState extends State<ChatInput>
   Timer? _tickTimer;
   String? _currentRecordingPath;
   _PickedImage? _pickedImage;
+  // True from picker-returned to encoding-finished. Drives the loading
+  // overlay on the thumbnail and disables the send button so we don't
+  // dispatch a half-built attachment.
+  bool _isEncodingImage = false;
+  // Tracks the most recent encoding job so a second pick (or remove)
+  // overwriting a previous one doesn't surprise-update older state.
+  int _encodingSequence = 0;
 
   late final AnimationController _waveformController;
 
@@ -79,6 +83,10 @@ class _ChatInputState extends State<ChatInput>
     final text = widget.controller.text.trim();
     final picked = _pickedImage;
     if (text.isEmpty && picked == null) return;
+    // Tap arrived while base64 was still being prepared — drop the tap
+    // silently. The button is also visually disabled so this mostly
+    // guards against fast double-taps.
+    if (_isEncodingImage) return;
 
     unawaited(HapticFeedback.lightImpact());
     context.read<ChatBloc>().add(
@@ -90,11 +98,24 @@ class _ChatInputState extends State<ChatInput>
                 mimeType: picked.mimeType,
               )
             : null,
+        imageBytes: picked?.bytes,
       ),
     );
     widget.controller.clear();
-    setState(() => _pickedImage = null);
+    _clearPickedImage();
     widget.onAfterSend();
+  }
+
+  /// Clears the staged image and bumps the encoding sequence so any
+  /// in-flight `_encodeImageData` completion is ignored — prevents a stale
+  /// encoding from re-populating `_pickedImage` after the user already
+  /// removed the attachment or sent it.
+  void _clearPickedImage() {
+    _encodingSequence++;
+    setState(() {
+      _pickedImage = null;
+      _isEncodingImage = false;
+    });
   }
 
   // ───── image attach ───────────────────────────────────────────────────
@@ -109,19 +130,52 @@ class _ChatInputState extends State<ChatInput>
       if (xfile == null || !mounted) return;
       final bytes = await xfile.readAsBytes();
       final mime = _mimeTypeFromName(xfile.name);
+
+      // Snap the thumbnail in immediately with bytes only — the user gets
+      // instant visual feedback while the (synchronous, expensive) base64
+      // encode proceeds off-thread. `_isEncodingImage` drives a loading
+      // overlay on the thumbnail and disables the send button.
+      final sequence = ++_encodingSequence;
       setState(() {
+        _isEncodingImage = true;
         _pickedImage = _PickedImage(
-          base64Data: base64Encode(bytes),
+          base64Data: '',
+          mimeType: mime,
+          bytes: bytes,
+        );
+      });
+
+      final base64 = await _encodeBase64(bytes);
+      if (!mounted || sequence != _encodingSequence) return;
+      // Sequence guard: if the user removed the image or picked another
+      // one before this finished, drop the stale result.
+      setState(() {
+        _isEncodingImage = false;
+        _pickedImage = _PickedImage(
+          base64Data: base64,
           mimeType: mime,
           bytes: bytes,
         );
       });
     } on Exception catch (e) {
       if (!mounted) return;
+      setState(() => _isEncodingImage = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${t.chat.image.pickError}: $e')),
       );
     }
+  }
+
+  /// Runs base64 encoding off the main isolate when supported. On web
+  /// there are no isolates, so we yield to the event loop and run
+  /// synchronously — at least the immediate thumbnail has already painted
+  /// by the time we get here.
+  Future<String> _encodeBase64(Uint8List bytes) async {
+    if (kIsWeb) {
+      await Future<void>.delayed(Duration.zero);
+      return _encodeBase64Sync(bytes);
+    }
+    return compute(_encodeBase64Sync, bytes);
   }
 
   String _mimeTypeFromName(String name) {
@@ -292,8 +346,6 @@ class _ChatInputState extends State<ChatInput>
     return BlocBuilder<ChatBloc, ChatState>(
       builder: (context, state) {
         final isTranscribing = state is ChatLoaded && state.isTranscribing;
-        final hasPendingTranscript =
-            state is ChatLoaded && state.pendingTranscript != null;
 
         return Container(
           padding: EdgeInsets.fromLTRB(
@@ -327,11 +379,9 @@ class _ChatInputState extends State<ChatInput>
                     : _DefaultRow(
                         controller: widget.controller,
                         pickedImage: _pickedImage,
-                        onRemoveImage: () =>
-                            setState(() => _pickedImage = null),
-                        hasPendingTranscript: hasPendingTranscript,
+                        isEncodingImage: _isEncodingImage,
+                        onRemoveImage: _clearPickedImage,
                         onAttach: () => unawaited(_showAttachMenu()),
-                        onCancelTranscript: widget.onCancelTranscript,
                         onSend: _handleSend,
                         onStartRecording: () => unawaited(_startRecording()),
                       ),
@@ -348,20 +398,18 @@ class _DefaultRow extends StatelessWidget {
   const _DefaultRow({
     required this.controller,
     required this.pickedImage,
+    required this.isEncodingImage,
     required this.onRemoveImage,
-    required this.hasPendingTranscript,
     required this.onAttach,
-    required this.onCancelTranscript,
     required this.onSend,
     required this.onStartRecording,
   });
 
   final TextEditingController controller;
   final _PickedImage? pickedImage;
+  final bool isEncodingImage;
   final VoidCallback onRemoveImage;
-  final bool hasPendingTranscript;
   final VoidCallback onAttach;
-  final VoidCallback onCancelTranscript;
   final VoidCallback onSend;
   final VoidCallback onStartRecording;
 
@@ -374,7 +422,11 @@ class _DefaultRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (picked != null)
-          _ImagePreview(picked: picked, onRemove: onRemoveImage),
+          _ImagePreview(
+            picked: picked,
+            isEncoding: isEncodingImage,
+            onRemove: onRemoveImage,
+          ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -387,18 +439,12 @@ class _DefaultRow extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _PillLeadingIcon(
-                      hasPendingTranscript: hasPendingTranscript,
-                      onAttach: onAttach,
-                      onCancelTranscript: onCancelTranscript,
-                    ),
+                    _PillLeadingIcon(onAttach: onAttach),
                     Expanded(
                       child: TextField(
                         controller: controller,
                         decoration: InputDecoration(
-                          hintText: hasPendingTranscript
-                              ? t.chat.audio.reviewHint
-                              : t.chat.placeholder,
+                          hintText: t.chat.placeholder,
                           hintStyle: context.textTheme.bodyMedium?.copyWith(
                             color: colors.onBackgroundLight,
                           ),
@@ -430,7 +476,7 @@ class _DefaultRow extends StatelessWidget {
             _MorphingTrailingButton(
               controller: controller,
               hasImage: picked != null,
-              hasPendingTranscript: hasPendingTranscript,
+              isDisabled: isEncodingImage,
               onSend: onSend,
               onStartRecording: onStartRecording,
             ),
@@ -442,44 +488,21 @@ class _DefaultRow extends StatelessWidget {
 }
 
 class _PillLeadingIcon extends StatelessWidget {
-  const _PillLeadingIcon({
-    required this.hasPendingTranscript,
-    required this.onAttach,
-    required this.onCancelTranscript,
-  });
+  const _PillLeadingIcon({required this.onAttach});
 
-  final bool hasPendingTranscript;
   final VoidCallback onAttach;
-  final VoidCallback onCancelTranscript;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 180),
-      transitionBuilder: (child, animation) =>
-          ScaleTransition(scale: animation, child: child),
-      child: hasPendingTranscript
-          ? IconButton(
-              key: const ValueKey('cancel-transcript'),
-              icon: FaIcon(
-                FontAwesomeIcons.xmark,
-                color: colors.error,
-                size: 18,
-              ),
-              onPressed: onCancelTranscript,
-              tooltip: t.chat.audio.cancel,
-            )
-          : IconButton(
-              key: const ValueKey('attach'),
-              icon: FaIcon(
-                FontAwesomeIcons.paperclip,
-                color: colors.onBackgroundLight,
-                size: 18,
-              ),
-              onPressed: onAttach,
-              tooltip: t.chat.image.attach,
-            ),
+    return IconButton(
+      icon: FaIcon(
+        FontAwesomeIcons.paperclip,
+        color: colors.onBackgroundLight,
+        size: 18,
+      ),
+      onPressed: onAttach,
+      tooltip: t.chat.image.attach,
     );
   }
 }
@@ -491,31 +514,57 @@ class _MorphingTrailingButton extends StatelessWidget {
   const _MorphingTrailingButton({
     required this.controller,
     required this.hasImage,
-    required this.hasPendingTranscript,
+    required this.isDisabled,
     required this.onSend,
     required this.onStartRecording,
   });
 
   final TextEditingController controller;
   final bool hasImage;
-  final bool hasPendingTranscript;
+
+  /// True while the picked image is still being encoded — the send
+  /// pathway isn't ready yet, so the button shows a spinner and ignores
+  /// taps. Mic-mode taps are also blocked, since starting a recording
+  /// while encoding would race the staged attachment.
+  final bool isDisabled;
   final VoidCallback onSend;
   final VoidCallback onStartRecording;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
+    if (isDisabled) {
+      return SizedBox(
+        width: _CircleButton._size,
+        height: _CircleButton._size,
+        child: Material(
+          color: colors.primary.withValues(alpha: 0.6),
+          shape: const CircleBorder(),
+          child: const Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) {
         final hasText = value.text.trim().isNotEmpty;
-        final showSend = hasText || hasImage || hasPendingTranscript;
+        final showSend = hasText || hasImage;
         return _CircleButton(
           icon: showSend
               ? FontAwesomeIcons.paperPlane
               : FontAwesomeIcons.microphone,
           // The mic uses the same primary fill as the send button — the
           // morph reads as "this is the action" rather than a state shift.
-          color: context.appColors.primary,
+          color: colors.primary,
           onPressed: showSend ? onSend : onStartRecording,
           semanticLabel: showSend ? null : t.chat.audio.start,
         );
@@ -763,9 +812,18 @@ class _TranscribingRow extends StatelessWidget {
 // ─── Image preview ──────────────────────────────────────────────────────
 
 class _ImagePreview extends StatelessWidget {
-  const _ImagePreview({required this.picked, required this.onRemove});
+  const _ImagePreview({
+    required this.picked,
+    required this.isEncoding,
+    required this.onRemove,
+  });
 
   final _PickedImage picked;
+
+  /// Dim the thumbnail and show a centered spinner while base64 + BlurHash
+  /// are still being computed. The thumbnail itself is already painted
+  /// (bytes are available) — this just signals "wait, almost ready".
+  final bool isEncoding;
   final VoidCallback onRemove;
 
   @override
@@ -780,11 +838,30 @@ class _ImagePreview extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.memory(
-                picked.bytes,
-                width: 64,
-                height: 64,
-                fit: BoxFit.cover,
+              child: Stack(
+                children: [
+                  Image.memory(
+                    picked.bytes,
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
+                  ),
+                  if (isEncoding)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        alignment: Alignment.center,
+                        child: const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             Positioned(
@@ -860,3 +937,9 @@ class _PickedImage {
   final String mimeType;
   final Uint8List bytes;
 }
+
+/// Top-level so it can be passed to [compute] (closures capturing instance
+/// state aren't transferable across isolates). The base64 encode is the
+/// only expensive step now — at 1920 px / quality 75 the JPEG can hit
+/// ~1.5 MB, and `base64Encode` runs synchronously, so we offload it.
+String _encodeBase64Sync(Uint8List bytes) => base64Encode(bytes);

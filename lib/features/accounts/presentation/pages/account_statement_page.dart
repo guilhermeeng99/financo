@@ -66,9 +66,19 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
     // Same destination as the dashboard FAB, but pre-selects this account
     // via a query param so users don't re-pick the account they're
     // already viewing.
-    await context.push(
+    await context.push<Object?>(
       '${AppRoutes.addTransaction}?accountId=${widget.accountId}',
     );
+    if (!mounted || _account == null) return;
+    _triggerLoad(_account!);
+  }
+
+  /// Reloads the statement after edit/delete just like [_openAddTransaction]
+  /// does for create — without this, mutations performed on the add/edit
+  /// transaction page only show up on the next entry into this page, since
+  /// `AccountStatementCubit` is not subscribed to `TransactionsBloc`.
+  Future<void> _openEditTransaction(TransactionEntity tx) async {
+    await context.push<Object?>(AppRoutes.addTransaction, extra: tx);
     if (!mounted || _account == null) return;
     _triggerLoad(_account!);
   }
@@ -127,7 +137,10 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
               );
             }
             if (state is AccountStatementLoaded) {
-              return _StatementContent(state: state);
+              return _StatementContent(
+                state: state,
+                onTransactionTap: _openEditTransaction,
+              );
             }
             return const SizedBox.shrink();
           },
@@ -138,9 +151,13 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
 }
 
 class _StatementContent extends StatelessWidget {
-  const _StatementContent({required this.state});
+  const _StatementContent({
+    required this.state,
+    required this.onTransactionTap,
+  });
 
   final AccountStatementLoaded state;
+  final ValueChanged<TransactionEntity> onTransactionTap;
 
   static const _kWideBreakpoint = 600.0;
 
@@ -163,7 +180,12 @@ class _StatementContent extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 24),
             color: context.appColors.surfaceVariant,
           ),
-          Expanded(child: _TransactionsSide(state: state)),
+          Expanded(
+            child: _TransactionsSide(
+              state: state,
+              onTransactionTap: onTransactionTap,
+            ),
+          ),
         ],
       );
     }
@@ -177,7 +199,10 @@ class _StatementContent extends StatelessWidget {
           ),
         ),
         SliverFillRemaining(
-          child: _TransactionsSide(state: state),
+          child: _TransactionsSide(
+            state: state,
+            onTransactionTap: onTransactionTap,
+          ),
         ),
       ],
     );
@@ -327,9 +352,13 @@ class _SummaryRow extends StatelessWidget {
 }
 
 class _TransactionsSide extends StatelessWidget {
-  const _TransactionsSide({required this.state});
+  const _TransactionsSide({
+    required this.state,
+    required this.onTransactionTap,
+  });
 
   final AccountStatementLoaded state;
+  final ValueChanged<TransactionEntity> onTransactionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -369,9 +398,9 @@ class _TransactionsSide extends StatelessWidget {
         return TransactionTile(
           transaction: tx,
           categoryLabel: label,
-          // `push` (not `go`) so the edit page has a back arrow and
-          // pop(true) returns to this statement after Update.
-          onTap: () => context.push(AppRoutes.addTransaction, extra: tx),
+          // Awaited via the parent so the statement reloads after edit
+          // or delete; `context.push` directly would not refresh.
+          onTap: () => onTransactionTap(tx),
         );
       },
     );

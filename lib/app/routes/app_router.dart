@@ -20,7 +20,6 @@ import 'package:financo/features/accounts/presentation/pages/import_accounts_pag
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
-import 'package:financo/features/auth/presentation/pages/sign_in_page.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
@@ -81,7 +80,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     final authState = authBloc.state;
     final isOnStartup = state.matchedLocation == AppRoutes.startup;
     final isOnOnboarding = state.matchedLocation == AppRoutes.onboarding;
-    final isOnAuth = state.matchedLocation == AppRoutes.signIn;
     final isOnAccessRestricted =
         state.matchedLocation == AppRoutes.accessRestricted;
 
@@ -99,18 +97,18 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       return isOnAccessRestricted ? null : AppRoutes.accessRestricted;
     }
 
-    // Unauthenticated users can stay on auth/onboarding pages.
+    // Unauthenticated users land on the onboarding/auth page.
     if (authState is Unauthenticated) {
-      if (isOnAuth || isOnOnboarding) return null;
-      return AppRoutes.signIn;
+      if (isOnOnboarding) return null;
+      return AppRoutes.onboarding;
     }
 
-    // Authenticated users on auth/onboarding pages go through startup
+    // Authenticated users on the onboarding page go through startup
     // so the data sync happens before entering the app. Same applies
     // for the access-restricted page (e.g. user came back from sign-out
     // and was re-authenticated successfully).
     if (authState is Authenticated &&
-        (isOnAuth || isOnOnboarding || isOnAccessRestricted)) {
+        (isOnOnboarding || isOnAccessRestricted)) {
       return AppRoutes.startup;
     }
 
@@ -125,10 +123,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     GoRoute(
       path: AppRoutes.onboarding,
       builder: (context, state) => const OnboardingPage(),
-    ),
-    GoRoute(
-      path: AppRoutes.signIn,
-      builder: (context, state) => const SignInPage(),
     ),
     GoRoute(
       path: AppRoutes.accessRestricted,

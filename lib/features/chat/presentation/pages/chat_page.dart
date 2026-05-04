@@ -95,7 +95,6 @@ class _ChatViewState extends State<_ChatView> {
   // state — losing it on reload is benign since cancelled actions never
   // touched any data.
   final _cancelledActionIds = <String>{};
-  String? _appliedTranscript;
 
   @override
   void initState() {
@@ -114,13 +113,7 @@ class _ChatViewState extends State<_ChatView> {
     super.dispose();
   }
 
-  void _onMessageSent() => _appliedTranscript = null;
-
-  void _cancelTranscript() {
-    _controller.clear();
-    _appliedTranscript = null;
-    context.read<ChatBloc>().add(const ChatTranscriptCancelled());
-  }
+  void _onMessageSent() {}
 
   void _onSuggestionTap(String suggestion) {
     _controller.text = suggestion;
@@ -152,17 +145,6 @@ class _ChatViewState extends State<_ChatView> {
       unawaited(
         context.read<BudgetsCubit>().loadBudgets(forceRefresh: true),
       );
-    }
-    final transcript = state.pendingTranscript;
-    if (transcript != null && transcript != _appliedTranscript) {
-      _controller.text = transcript;
-      _controller.selection = TextSelection.collapsed(
-        offset: transcript.length,
-      );
-      _appliedTranscript = transcript;
-    }
-    if (transcript == null && _appliedTranscript != null) {
-      _appliedTranscript = null;
     }
   }
 
@@ -198,7 +180,6 @@ class _ChatViewState extends State<_ChatView> {
           ChatInput(
             controller: _controller,
             onAfterSend: _onMessageSent,
-            onCancelTranscript: _cancelTranscript,
           ),
         ],
       ),
