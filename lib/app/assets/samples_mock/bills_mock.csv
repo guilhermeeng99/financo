@@ -1,0 +1,33 @@
+Type,Description,Amount,Due Date,Status,Recurrence,Category,Notes
+Payable,Monthly rent,2000.00,05/03/2026,Paid,Monthly,Housing/Rent,
+Payable,Internet bill,109.90,01/03/2026,Paid,Monthly,Housing/Internet,
+Payable,Electricity bill,178.30,30/03/2026,Paid,Monthly,Housing/Utilities,
+Payable,Health insurance,660.50,06/03/2026,Paid,Monthly,Health/Health Insurance,
+Payable,Gym membership,99.90,07/03/2026,Paid,Monthly,Health/Gym,
+Payable,Streaming subscription,39.90,08/03/2026,Paid,Monthly,Entertainment/Streaming,
+Payable,Mobile phone plan,79.90,12/03/2026,Paid,Monthly,Housing/Internet,Family plan
+Payable,Cloud storage subscription,29.90,18/03/2026,Paid,Monthly,Education/Online Courses,
+Payable,Online course tuition,199.00,17/03/2026,Paid,One-time,Education/Online Courses,Quarterly cohort
+Receivable,Monthly salary,5500.00,05/03/2026,Paid,Monthly,Salary,
+Receivable,Stock dividends,215.40,26/03/2026,Paid,Monthly,Investments/Dividends,
+Receivable,Freelance design project,1800.00,21/03/2026,Paid,One-time,Freelance,Q1 contract
+Payable,Monthly rent,2000.00,05/04/2026,Paid,Monthly,Housing/Rent,
+Payable,Internet bill,109.90,01/04/2026,Paid,Monthly,Housing/Internet,
+Payable,Electricity bill,195.40,30/04/2026,Pending,Monthly,Housing/Utilities,
+Payable,Health insurance,660.50,06/04/2026,Paid,Monthly,Health/Health Insurance,
+Payable,Gym membership,99.90,07/04/2026,Paid,Monthly,Health/Gym,
+Payable,Streaming subscription,39.90,08/04/2026,Paid,Monthly,Entertainment/Streaming,
+Payable,Mobile phone plan,79.90,12/04/2026,Paid,Monthly,Housing/Internet,Family plan
+Payable,Cloud storage subscription,29.90,18/04/2026,Paid,Monthly,Education/Online Courses,
+Payable,Property insurance,420.00,22/04/2026,Pending,One-time,Housing/Rent,Annual policy
+Payable,Online design course,149.00,18/04/2026,Pending,One-time,Education/Online Courses,
+Receivable,Monthly salary,5500.00,05/04/2026,Paid,Monthly,Salary,
+Receivable,Quarterly dividends,245.80,28/04/2026,Paid,Monthly,Investments/Dividends,
+Receivable,Savings interest,95.20,28/04/2026,Paid,Monthly,Investments/Interest,
+Receivable,Freelance website project,2400.00,23/04/2026,Paid,One-time,Freelance,April retainer
+Payable,Monthly rent,2000.00,05/05/2026,Pending,Monthly,Housing/Rent,
+Payable,Internet bill,109.90,01/05/2026,Pending,Monthly,Housing/Internet,
+Payable,Health insurance,660.50,06/05/2026,Pending,Monthly,Health/Health Insurance,
+Payable,Gym membership,99.90,07/05/2026,Pending,Monthly,Health/Gym,
+Payable,Annual antivirus license,289.00,15/05/2026,Pending,One-time,Education/Online Courses,Renews yearly
+Receivable,Monthly salary,5500.00,05/05/2026,Pending,Monthly,Salary,

@@ -1354,6 +1354,33 @@ class TranslationsBillsEn {
 
 	/// en: 'This and the following'
 	String get editScopeAlsoSubsequents => 'This and the following';
+
+	/// en: 'Import bills'
+	String get importCsv => 'Import bills';
+
+	/// en: 'Import bills from CSV'
+	String get importCsvIntroTitle => 'Import bills from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
+	/// en: 'Imported $imported bills. Skipped $skipped (unknown category).'
+	String importCsvSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} bills. Skipped ${skipped} (unknown category).';
 }
 
 // Path: budgets
@@ -1459,6 +1486,33 @@ class TranslationsBudgetsEn {
 
 	/// en: 'Category'
 	String get formCategorySection => 'Category';
+
+	/// en: 'Import budgets'
+	String get importCsv => 'Import budgets';
+
+	/// en: 'Import budgets from CSV'
+	String get importCsvIntroTitle => 'Import budgets from CSV';
+
+	/// en: 'Your file must follow the expected format (columns Category, Amount). Each row maps to a root expense category by name; categories that don't exist or already have a budget are skipped. Download the example to see how it works.'
+	String get importCsvIntroBody => 'Your file must follow the expected format (columns Category, Amount). Each row maps to a root expense category by name; categories that don\'t exist or already have a budget are skipped. Download the example to see how it works.';
+
+	/// en: 'Download example'
+	String get importCsvDownloadExample => 'Download example';
+
+	/// en: 'Select file'
+	String get importCsvSelectFile => 'Select file';
+
+	/// en: 'Example saved.'
+	String get importCsvExampleDownloaded => 'Example saved.';
+
+	/// en: 'Couldn't save the example file.'
+	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
+
+	/// en: 'Couldn't import the CSV'
+	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
+
+	/// en: 'Imported $imported budgets. Skipped $skipped (unknown or duplicate category).'
+	String importCsvSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} budgets. Skipped ${skipped} (unknown or duplicate category).';
 }
 
 // Path: profile
@@ -2306,6 +2360,15 @@ extension on Translations {
 			'bills.editScopeDescription' => 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).',
 			'bills.editScopeOnlyThis' => 'Only this one',
 			'bills.editScopeAlsoSubsequents' => 'This and the following',
+			'bills.importCsv' => 'Import bills',
+			'bills.importCsvIntroTitle' => 'Import bills from CSV',
+			'bills.importCsvIntroBody' => 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.',
+			'bills.importCsvDownloadExample' => 'Download example',
+			'bills.importCsvSelectFile' => 'Select file',
+			'bills.importCsvExampleDownloaded' => 'Example saved.',
+			'bills.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'bills.importCsvErrorTitle' => 'Couldn\'t import the CSV',
+			'bills.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} bills. Skipped ${skipped} (unknown category).',
 			'budgets.title' => 'Budgets',
 			'budgets.addBudget' => 'New budget',
 			'budgets.editBudget' => 'Edit budget',
@@ -2338,12 +2401,23 @@ extension on Translations {
 			'budgets.emptyAction' => 'Create your first budget',
 			'budgets.formDetails' => 'Details',
 			'budgets.formCategorySection' => 'Category',
+			'budgets.importCsv' => 'Import budgets',
+			'budgets.importCsvIntroTitle' => 'Import budgets from CSV',
+			'budgets.importCsvIntroBody' => 'Your file must follow the expected format (columns Category, Amount). Each row maps to a root expense category by name; categories that don\'t exist or already have a budget are skipped. Download the example to see how it works.',
+			'budgets.importCsvDownloadExample' => 'Download example',
+			'budgets.importCsvSelectFile' => 'Select file',
+			'budgets.importCsvExampleDownloaded' => 'Example saved.',
+			'budgets.importCsvExampleFailed' => 'Couldn\'t save the example file.',
+			'budgets.importCsvErrorTitle' => 'Couldn\'t import the CSV',
+			'budgets.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} budgets. Skipped ${skipped} (unknown or duplicate category).',
 			'profile.title' => 'Profile',
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',
 			'profile.categories' => 'Categories',
 			'profile.bills' => 'Bills',
 			'profile.theme' => 'Theme',
+			_ => null,
+		} ?? switch (path) {
 			'profile.themeLight' => 'Light',
 			'profile.themeDark' => 'Dark',
 			'profile.themeSystem' => 'System',
@@ -2362,8 +2436,6 @@ extension on Translations {
 			'profile.sectionMaster' => 'Master',
 			'profile.masterPanel' => 'Master panel',
 			'profile.masterPanelDescription' => 'Manage users and the access allowlist',
-			_ => null,
-		} ?? switch (path) {
 			'profile.appearance' => 'Appearance',
 			'profile.version' => 'Version',
 			'profile.lightPalette' => 'Light palette',

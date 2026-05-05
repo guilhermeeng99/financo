@@ -3,11 +3,16 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
+import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/app/widgets/responsive_layout.dart';
+import 'package:financo/core/date_filter/date_filter_cubit.dart';
+import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/budgets/domain/entities/budget_overview.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/budgets/presentation/widgets/budget_tile.dart';
+import 'package:financo/features/budgets/presentation/widgets/budgets_csv_import_dialog.dart';
 import 'package:financo/features/budgets/presentation/widgets/budgets_empty_state.dart';
 import 'package:financo/features/budgets/presentation/widgets/budgets_summary_card.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -27,7 +32,20 @@ class _BudgetsPageState extends State<BudgetsPage> {
   @override
   void initState() {
     super.initState();
-    unawaited(context.read<BudgetsCubit>().loadBudgets());
+    // Read the global filter once so the very first load lands on the
+    // user's currently-selected month (the listener below keeps it in
+    // sync after that).
+    unawaited(
+      Future.microtask(() {
+        if (!mounted) return;
+        final filter = context.read<DateFilterCubit>().state;
+        unawaited(
+          context.read<BudgetsCubit>().loadBudgets(
+            month: DateTime(filter.year, filter.month),
+          ),
+        );
+      }),
+    );
   }
 
   Future<void> _openAdd() async {
@@ -38,6 +56,8 @@ class _BudgetsPageState extends State<BudgetsPage> {
       );
     }
   }
+
+  Future<void> _openImport() => showBudgetsCsvImportDialog(context);
 
   Future<void> _openEdit(BudgetOverview overview) async {
     final result = await context.push<bool>(
@@ -83,7 +103,20 @@ class _BudgetsPageState extends State<BudgetsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: FinancoLargeAppBar(title: t.budgets.title),
+      appBar: FinancoLargeAppBar(
+        title: t.budgets.title,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16, top: 4),
+            child: _BudgetsAppBarIconButton(
+              icon: FontAwesomeIcons.fileArrowUp,
+              tooltip: t.budgets.importCsv,
+              color: context.appColors.primary,
+              onPressed: () => unawaited(_openImport()),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
           heroTag: 'budgets_fab',
@@ -91,31 +124,45 @@ class _BudgetsPageState extends State<BudgetsPage> {
           child: const FaIcon(FontAwesomeIcons.plus),
         ),
       ),
-      body: BlocBuilder<BudgetsCubit, BudgetsState>(
-        builder: (context, state) {
-          if (state is BudgetsLoading || state is BudgetsInitial) {
-            return const LoadingShimmer();
-          }
-          if (state is BudgetsError) {
-            return ErrorView(
-              message: state.failure.message,
-              onRetry: () => context
-                  .read<BudgetsCubit>()
-                  .loadBudgets(forceRefresh: true),
-            );
-          }
-          if (state is BudgetsLoaded) {
-            if (state.overviews.isEmpty) {
-              return BudgetsEmptyState(onAddPressed: _openAdd);
-            }
-            return _BudgetsBody(
-              state: state,
-              onTap: _openEdit,
-              onDelete: _confirmDelete,
-            );
-          }
-          return const SizedBox.shrink();
+      body: BlocListener<DateFilterCubit, DateFilterState>(
+        // Re-fetch whenever the global month stepper moves so the user
+        // can review past months' spend vs. cap. Force refresh — the
+        // cubit's same-month short-circuit would otherwise no-op when
+        // landing back on the original month.
+        listener: (context, filter) {
+          unawaited(
+            context.read<BudgetsCubit>().loadBudgets(
+              month: DateTime(filter.year, filter.month),
+              forceRefresh: true,
+            ),
+          );
         },
+        child: BlocBuilder<BudgetsCubit, BudgetsState>(
+          builder: (context, state) {
+            if (state is BudgetsLoading || state is BudgetsInitial) {
+              return const LoadingShimmer();
+            }
+            if (state is BudgetsError) {
+              return ErrorView(
+                message: state.failure.message,
+                onRetry: () => context
+                    .read<BudgetsCubit>()
+                    .loadBudgets(forceRefresh: true),
+              );
+            }
+            if (state is BudgetsLoaded) {
+              if (state.overviews.isEmpty) {
+                return BudgetsEmptyState(onAddPressed: _openAdd);
+              }
+              return _BudgetsBody(
+                state: state,
+                onTap: _openEdit,
+                onDelete: _confirmDelete,
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -134,11 +181,20 @@ class _BudgetsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The shell renders the sidebar at >=600px and that sidebar already
+    // hosts a month stepper. On mobile the sidebar is hidden, so the
+    // body has to surface the pill itself — same rule the dashboard uses.
+    final isMobile = ResponsiveLayout.isMobile(context);
+
     // 96px bottom padding clears the floating bottom nav + FAB so the
     // last tile doesn't tuck underneath them.
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
       children: [
+        if (isMobile) ...const [
+          Center(child: FinancoMonthFilterPill()),
+          SizedBox(height: 16),
+        ],
         BudgetsSummaryCard(
           totalCap: state.totalCap,
           totalSpent: state.totalSpent,
@@ -153,6 +209,40 @@ class _BudgetsBody extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _BudgetsAppBarIconButton extends StatelessWidget {
+  const _BudgetsAppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
+          ),
+        ),
+      ),
     );
   }
 }

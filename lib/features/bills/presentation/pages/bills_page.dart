@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
+import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/financo_section_header.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
@@ -16,6 +18,7 @@ import 'package:financo/features/bills/presentation/widgets/bill_match_banner.da
 import 'package:financo/features/bills/presentation/widgets/bill_match_sheet.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_status_dot.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_tile.dart';
+import 'package:financo/features/bills/presentation/widgets/bills_csv_import_dialog.dart';
 import 'package:financo/features/bills/presentation/widgets/bills_empty_state.dart';
 import 'package:financo/features/bills/presentation/widgets/bills_summary_card.dart';
 import 'package:financo/features/bills/presentation/widgets/bills_type_pills.dart';
@@ -97,6 +100,8 @@ class _BillsPageState extends State<BillsPage> {
     }
   }
 
+  Future<void> _openImport() => showBillsCsvImportDialog(context);
+
   Future<void> _onTapBill(BillEntity bill) async {
     if (bill.isVirtual) {
       // Virtual previews can't be edited (no Firestore doc to update).
@@ -173,7 +178,20 @@ class _BillsPageState extends State<BillsPage> {
         ),
       ],
       child: Scaffold(
-        appBar: FinancoLargeAppBar(title: t.bills.title),
+        appBar: FinancoLargeAppBar(
+          title: t.bills.title,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16, top: 4),
+              child: _BillsAppBarIconButton(
+                icon: FontAwesomeIcons.fileArrowUp,
+                tooltip: t.bills.importCsv,
+                color: context.appColors.primary,
+                onPressed: () => unawaited(_openImport()),
+              ),
+            ),
+          ],
+        ),
         floatingActionButton: LiftedFab(
           child: FloatingActionButton(
             heroTag: 'bills_fab',
@@ -327,8 +345,20 @@ class _BillsContent extends StatelessWidget {
       monthFiltered.where((b) => !b.isVirtual).map((b) => b.id).toSet(),
     );
 
+    // The shell renders the sidebar at >=600px and that sidebar already
+    // hosts a month stepper. On mobile the sidebar is hidden, so the
+    // body has to surface the pill itself — same rule the dashboard uses.
+    final isMobile = ResponsiveLayout.isMobile(context);
+
     return CustomScrollView(
       slivers: [
+        if (isMobile)
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+            sliver: SliverToBoxAdapter(
+              child: Center(child: FinancoMonthFilterPill()),
+            ),
+          ),
         if (visibleCandidates.isNotEmpty)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -624,6 +654,40 @@ class _NoMatchingFilter extends StatelessWidget {
           t.general.noResults,
           style: context.textTheme.bodyMedium?.copyWith(
             color: colors.onBackgroundLight,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BillsAppBarIconButton extends StatelessWidget {
+  const _BillsAppBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final FaIconData icon;
+  final Color color;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: color.withValues(alpha: 0.12),
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: Center(child: FaIcon(icon, size: 14, color: color)),
           ),
         ),
       ),

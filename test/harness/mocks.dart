@@ -28,6 +28,7 @@ import 'package:financo/features/bills/domain/repositories/bill_repository.dart'
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
@@ -39,6 +40,7 @@ import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.d
 import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/import_budgets_csv_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
@@ -142,6 +144,8 @@ class MockLinkBillToTransactionUseCase extends Mock
 class MockRejectBillMatchUseCase extends Mock
     implements RejectBillMatchUseCase {}
 
+class MockImportBillsCsvUseCase extends Mock implements ImportBillsCsvUseCase {}
+
 // ── Budgets ──
 class MockBudgetRepository extends Mock implements BudgetRepository {}
 
@@ -160,6 +164,9 @@ class MockDeleteBudgetUseCase extends Mock implements DeleteBudgetUseCase {}
 
 class MockGetBudgetsOverviewUseCase extends Mock
     implements GetBudgetsOverviewUseCase {}
+
+class MockImportBudgetsCsvUseCase extends Mock
+    implements ImportBudgetsCsvUseCase {}
 
 // ── Use Cases: Transactions ──
 class MockGetTransactionsUseCase extends Mock

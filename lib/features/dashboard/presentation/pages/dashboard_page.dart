@@ -4,6 +4,7 @@ import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
@@ -142,11 +143,19 @@ class _DashboardContent extends StatelessWidget {
             .toList())
       ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
 
+    // The shell renders the sidebar at >=600px and that sidebar already
+    // hosts a month stepper, so showing the body pill there would be a
+    // duplicate control. On mobile the sidebar is hidden, so the body
+    // pill is the only way to step months and must stay.
+    final isMobile = ResponsiveLayout.isMobile(context);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
-        const Center(child: FinancoMonthFilterPill()),
-        const SizedBox(height: 16),
+        if (isMobile) ...const [
+          Center(child: FinancoMonthFilterPill()),
+          SizedBox(height: 16),
+        ],
         DashboardHero(
           income: summary.totalIncome,
           expenses: summary.totalExpenses,

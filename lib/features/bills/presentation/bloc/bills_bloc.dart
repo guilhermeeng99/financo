@@ -4,6 +4,7 @@ import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/find_bill_match_candidates_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/project_virtual_monthly_bills_usecase.dart';
@@ -21,6 +22,7 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
     required GetTransactionsUseCase getTransactions,
     required LinkBillToTransactionUseCase linkBillToTransaction,
     required RejectBillMatchUseCase rejectBillMatch,
+    required ImportBillsCsvUseCase importBillsCsv,
     required String userId,
     FindBillMatchCandidatesUseCase findMatches =
         const FindBillMatchCandidatesUseCase(),
@@ -32,6 +34,7 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
        _getTransactions = getTransactions,
        _linkBillToTransaction = linkBillToTransaction,
        _rejectBillMatch = rejectBillMatch,
+       _importBillsCsv = importBillsCsv,
        _findMatches = findMatches,
        _projectVirtuals = projectVirtuals,
        _userId = userId,
@@ -49,9 +52,27 @@ class BillsBloc extends Bloc<BillsEvent, BillsState> {
   final GetTransactionsUseCase _getTransactions;
   final LinkBillToTransactionUseCase _linkBillToTransaction;
   final RejectBillMatchUseCase _rejectBillMatch;
+  final ImportBillsCsvUseCase _importBillsCsv;
   final FindBillMatchCandidatesUseCase _findMatches;
   final ProjectVirtualMonthlyBillsUseCase _projectVirtuals;
   final String _userId;
+
+  /// Parses [csvContent], creates each row as a [BillEntity] and triggers
+  /// a forced reload so the page reflects the new data.
+  ///
+  /// Returns the use-case result so the caller (the import dialog) can
+  /// branch on success vs. validation/server failure without subscribing
+  /// to a transient bloc state.
+  Future<Either<Failure, BillImportResult>> importCsv(String csvContent) async {
+    final result = await _importBillsCsv(
+      csvContent: csvContent,
+      userId: _userId,
+    );
+    if (result.isRight()) {
+      add(const BillsLoadRequested(forceRefresh: true));
+    }
+    return result;
+  }
 
   /// Most recent month the bloc projected for. Persisted across loads
   /// so events triggered without an explicit (year, month) — like the

@@ -50,6 +50,7 @@ import 'package:financo/features/bills/domain/repositories/bill_repository.dart'
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
@@ -63,6 +64,7 @@ import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.d
 import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/import_budgets_csv_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 // Categories
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
@@ -341,10 +343,12 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => PayBillUseCase(sl()))
     ..registerLazySingleton(() => LinkBillToTransactionUseCase(sl()))
     ..registerLazySingleton(() => RejectBillMatchUseCase(sl()))
+    ..registerLazySingleton(() => ImportBillsCsvUseCase(sl(), sl()))
     ..registerLazySingleton(() => GetBudgetsUseCase(sl()))
     ..registerLazySingleton(() => CreateBudgetUseCase(sl()))
     ..registerLazySingleton(() => UpdateBudgetUseCase(sl()))
     ..registerLazySingleton(() => DeleteBudgetUseCase(sl()))
+    ..registerLazySingleton(() => ImportBudgetsCsvUseCase(sl(), sl()))
     ..registerLazySingleton(
       () => GetBudgetsOverviewUseCase(
         budgetRepository: sl(),

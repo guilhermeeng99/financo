@@ -491,7 +491,16 @@
     "editScopeTitle": "Apply to which occurrences?",
     "editScopeDescription": "This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).",
     "editScopeOnlyThis": "Only this one",
-    "editScopeAlsoSubsequents": "This and the following"
+    "editScopeAlsoSubsequents": "This and the following",
+    "importCsv": "Import bills",
+    "importCsvIntroTitle": "Import bills from CSV",
+    "importCsvIntroBody": "Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.",
+    "importCsvDownloadExample": "Download example",
+    "importCsvSelectFile": "Select file",
+    "importCsvExampleDownloaded": "Example saved.",
+    "importCsvExampleFailed": "Couldn't save the example file.",
+    "importCsvErrorTitle": "Couldn't import the CSV",
+    "importCsvSuccess": "Imported $imported bills. Skipped $skipped (unknown category)."
   },
   "budgets": {
     "title": "Budgets",
@@ -525,7 +534,16 @@
     "emptyExample": "Ex: R$ 1,500 on Food, R$ 400 on Leisure, R$ 200 on Transport.",
     "emptyAction": "Create your first budget",
     "formDetails": "Details",
-    "formCategorySection": "Category"
+    "formCategorySection": "Category",
+    "importCsv": "Import budgets",
+    "importCsvIntroTitle": "Import budgets from CSV",
+    "importCsvIntroBody": "Your file must follow the expected format (columns Category, Amount). Each row maps to a root expense category by name; categories that don't exist or already have a budget are skipped. Download the example to see how it works.",
+    "importCsvDownloadExample": "Download example",
+    "importCsvSelectFile": "Select file",
+    "importCsvExampleDownloaded": "Example saved.",
+    "importCsvExampleFailed": "Couldn't save the example file.",
+    "importCsvErrorTitle": "Couldn't import the CSV",
+    "importCsvSuccess": "Imported $imported budgets. Skipped $skipped (unknown or duplicate category)."
   },
   "profile": {
     "title": "Profile",

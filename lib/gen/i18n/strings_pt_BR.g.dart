@@ -573,6 +573,15 @@ class _TranslationsBillsPtBr implements TranslationsBillsEn {
 	@override String get editScopeDescription => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).';
 	@override String get editScopeOnlyThis => 'Apenas esta';
 	@override String get editScopeAlsoSubsequents => 'Esta e as subsequentes';
+	@override String get importCsv => 'Importar contas';
+	@override String get importCsvIntroTitle => 'Importar contas de CSV';
+	@override String get importCsvIntroBody => 'Seu arquivo deve seguir o formato esperado (colunas Tipo, Descrição, Valor, Vencimento, Status, Recorrência, Categoria, Observações — onde Tipo é A pagar/A receber, Status é Pendente/Paga e Recorrência é Mensal/Única). Baixe o exemplo para ver como funciona.';
+	@override String get importCsvDownloadExample => 'Baixar exemplo';
+	@override String get importCsvSelectFile => 'Selecionar arquivo';
+	@override String get importCsvExampleDownloaded => 'Exemplo salvo.';
+	@override String get importCsvExampleFailed => 'Não foi possível salvar o arquivo de exemplo.';
+	@override String get importCsvErrorTitle => 'Não foi possível importar o CSV';
+	@override String importCsvSuccess({required Object imported, required Object skipped}) => 'Importadas ${imported} contas. Ignoradas ${skipped} (categoria desconhecida).';
 }
 
 // Path: budgets
@@ -614,6 +623,15 @@ class _TranslationsBudgetsPtBr implements TranslationsBudgetsEn {
 	@override String get emptyAction => 'Criar primeiro orçamento';
 	@override String get formDetails => 'Detalhes';
 	@override String get formCategorySection => 'Categoria';
+	@override String get importCsv => 'Importar orçamentos';
+	@override String get importCsvIntroTitle => 'Importar orçamentos de CSV';
+	@override String get importCsvIntroBody => 'Seu arquivo deve seguir o formato esperado (colunas Categoria, Valor). Cada linha aponta para uma categoria de despesa raiz pelo nome; categorias que não existem ou já têm orçamento são ignoradas. Baixe o exemplo para ver como funciona.';
+	@override String get importCsvDownloadExample => 'Baixar exemplo';
+	@override String get importCsvSelectFile => 'Selecionar arquivo';
+	@override String get importCsvExampleDownloaded => 'Exemplo salvo.';
+	@override String get importCsvExampleFailed => 'Não foi possível salvar o arquivo de exemplo.';
+	@override String get importCsvErrorTitle => 'Não foi possível importar o CSV';
+	@override String importCsvSuccess({required Object imported, required Object skipped}) => 'Importados ${imported} orçamentos. Ignorados ${skipped} (categoria desconhecida ou duplicada).';
 }
 
 // Path: profile
@@ -1249,6 +1267,15 @@ extension on TranslationsPtBr {
 			'bills.editScopeDescription' => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).',
 			'bills.editScopeOnlyThis' => 'Apenas esta',
 			'bills.editScopeAlsoSubsequents' => 'Esta e as subsequentes',
+			'bills.importCsv' => 'Importar contas',
+			'bills.importCsvIntroTitle' => 'Importar contas de CSV',
+			'bills.importCsvIntroBody' => 'Seu arquivo deve seguir o formato esperado (colunas Tipo, Descrição, Valor, Vencimento, Status, Recorrência, Categoria, Observações — onde Tipo é A pagar/A receber, Status é Pendente/Paga e Recorrência é Mensal/Única). Baixe o exemplo para ver como funciona.',
+			'bills.importCsvDownloadExample' => 'Baixar exemplo',
+			'bills.importCsvSelectFile' => 'Selecionar arquivo',
+			'bills.importCsvExampleDownloaded' => 'Exemplo salvo.',
+			'bills.importCsvExampleFailed' => 'Não foi possível salvar o arquivo de exemplo.',
+			'bills.importCsvErrorTitle' => 'Não foi possível importar o CSV',
+			'bills.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Importadas ${imported} contas. Ignoradas ${skipped} (categoria desconhecida).',
 			'budgets.title' => 'Orçamento',
 			'budgets.addBudget' => 'Novo orçamento',
 			'budgets.editBudget' => 'Editar orçamento',
@@ -1281,12 +1308,23 @@ extension on TranslationsPtBr {
 			'budgets.emptyAction' => 'Criar primeiro orçamento',
 			'budgets.formDetails' => 'Detalhes',
 			'budgets.formCategorySection' => 'Categoria',
+			'budgets.importCsv' => 'Importar orçamentos',
+			'budgets.importCsvIntroTitle' => 'Importar orçamentos de CSV',
+			'budgets.importCsvIntroBody' => 'Seu arquivo deve seguir o formato esperado (colunas Categoria, Valor). Cada linha aponta para uma categoria de despesa raiz pelo nome; categorias que não existem ou já têm orçamento são ignoradas. Baixe o exemplo para ver como funciona.',
+			'budgets.importCsvDownloadExample' => 'Baixar exemplo',
+			'budgets.importCsvSelectFile' => 'Selecionar arquivo',
+			'budgets.importCsvExampleDownloaded' => 'Exemplo salvo.',
+			'budgets.importCsvExampleFailed' => 'Não foi possível salvar o arquivo de exemplo.',
+			'budgets.importCsvErrorTitle' => 'Não foi possível importar o CSV',
+			'budgets.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Importados ${imported} orçamentos. Ignorados ${skipped} (categoria desconhecida ou duplicada).',
 			'profile.title' => 'Perfil',
 			'profile.editProfile' => 'Editar perfil',
 			'profile.accounts' => 'Contas',
 			'profile.categories' => 'Categorias',
 			'profile.bills' => 'Contas a pagar/receber',
 			'profile.theme' => 'Tema',
+			_ => null,
+		} ?? switch (path) {
 			'profile.themeLight' => 'Claro',
 			'profile.themeDark' => 'Escuro',
 			'profile.themeSystem' => 'Sistema',
@@ -1305,8 +1343,6 @@ extension on TranslationsPtBr {
 			'profile.sectionMaster' => 'Master',
 			'profile.masterPanel' => 'Painel master',
 			'profile.masterPanelDescription' => 'Gerencie usuários e a lista de permissões',
-			_ => null,
-		} ?? switch (path) {
 			'profile.appearance' => 'Aparência',
 			'profile.version' => 'Versão',
 			'profile.lightPalette' => 'Paleta clara',

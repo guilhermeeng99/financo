@@ -19,6 +19,7 @@ void main() {
   late MockGetTransactionsUseCase getTransactions;
   late MockLinkBillToTransactionUseCase linkBillToTransaction;
   late MockRejectBillMatchUseCase rejectBillMatch;
+  late MockImportBillsCsvUseCase importBillsCsv;
 
   const userId = 'user-1';
 
@@ -45,6 +46,7 @@ void main() {
     getTransactions = MockGetTransactionsUseCase();
     linkBillToTransaction = MockLinkBillToTransactionUseCase();
     rejectBillMatch = MockRejectBillMatchUseCase();
+    importBillsCsv = MockImportBillsCsvUseCase();
     stubEmptyTransactions();
   });
 
@@ -55,6 +57,7 @@ void main() {
     getTransactions: getTransactions,
     linkBillToTransaction: linkBillToTransaction,
     rejectBillMatch: rejectBillMatch,
+    importBillsCsv: importBillsCsv,
     userId: userId,
   );
 

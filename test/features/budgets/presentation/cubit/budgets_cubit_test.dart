@@ -12,17 +12,20 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockGetBudgetsOverviewUseCase getOverview;
   late MockDeleteBudgetUseCase deleteBudget;
+  late MockImportBudgetsCsvUseCase importBudgetsCsv;
 
   const userId = 'user-1';
 
   setUp(() {
     getOverview = MockGetBudgetsOverviewUseCase();
     deleteBudget = MockDeleteBudgetUseCase();
+    importBudgetsCsv = MockImportBudgetsCsvUseCase();
   });
 
   BudgetsCubit buildCubit() => BudgetsCubit(
     getOverview: getOverview,
     deleteBudget: deleteBudget,
+    importBudgetsCsv: importBudgetsCsv,
     userId: userId,
   );
 
@@ -81,7 +84,8 @@ void main() {
     );
 
     blocTest<BudgetsCubit, BudgetsState>(
-      'no-ops when already loaded and forceRefresh is false',
+      'no-ops when already loaded for the same month and forceRefresh '
+      'is false',
       setUp: () {
         when(
           () => getOverview(
@@ -94,7 +98,9 @@ void main() {
       build: buildCubit,
       seed: () =>
           BudgetsLoaded(overviews: [overview()], month: DateTime(2026, 5)),
-      act: (c) async => c.loadBudgets(),
+      // Same month as the seed → cubit must short-circuit without
+      // re-fetching.
+      act: (c) async => c.loadBudgets(month: DateTime(2026, 5)),
       expect: () => <BudgetsState>[],
       verify: (_) {
         verifyNever(
@@ -105,6 +111,31 @@ void main() {
           ),
         );
       },
+    );
+
+    blocTest<BudgetsCubit, BudgetsState>(
+      'reloads when the requested month differs from the loaded one',
+      setUp: () {
+        when(
+          () => getOverview(
+            userId: any(named: 'userId'),
+            month: any(named: 'month'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).thenAnswer((_) async => Right([overview()]));
+      },
+      build: buildCubit,
+      seed: () =>
+          BudgetsLoaded(overviews: [overview()], month: DateTime(2026, 5)),
+      act: (c) async => c.loadBudgets(month: DateTime(2026, 4)),
+      expect: () => [
+        isA<BudgetsLoading>(),
+        isA<BudgetsLoaded>().having(
+          (s) => s.month.month,
+          'month.month',
+          4,
+        ),
+      ],
     );
 
     blocTest<BudgetsCubit, BudgetsState>(

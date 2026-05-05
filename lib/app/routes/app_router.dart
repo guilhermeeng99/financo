@@ -23,6 +23,7 @@ import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
+import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
@@ -33,6 +34,7 @@ import 'package:financo/features/bills/presentation/pages/bills_page.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/import_budgets_csv_usecase.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/budgets/presentation/pages/add_budget_page.dart';
 import 'package:financo/features/budgets/presentation/pages/budgets_page.dart';
@@ -198,6 +200,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 linkBillToTransaction:
                     GetIt.I<LinkBillToTransactionUseCase>(),
                 rejectBillMatch: GetIt.I<RejectBillMatchUseCase>(),
+                importBillsCsv: GetIt.I<ImportBillsCsvUseCase>(),
                 userId: userId,
               )..add(const BillsLoadRequested()),
             ),
@@ -205,6 +208,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) => BudgetsCubit(
                 getOverview: GetIt.I<GetBudgetsOverviewUseCase>(),
                 deleteBudget: GetIt.I<DeleteBudgetUseCase>(),
+                importBudgetsCsv: GetIt.I<ImportBudgetsCsvUseCase>(),
                 userId: userId,
               ),
             ),

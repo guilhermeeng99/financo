@@ -1,0 +1,8 @@
+Name,Initial Balance,Type,Bank,Limit,Due Date,Closing Day
+Main Checking,3250.00,Checking,Nubank,,,
+Salary Account,1850.00,Checking,Bradesco,,,
+Savings Account,12500.00,Checking,Itau,,,
+Investment Account,8750.00,Checking,NuInvest,,,
+Emergency Fund,5000.00,Checking,Inter,,,
+Nubank Credit Card,0,Credit Card,Nubank,5000,15/05/2026,8
+Itau Black Card,0,Credit Card,Itau,8000,20/05/2026,12
