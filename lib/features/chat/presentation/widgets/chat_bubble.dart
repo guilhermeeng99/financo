@@ -128,6 +128,11 @@ class _UserBubble extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: Container(
               constraints: BoxConstraints(maxWidth: bubbleMaxWidth),
+              // antiAlias so the image inside is clipped by the bubble's own
+              // rounded corners — no inner ClipRRect needed. WhatsApp-style:
+              // the thumbnail is flush to the bubble edges; only the
+              // bottom-right "tail" radius (4px) differs.
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: colors.primary,
                 borderRadius: const BorderRadius.only(
@@ -137,47 +142,53 @@ class _UserBubble extends StatelessWidget {
                   bottomRight: Radius.circular(4),
                 ),
               ),
-              // Thumbnail flush to the bubble edges (WhatsApp style); when a
-              // caption follows, the text sits below with its own padding.
-              child: Padding(
-                padding: hasImage
-                    ? const EdgeInsets.all(4)
-                    : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (hasImage)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: imageBytes != null
-                            ? ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxHeight: _kMaxImageHeight,
-                                ),
-                                child: Image.memory(
-                                  imageBytes,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : const _MissingImagePlaceholder(),
-                      ),
-                    if (hasImage && hasText) const SizedBox(height: 6),
-                    if (hasText)
-                      Padding(
-                        padding: hasImage
-                            ? const EdgeInsets.fromLTRB(8, 0, 8, 6)
-                            : EdgeInsets.zero,
-                        child: Text(
-                          message.content,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white,
-                            height: 1.4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasImage)
+                    // Subtle 3 px frame of bubble color around the image
+                    // (WhatsApp style). The inner radius (15) is concentric
+                    // with the bubble's 18 → 3 = 15 corner. When a caption
+                    // follows we drop the bottom inset so the image meets
+                    // the caption padding flush.
+                    Padding(
+                      padding: hasText
+                          ? const EdgeInsets.fromLTRB(3, 3, 3, 0)
+                          : const EdgeInsets.all(3),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: _kMaxImageHeight,
                           ),
+                          child: imageBytes != null
+                              ? Image.memory(imageBytes, fit: BoxFit.cover)
+                              : const _MissingImagePlaceholder(),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  if (hasText)
+                    Padding(
+                      // When a caption follows an image, give it the same
+                      // horizontal padding as a text-only bubble so the line
+                      // measure stays comfortable, with a slightly tighter
+                      // top inset so the caption hugs the image.
+                      padding: hasImage
+                          ? const EdgeInsets.fromLTRB(14, 8, 14, 10)
+                          : const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                      child: Text(
+                        message.content,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -197,27 +208,31 @@ class _MissingImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 130,
-      color: Colors.white.withValues(alpha: 0.12),
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FaIcon(
-            FontAwesomeIcons.image,
-            size: 28,
-            color: Colors.white.withValues(alpha: 0.85),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            t.chat.image.missing,
-            style: context.textTheme.labelSmall?.copyWith(
+    // The bubble's Column stretches the placeholder to bubble width — pin a
+    // landscape aspect so a missing thumbnail still reads as "this was an
+    // image" without dominating the bubble vertically.
+    return AspectRatio(
+      aspectRatio: 16 / 10,
+      child: Container(
+        color: Colors.white.withValues(alpha: 0.12),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FaIcon(
+              FontAwesomeIcons.image,
+              size: 28,
               color: Colors.white.withValues(alpha: 0.85),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              t.chat.image.missing,
+              style: context.textTheme.labelSmall?.copyWith(
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

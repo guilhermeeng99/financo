@@ -85,27 +85,17 @@ class _CompactLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final isDark = context.isDarkMode;
 
-    final decoration = isDark
-        ? BoxDecoration(
-            color: colors.surfaceVariant,
-            borderRadius: BorderRadius.circular(20),
-          )
-        : BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colors.surface,
-                colors.primary.withValues(alpha: 0.06),
-              ],
-            ),
-          );
-
+    // Solid `surfaceVariant` in both themes — the light gradient
+    // (`surface → primary @ 6%`) read as a violet wash that fought the
+    // accent chips inside. The dark mode treatment was already a flat
+    // surface, so we mirror it on light using the light palette's
+    // surfaceVariant (the same token the dark side uses).
     return Container(
-      decoration: decoration,
+      decoration: BoxDecoration(
+        color: colors.surfaceVariant,
+        borderRadius: BorderRadius.circular(20),
+      ),
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [

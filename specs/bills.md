@@ -67,10 +67,16 @@ bool get isDueToday =>
     - `date = today`
     - `notes = bill.notes`
 12. **Bill becomes paid atomically** with transaction creation: `status = paid`, `paidAt = now`, `paidTransactionId = transaction.id`. The `paid` status applies to both payable (was paid) and receivable (was received) — we keep a single status enum for simplicity; the UI label adapts to the type.
-13. **Monthly recurrence on settlement** — when a `monthly` bill is settled, the repository **creates a new pending bill** with the same `type`, `description`, `amount`, `categoryId`, `notes`, `recurrence = monthly`, `parentBillId = paidBill.id`, and `dueDate = nextMonthDueDate(paidBill.dueDate)`.
-14. **`nextMonthDueDate` clamps to last valid day** — Jan 31 → Feb 28/29 (leap year aware). Implementation: `DateTime(d.year, d.month + 1, min(d.day, lastDayOfMonth(d.year, d.month + 1)))`.
-15. **Deleting a paid bill does NOT delete the linked transaction** — the transaction is independent.
-16. **Deleting a pending bill** is a simple Firestore + Drift delete, no cascades.
+13. **Monthly recurrence on settlement** — when a `monthly` bill is settled, the repository **creates a new pending bill** with the same `type`, `description`, `amount`, `categoryId`, `notes`, `recurrence = monthly`, `parentBillId = paidBill.id`, and `dueDate = nextMonthlyDueDateAfter(paidBill.dueDate, now)` — i.e., the first canonical monthly tick that is **not before today**.
+14. **`nextMonthlyDueDate` clamps to last valid day** — Jan 31 → Feb 28/29 (leap year aware). Implementation: `DateTime(d.year, d.month + 1, min(d.day, lastDayOfMonth(d.year, d.month + 1)))`. Used by the virtual projection (which models the calendar exactly, one tick at a time).
+15. **`nextMonthlyDueDateAfter` fast-forwards stale chains** — settling a late monthly bill (original `dueDate` already several months in the past) must not produce an occurrence whose `dueDate` is **also** in the past, otherwise the next-day `notifyBillsDue` Cloud Function would fire for a bill the user has *just* taken action on, and each subsequent settlement would create yet another born-overdue child. The helper iterates `nextMonthlyDueDate` until the candidate is `>= startOfToday`, preserving the original day-of-month preference (`day = min(originalDay, lastDayOfMonth(year, month))`) at every step. Examples (today = May 8):
+    - base Apr 1  → returns May 1 (still actionable today, not overdue).
+    - base Mar 1  → returns Jun 1 (May 1 is in the past, skip).
+    - base Jan 31 → returns May 31 (day-31 preference preserved).
+    - base May 8  → returns Jun 8 (no fast-forward; on-time payment).
+   Trade-off: a user who genuinely owes multiple months will lose the intermediate occurrences (they won't see a May bill if they paid an Apr bill on May 8). They can recreate them manually if needed. The default optimizes for the common case — paying late is usually book-keeping catch-up, not actual unpaid months.
+16. **Deleting a paid bill does NOT delete the linked transaction** — the transaction is independent.
+17. **Deleting a pending bill** is a simple Firestore + Drift delete, no cascades.
 
 ### Settlement UI Flow
 

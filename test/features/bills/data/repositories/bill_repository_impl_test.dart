@@ -43,8 +43,13 @@ void main() {
       dueDate: DateTime(2026, 4, 30),
     );
 
+    // Use a future dueDate so the "next occurrence" assertion stays exact
+    // regardless of when the test runs. The settlement flow fast-forwards
+    // when the original is older than today (covered separately by the
+    // `nextMonthlyDueDateAfter` unit tests); here we want to verify the
+    // base case where one calendar step lands in the future.
     final monthlyBill = BillFactory.monthly(
-      dueDate: DateTime(2026, 1, 31),
+      dueDate: DateTime(2099, 1, 31),
     );
 
     test('creates a transaction and marks the bill as paid', () async {
@@ -169,8 +174,9 @@ void main() {
         expect(result.isRight(), isTrue);
         final payment = result.getOrElse(() => throw StateError('expected'));
         expect(payment.nextOccurrence, isNotNull);
-        // Jan 31 → Feb 28 (2026 is not a leap year).
-        expect(payment.nextOccurrence!.dueDate, DateTime(2026, 2, 28));
+        // Jan 31 → Feb 28 (2099 is not a leap year). The base dueDate is
+        // far in the future so no fast-forward kicks in for this case.
+        expect(payment.nextOccurrence!.dueDate, DateTime(2099, 2, 28));
         expect(payment.nextOccurrence!.parentBillId, 'bill-monthly');
         expect(payment.nextOccurrence!.status, BillStatus.pending);
       },
@@ -229,7 +235,9 @@ void main() {
     });
 
     test('monthly bill linked to tx still creates next occurrence', () async {
-      final monthly = BillFactory.monthly(dueDate: DateTime(2026, 1, 31));
+      // Future dueDate keeps the assertion deterministic — see the
+      // `payBill` group above for the same rationale.
+      final monthly = BillFactory.monthly(dueDate: DateTime(2099, 1, 31));
       when(() => dao.getBillById('bill-monthly'))
           .thenAnswer((_) async => monthly);
 
@@ -255,9 +263,60 @@ void main() {
       );
 
       final payment = result.getOrElse(() => throw StateError('expected'));
-      expect(payment.nextOccurrence?.dueDate, DateTime(2026, 2, 28));
+      expect(payment.nextOccurrence?.dueDate, DateTime(2099, 2, 28));
       expect(payment.nextOccurrence?.parentBillId, 'bill-monthly');
     });
+
+    test(
+      'fast-forwards next occurrence past today when settling a late bill',
+      () async {
+        // Bill due 6 months ago — paying it today should NOT spawn an
+        // occurrence with a stale dueDate (which would trigger
+        // notifyBillsDue tomorrow morning, then again the next day, etc.).
+        final today = DateTime.now();
+        final staleDueDate = DateTime(today.year, today.month - 6);
+        final stale = BillFactory.monthly(
+          id: 'bill-stale',
+          dueDate: staleDueDate,
+        );
+        when(() => dao.getBillById('bill-stale'))
+            .thenAnswer((_) async => stale);
+
+        final existingTx = TransactionFactory.expense(
+          id: 'tx-existing',
+          amount: stale.amount,
+        );
+        when(() => transactionRepo.getTransaction('tx-existing')).thenAnswer(
+          (_) async => Right<Failure, TransactionEntity>(existingTx),
+        );
+        when(() => remote.updateBill(any())).thenAnswer(
+          (invocation) async =>
+              invocation.positionalArguments.first as BillModel,
+        );
+        when(() => remote.createBill(any())).thenAnswer(
+          (invocation) async =>
+              invocation.positionalArguments.first as BillModel,
+        );
+
+        final result = await repository.linkBillToExistingTransaction(
+          billId: 'bill-stale',
+          transactionId: 'tx-existing',
+        );
+
+        final payment = result.getOrElse(() => throw StateError('expected'));
+        final nextDue = payment.nextOccurrence!.dueDate;
+        // Newly-created occurrence must NOT be already overdue — otherwise
+        // the daily Cloud Function notification keeps firing on stale chains.
+        final startOfToday = DateTime(today.year, today.month, today.day);
+        expect(
+          nextDue.isBefore(startOfToday),
+          isFalse,
+          reason: 'next occurrence must not be born overdue',
+        );
+        // Day-of-month from the original bill is preserved (clamped).
+        expect(nextDue.day, stale.dueDate.day);
+      },
+    );
   });
 
   group('updateBillAndSubsequents', () {

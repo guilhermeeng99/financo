@@ -274,7 +274,11 @@ class BillRepositoryImpl implements BillRepository {
     return paidResult.fold(Left.new, (updatedBill) async {
       BillEntity? nextOccurrence;
       if (updatedBill.recurrence == BillRecurrence.monthly) {
-        final nextDue = nextMonthlyDueDate(updatedBill.dueDate);
+        // Fast-forward to the first dueDate >= today so a late settlement
+        // doesn't spawn a "born overdue" occurrence (which would trigger
+        // tomorrow's notifyBillsDue notification and force the user to
+        // settle again the next day, indefinitely on long-stale chains).
+        final nextDue = nextMonthlyDueDateAfter(updatedBill.dueDate, now);
         final next = BillEntity(
           id: '',
           userId: updatedBill.userId,
