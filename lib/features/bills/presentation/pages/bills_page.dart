@@ -445,8 +445,9 @@ class _BillsContent extends StatelessWidget {
               labelFor: labelFor,
               isPayable: isPayable,
             ),
-          // Bottom breathing room so the FAB doesn't crop the last tile.
-          const SliverToBoxAdapter(child: SizedBox(height: 96)),
+          // Bottom breathing room so the lifted FAB doesn't crop the last
+          // tile (bottom bar 96 + FAB 56 + spacing).
+          const SliverToBoxAdapter(child: SizedBox(height: 160)),
         ],
       ],
     );

@@ -14,13 +14,13 @@ void main() {
           spent: spent,
         );
 
-    test('safe when spend is below 80%', () {
+    test('safe when spend is below 75%', () {
       expect(build(0).status, BudgetStatus.safe);
-      expect(build(799).status, BudgetStatus.safe);
+      expect(build(749).status, BudgetStatus.safe);
     });
 
-    test('warning at 80% and below 100%', () {
-      expect(build(800).status, BudgetStatus.warning);
+    test('warning at 75% and below 100%', () {
+      expect(build(750).status, BudgetStatus.warning);
       expect(build(999.99).status, BudgetStatus.warning);
     });
 

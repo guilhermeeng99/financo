@@ -654,6 +654,9 @@ class _TranslationsProfilePtBr implements TranslationsProfileEn {
 	@override String get clearData => 'Limpar todos os meus dados';
 	@override String get clearDataDescription => 'Excluir transações, chat, categorias e contas';
 	@override String get clearDataConfirm => 'Isso excluirá permanentemente todos os dados da sua conta. Continuar?';
+	@override String get clearDataConfirmHeadline => 'Esta ação é permanente';
+	@override String get clearDataConfirmBody => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.';
+	@override String get clearDataConfirmField => 'Digite seu e-mail para confirmar';
 	@override String get clearDataSuccess => 'Os dados da sua conta foram limpos.';
 	@override String get downloadApk => 'Baixar app Android';
 	@override String get downloadApkDescription => 'Instale a versão mobile no seu dispositivo Android';
@@ -1332,6 +1335,9 @@ extension on TranslationsPtBr {
 			'profile.clearData' => 'Limpar todos os meus dados',
 			'profile.clearDataDescription' => 'Excluir transações, chat, categorias e contas',
 			'profile.clearDataConfirm' => 'Isso excluirá permanentemente todos os dados da sua conta. Continuar?',
+			'profile.clearDataConfirmHeadline' => 'Esta ação é permanente',
+			'profile.clearDataConfirmBody' => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.',
+			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
 			'profile.clearDataSuccess' => 'Os dados da sua conta foram limpos.',
 			'profile.downloadApk' => 'Baixar app Android',
 			'profile.downloadApkDescription' => 'Instale a versão mobile no seu dispositivo Android',

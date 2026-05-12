@@ -4,8 +4,8 @@ import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 /// Threshold buckets used to colour budget progress at the UI layer.
 ///
 /// Boundaries (uncapped — i.e. computed from raw `spent / amount`):
-/// - `safe`     → percentage `< 0.8`
-/// - `warning`  → `0.8 <= percentage < 1.0`
+/// - `safe`     → percentage `< 0.75`
+/// - `warning`  → `0.75 <= percentage < 1.0`
 /// - `exceeded` → `percentage >= 1.0`
 enum BudgetStatus { safe, warning, exceeded }
 
@@ -52,7 +52,7 @@ class BudgetOverview extends Equatable {
   BudgetStatus get status {
     final p = percentage;
     if (p >= 1.0) return BudgetStatus.exceeded;
-    if (p >= 0.8) return BudgetStatus.warning;
+    if (p >= 0.75) return BudgetStatus.warning;
     return BudgetStatus.safe;
   }
 

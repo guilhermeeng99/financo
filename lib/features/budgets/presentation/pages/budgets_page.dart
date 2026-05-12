@@ -186,10 +186,10 @@ class _BudgetsBody extends StatelessWidget {
     // body has to surface the pill itself — same rule the dashboard uses.
     final isMobile = ResponsiveLayout.isMobile(context);
 
-    // 96px bottom padding clears the floating bottom nav + FAB so the
-    // last tile doesn't tuck underneath them.
+    // 160px bottom padding clears the floating bottom nav (96) plus the
+    // lifted FAB (~56 + spacing) so the last tile doesn't tuck under it.
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 160),
       children: [
         if (isMobile) ...const [
           Center(child: FinancoMonthFilterPill()),

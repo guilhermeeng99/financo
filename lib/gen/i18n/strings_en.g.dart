@@ -1562,6 +1562,15 @@ class TranslationsProfileEn {
 	/// en: 'This will permanently delete all data from your account. Continue?'
 	String get clearDataConfirm => 'This will permanently delete all data from your account. Continue?';
 
+	/// en: 'This action is permanent'
+	String get clearDataConfirmHeadline => 'This action is permanent';
+
+	/// en: 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.'
+	String get clearDataConfirmBody => 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.';
+
+	/// en: 'Type your email to confirm'
+	String get clearDataConfirmField => 'Type your email to confirm';
+
 	/// en: 'Your account data was cleared.'
 	String get clearDataSuccess => 'Your account data was cleared.';
 
@@ -2425,6 +2434,9 @@ extension on Translations {
 			'profile.clearData' => 'Clear all my data',
 			'profile.clearDataDescription' => 'Delete transactions, chat, categories and accounts',
 			'profile.clearDataConfirm' => 'This will permanently delete all data from your account. Continue?',
+			'profile.clearDataConfirmHeadline' => 'This action is permanent',
+			'profile.clearDataConfirmBody' => 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.',
+			'profile.clearDataConfirmField' => 'Type your email to confirm',
 			'profile.clearDataSuccess' => 'Your account data was cleared.',
 			'profile.downloadApk' => 'Download Android app',
 			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',

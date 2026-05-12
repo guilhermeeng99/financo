@@ -149,8 +149,11 @@ class _DashboardContent extends StatelessWidget {
     // pill is the only way to step months and must stay.
     final isMobile = ResponsiveLayout.isMobile(context);
 
+    // Bottom padding clears the floating bar (96) + the lifted FAB
+    // (~56 + 16 spacing) so the last item can scroll past the FAB instead
+    // of sitting under it.
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
       children: [
         if (isMobile) ...const [
           Center(child: FinancoMonthFilterPill()),

@@ -18,6 +18,7 @@ import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_sta
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/features/profile/presentation/widgets/app_version_footer.dart';
+import 'package:financo/features/profile/presentation/widgets/clear_account_data_dialog.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_header_card.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_language_row.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_palette_picker.dart';
@@ -72,26 +73,13 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _clearAccountData(String userId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.profile.clearData),
-        content: Text(t.profile.clearDataConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.general.delete),
-          ),
-        ],
-      ),
+  Future<void> _clearAccountData(String userId, String email) async {
+    final confirmed = await showClearAccountDataDialog(
+      context,
+      email: email,
     );
 
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final result = await GetIt.I<ClearAccountDataUseCase>()(userId);
     if (!mounted) return;
@@ -181,7 +169,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 onImportCsv: _importCsv,
                 onDownloadApk: _downloadApk,
                 onSignOut: _confirmSignOut,
-                onClearData: () => _clearAccountData(state.user.id),
+                onClearData: () =>
+                    _clearAccountData(state.user.id, state.user.email),
               );
             }
             return const SizedBox.shrink();
@@ -313,9 +302,12 @@ class _ProfileContent extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 32),
+        // Spacing is asymmetric on purpose: the floating bottom bar covers
+        // the last ~80px, so the bottom gap below the footer needs to be
+        // larger than the top gap to land visually centered.
+        const SizedBox(height: 24),
         const AppVersionFooter(),
-        const SizedBox(height: 60),
+        const SizedBox(height: 72),
       ],
     );
   }

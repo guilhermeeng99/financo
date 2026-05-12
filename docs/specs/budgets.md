@@ -59,8 +59,8 @@ gives every cell of the UI in one pass.
 
 ### BudgetStatus (enum)
 
-- `safe` — `percentage < 0.8`
-- `warning` — `0.8 <= percentage < 1.0`
+- `safe` — `percentage < 0.75`
+- `warning` — `0.75 <= percentage < 1.0`
 - `exceeded` — `percentage >= 1.0`
 
 Color mapping at the UI layer (re-uses theme tokens, no new color constants):
@@ -421,7 +421,7 @@ intent and budgets being orphaned is recoverable (rule 8).
   - Excludes income transactions.
   - Skips orphan budgets (deleted category).
   - `percentage` reflects uncapped ratio (overspend > 100% reported).
-  - `status` boundaries: 0.79 → safe, 0.80 → warning, 1.00 → exceeded,
+  - `status` boundaries: 0.74 → safe, 0.75 → warning, 1.00 → exceeded,
     1.50 → exceeded.
 - **BudgetsCubit** (`bloc_test`):
   - `loadBudgets` happy path emits `Loading → Loaded`.

@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
+import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -96,54 +98,57 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
           child: const FaIcon(FontAwesomeIcons.plus),
         ),
       ),
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<AccountsCubit, AccountsState>(
-            listener: (context, state) {
-              final account = state.accountsOrEmpty
-                  .where((a) => a.id == widget.accountId)
-                  .firstOrNull;
-              if (account != null && account != _account) {
-                _triggerLoad(account);
+      body: SafeArea(
+        bottom: false,
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<AccountsCubit, AccountsState>(
+              listener: (context, state) {
+                final account = state.accountsOrEmpty
+                    .where((a) => a.id == widget.accountId)
+                    .firstOrNull;
+                if (account != null && account != _account) {
+                  _triggerLoad(account);
+                }
+              },
+            ),
+            BlocListener<DateFilterCubit, DateFilterState>(
+              listener: (context, filter) {
+                if (_account != null) {
+                  unawaited(
+                    context.read<AccountStatementCubit>().load(
+                      _account!,
+                      filter.year,
+                      filter.month,
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+          child: BlocBuilder<AccountStatementCubit, AccountStatementState>(
+            builder: (context, state) {
+              if (state is AccountStatementLoading ||
+                  state is AccountStatementInitial) {
+                return const LoadingShimmer();
               }
-            },
-          ),
-          BlocListener<DateFilterCubit, DateFilterState>(
-            listener: (context, filter) {
-              if (_account != null) {
-                unawaited(
-                  context.read<AccountStatementCubit>().load(
-                    _account!,
-                    filter.year,
-                    filter.month,
-                  ),
+              if (state is AccountStatementError) {
+                return ErrorView(
+                  message: state.failure.message,
+                  onRetry: () {
+                    if (_account != null) _triggerLoad(_account!);
+                  },
                 );
               }
+              if (state is AccountStatementLoaded) {
+                return _StatementContent(
+                  state: state,
+                  onTransactionTap: _openEditTransaction,
+                );
+              }
+              return const SizedBox.shrink();
             },
           ),
-        ],
-        child: BlocBuilder<AccountStatementCubit, AccountStatementState>(
-          builder: (context, state) {
-            if (state is AccountStatementLoading ||
-                state is AccountStatementInitial) {
-              return const LoadingShimmer();
-            }
-            if (state is AccountStatementError) {
-              return ErrorView(
-                message: state.failure.message,
-                onRetry: () {
-                  if (_account != null) _triggerLoad(_account!);
-                },
-              );
-            }
-            if (state is AccountStatementLoaded) {
-              return _StatementContent(
-                state: state,
-                onTransactionTap: _openEditTransaction,
-              );
-            }
-            return const SizedBox.shrink();
-          },
         ),
       ),
     );
@@ -190,15 +195,17 @@ class _StatementContent extends StatelessWidget {
       );
     }
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: _SummarySide(state: state),
-          ),
+    // Header stays pinned; only the transactions list scrolls — keeps the
+    // account balance and monthly summary always visible while the user
+    // skims a long transactions list.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: _SummarySide(state: state),
         ),
-        SliverFillRemaining(
+        Expanded(
           child: _TransactionsSide(
             state: state,
             onTransactionTap: onTransactionTap,
@@ -218,18 +225,34 @@ class _SummarySide extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final account = state.account;
+    final isMobile = ResponsiveLayout.isMobile(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Back chip — kept here (not in an AppBar) because the page sits
         // inside the shell scaffold and a top bar would double the
-        // navigation chrome.
-        Align(
-          alignment: Alignment.centerLeft,
-          child: _BackChip(
-            onTap: () => context.go(AppRoutes.dashboard),
+        // navigation chrome. On mobile we also center the month filter pill
+        // in the same row (sidebar hosts its own stepper on tablet/web).
+        if (isMobile)
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _BackChip(
+                  onTap: () => context.go(AppRoutes.dashboard),
+                ),
+              ),
+              const FinancoMonthFilterPill(),
+            ],
+          )
+        else
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _BackChip(
+              onTap: () => context.go(AppRoutes.dashboard),
+            ),
           ),
-        ),
         const SizedBox(height: 16),
         AccountBalanceCard(
           account: account,
@@ -426,8 +449,9 @@ class _TransactionsSide extends StatelessWidget {
   ) {
     final thisAccount = accountMap[tx.accountId];
     final otherAccountId = state.transferCounterpartAccountIds[tx.id];
-    final otherAccount =
-        otherAccountId != null ? accountMap[otherAccountId] : null;
+    final otherAccount = otherAccountId != null
+        ? accountMap[otherAccountId]
+        : null;
     if (thisAccount == null || otherAccount == null) return null;
     return tx.type == TransactionType.income
         ? '${otherAccount.name} → ${thisAccount.name}'

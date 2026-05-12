@@ -448,6 +448,11 @@ class _DefaultRow extends StatelessWidget {
                           hintStyle: context.textTheme.bodyMedium?.copyWith(
                             color: colors.onBackgroundLight,
                           ),
+                          // The outer Container already paints the pill
+                          // background — leaving `filled` on (inherited from
+                          // the global theme) draws a rectangular fill that
+                          // pokes through the rounded corners on the right.
+                          filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
