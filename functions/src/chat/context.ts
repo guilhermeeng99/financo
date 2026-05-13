@@ -91,9 +91,20 @@ const startOfToday = (): Date => {
 const formatDate = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+// Brazilian currency format: thousands grouped with `.`, decimals with `,`.
+// `Intl.NumberFormat` produces a non-breaking space between the symbol and
+// the number, which renders fine in chat bubbles. The AI mimics the
+// formatting of values it sees in the user context, so keep this aligned
+// with the in-app `formatCurrency()` helper (BRL, pt_BR).
+const formatBrl = (value: number): string =>
+  new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+
 const formatBillLine = (b: BillContext): string => {
   const kind = b.type === 'receivable' ? 'a receber' : 'a pagar';
-  return `- id=${b.id} type=${b.type} (${kind}) "${b.description}" R$${b.amount.toFixed(2)} (vence ${formatDate(b.dueDate)})`;
+  return `- id=${b.id} type=${b.type} (${kind}) "${b.description}" ${formatBrl(b.amount)} (vence ${formatDate(b.dueDate)})`;
 };
 
 const formatBillsBlock = (bills: BillContext[]): string => {
@@ -168,7 +179,7 @@ const fetchBudgets = async (
 };
 
 const formatBudgetLine = (b: BudgetContext): string =>
-  `- "${b.categoryName}" → R$${b.amount.toFixed(2)}/mês`;
+  `- "${b.categoryName}" → ${formatBrl(b.amount)}/mês`;
 
 const formatBudgetsBlock = (budgets: BudgetContext[]): string => {
   if (budgets.length === 0) return '';

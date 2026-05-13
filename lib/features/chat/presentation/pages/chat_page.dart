@@ -2,26 +2,17 @@ import 'dart:async';
 
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
-import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
-import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
-import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
-import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
-import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
-import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
-import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
-import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
-import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
+import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transfer_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
@@ -33,8 +24,6 @@ import 'package:financo/features/chat/presentation/widgets/chat_input.dart';
 import 'package:financo/features/chat/presentation/widgets/chat_timeline.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
-import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
-import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -56,23 +45,12 @@ class ChatPage extends StatelessWidget {
         getChatHistory: GetIt.I<GetChatHistoryUseCase>(),
         saveChatMessage: GetIt.I<SaveChatMessageUseCase>(),
         transcribeAudio: GetIt.I<TranscribeAudioUseCase>(),
-        createAccount: GetIt.I<CreateAccountUseCase>(),
-        getAccounts: GetIt.I<GetAccountsUseCase>(),
-        deleteAccount: GetIt.I<DeleteAccountUseCase>(),
-        createCategory: GetIt.I<CreateCategoryUseCase>(),
-        getCategories: GetIt.I<GetCategoriesUseCase>(),
-        deleteCategory: GetIt.I<DeleteCategoryUseCase>(),
-        createTransaction: GetIt.I<CreateTransactionUseCase>(),
-        createTransfer: GetIt.I<CreateTransferUseCase>(),
-        getBills: GetIt.I<GetBillsUseCase>(),
-        createBill: GetIt.I<CreateBillUseCase>(),
-        updateBill: GetIt.I<UpdateBillUseCase>(),
-        deleteBill: GetIt.I<DeleteBillUseCase>(),
-        payBill: GetIt.I<PayBillUseCase>(),
-        getBudgets: GetIt.I<GetBudgetsUseCase>(),
-        createBudget: GetIt.I<CreateBudgetUseCase>(),
-        updateBudget: GetIt.I<UpdateBudgetUseCase>(),
-        deleteBudget: GetIt.I<DeleteBudgetUseCase>(),
+        accountHandler: GetIt.I<AccountChatActionHandler>(),
+        categoryHandler: GetIt.I<CategoryChatActionHandler>(),
+        transactionHandler: GetIt.I<TransactionChatActionHandler>(),
+        transferHandler: GetIt.I<TransferChatActionHandler>(),
+        billHandler: GetIt.I<BillChatActionHandler>(),
+        budgetHandler: GetIt.I<BudgetChatActionHandler>(),
         userId: userId,
       ),
       child: const _ChatView(),

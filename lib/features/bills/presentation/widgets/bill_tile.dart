@@ -1,11 +1,11 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_status_dot.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 /// A single row in the bills list. Tap → triggers [onTap] (currently routes
 /// to the edit page; phase 2 will swap this for a detail bottom sheet).
@@ -145,7 +145,7 @@ class BillTile extends StatelessWidget {
   /// The date is always shown (the user asked for it explicitly); category
   /// and status are appended only when they carry information.
   static String _subtitleFor(BillEntity bill, String? categoryLabel) {
-    final parts = <String>[DateFormat('dd/MM').format(bill.dueDate)];
+    final parts = <String>[formatDayMonth(bill.dueDate)];
 
     if (categoryLabel != null && categoryLabel.isNotEmpty) {
       parts.add(categoryLabel);

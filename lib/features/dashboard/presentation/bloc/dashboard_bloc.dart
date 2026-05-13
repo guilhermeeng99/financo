@@ -58,18 +58,21 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   }) async {
     final target = DateTime(year, month);
 
-    final summaryResult = await _getDashboardSummary(
+    // Summary and period transactions are independent reads — fetching them
+    // in parallel roughly halves the first-load latency on cold cache.
+    final summaryFuture = _getDashboardSummary(
       userId: _userId,
       month: target,
       forceRefresh: forceRefresh,
     );
-
-    final transactionsResult = await _getTransactions(
+    final transactionsFuture = _getTransactions(
       userId: _userId,
       startDate: startOfMonth(target),
       endDate: endOfMonth(target),
       forceRefresh: forceRefresh,
     );
+    final summaryResult = await summaryFuture;
+    final transactionsResult = await transactionsFuture;
 
     summaryResult.fold(
       (failure) => emit(DashboardError(failure)),

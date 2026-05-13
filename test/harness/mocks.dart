@@ -1,3 +1,4 @@
+import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
@@ -50,6 +51,12 @@ import 'package:financo/features/categories/domain/usecases/get_categories_useca
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
+import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transfer_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
@@ -57,6 +64,7 @@ import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart'
 import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:financo/features/transactions/data/datasources/transaction_remote_datasource.dart';
@@ -251,6 +259,33 @@ class MockSaveChatMessageUseCase extends Mock
 
 class MockTranscribeAudioUseCase extends Mock
     implements TranscribeAudioUseCase {}
+
+// ── Chat Action Handlers ──
+// Concrete classes (not the abstract `ChatActionHandler`) so blocs can
+// receive them by their narrow type — matches the DI registration.
+class MockAccountChatActionHandler extends Mock
+    implements AccountChatActionHandler {}
+
+class MockCategoryChatActionHandler extends Mock
+    implements CategoryChatActionHandler {}
+
+class MockTransactionChatActionHandler extends Mock
+    implements TransactionChatActionHandler {}
+
+class MockTransferChatActionHandler extends Mock
+    implements TransferChatActionHandler {}
+
+class MockBillChatActionHandler extends Mock implements BillChatActionHandler {}
+
+class MockBudgetChatActionHandler extends Mock
+    implements BudgetChatActionHandler {}
+
+// ── Data Sources: Profile ──
+class MockProfileRemoteDataSource extends Mock
+    implements ProfileRemoteDataSource {}
+
+// ── Local Database ──
+class MockAppDatabase extends Mock implements AppDatabase {}
 
 // ── Repositories: Dashboard ──
 class MockDashboardRepository extends Mock implements DashboardRepository {}

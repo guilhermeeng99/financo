@@ -1,7 +1,7 @@
 {
   "name": "financo-functions",
   "version": "1.0.0",
-  "description": "Financo backend — Chat pipeline + WhatsApp integration",
+  "description": "Financo backend — Chat pipeline",
   "private": true,
   "engines": {
     "node": "22"

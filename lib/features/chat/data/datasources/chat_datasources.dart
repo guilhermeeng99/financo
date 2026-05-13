@@ -76,11 +76,18 @@ String _historyContent(ChatMessageEntity m) {
   return '${m.content}\n[$tag]\n${jsonEncode(data)}\n[/$tag]';
 }
 
+// Tag names must match the regex set in `functions/src/chat/extractor.ts`.
+// Adding a new action type? Update both sides together — otherwise the
+// reconstructed history block gets stripped by `_legacyResultPattern` (or
+// silently dropped) and the AI starts mimicking action results without the
+// data block, producing chat bubbles with no action card.
 String? _actionTag(String actionType) => switch (actionType) {
   'transaction' => 'TRANSACTION_DATA',
+  'transfer' => 'TRANSFER_DATA',
   'account' => 'ACCOUNT_ACTION',
   'category' => 'CATEGORY_ACTION',
   'bill' => 'BILL_ACTION',
+  'budget' => 'BUDGET_ACTION',
   _ => null,
 };
 

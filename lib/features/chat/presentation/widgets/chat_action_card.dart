@@ -1,9 +1,9 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/date_helpers.dart' as date_helpers;
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 /// Lifecycle of an AI-proposed action as the user sees it. `pending` shows
 /// Cancel/Confirm buttons; the resolved states replace those buttons with a
@@ -665,6 +665,6 @@ class _ActionPreview {
     if (raw == null) return '—';
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
-    return DateFormat('dd/MM/yyyy').format(parsed);
+    return date_helpers.formatDate(parsed);
   }
 }

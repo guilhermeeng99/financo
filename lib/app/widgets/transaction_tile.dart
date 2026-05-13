@@ -1,11 +1,9 @@
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
-
-final _dayMonthFormat = DateFormat('dd/MM');
 
 /// Single row representing a transaction. Used by:
 ///   - the transactions list page
@@ -103,7 +101,7 @@ class TransactionTile extends StatelessWidget {
   }
 
   String _subtitleFor(TransactionEntity tx) {
-    final date = _dayMonthFormat.format(tx.date);
+    final date = formatDayMonth(tx.date);
     final parts = <String>[date];
     if (categoryLabel != null && categoryLabel!.isNotEmpty) {
       parts.add(categoryLabel!);

@@ -1,6 +1,6 @@
 # Financo — Project Conventions
 
-Personal finance manager built with Flutter. Supports Android, iOS, and Web.
+Personal finance manager built with Flutter. Supports Android and Web.
 
 ---
 
@@ -193,8 +193,16 @@ Test infrastructure lives in `test/harness/`:
 
 ### Lifecycle
 
-* Global blocs are singletons (`registerLazySingleton`)
-* Form cubits are created per use (`registerFactory`)
+* Session-independent blocs/cubits are singletons (`registerLazySingleton`):
+  `AuthBloc`, `StartupCubit`, `ThemeCubit`, `LightPaletteCubit`,
+  `DarkPaletteCubit`, `AppLocaleCubit`, `DateFilterCubit`, `NotificationService`.
+* Session-scoped blocs/cubits that take `userId` (`DashboardBloc`,
+  `TransactionsBloc`, `BillsBloc`, `BudgetsCubit`, `AccountsCubit`,
+  `CategoriesCubit`, `ProfileCubit`, `ChatBloc`) are created by the shell
+  route via `BlocProvider` — the `userId` is resolved from `AuthBloc.state`
+  at mount time and never changes during the shell's lifetime.
+* Form cubits and page-scoped cubits are created per use (`BlocProvider`
+  or `registerFactory`).
 
 ---
 

@@ -1,7 +1,6 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/chat/presentation/widgets/chat_avatar.dart';
-import 'package:financo/features/chat/presentation/widgets/chat_channel_badge.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -78,8 +77,6 @@ class _AiBubble extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (message.channel == ChatChannel.whatsapp)
-                  const ChatChannelBadge(),
               ],
             ),
           ),
@@ -98,8 +95,8 @@ class _UserBubble extends StatelessWidget {
   // so portrait screenshots don't blow up to half the viewport. On phones
   // 72 % of width is already tighter than the cap, so the cap is a no-op.
   static const _kMaxBubbleWidth = 360.0;
-  // Tall portrait images get reined in to a comfortable WhatsApp-ish
-  // thumbnail size — wide images stay constrained by the bubble width.
+  // Tall portrait images get reined in to a comfortable thumbnail size —
+  // wide images stay constrained by the bubble width.
   static const _kMaxImageHeight = 320.0;
 
   @override
@@ -129,9 +126,9 @@ class _UserBubble extends StatelessWidget {
             child: Container(
               constraints: BoxConstraints(maxWidth: bubbleMaxWidth),
               // antiAlias so the image inside is clipped by the bubble's own
-              // rounded corners — no inner ClipRRect needed. WhatsApp-style:
-              // the thumbnail is flush to the bubble edges; only the
-              // bottom-right "tail" radius (4px) differs.
+              // rounded corners — no inner ClipRRect needed. The thumbnail is
+              // flush to the bubble edges; only the bottom-right "tail"
+              // radius (4px) differs.
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: colors.primary,
@@ -147,11 +144,11 @@ class _UserBubble extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (hasImage)
-                    // Subtle 3 px frame of bubble color around the image
-                    // (WhatsApp style). The inner radius (15) is concentric
-                    // with the bubble's 18 → 3 = 15 corner. When a caption
-                    // follows we drop the bottom inset so the image meets
-                    // the caption padding flush.
+                    // Subtle 3 px frame of bubble color around the image.
+                    // The inner radius (15) is concentric with the bubble's
+                    // 18 → 3 = 15 corner. When a caption follows we drop the
+                    // bottom inset so the image meets the caption padding
+                    // flush.
                     Padding(
                       padding: hasText
                           ? const EdgeInsets.fromLTRB(3, 3, 3, 0)
@@ -192,7 +189,6 @@ class _UserBubble extends StatelessWidget {
               ),
             ),
           ),
-          if (message.channel == ChatChannel.whatsapp) const ChatChannelBadge(),
         ],
       ),
     );

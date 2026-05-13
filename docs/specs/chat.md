@@ -1,6 +1,6 @@
 # Chat Feature Spec
 
-AI-powered financial assistant using Vertex AI Gemini via a Firebase Cloud Functions backend. Users interact via natural language (from the Flutter app **or** from WhatsApp — see `specs/whatsapp.md`) to create transactions, accounts, and categories. Both channels share the same pipeline and the same `chat_messages` collection in Firestore.
+AI-powered financial assistant using Vertex AI Gemini via a Firebase Cloud Functions backend. Users interact via natural language inside the Flutter app to create transactions, accounts, and categories. The chat pipeline lives in the Cloud Function and persists messages to the `chat_messages` collection in Firestore.
 
 ## Entity: ChatMessageEntity
 
@@ -11,12 +11,10 @@ AI-powered financial assistant using Vertex AI Gemini via a Firebase Cloud Funct
 | role | ChatRole | yes | `user` or `assistant` |
 | content | String | yes | Display text (action blocks stripped) |
 | metadata | Map<String, dynamic>? | no | Extracted action data |
-| channel | ChatChannel | yes | `app` (default) or `whatsapp` |
 | createdAt | DateTime | yes | |
 
 - Extends `Equatable` — props: all fields.
 - `ChatRole` enum: `{ user, assistant }`.
-- `ChatChannel` enum: `{ app, whatsapp }`.
 
 ## Model: ChatMessageModel
 
@@ -31,12 +29,9 @@ Extends `ChatMessageEntity`.
 | role | `role` | `role.name` (e.g. `"user"`) | `ChatRole.values.byName(data['role'])` |
 | content | `content` | String | String |
 | metadata | `metadata` | Map? (nullable) | `Map<String, dynamic>?` |
-| channel | `channel` | `channel.name` (default `"app"`) | `ChatChannel.values.byName(data['channel'] ?? 'app')` |
 | createdAt | `createdAt` | `Timestamp.fromDate(createdAt)` | `(data['createdAt'] as Timestamp).toDate()` |
 
-Factories: `fromFirestore(DocumentSnapshot)`, `fromEntity(ChatMessageEntity)`, `toJson()`.
-
-`channel` defaults to `ChatChannel.app` in both the constructor and `fromFirestore` (backwards-compatible with pre-existing documents that lack the field).
+Factories: `fromFirestore(DocumentSnapshot)`, `fromEntity(ChatMessageEntity)`, `toJson()`. Legacy documents persisted with a `channel` field (from the discontinued WhatsApp integration) load fine — the field is ignored.
 
 ## Datasources
 
@@ -51,10 +46,10 @@ sendMessage(userId, content, history) → Future<ChatMessageModel>
 - Invokes the `chatSend` Firebase Cloud Function via `FirebaseFunctions.httpsCallable`.
 - Request payload: `{ content: String, history: List<{ role, content }> }`. The callable auth context supplies `userId`.
 - Response payload: `{ id: String, content: String, metadata: Map? }`.
-- Wraps the response in `ChatMessageModel` with `role: assistant`, `channel: app`, `createdAt: now`.
+- Wraps the response in `ChatMessageModel` with `role: assistant`, `createdAt: now`.
 - Also exposes `transcribeAudio({ base64Data, mimeType })` which invokes the `transcribeChatAudio` callable. Response: `{ transcript: String }`.
 - `FirebaseFunctionsException` → rethrown as `AiException`.
-- All backend-side concerns (system prompt, Gemini call, action-block extraction, response persistence) live in the Cloud Function — see `specs/whatsapp.md` for the pipeline contract.
+- All backend-side concerns (system prompt, Gemini call, action-block extraction, response persistence) live in the Cloud Function.
 
 ### ChatRemoteDataSource (abstract)
 
@@ -66,7 +61,7 @@ saveChatMessage(ChatMessageModel) → Future<void>
 ### ChatRemoteDataSourceImpl
 
 - Firestore collection: `chat_messages`.
-- `getChatHistory`: query by userId, ordered by createdAt ascending — returns messages from **both** channels (app and whatsapp interleaved).
+- `getChatHistory`: query by userId, ordered by createdAt ascending.
 - `saveChatMessage`: set doc by message.id. Called by the client only for user messages and app-side action-result messages. Assistant responses from `chatSend` are persisted by the backend.
 - All exceptions caught, rethrown as `ServerException`.
 
@@ -90,10 +85,8 @@ saveChatMessage(ChatMessageModel) → Future<void>
 
 1. `sendMessage` returns the assistant response; the backend already persisted it. The client does NOT re-save the response (prevents duplicate writes).
 2. `saveChatMessage` converts entity to model via `ChatMessageModel.fromEntity` before persisting.
-3. Action confirmation flow differs per channel:
-   - **App**: user taps the Confirm button → `ChatBloc._onActionConfirmed` runs the executor locally (keeps Drift cache coherent in one round-trip).
-   - **WhatsApp**: user taps the interactive reply button → backend runs the executor via Admin SDK (see `specs/whatsapp.md`).
-4. **User context injection (intelligence)**: on every `chatSend` / WhatsApp turn, the backend builds a snapshot of the user's accounts and categories via `buildUserContext(userId)` and appends it to the system instruction. The snapshot is a point-in-time view at turn start — newly created entities (e.g. a category created in this same confirmation flow) are picked up on the NEXT turn.
+3. **Action confirmation flow**: the user taps the Confirm button → `ChatBloc._onActionConfirmed` runs the executor locally (keeps Drift cache coherent in one round-trip).
+4. **User context injection (intelligence)**: on every `chatSend` turn, the backend builds a snapshot of the user's accounts and categories via `buildUserContext(userId)` and appends it to the system instruction. The snapshot is a point-in-time view at turn start — newly created entities (e.g. a category created in this same confirmation flow) are picked up on the NEXT turn.
 5. **Verify-before-confirm**: the AI must NOT emit a `[TRANSACTION_DATA]` block if the referenced category or account is absent from the snapshot. It emits a `[CATEGORY_ACTION]` or `[ACCOUNT_ACTION]` create block first and resumes the transaction on the next turn once creation is confirmed.
 6. **Exact-name discipline**: `account`, `category`, and `linkedAccountName` fields in any action block MUST contain the **exact name** as stored in the snapshot — not the user's shortened phrasing. Example: user typed `"cartão mila"`, snapshot has `"Cartão Nubank Mila"` → emit `"Cartão Nubank Mila"`. The bloc's word-set matcher (see edge case 10) is a safety net, not a license to guess.
 7. **Ask over guess**: when any required field cannot be confidently determined, the AI asks a single specific question instead of fabricating a placeholder. Generic descriptions like `"Transação"`, `"Gasto"`, `"Compra"` are NOT acceptable — derive from the user's wording or the chosen category, or ask. Date defaults silently to today when unmentioned (do not ask for it). Account/category ambiguity is always resolved by asking with a numbered list of EXISTING options.
@@ -104,7 +97,7 @@ saveChatMessage(ChatMessageModel) → Future<void>
    - Bank name (e.g. "nubank") → filter accounts by `bank`.
 10. **Option lists**: when multiple candidates remain after filtering, the AI presents a short numbered list of EXISTING accounts/categories (not generic examples).
 11. **App-generated messages excluded from AI history**: assistant messages produced by the app/executor (e.g. "Transaction X created successfully!", "Ação cancelada.") are tagged with `metadata.kind = 'actionResult'` when persisted. The chat data source filters these out before sending the history to Gemini — otherwise the model mimics the result pattern in subsequent turns and emits fake success text without the action block, producing bubbles with no Confirm button and no actual write. Legacy messages without the tag are caught by a content-pattern fallback (regex matching the standard result phrasings).
-12. **Action block reconstruction in AI history**: the Cloud Function strips action blocks (`[TRANSACTION_DATA]{...}[/TRANSACTION_DATA]`, etc.) from response text before persisting — only `metadata` survives. Before sending history back to Gemini, the data source (app) and the WhatsApp pipeline reconstruct the block from `metadata.actionType` + the remaining metadata fields (excluding `kind`) and append it to the message content. Without this, the model sees its own past replies as plain text without blocks, learns to skip the block in subsequent turns, and produces bubbles with no Confirm button.
+12. **Action block reconstruction in AI history**: the Cloud Function strips action blocks (`[TRANSACTION_DATA]{...}[/TRANSACTION_DATA]`, etc.) from response text before persisting — only `metadata` survives. Before sending history back to Gemini, the data source reconstructs the block from `metadata.actionType` + the remaining metadata fields (excluding `kind`) and appends it to the message content. Without this, the model sees its own past replies as plain text without blocks, learns to skip the block in subsequent turns, and produces bubbles with no Confirm button.
 13. **Action card persistence after decision**: the `ChatActionCard` stays visible after the user taps Confirm or Cancel; only the footer changes (buttons → status badge "Confirmed"/"Cancelled"). Confirmed status is derived by scanning messages for a result message whose `metadata.originActionId` points back at the proposal — survives chat reload. Cancelled status is page-level state only (a cancelled action never wrote anything, so re-pending after reload is benign).
 
 ## Use Cases
@@ -144,7 +137,7 @@ Thin delegators:
 4. Failure → emit `ChatError(failure)`
 
 **ChatMessageSent:**
-1. Create user message entity (UUID, user role, channel: app, now)
+1. Create user message entity (UUID, user role, now)
 2. Add to internal list, emit `ChatLoaded(messages, isTyping: true)`
 3. Persist user message (non-blocking — failure swallowed)
 4. Build history WITHOUT current message (avoid duplicate in Gemini context)
@@ -157,7 +150,7 @@ Thin delegators:
 **ChatActionConfirmed:**
 1. Extract `actionType` from metadata
 2. Route to handler: `account` | `category` | `transaction` | default → "Unknown action type."
-3. Create assistant message with result text (channel: app)
+3. Create assistant message with result text
 4. Add to list, persist (non-blocking — failure swallowed)
 5. Emit `ChatLoaded(shouldRefreshTransactions: actionType == 'transaction')`
 
@@ -166,7 +159,7 @@ Thin delegators:
 2. Call `TranscribeAudioUseCase(base64Data, mimeType)`
 3. On failure → log and emit plain `ChatLoaded` (no message added).
 4. On success with empty/whitespace transcript → emit plain `ChatLoaded` (nothing was understood; do not dispatch an empty turn that the AI would reject).
-5. On success with non-empty transcript → invoke the `ChatMessageSent(transcript)` handler **inline** with the same emitter (not via `add()` — that would queue behind the current handler and the user bubble would only appear after the AI typing-indicator already started). The transcript becomes the user's bubble, the AI processes it normally and confirms what it understood. WhatsApp-style "fire and trust" — there is no review step.
+5. On success with non-empty transcript → invoke the `ChatMessageSent(transcript)` handler **inline** with the same emitter (not via `add()` — that would queue behind the current handler and the user bubble would only appear after the AI typing-indicator already started). The transcript becomes the user's bubble, the AI processes it normally and confirms what it understood. "Fire and trust" — there is no review step.
 
 ### Action Handlers
 
@@ -210,7 +203,7 @@ Thin delegators:
 3. A thumbnail preview appears above the text field with an `X` to remove. User may type an optional caption.
 4. On send, the picked image is base64-encoded for the backend AND the original `Uint8List` bytes are attached to `ChatMessageSent` (`imageBytes`) so the user-bubble can render the thumbnail without re-decoding base64 on every rebuild. The bloc stores the bytes on the user `ChatMessageEntity.inlineImageBytes` (transient, in-memory only) and forwards the base64 payload through `SendMessageUseCase → ChatRepository → ChatBackendDataSource → chatSend`.
 5. Backend `chatSend` accepts an optional `image: { data, mimeType }` and forwards it as an inline `inlineData` part to Gemini alongside the text content. The system prompt's "Image input" section explicitly tells Gemini that **image + caption are complementary, not exclusive** — image is the source-of-truth for amount/merchant/date, the caption fills in account/category/payment-method context. Conflicts (e.g. caption says R$50 but receipt shows R$30) are surfaced in the reply rather than silently picked.
-6. The user-bubble renders WhatsApp-style: the thumbnail flush to the bubble edges with the optional caption below it. With no caption, only the image shows (no `📷 Image attached.` placeholder). The placeholder is only used as a defensive fallback when an image somehow arrives without bytes (shouldn't happen in normal flow).
+6. The user-bubble renders the thumbnail flush to the bubble edges with the optional caption below it. With no caption, only the image shows (no `📷 Image attached.` placeholder). The placeholder is only used as a defensive fallback when an image somehow arrives without bytes (shouldn't happen in normal flow).
 7. The user's message is persisted with the typed caption AND a `metadata.hadImage = true` flag. Image bytes never reach Firestore. After a chat reload, when `inlineImageBytes` is gone, the bubble checks `metadata.hadImage` and renders a small placeholder tile (photo icon + "Image not available") instead of an empty bubble — honest signal that an image was sent without trying to fake the original content. The flag is `metadata`-only — it is NOT an `actionType` so the AI history filter (`_historyContent`) ignores it; the AI never sees this tag.
 8. When the image is NOT a recognizable receipt/notification, Gemini politely says it couldn't identify a transaction and asks what the user wants to record.
 9. Platform permissions: Android `CAMERA`, iOS `NSCameraUsageDescription` + `NSPhotoLibraryUsageDescription`, macOS `com.apple.security.device.camera`.
@@ -242,13 +235,11 @@ Thin delegators:
     - AI-emitted name doesn't match any account (exact or word-set fuzzy: every query word appears as a substring of some account-name word, or vice-versa) → "Account 'X' not found. Please create it first or use the exact name."
     - Word-set match is ambiguous (multiple accounts match) → "Multiple accounts match 'X': ...". Asks the user to be more specific.
     - NEVER silently falls back to another account — that masks wrong-account writes and produces misleading success messages.
-11. **Legacy messages without `channel` field**: load as `ChatChannel.app` (default).
-12. **Cross-channel history**: messages from WhatsApp and app appear interleaved in `ChatLoaded.messages`, ordered by `createdAt`.
-13. **Audio transcription failure**: snack/no-op — the user can retry or type manually.
-14. **Microphone permission denied**: show SnackBar asking the user to grant it in system settings.
-15. **Pending transcript + user types over it**: the edited text takes precedence; sending uses whatever is in the text field.
-16. **Image + empty caption**: content saved as `📷 Imagem anexada`; backend still processes the image and extracts transaction info.
-17. **Image larger than callable 10MB limit**: `image_picker` compression (quality 75, maxWidth 1920) keeps typical receipt photos under 1MB base64; heavier cases would bubble up as `AiFailure` via `FirebaseFunctionsException`.
-18. **Non-receipt image**: Gemini returns a polite "couldn't identify" message; no `[TRANSACTION_DATA]` emitted.
-19. **AI mimics result text**: would-be regression — Gemini learns from history that "Pronto, confirma o gasto?" is followed by "Transaction X created successfully!" and emits BOTH in one assistant message without the action block. Mitigated by (a) tagging app-generated messages with `metadata.kind = 'actionResult'` and stripping them from history before the AI call, (b) explicit "Never echo app result text" rule in the system prompt, (c) regex fallback for legacy untagged messages.
-20. **Preflight on AI-proposed actions**: when an assistant message arrives with `metadata.actionType`, the bloc validates the action against current data BEFORE the action card is rendered (transactions: category exists, account resolvable; transfers: both accounts resolvable, distinct). On failure, a rejection bubble is appended with `metadata = { kind: 'actionRejected', originActionId: <proposalId> }` and the timeline suppresses the card for that proposal. Rationale: confirming a card and then seeing a "not found" error breaks the contract the card sets up — if the card is shown, Confirm should always succeed (modulo network/server failures). Rejection bubbles are filtered from the AI history (same rule as action results) to avoid the model mimicking them.
+11. **Audio transcription failure**: snack/no-op — the user can retry or type manually.
+12. **Microphone permission denied**: show SnackBar asking the user to grant it in system settings.
+13. **Pending transcript + user types over it**: the edited text takes precedence; sending uses whatever is in the text field.
+14. **Image + empty caption**: content saved as `📷 Imagem anexada`; backend still processes the image and extracts transaction info.
+15. **Image larger than callable 10MB limit**: `image_picker` compression (quality 75, maxWidth 1920) keeps typical receipt photos under 1MB base64; heavier cases would bubble up as `AiFailure` via `FirebaseFunctionsException`.
+16. **Non-receipt image**: Gemini returns a polite "couldn't identify" message; no `[TRANSACTION_DATA]` emitted.
+17. **AI mimics result text**: would-be regression — Gemini learns from history that "Pronto, confirma o gasto?" is followed by "Transaction X created successfully!" and emits BOTH in one assistant message without the action block. Mitigated by (a) tagging app-generated messages with `metadata.kind = 'actionResult'` and stripping them from history before the AI call, (b) explicit "Never echo app result text" rule in the system prompt, (c) regex fallback for legacy untagged messages.
+18. **Preflight on AI-proposed actions**: when an assistant message arrives with `metadata.actionType`, the bloc validates the action against current data BEFORE the action card is rendered (transactions: category exists, account resolvable; transfers: both accounts resolvable, distinct). On failure, a rejection bubble is appended with `metadata = { kind: 'actionRejected', originActionId: <proposalId> }` and the timeline suppresses the card for that proposal. Rationale: confirming a card and then seeing a "not found" error breaks the contract the card sets up — if the card is shown, Confirm should always succeed (modulo network/server failures). Rejection bubbles are filtered from the AI history (same rule as action results) to avoid the model mimicking them.

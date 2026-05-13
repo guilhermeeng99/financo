@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import { HISTORY_LIMIT } from '../config';
-import type { ChatChannel, ChatMessage, ChatRole } from './types';
+import type { ChatMessage, ChatRole } from './types';
 
 const COLLECTION = 'chat_messages';
 
@@ -14,7 +14,6 @@ const docToMessage = (doc: admin.firestore.QueryDocumentSnapshot): ChatMessage =
     role: data.role as ChatRole,
     content: data.content as string,
     metadata: (data.metadata as Record<string, any> | null) ?? null,
-    channel: (data.channel as ChatChannel) ?? 'app',
     createdAt: (data.createdAt as admin.firestore.Timestamp).toDate(),
   };
 };
@@ -39,7 +38,6 @@ export const saveMessage = async (message: ChatMessage): Promise<void> => {
       role: message.role,
       content: message.content,
       metadata: message.metadata ?? null,
-      channel: message.channel,
       createdAt: admin.firestore.Timestamp.fromDate(message.createdAt),
     });
 };

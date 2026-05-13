@@ -1,6 +1,6 @@
 # Financo
 
-Personal finance manager for Android, iOS, and Web. Natural-language data entry powered by an AI assistant that reaches your wallet through the app **or** WhatsApp.
+Personal finance manager for Android, iOS, and Web. Natural-language data entry powered by an AI assistant inside the app.
 
 ## What it does
 
@@ -10,7 +10,6 @@ Personal finance manager for Android, iOS, and Web. Natural-language data entry 
 - **Transactions** — single-account or **transfers** (linked expense/income across two own accounts), with running balance per account.
 - **Bills** — payable or receivable, one-shot or monthly recurring; "Mark as paid" generates the corresponding transaction automatically.
 - **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories, bills) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
-- **WhatsApp** — same chat pipeline, second channel. Cloud Functions process the webhook, run the AI turn, and post interactive Confirm/Cancel reply buttons.
 - **CSV import** — bulk-create accounts, categories, and transactions from CSV files (samples shipped in `lib/app/assets/samples/`).
 - **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today bills.
 
@@ -27,8 +26,7 @@ lib/
 
 functions/
 └── src/
-    ├── chat/     # Gemini pipeline, action extractor, executors
-    ├── whatsapp/ # Webhook, signature verification, dedupe
+    ├── chat/     # Gemini pipeline, action extractor
     └── bills/    # Scheduled bill-due notifier
 
 specs/            # Per-feature contracts (entities, business rules, state machines)
@@ -64,7 +62,6 @@ Backend (`functions/`):
 
 - **Node.js 22**, TypeScript, `firebase-functions` v7
 - Vertex AI Gemini via `@google-cloud/vertexai`
-- WhatsApp Cloud API (Meta) for the second channel
 
 ## Spec-driven development
 
@@ -109,7 +106,7 @@ npm run build
 firebase deploy --only functions
 ```
 
-The chat pipeline (`chatSend`), audio transcription (`transcribeChatAudio`), bill notifier (`notifyBillsDue`), and WhatsApp webhook (`whatsappWebhook`) are all defined in `functions/src/index.ts`.
+The chat pipeline (`chatSend`), audio transcription (`transcribeChatAudio`), and bill notifier (`notifyBillsDue`) are all defined in `functions/src/index.ts`.
 
 ## Testing
 

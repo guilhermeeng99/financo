@@ -1078,9 +1078,6 @@ class TranslationsChatEn {
 	/// en: 'Yesterday'
 	String get yesterday => 'Yesterday';
 
-	/// en: 'via WhatsApp'
-	String get viaWhatsapp => 'via WhatsApp';
-
 	/// en: 'Try asking'
 	String get tryAsking => 'Try asking';
 
@@ -1099,6 +1096,7 @@ class TranslationsChatEn {
 	late final TranslationsChatActionEn action = TranslationsChatActionEn._(_root);
 	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
 	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
+	late final TranslationsChatHandlersEn handlers = TranslationsChatHandlersEn._(_root);
 }
 
 // Path: reports
@@ -1830,6 +1828,237 @@ class TranslationsChatImageEn {
 	String get missing => 'Image not available';
 }
 
+// Path: chat.handlers
+class TranslationsChatHandlersEn {
+	TranslationsChatHandlersEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Image attached.'
+	String get imageAttached => 'Image attached.';
+
+	/// en: 'The AI service is temporarily unavailable due to rate limits. Please wait a moment and try again.'
+	String get errorQuota => 'The AI service is temporarily unavailable due to rate limits. Please wait a moment and try again.';
+
+	/// en: 'Sorry, I could not process your message. Please try again.'
+	String get errorGeneric => 'Sorry, I could not process your message. Please try again.';
+
+	/// en: 'Unknown action.'
+	String get unknownAction => 'Unknown action.';
+
+	/// en: 'Unknown account action.'
+	String get unknownAccountAction => 'Unknown account action.';
+
+	/// en: 'Unknown category action.'
+	String get unknownCategoryAction => 'Unknown category action.';
+
+	/// en: 'Unknown bill action.'
+	String get unknownBillAction => 'Unknown bill action.';
+
+	/// en: 'Unknown budget action.'
+	String get unknownBudgetAction => 'Unknown budget action.';
+
+	/// en: 'Invalid amount.'
+	String get invalidAmount => 'Invalid amount.';
+
+	/// en: 'Failed to create account: $error'
+	String accountCreateFailed({required Object error}) => 'Failed to create account: ${error}';
+
+	/// en: 'Account "$name" created successfully!'
+	String accountCreated({required Object name}) => 'Account "${name}" created successfully!';
+
+	/// en: 'No account named "$name" found.'
+	String accountNotFound({required Object name}) => 'No account named "${name}" found.';
+
+	/// en: 'Failed to find account: $error'
+	String accountLoadFailed({required Object error}) => 'Failed to find account: ${error}';
+
+	/// en: 'Failed to delete account: $error'
+	String accountDeleteFailed({required Object error}) => 'Failed to delete account: ${error}';
+
+	/// en: 'Account "$name" deleted successfully!'
+	String accountDeleted({required Object name}) => 'Account "${name}" deleted successfully!';
+
+	/// en: 'Failed to create category: $error'
+	String categoryCreateFailed({required Object error}) => 'Failed to create category: ${error}';
+
+	/// en: 'Category "$name" created successfully!'
+	String categoryCreated({required Object name}) => 'Category "${name}" created successfully!';
+
+	/// en: 'No category named "$name" found.'
+	String categoryNotFound({required Object name}) => 'No category named "${name}" found.';
+
+	/// en: 'Failed to find category: $error'
+	String categoryLoadFailed({required Object error}) => 'Failed to find category: ${error}';
+
+	/// en: 'Failed to delete category: $error'
+	String categoryDeleteFailed({required Object error}) => 'Failed to delete category: ${error}';
+
+	/// en: 'Category "$name" deleted successfully!'
+	String categoryDeleted({required Object name}) => 'Category "${name}" deleted successfully!';
+
+	/// en: 'Category is required.'
+	String get categoryRequired => 'Category is required.';
+
+	/// en: 'Category "$name" doesn't exist. If this was a transfer between your accounts, ask for "transfer" explicitly; otherwise create the category first.'
+	String categoryNotFoundCreateFirst({required Object name}) => 'Category "${name}" doesn\'t exist. If this was a transfer between your accounts, ask for "transfer" explicitly; otherwise create the category first.';
+
+	/// en: 'Failed to load categories.'
+	String get transactionLoadCategoriesFailed => 'Failed to load categories.';
+
+	/// en: 'Failed to load accounts.'
+	String get transactionLoadAccountsFailed => 'Failed to load accounts.';
+
+	/// en: 'Create an account first.'
+	String get transactionCreateAccountFirst => 'Create an account first.';
+
+	/// en: 'Could not resolve account.'
+	String get transactionUnresolvedAccount => 'Could not resolve account.';
+
+	/// en: 'Failed to create transaction: $error'
+	String transactionCreateFailed({required Object error}) => 'Failed to create transaction: ${error}';
+
+	/// en: 'Transaction "$description" of $amount created successfully!'
+	String transactionCreated({required Object description, required Object amount}) => 'Transaction "${description}" of ${amount} created successfully!';
+
+	/// en: 'Transfer needs both source and destination accounts.'
+	String get transferAccountsRequired => 'Transfer needs both source and destination accounts.';
+
+	/// en: 'Transfer requires at least two accounts.'
+	String get transferMinTwoAccounts => 'Transfer requires at least two accounts.';
+
+	/// en: 'Source and destination must be different accounts.'
+	String get transferSourceDestSame => 'Source and destination must be different accounts.';
+
+	/// en: 'Could not resolve source account.'
+	String get transferUnresolvedSource => 'Could not resolve source account.';
+
+	/// en: 'Could not resolve destination account.'
+	String get transferUnresolvedDestination => 'Could not resolve destination account.';
+
+	/// en: 'Failed to create transfer: $error'
+	String transferCreateFailed({required Object error}) => 'Failed to create transfer: ${error}';
+
+	/// en: 'Transfer of $amount from "$from" to "$to" created successfully!'
+	String transferCreated({required Object amount, required Object from, required Object to}) => 'Transfer of ${amount} from "${from}" to "${to}" created successfully!';
+
+	/// en: 'Bill description is required.'
+	String get billDescriptionRequired => 'Bill description is required.';
+
+	/// en: 'Invalid bill amount.'
+	String get billAmountInvalid => 'Invalid bill amount.';
+
+	/// en: 'Failed to create bill: $error'
+	String billCreateFailed({required Object error}) => 'Failed to create bill: ${error}';
+
+	/// en: 'Bill "$description" of $amount scheduled for $dueDate.'
+	String billCreated({required Object description, required Object amount, required Object dueDate}) => 'Bill "${description}" of ${amount} scheduled for ${dueDate}.';
+
+	/// en: 'Bill id required.'
+	String get billIdRequired => 'Bill id required.';
+
+	/// en: 'Bill not found.'
+	String get billNotFound => 'Bill not found.';
+
+	/// en: 'Bill is already paid and cannot be edited.'
+	String get billCannotEditPaid => 'Bill is already paid and cannot be edited.';
+
+	/// en: 'Failed to update bill: $error'
+	String billUpdateFailed({required Object error}) => 'Failed to update bill: ${error}';
+
+	/// en: 'Bill "$description" updated.'
+	String billUpdated({required Object description}) => 'Bill "${description}" updated.';
+
+	/// en: 'Bill is already paid.'
+	String get billAlreadyPaid => 'Bill is already paid.';
+
+	/// en: 'No checking account available to register the payment.'
+	String get billNoCheckingAccount => 'No checking account available to register the payment.';
+
+	/// en: 'No income category available to register the payment.'
+	String get billNoIncomeCategory => 'No income category available to register the payment.';
+
+	/// en: 'No expense category available to register the payment.'
+	String get billNoExpenseCategory => 'No expense category available to register the payment.';
+
+	/// en: 'Failed to mark bill as paid: $error'
+	String billPayFailed({required Object error}) => 'Failed to mark bill as paid: ${error}';
+
+	/// en: 'Bill "$description" paid — transaction created.'
+	String billPaid({required Object description}) => 'Bill "${description}" paid — transaction created.';
+
+	/// en: 'Bill "$description" paid — transaction created. Next occurrence scheduled for $dueDate.'
+	String billPaidWithNext({required Object description, required Object dueDate}) => 'Bill "${description}" paid — transaction created. Next occurrence scheduled for ${dueDate}.';
+
+	/// en: 'Failed to delete bill: $error'
+	String billDeleteFailed({required Object error}) => 'Failed to delete bill: ${error}';
+
+	/// en: 'Bill deleted.'
+	String get billDeleted => 'Bill deleted.';
+
+	/// en: 'A category is required for the budget.'
+	String get budgetCategoryRequired => 'A category is required for the budget.';
+
+	/// en: 'Category "$name" not found.'
+	String budgetCategoryNotFound({required Object name}) => 'Category "${name}" not found.';
+
+	/// en: 'Category "$name" doesn't exist. Create it first.'
+	String budgetCategoryNotFoundCreate({required Object name}) => 'Category "${name}" doesn\'t exist. Create it first.';
+
+	/// en: 'Budgets are only available for expense categories.'
+	String get budgetExpenseOnly => 'Budgets are only available for expense categories.';
+
+	/// en: 'Budgets can only be set on root categories. Use the root "$name".'
+	String budgetRootCategoryOnly({required Object name}) => 'Budgets can only be set on root categories. Use the root "${name}".';
+
+	/// en: 'There's already a budget for "$name". Use "update" to change the value.'
+	String budgetAlreadyExists({required Object name}) => 'There\'s already a budget for "${name}". Use "update" to change the value.';
+
+	/// en: 'No budget for "$name" yet. Use "create" to define one.'
+	String budgetDoesNotExist({required Object name}) => 'No budget for "${name}" yet. Use "create" to define one.';
+
+	/// en: 'Budget amount must be greater than zero.'
+	String get budgetAmountPositive => 'Budget amount must be greater than zero.';
+
+	/// en: 'Couldn't load budgets.'
+	String get budgetLoadFailed => 'Couldn\'t load budgets.';
+
+	/// en: 'Couldn't load categories.'
+	String get budgetLoadCategoriesFailed => 'Couldn\'t load categories.';
+
+	/// en: 'Failed to create budget: $error'
+	String budgetCreateFailed({required Object error}) => 'Failed to create budget: ${error}';
+
+	/// en: 'Budget of $amount on "$name" created.'
+	String budgetCreated({required Object amount, required Object name}) => 'Budget of ${amount} on "${name}" created.';
+
+	/// en: 'No active budget for "$name".'
+	String budgetNoActive({required Object name}) => 'No active budget for "${name}".';
+
+	/// en: 'Failed to update budget: $error'
+	String budgetUpdateFailed({required Object error}) => 'Failed to update budget: ${error}';
+
+	/// en: 'Budget of "$name" updated to $amount.'
+	String budgetUpdated({required Object name, required Object amount}) => 'Budget of "${name}" updated to ${amount}.';
+
+	/// en: 'Failed to remove budget: $error'
+	String budgetDeleteFailed({required Object error}) => 'Failed to remove budget: ${error}';
+
+	/// en: 'Budget of "$name" removed.'
+	String budgetDeleted({required Object name}) => 'Budget of "${name}" removed.';
+
+	/// en: 'Which account should I use? Please tell me the account name.'
+	String get resolveAccountMissing => 'Which account should I use? Please tell me the account name.';
+
+	/// en: 'Account "$query" not found. Please create it first or use the exact name.'
+	String resolveAccountNotFound({required Object query}) => 'Account "${query}" not found. Please create it first or use the exact name.';
+
+	/// en: 'Multiple accounts match "$query": $names. Please be more specific.'
+	String resolveAccountMultiple({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.';
+}
+
 // Path: bills.notification
 class TranslationsBillsNotificationEn {
 	TranslationsBillsNotificationEn._(this._root);
@@ -2217,7 +2446,6 @@ extension on Translations {
 			'chat.online' => 'Online',
 			'chat.today' => 'Today',
 			'chat.yesterday' => 'Yesterday',
-			'chat.viaWhatsapp' => 'via WhatsApp',
 			'chat.tryAsking' => 'Try asking',
 			'chat.suggestion1' => 'I spent R\$ 30 at the bakery',
 			'chat.suggestion2' => 'How much do I have on my Nubank account?',
@@ -2272,6 +2500,80 @@ extension on Translations {
 			'chat.image.remove' => 'Remove image',
 			'chat.image.pickError' => 'Could not pick image',
 			'chat.image.missing' => 'Image not available',
+			'chat.handlers.imageAttached' => 'Image attached.',
+			'chat.handlers.errorQuota' => 'The AI service is temporarily unavailable due to rate limits. Please wait a moment and try again.',
+			'chat.handlers.errorGeneric' => 'Sorry, I could not process your message. Please try again.',
+			'chat.handlers.unknownAction' => 'Unknown action.',
+			'chat.handlers.unknownAccountAction' => 'Unknown account action.',
+			'chat.handlers.unknownCategoryAction' => 'Unknown category action.',
+			'chat.handlers.unknownBillAction' => 'Unknown bill action.',
+			'chat.handlers.unknownBudgetAction' => 'Unknown budget action.',
+			'chat.handlers.invalidAmount' => 'Invalid amount.',
+			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Failed to create account: ${error}',
+			'chat.handlers.accountCreated' => ({required Object name}) => 'Account "${name}" created successfully!',
+			'chat.handlers.accountNotFound' => ({required Object name}) => 'No account named "${name}" found.',
+			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Failed to find account: ${error}',
+			'chat.handlers.accountDeleteFailed' => ({required Object error}) => 'Failed to delete account: ${error}',
+			'chat.handlers.accountDeleted' => ({required Object name}) => 'Account "${name}" deleted successfully!',
+			'chat.handlers.categoryCreateFailed' => ({required Object error}) => 'Failed to create category: ${error}',
+			'chat.handlers.categoryCreated' => ({required Object name}) => 'Category "${name}" created successfully!',
+			'chat.handlers.categoryNotFound' => ({required Object name}) => 'No category named "${name}" found.',
+			'chat.handlers.categoryLoadFailed' => ({required Object error}) => 'Failed to find category: ${error}',
+			'chat.handlers.categoryDeleteFailed' => ({required Object error}) => 'Failed to delete category: ${error}',
+			'chat.handlers.categoryDeleted' => ({required Object name}) => 'Category "${name}" deleted successfully!',
+			'chat.handlers.categoryRequired' => 'Category is required.',
+			'chat.handlers.categoryNotFoundCreateFirst' => ({required Object name}) => 'Category "${name}" doesn\'t exist. If this was a transfer between your accounts, ask for "transfer" explicitly; otherwise create the category first.',
+			'chat.handlers.transactionLoadCategoriesFailed' => 'Failed to load categories.',
+			'chat.handlers.transactionLoadAccountsFailed' => 'Failed to load accounts.',
+			'chat.handlers.transactionCreateAccountFirst' => 'Create an account first.',
+			'chat.handlers.transactionUnresolvedAccount' => 'Could not resolve account.',
+			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Failed to create transaction: ${error}',
+			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transaction "${description}" of ${amount} created successfully!',
+			'chat.handlers.transferAccountsRequired' => 'Transfer needs both source and destination accounts.',
+			'chat.handlers.transferMinTwoAccounts' => 'Transfer requires at least two accounts.',
+			'chat.handlers.transferSourceDestSame' => 'Source and destination must be different accounts.',
+			'chat.handlers.transferUnresolvedSource' => 'Could not resolve source account.',
+			'chat.handlers.transferUnresolvedDestination' => 'Could not resolve destination account.',
+			'chat.handlers.transferCreateFailed' => ({required Object error}) => 'Failed to create transfer: ${error}',
+			'chat.handlers.transferCreated' => ({required Object amount, required Object from, required Object to}) => 'Transfer of ${amount} from "${from}" to "${to}" created successfully!',
+			'chat.handlers.billDescriptionRequired' => 'Bill description is required.',
+			'chat.handlers.billAmountInvalid' => 'Invalid bill amount.',
+			'chat.handlers.billCreateFailed' => ({required Object error}) => 'Failed to create bill: ${error}',
+			'chat.handlers.billCreated' => ({required Object description, required Object amount, required Object dueDate}) => 'Bill "${description}" of ${amount} scheduled for ${dueDate}.',
+			'chat.handlers.billIdRequired' => 'Bill id required.',
+			'chat.handlers.billNotFound' => 'Bill not found.',
+			'chat.handlers.billCannotEditPaid' => 'Bill is already paid and cannot be edited.',
+			'chat.handlers.billUpdateFailed' => ({required Object error}) => 'Failed to update bill: ${error}',
+			'chat.handlers.billUpdated' => ({required Object description}) => 'Bill "${description}" updated.',
+			'chat.handlers.billAlreadyPaid' => 'Bill is already paid.',
+			'chat.handlers.billNoCheckingAccount' => 'No checking account available to register the payment.',
+			'chat.handlers.billNoIncomeCategory' => 'No income category available to register the payment.',
+			'chat.handlers.billNoExpenseCategory' => 'No expense category available to register the payment.',
+			'chat.handlers.billPayFailed' => ({required Object error}) => 'Failed to mark bill as paid: ${error}',
+			'chat.handlers.billPaid' => ({required Object description}) => 'Bill "${description}" paid — transaction created.',
+			'chat.handlers.billPaidWithNext' => ({required Object description, required Object dueDate}) => 'Bill "${description}" paid — transaction created. Next occurrence scheduled for ${dueDate}.',
+			'chat.handlers.billDeleteFailed' => ({required Object error}) => 'Failed to delete bill: ${error}',
+			'chat.handlers.billDeleted' => 'Bill deleted.',
+			'chat.handlers.budgetCategoryRequired' => 'A category is required for the budget.',
+			'chat.handlers.budgetCategoryNotFound' => ({required Object name}) => 'Category "${name}" not found.',
+			'chat.handlers.budgetCategoryNotFoundCreate' => ({required Object name}) => 'Category "${name}" doesn\'t exist. Create it first.',
+			'chat.handlers.budgetExpenseOnly' => 'Budgets are only available for expense categories.',
+			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Budgets can only be set on root categories. Use the root "${name}".',
+			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'There\'s already a budget for "${name}". Use "update" to change the value.',
+			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'No budget for "${name}" yet. Use "create" to define one.',
+			'chat.handlers.budgetAmountPositive' => 'Budget amount must be greater than zero.',
+			'chat.handlers.budgetLoadFailed' => 'Couldn\'t load budgets.',
+			'chat.handlers.budgetLoadCategoriesFailed' => 'Couldn\'t load categories.',
+			'chat.handlers.budgetCreateFailed' => ({required Object error}) => 'Failed to create budget: ${error}',
+			'chat.handlers.budgetCreated' => ({required Object amount, required Object name}) => 'Budget of ${amount} on "${name}" created.',
+			'chat.handlers.budgetNoActive' => ({required Object name}) => 'No active budget for "${name}".',
+			'chat.handlers.budgetUpdateFailed' => ({required Object error}) => 'Failed to update budget: ${error}',
+			'chat.handlers.budgetUpdated' => ({required Object name, required Object amount}) => 'Budget of "${name}" updated to ${amount}.',
+			'chat.handlers.budgetDeleteFailed' => ({required Object error}) => 'Failed to remove budget: ${error}',
+			'chat.handlers.budgetDeleted' => ({required Object name}) => 'Budget of "${name}" removed.',
+			'chat.handlers.resolveAccountMissing' => 'Which account should I use? Please tell me the account name.',
+			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Account "${query}" not found. Please create it first or use the exact name.',
+			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.',
 			'reports.title' => 'Reports',
 			'reports.incomeVsExpenses' => 'Income vs Expenses',
 			'reports.expensesByCategory' => 'Expenses by Category',
@@ -2352,6 +2654,8 @@ extension on Translations {
 			'bills.match.sheetTitle' => 'Confirm payments',
 			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
 			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
+			_ => null,
+		} ?? switch (path) {
 			'bills.match.yesItWas' => 'Yes',
 			'bills.match.notThisOne' => 'No',
 			'bills.match.matchAccepted' => 'Bill marked as settled',
@@ -2425,8 +2729,6 @@ extension on Translations {
 			'profile.categories' => 'Categories',
 			'profile.bills' => 'Bills',
 			'profile.theme' => 'Theme',
-			_ => null,
-		} ?? switch (path) {
 			'profile.themeLight' => 'Light',
 			'profile.themeDark' => 'Dark',
 			'profile.themeSystem' => 'System',

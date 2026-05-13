@@ -14,6 +14,7 @@ import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:mocktail/mocktail.dart';
 
 void registerCategoryFallbackValues() {
@@ -112,6 +113,11 @@ void registerChatFallbackValues() {
       createdAt: DateTime(2024),
     ),
   );
+  // Slang's `Translations` is required by handler signatures since chat
+  // is bilingual — register a concrete instance so mocktail's any(named:
+  // 'strings') matcher can resolve.
+  registerFallbackValue(AppLocale.en.buildSync());
+  registerFallbackValue(AppLocale.en);
 }
 
 void registerDashboardFallbackValues() {

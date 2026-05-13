@@ -14,6 +14,12 @@ abstract class BillRemoteDataSource {
   Future<BillModel> createBill(BillModel model);
   Future<BillModel> updateBill(BillModel model);
   Future<void> deleteBill(String id);
+
+  /// Atomic update of [models] in a single Firestore `WriteBatch`. Either
+  /// every document is updated or none — used by the "propagate edit to
+  /// future occurrences" flow where a partial write would leave the chain
+  /// half-rewritten with the old amount on the tail end.
+  Future<void> updateBillsBatch(List<BillModel> models);
 }
 
 class BillRemoteDataSourceImpl implements BillRemoteDataSource {
@@ -89,6 +95,26 @@ class BillRemoteDataSourceImpl implements BillRemoteDataSource {
       await _collection.doc(id).delete();
     } on Exception {
       throw const ServerException('Failed to delete bill.');
+    }
+  }
+
+  @override
+  Future<void> updateBillsBatch(List<BillModel> models) async {
+    if (models.isEmpty) return;
+    try {
+      final batch = _firestore.batch();
+      for (final model in models) {
+        batch.update(_collection.doc(model.id), model.toJson());
+      }
+      await batch.commit();
+    } on Exception catch (e, st) {
+      log(
+        'updateBillsBatch failed',
+        name: 'BillRemoteDataSource',
+        error: e,
+        stackTrace: st,
+      );
+      throw const ServerException('Failed to update bills.');
     }
   }
 }

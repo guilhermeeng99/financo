@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
@@ -91,6 +93,7 @@ class BillRepositoryImpl implements BillRepository {
         final all = await _dao.getBills(userId: saved.userId);
         final descendants = _descendantsOf(saved.id, all);
         final now = DateTime.now();
+        final propagated = <BillEntity>[];
         for (final desc in descendants) {
           if (!desc.dueDate.isAfter(saved.dueDate)) continue;
           // Paid bills are immutable history — walked through to find
@@ -106,35 +109,40 @@ class BillRepositoryImpl implements BillRepository {
           // null override from "left untouched", so it would silently
           // preserve the descendant's old `categoryId`/`notes` when the
           // user just cleared them on the source.
-          final propagated = BillEntity(
-            id: desc.id,
-            userId: desc.userId,
-            type: saved.type,
-            description: saved.description,
-            amount: saved.amount,
-            dueDate: DateTime(
-              desc.dueDate.year,
-              desc.dueDate.month,
-              clampedDay,
+          propagated.add(
+            BillEntity(
+              id: desc.id,
+              userId: desc.userId,
+              type: saved.type,
+              description: saved.description,
+              amount: saved.amount,
+              dueDate: DateTime(
+                desc.dueDate.year,
+                desc.dueDate.month,
+                clampedDay,
+              ),
+              status: desc.status,
+              recurrence: desc.recurrence,
+              categoryId: saved.categoryId,
+              notes: saved.notes,
+              paidAt: desc.paidAt,
+              paidTransactionId: desc.paidTransactionId,
+              parentBillId: desc.parentBillId,
+              rejectedTransactionIds: desc.rejectedTransactionIds,
+              createdAt: desc.createdAt,
+              updatedAt: now,
             ),
-            status: desc.status,
-            recurrence: desc.recurrence,
-            categoryId: saved.categoryId,
-            notes: saved.notes,
-            paidAt: desc.paidAt,
-            paidTransactionId: desc.paidTransactionId,
-            parentBillId: desc.parentBillId,
-            rejectedTransactionIds: desc.rejectedTransactionIds,
-            createdAt: desc.createdAt,
-            updatedAt: now,
           );
-          final propResult = await updateBill(propagated);
-          if (propResult.isLeft()) {
-            // Bail on first failure — partial propagation is acceptable
-            // because each `updateBill` is independent (already-written
-            // descendants stay updated) and the user can retry.
-            return propResult;
-          }
+        }
+        if (propagated.isEmpty) return Right(saved);
+
+        // Single Firestore WriteBatch keeps the propagation atomic — no
+        // more leaving the chain half-rewritten with the old amount on
+        // the tail end if a network blip hits midway through.
+        final models = propagated.map(BillModel.fromEntity).toList();
+        await _remote.updateBillsBatch(models);
+        for (final p in propagated) {
+          await _dao.upsertBill(p);
         }
         return Right(saved);
       } on ServerException catch (e) {
@@ -296,9 +304,18 @@ class BillRepositoryImpl implements BillRepository {
         );
         final nextResult = await createBill(next);
         // Don't fail the whole flow if next occurrence creation fails —
-        // the user can manually re-create it. Log via Left silently.
+        // the user can manually re-create it. Logged so a recurring outage
+        // shows up in DevTools/Crashlytics instead of disappearing.
         nextResult.fold(
-          (_) => nextOccurrence = null,
+          (f) {
+            log(
+              'payBill: next occurrence for bill ${updatedBill.id} '
+              'was not created — ${f.message}',
+              name: 'BillRepository',
+              error: f,
+            );
+            nextOccurrence = null;
+          },
           (created) => nextOccurrence = created,
         );
       }

@@ -78,6 +78,12 @@ import 'package:financo/features/categories/domain/usecases/update_category_usec
 // Chat
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/data/repositories/chat_repository_impl.dart';
+import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
+import 'package:financo/features/chat/domain/action_handlers/transfer_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
@@ -94,6 +100,7 @@ import 'package:financo/features/master_panel/domain/repositories/master_users_r
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 // Profile
+import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:financo/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:financo/features/profile/domain/usecases/clear_account_data_usecase.dart';
@@ -209,6 +216,9 @@ Future<void> initDependencies() async {
     ..registerLazySingleton<ChatRemoteDataSource>(
       () => ChatRemoteDataSourceImpl(firestore: sl()),
     )
+    ..registerLazySingleton<ProfileRemoteDataSource>(
+      () => ProfileRemoteDataSourceImpl(firestore: sl()),
+    )
     // ─── Repositories ───────────────────────────────────────
     ..registerLazySingleton<AccessControlRepository>(
       () => AccessControlRepositoryImpl(remoteDataSource: sl()),
@@ -270,8 +280,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<ProfileRepository>(
       () => ProfileRepositoryImpl(
-        firestore: sl(),
+        remoteDataSource: sl(),
         usersDao: sl(),
+        database: sl(),
       ),
     )
     // ─── Use Cases ──────────────────────────────────────────
@@ -366,12 +377,60 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(
       () => TranscribeAudioUseCase(sl()),
     )
+    // ─── Chat Action Handlers ───────────────────────────────
+    ..registerLazySingleton(
+      () => AccountChatActionHandler(
+        createAccount: sl(),
+        getAccounts: sl(),
+        deleteAccount: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => CategoryChatActionHandler(
+        createCategory: sl(),
+        getCategories: sl(),
+        deleteCategory: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => TransactionChatActionHandler(
+        getAccounts: sl(),
+        getCategories: sl(),
+        createTransaction: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => TransferChatActionHandler(
+        getAccounts: sl(),
+        createTransfer: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => BillChatActionHandler(
+        getBills: sl(),
+        createBill: sl(),
+        updateBill: sl(),
+        deleteBill: sl(),
+        payBill: sl(),
+        getAccounts: sl(),
+        getCategories: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => BudgetChatActionHandler(
+        getCategories: sl(),
+        getBudgets: sl(),
+        createBudget: sl(),
+        updateBudget: sl(),
+        deleteBudget: sl(),
+      ),
+    )
     ..registerLazySingleton(
       () => GetDashboardSummaryUseCase(sl()),
     )
     ..registerLazySingleton(() => GetProfileUseCase(sl()))
     ..registerLazySingleton(
-      () => ClearAccountDataUseCase(firestore: sl(), database: sl()),
+      () => ClearAccountDataUseCase(repository: sl()),
     )
     // ─── Blocs / Cubits (global singletons) ─────────────────
     ..registerLazySingleton(

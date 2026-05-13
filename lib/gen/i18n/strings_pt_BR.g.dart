@@ -466,7 +466,6 @@ class _TranslationsChatPtBr implements TranslationsChatEn {
 	@override String get online => 'Online';
 	@override String get today => 'Hoje';
 	@override String get yesterday => 'Ontem';
-	@override String get viaWhatsapp => 'via WhatsApp';
 	@override String get tryAsking => 'Experimente perguntar';
 	@override String get suggestion1 => 'Gastei R\$ 30 na padaria';
 	@override String get suggestion2 => 'Quanto tenho na conta Nubank?';
@@ -475,6 +474,7 @@ class _TranslationsChatPtBr implements TranslationsChatEn {
 	@override late final _TranslationsChatActionPtBr action = _TranslationsChatActionPtBr._(_root);
 	@override late final _TranslationsChatAudioPtBr audio = _TranslationsChatAudioPtBr._(_root);
 	@override late final _TranslationsChatImagePtBr image = _TranslationsChatImagePtBr._(_root);
+	@override late final _TranslationsChatHandlersPtBr handlers = _TranslationsChatHandlersPtBr._(_root);
 }
 
 // Path: reports
@@ -767,6 +767,89 @@ class _TranslationsChatImagePtBr implements TranslationsChatImageEn {
 	@override String get remove => 'Remover imagem';
 	@override String get pickError => 'Não foi possível escolher a imagem';
 	@override String get missing => 'Imagem não disponível';
+}
+
+// Path: chat.handlers
+class _TranslationsChatHandlersPtBr implements TranslationsChatHandlersEn {
+	_TranslationsChatHandlersPtBr._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get imageAttached => 'Imagem anexada.';
+	@override String get errorQuota => 'O serviço de IA está temporariamente indisponível por limite de uso. Tente novamente em instantes.';
+	@override String get errorGeneric => 'Desculpe, não consegui processar sua mensagem. Tente novamente.';
+	@override String get unknownAction => 'Ação desconhecida.';
+	@override String get unknownAccountAction => 'Ação de conta desconhecida.';
+	@override String get unknownCategoryAction => 'Ação de categoria desconhecida.';
+	@override String get unknownBillAction => 'Ação de boleto desconhecida.';
+	@override String get unknownBudgetAction => 'Ação de orçamento desconhecida.';
+	@override String get invalidAmount => 'Valor inválido.';
+	@override String accountCreateFailed({required Object error}) => 'Falha ao criar conta: ${error}';
+	@override String accountCreated({required Object name}) => 'Conta "${name}" criada com sucesso!';
+	@override String accountNotFound({required Object name}) => 'Nenhuma conta chamada "${name}" encontrada.';
+	@override String accountLoadFailed({required Object error}) => 'Falha ao localizar conta: ${error}';
+	@override String accountDeleteFailed({required Object error}) => 'Falha ao excluir conta: ${error}';
+	@override String accountDeleted({required Object name}) => 'Conta "${name}" removida com sucesso!';
+	@override String categoryCreateFailed({required Object error}) => 'Falha ao criar categoria: ${error}';
+	@override String categoryCreated({required Object name}) => 'Categoria "${name}" criada com sucesso!';
+	@override String categoryNotFound({required Object name}) => 'Nenhuma categoria chamada "${name}" encontrada.';
+	@override String categoryLoadFailed({required Object error}) => 'Falha ao localizar categoria: ${error}';
+	@override String categoryDeleteFailed({required Object error}) => 'Falha ao excluir categoria: ${error}';
+	@override String categoryDeleted({required Object name}) => 'Categoria "${name}" removida com sucesso!';
+	@override String get categoryRequired => 'Categoria é obrigatória.';
+	@override String categoryNotFoundCreateFirst({required Object name}) => 'Categoria "${name}" não existe. Se for uma transferência entre suas contas, peça "transferência" explicitamente; senão, crie a categoria primeiro.';
+	@override String get transactionLoadCategoriesFailed => 'Falha ao carregar categorias.';
+	@override String get transactionLoadAccountsFailed => 'Falha ao carregar contas.';
+	@override String get transactionCreateAccountFirst => 'Crie uma conta primeiro.';
+	@override String get transactionUnresolvedAccount => 'Não foi possível resolver a conta.';
+	@override String transactionCreateFailed({required Object error}) => 'Falha ao criar transação: ${error}';
+	@override String transactionCreated({required Object description, required Object amount}) => 'Transação "${description}" de ${amount} criada com sucesso!';
+	@override String get transferAccountsRequired => 'Transferência precisa de origem e destino.';
+	@override String get transferMinTwoAccounts => 'Transferência requer ao menos duas contas.';
+	@override String get transferSourceDestSame => 'Origem e destino devem ser contas diferentes.';
+	@override String get transferUnresolvedSource => 'Não foi possível resolver a conta de origem.';
+	@override String get transferUnresolvedDestination => 'Não foi possível resolver a conta de destino.';
+	@override String transferCreateFailed({required Object error}) => 'Falha ao criar transferência: ${error}';
+	@override String transferCreated({required Object amount, required Object from, required Object to}) => 'Transferência de ${amount} de "${from}" para "${to}" criada com sucesso!';
+	@override String get billDescriptionRequired => 'Descrição do boleto é obrigatória.';
+	@override String get billAmountInvalid => 'Valor do boleto inválido.';
+	@override String billCreateFailed({required Object error}) => 'Falha ao criar boleto: ${error}';
+	@override String billCreated({required Object description, required Object amount, required Object dueDate}) => 'Boleto "${description}" de ${amount} agendado para ${dueDate}.';
+	@override String get billIdRequired => 'Id do boleto é obrigatório.';
+	@override String get billNotFound => 'Boleto não encontrado.';
+	@override String get billCannotEditPaid => 'O boleto já foi pago e não pode ser editado.';
+	@override String billUpdateFailed({required Object error}) => 'Falha ao atualizar boleto: ${error}';
+	@override String billUpdated({required Object description}) => 'Boleto "${description}" atualizado.';
+	@override String get billAlreadyPaid => 'O boleto já está pago.';
+	@override String get billNoCheckingAccount => 'Nenhuma conta corrente disponível para registrar o pagamento.';
+	@override String get billNoIncomeCategory => 'Nenhuma categoria de receita disponível para registrar o pagamento.';
+	@override String get billNoExpenseCategory => 'Nenhuma categoria de despesa disponível para registrar o pagamento.';
+	@override String billPayFailed({required Object error}) => 'Falha ao marcar boleto como pago: ${error}';
+	@override String billPaid({required Object description}) => 'Boleto "${description}" pago — transação criada.';
+	@override String billPaidWithNext({required Object description, required Object dueDate}) => 'Boleto "${description}" pago — transação criada. Próxima ocorrência agendada para ${dueDate}.';
+	@override String billDeleteFailed({required Object error}) => 'Falha ao excluir boleto: ${error}';
+	@override String get billDeleted => 'Boleto excluído.';
+	@override String get budgetCategoryRequired => 'Categoria é obrigatória para orçamento.';
+	@override String budgetCategoryNotFound({required Object name}) => 'Categoria "${name}" não encontrada.';
+	@override String budgetCategoryNotFoundCreate({required Object name}) => 'Categoria "${name}" não existe. Crie-a primeiro.';
+	@override String get budgetExpenseOnly => 'Orçamento só vale para categorias de despesa.';
+	@override String budgetRootCategoryOnly({required Object name}) => 'Orçamento só pode ser criado em categoria-pai. Use a categoria raiz "${name}".';
+	@override String budgetAlreadyExists({required Object name}) => 'Já existe um orçamento para "${name}". Use "atualizar" para mudar o valor.';
+	@override String budgetDoesNotExist({required Object name}) => 'Não existe orçamento para "${name}" ainda. Use "criar" para definir um.';
+	@override String get budgetAmountPositive => 'Valor do orçamento deve ser maior que zero.';
+	@override String get budgetLoadFailed => 'Não foi possível carregar orçamentos.';
+	@override String get budgetLoadCategoriesFailed => 'Não foi possível carregar categorias.';
+	@override String budgetCreateFailed({required Object error}) => 'Falha ao criar orçamento: ${error}';
+	@override String budgetCreated({required Object amount, required Object name}) => 'Orçamento de ${amount} em "${name}" criado.';
+	@override String budgetNoActive({required Object name}) => 'Nenhum orçamento ativo para "${name}".';
+	@override String budgetUpdateFailed({required Object error}) => 'Falha ao atualizar orçamento: ${error}';
+	@override String budgetUpdated({required Object name, required Object amount}) => 'Orçamento de "${name}" atualizado para ${amount}.';
+	@override String budgetDeleteFailed({required Object error}) => 'Falha ao remover orçamento: ${error}';
+	@override String budgetDeleted({required Object name}) => 'Orçamento de "${name}" removido.';
+	@override String get resolveAccountMissing => 'Qual conta devo usar? Me diga o nome da conta.';
+	@override String resolveAccountNotFound({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.';
+	@override String resolveAccountMultiple({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.';
 }
 
 // Path: bills.notification
@@ -1118,7 +1201,6 @@ extension on TranslationsPtBr {
 			'chat.online' => 'Online',
 			'chat.today' => 'Hoje',
 			'chat.yesterday' => 'Ontem',
-			'chat.viaWhatsapp' => 'via WhatsApp',
 			'chat.tryAsking' => 'Experimente perguntar',
 			'chat.suggestion1' => 'Gastei R\$ 30 na padaria',
 			'chat.suggestion2' => 'Quanto tenho na conta Nubank?',
@@ -1173,6 +1255,80 @@ extension on TranslationsPtBr {
 			'chat.image.remove' => 'Remover imagem',
 			'chat.image.pickError' => 'Não foi possível escolher a imagem',
 			'chat.image.missing' => 'Imagem não disponível',
+			'chat.handlers.imageAttached' => 'Imagem anexada.',
+			'chat.handlers.errorQuota' => 'O serviço de IA está temporariamente indisponível por limite de uso. Tente novamente em instantes.',
+			'chat.handlers.errorGeneric' => 'Desculpe, não consegui processar sua mensagem. Tente novamente.',
+			'chat.handlers.unknownAction' => 'Ação desconhecida.',
+			'chat.handlers.unknownAccountAction' => 'Ação de conta desconhecida.',
+			'chat.handlers.unknownCategoryAction' => 'Ação de categoria desconhecida.',
+			'chat.handlers.unknownBillAction' => 'Ação de boleto desconhecida.',
+			'chat.handlers.unknownBudgetAction' => 'Ação de orçamento desconhecida.',
+			'chat.handlers.invalidAmount' => 'Valor inválido.',
+			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Falha ao criar conta: ${error}',
+			'chat.handlers.accountCreated' => ({required Object name}) => 'Conta "${name}" criada com sucesso!',
+			'chat.handlers.accountNotFound' => ({required Object name}) => 'Nenhuma conta chamada "${name}" encontrada.',
+			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Falha ao localizar conta: ${error}',
+			'chat.handlers.accountDeleteFailed' => ({required Object error}) => 'Falha ao excluir conta: ${error}',
+			'chat.handlers.accountDeleted' => ({required Object name}) => 'Conta "${name}" removida com sucesso!',
+			'chat.handlers.categoryCreateFailed' => ({required Object error}) => 'Falha ao criar categoria: ${error}',
+			'chat.handlers.categoryCreated' => ({required Object name}) => 'Categoria "${name}" criada com sucesso!',
+			'chat.handlers.categoryNotFound' => ({required Object name}) => 'Nenhuma categoria chamada "${name}" encontrada.',
+			'chat.handlers.categoryLoadFailed' => ({required Object error}) => 'Falha ao localizar categoria: ${error}',
+			'chat.handlers.categoryDeleteFailed' => ({required Object error}) => 'Falha ao excluir categoria: ${error}',
+			'chat.handlers.categoryDeleted' => ({required Object name}) => 'Categoria "${name}" removida com sucesso!',
+			'chat.handlers.categoryRequired' => 'Categoria é obrigatória.',
+			'chat.handlers.categoryNotFoundCreateFirst' => ({required Object name}) => 'Categoria "${name}" não existe. Se for uma transferência entre suas contas, peça "transferência" explicitamente; senão, crie a categoria primeiro.',
+			'chat.handlers.transactionLoadCategoriesFailed' => 'Falha ao carregar categorias.',
+			'chat.handlers.transactionLoadAccountsFailed' => 'Falha ao carregar contas.',
+			'chat.handlers.transactionCreateAccountFirst' => 'Crie uma conta primeiro.',
+			'chat.handlers.transactionUnresolvedAccount' => 'Não foi possível resolver a conta.',
+			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Falha ao criar transação: ${error}',
+			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transação "${description}" de ${amount} criada com sucesso!',
+			'chat.handlers.transferAccountsRequired' => 'Transferência precisa de origem e destino.',
+			'chat.handlers.transferMinTwoAccounts' => 'Transferência requer ao menos duas contas.',
+			'chat.handlers.transferSourceDestSame' => 'Origem e destino devem ser contas diferentes.',
+			'chat.handlers.transferUnresolvedSource' => 'Não foi possível resolver a conta de origem.',
+			'chat.handlers.transferUnresolvedDestination' => 'Não foi possível resolver a conta de destino.',
+			'chat.handlers.transferCreateFailed' => ({required Object error}) => 'Falha ao criar transferência: ${error}',
+			'chat.handlers.transferCreated' => ({required Object amount, required Object from, required Object to}) => 'Transferência de ${amount} de "${from}" para "${to}" criada com sucesso!',
+			'chat.handlers.billDescriptionRequired' => 'Descrição do boleto é obrigatória.',
+			'chat.handlers.billAmountInvalid' => 'Valor do boleto inválido.',
+			'chat.handlers.billCreateFailed' => ({required Object error}) => 'Falha ao criar boleto: ${error}',
+			'chat.handlers.billCreated' => ({required Object description, required Object amount, required Object dueDate}) => 'Boleto "${description}" de ${amount} agendado para ${dueDate}.',
+			'chat.handlers.billIdRequired' => 'Id do boleto é obrigatório.',
+			'chat.handlers.billNotFound' => 'Boleto não encontrado.',
+			'chat.handlers.billCannotEditPaid' => 'O boleto já foi pago e não pode ser editado.',
+			'chat.handlers.billUpdateFailed' => ({required Object error}) => 'Falha ao atualizar boleto: ${error}',
+			'chat.handlers.billUpdated' => ({required Object description}) => 'Boleto "${description}" atualizado.',
+			'chat.handlers.billAlreadyPaid' => 'O boleto já está pago.',
+			'chat.handlers.billNoCheckingAccount' => 'Nenhuma conta corrente disponível para registrar o pagamento.',
+			'chat.handlers.billNoIncomeCategory' => 'Nenhuma categoria de receita disponível para registrar o pagamento.',
+			'chat.handlers.billNoExpenseCategory' => 'Nenhuma categoria de despesa disponível para registrar o pagamento.',
+			'chat.handlers.billPayFailed' => ({required Object error}) => 'Falha ao marcar boleto como pago: ${error}',
+			'chat.handlers.billPaid' => ({required Object description}) => 'Boleto "${description}" pago — transação criada.',
+			'chat.handlers.billPaidWithNext' => ({required Object description, required Object dueDate}) => 'Boleto "${description}" pago — transação criada. Próxima ocorrência agendada para ${dueDate}.',
+			'chat.handlers.billDeleteFailed' => ({required Object error}) => 'Falha ao excluir boleto: ${error}',
+			'chat.handlers.billDeleted' => 'Boleto excluído.',
+			'chat.handlers.budgetCategoryRequired' => 'Categoria é obrigatória para orçamento.',
+			'chat.handlers.budgetCategoryNotFound' => ({required Object name}) => 'Categoria "${name}" não encontrada.',
+			'chat.handlers.budgetCategoryNotFoundCreate' => ({required Object name}) => 'Categoria "${name}" não existe. Crie-a primeiro.',
+			'chat.handlers.budgetExpenseOnly' => 'Orçamento só vale para categorias de despesa.',
+			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Orçamento só pode ser criado em categoria-pai. Use a categoria raiz "${name}".',
+			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'Já existe um orçamento para "${name}". Use "atualizar" para mudar o valor.',
+			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'Não existe orçamento para "${name}" ainda. Use "criar" para definir um.',
+			'chat.handlers.budgetAmountPositive' => 'Valor do orçamento deve ser maior que zero.',
+			'chat.handlers.budgetLoadFailed' => 'Não foi possível carregar orçamentos.',
+			'chat.handlers.budgetLoadCategoriesFailed' => 'Não foi possível carregar categorias.',
+			'chat.handlers.budgetCreateFailed' => ({required Object error}) => 'Falha ao criar orçamento: ${error}',
+			'chat.handlers.budgetCreated' => ({required Object amount, required Object name}) => 'Orçamento de ${amount} em "${name}" criado.',
+			'chat.handlers.budgetNoActive' => ({required Object name}) => 'Nenhum orçamento ativo para "${name}".',
+			'chat.handlers.budgetUpdateFailed' => ({required Object error}) => 'Falha ao atualizar orçamento: ${error}',
+			'chat.handlers.budgetUpdated' => ({required Object name, required Object amount}) => 'Orçamento de "${name}" atualizado para ${amount}.',
+			'chat.handlers.budgetDeleteFailed' => ({required Object error}) => 'Falha ao remover orçamento: ${error}',
+			'chat.handlers.budgetDeleted' => ({required Object name}) => 'Orçamento de "${name}" removido.',
+			'chat.handlers.resolveAccountMissing' => 'Qual conta devo usar? Me diga o nome da conta.',
+			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.',
+			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.',
 			'reports.title' => 'Relatórios',
 			'reports.incomeVsExpenses' => 'Receitas vs Despesas',
 			'reports.expensesByCategory' => 'Despesas por categoria',
@@ -1253,6 +1409,8 @@ extension on TranslationsPtBr {
 			'bills.match.sheetTitle' => 'Confirmar pagamentos',
 			'bills.match.sheetIntro' => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.',
 			'bills.match.candidateQuestion' => 'Esta transação foi esta conta?',
+			_ => null,
+		} ?? switch (path) {
 			'bills.match.yesItWas' => 'Sim',
 			'bills.match.notThisOne' => 'Não',
 			'bills.match.matchAccepted' => 'Conta marcada como quitada',
@@ -1326,8 +1484,6 @@ extension on TranslationsPtBr {
 			'profile.categories' => 'Categorias',
 			'profile.bills' => 'Contas a pagar/receber',
 			'profile.theme' => 'Tema',
-			_ => null,
-		} ?? switch (path) {
 			'profile.themeLight' => 'Claro',
 			'profile.themeDark' => 'Escuro',
 			'profile.themeSystem' => 'Sistema',

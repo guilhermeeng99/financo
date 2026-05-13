@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
 import 'package:financo/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,21 +11,22 @@ import '../../../../harness/factories/user_factory.dart';
 import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
 
-class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
-
 void main() {
-  late FirebaseFirestore firestore;
+  late MockProfileRemoteDataSource mockRemote;
   late MockUsersDao mockUsersDao;
+  late MockAppDatabase mockDatabase;
   late ProfileRepositoryImpl repository;
 
   setUpAll(registerAuthFallbackValues);
 
   setUp(() {
-    firestore = FakeFirebaseFirestore();
+    mockRemote = MockProfileRemoteDataSource();
     mockUsersDao = MockUsersDao();
+    mockDatabase = MockAppDatabase();
     repository = ProfileRepositoryImpl(
-      firestore: firestore,
+      remoteDataSource: mockRemote,
       usersDao: mockUsersDao,
+      database: mockDatabase,
     );
   });
 
@@ -33,141 +34,100 @@ void main() {
 
   group('getProfile', () {
     test('returns local user when DAO has cached data', () async {
-      final mockFirestore = MockFirebaseFirestore();
       final user = UserFactory.entity();
-      repository = ProfileRepositoryImpl(
-        firestore: mockFirestore,
-        usersDao: mockUsersDao,
-      );
       when(() => mockUsersDao.getUser(userId)).thenAnswer((_) async => user);
 
       final result = await repository.getProfile(userId);
 
       expect(result, Right<Failure, UserEntity>(user));
-      verify(() => mockUsersDao.getUser(userId)).called(1);
-      verifyNever(() => mockFirestore.collection(any()));
+      verifyNever(() => mockRemote.getProfile(any()));
     });
 
     test(
-      'fetches from Firestore and caches when DAO returns null',
+      'fetches from remote and caches when DAO returns null',
       () async {
-        when(() => mockUsersDao.getUser(userId)).thenAnswer((_) async => null);
-        await firestore.collection('users').doc(userId).set({
-          'name': 'Test User',
-          'email': 'test@example.com',
-          'createdAt': Timestamp.fromDate(DateTime(2024)),
-        });
+        final user = UserFactory.entity();
+        final model = UserModel.fromEntity(user);
+        when(() => mockUsersDao.getUser(userId)).thenAnswer(
+          (_) async => null,
+        );
+        when(() => mockRemote.getProfile(userId)).thenAnswer(
+          (_) async => model,
+        );
         when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
 
         final result = await repository.getProfile(userId);
 
         expect(result.isRight(), isTrue);
-        result.fold(
-          (_) => fail('Expected Right'),
-          (user) {
-            expect(user.id, userId);
-            expect(user.name, 'Test User');
-            expect(user.email, 'test@example.com');
-          },
-        );
-        verify(() => mockUsersDao.upsertUser(any())).called(1);
+        verify(() => mockUsersDao.upsertUser(model)).called(1);
       },
     );
 
-    test('returns ServerFailure when DAO throws', () async {
-      when(
-        () => mockUsersDao.getUser(userId),
-      ).thenThrow(Exception('DB error'));
+    test('returns ServerFailure when remote throws', () async {
+      when(() => mockUsersDao.getUser(userId)).thenAnswer((_) async => null);
+      when(() => mockRemote.getProfile(userId)).thenThrow(
+        const ServerException('Failed to fetch profile.'),
+      );
 
       final result = await repository.getProfile(userId);
 
-      expect(result, isA<Left<Failure, UserEntity>>());
+      expect(result.isLeft(), isTrue);
       result.fold(
         (failure) => expect(failure, isA<ServerFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
-
-    test('returns ServerFailure when Firestore throws', () async {
-      final mockFirestore = MockFirebaseFirestore();
-      repository = ProfileRepositoryImpl(
-        firestore: mockFirestore,
-        usersDao: mockUsersDao,
-      );
-      when(() => mockUsersDao.getUser(userId)).thenAnswer((_) async => null);
-      when(() => mockFirestore.collection('users')).thenThrow(
-        Exception('Network error'),
-      );
-
-      final result = await repository.getProfile(userId);
-
-      expect(result, isA<Left<Failure, UserEntity>>());
-      result.fold(
-        (failure) => expect(failure.message, 'Failed to fetch profile.'),
         (_) => fail('Expected Left'),
       );
     });
   });
 
   group('updateProfile', () {
-    test(
-      'updates Firestore then caches locally and returns user',
-      () async {
-        final user = UserFactory.entity();
-        await firestore.collection('users').doc(user.id).set({
-          'name': 'Old Name',
-          'email': 'old@example.com',
-          'createdAt': Timestamp.fromDate(user.createdAt),
-        });
-        when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
-
-        final result = await repository.updateProfile(user);
-        final snapshot = await firestore.collection('users').doc(user.id).get();
-
-        expect(result, Right<Failure, UserEntity>(user));
-        expect(snapshot.exists, isTrue);
-        expect(snapshot.data(), isNotNull);
-        expect(snapshot.data()!['name'], user.name);
-        expect(snapshot.data()!['email'], user.email);
-        verify(() => mockUsersDao.upsertUser(any())).called(1);
-      },
-    );
-
-    test('returns ServerFailure when Firestore update throws', () async {
-      final mockFirestore = MockFirebaseFirestore();
+    test('forwards to remote and caches locally', () async {
       final user = UserFactory.entity();
-      repository = ProfileRepositoryImpl(
-        firestore: mockFirestore,
-        usersDao: mockUsersDao,
-      );
-      when(() => mockFirestore.collection('users')).thenThrow(
-        Exception('Permission denied'),
-      );
+      when(() => mockRemote.updateProfile(user)).thenAnswer((_) async {});
+      when(() => mockUsersDao.upsertUser(any())).thenAnswer((_) async {});
 
       final result = await repository.updateProfile(user);
 
-      expect(result, isA<Left<Failure, UserEntity>>());
-      result.fold(
-        (failure) => expect(failure.message, 'Failed to update profile.'),
-        (_) => fail('Expected Left'),
-      );
-      verifyNever(() => mockUsersDao.upsertUser(any()));
+      expect(result, Right<Failure, UserEntity>(user));
+      verify(() => mockRemote.updateProfile(user)).called(1);
+      verify(() => mockUsersDao.upsertUser(any())).called(1);
     });
 
-    test('returns ServerFailure when DAO upsert throws', () async {
+    test('returns ServerFailure when remote update fails', () async {
       final user = UserFactory.entity();
-      await firestore.collection('users').doc(user.id).set({
-        'name': 'Old Name',
-        'email': 'old@example.com',
-        'createdAt': Timestamp.fromDate(user.createdAt),
-      });
-      when(
-        () => mockUsersDao.upsertUser(any()),
-      ).thenThrow(Exception('DB error'));
+      when(() => mockRemote.updateProfile(user)).thenThrow(
+        const ServerException('Failed to update profile.'),
+      );
 
       final result = await repository.updateProfile(user);
 
-      expect(result, isA<Left<Failure, UserEntity>>());
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => mockUsersDao.upsertUser(any()));
+    });
+  });
+
+  group('clearAccountData', () {
+    test('wipes remote then clears local tables', () async {
+      when(() => mockRemote.wipeUserData(userId)).thenAnswer((_) async {});
+      when(mockDatabase.clearAllTables).thenAnswer((_) async {});
+
+      final result = await repository.clearAccountData(userId);
+
+      expect(result, const Right<Failure, void>(null));
+      verifyInOrder([
+        () => mockRemote.wipeUserData(userId),
+        mockDatabase.clearAllTables,
+      ]);
+    });
+
+    test('returns ServerFailure when remote wipe fails', () async {
+      when(() => mockRemote.wipeUserData(userId)).thenThrow(
+        const ServerException('Failed to clear account data.'),
+      );
+
+      final result = await repository.clearAccountData(userId);
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(mockDatabase.clearAllTables);
     });
   });
 }

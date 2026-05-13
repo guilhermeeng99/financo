@@ -17,7 +17,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-/// Composer at the bottom of the chat. WhatsApp-inspired layout:
+/// Composer at the bottom of the chat. Messaging-app layout:
 ///
 /// • Default: pill-shaped text field with paperclip inside (left) and a
 ///   single circular trailing button. Empty text → microphone (records);

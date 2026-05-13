@@ -1,7 +1,7 @@
 # Budgets Feature Spec
 
-> **Status**: Draft (not yet implemented)
-> **Last updated**: 2026-05-02
+> **Status**: Implemented (shipped)
+> **Last updated**: 2026-05-13
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases
 
 A **budget** is a user-defined monthly cap on spending for a single root
@@ -441,8 +441,8 @@ intent and budgets being orphaned is recoverable (rule 8).
 
 ## 10. AI Chat Integration
 
-The chat (in-app + WhatsApp) emits a `[BUDGET_ACTION]` block. Same Confirm-
-button pattern as transactions / accounts / bills.
+The in-app chat emits a `[BUDGET_ACTION]` block. Same Confirm-button
+pattern as transactions / accounts / bills.
 
 ### Action shapes
 

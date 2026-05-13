@@ -1,12 +1,12 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/entities/bill_match_candidate.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 /// Resolves a `categoryId` (which may be null/empty) to a human-readable
 /// "Parent › Child" label. The page owns the resolution because that's
@@ -334,7 +334,7 @@ class _ComparisonColumn extends StatelessWidget {
         const SizedBox(height: 6),
         _Field(
           label: t.bills.match.fieldDate,
-          value: DateFormat('dd/MM/yyyy').format(date),
+          value: formatDate(date),
           color: colors.onBackground,
         ),
       ],

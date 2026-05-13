@@ -365,6 +365,7 @@ void main() {
         (invocation) async =>
             invocation.positionalArguments.first as BillModel,
       );
+      when(() => remote.updateBillsBatch(any())).thenAnswer((_) async {});
 
       // Edit: amount 2000 → 2500, dueDate from day 1 → day 5.
       final edited = mai.copyWith(
@@ -374,15 +375,21 @@ void main() {
       final result = await repository.updateBillAndSubsequents(edited);
 
       expect(result.isRight(), isTrue);
-      // Captured updates: source + jun + jul = 3 calls.
-      final captured = verify(
+      // Source goes through `updateBill`; descendants go through the
+      // atomic `updateBillsBatch`. Verify each individually.
+      final sourceCaptured = verify(
         () => remote.updateBill(captureAny()),
       ).captured.cast<BillModel>();
-      expect(captured, hasLength(3));
+      expect(sourceCaptured, hasLength(1));
+      expect(sourceCaptured.first.id, 'bill-mai');
+      expect(sourceCaptured.first.amount, 2500);
+      expect(sourceCaptured.first.dueDate, DateTime(2026, 5, 5));
 
-      final byId = {for (final m in captured) m.id: m};
-      expect(byId['bill-mai']!.amount, 2500);
-      expect(byId['bill-mai']!.dueDate, DateTime(2026, 5, 5));
+      final batchCaptured = verify(
+        () => remote.updateBillsBatch(captureAny()),
+      ).captured.cast<List<BillModel>>();
+      expect(batchCaptured, hasLength(1));
+      final byId = {for (final m in batchCaptured.first) m.id: m};
       expect(byId['bill-jun']!.amount, 2500);
       expect(byId['bill-jun']!.dueDate, DateTime(2026, 6, 5));
       expect(byId['bill-jul']!.amount, 2500);
@@ -408,6 +415,7 @@ void main() {
         (invocation) async =>
             invocation.positionalArguments.first as BillModel,
       );
+      when(() => remote.updateBillsBatch(any())).thenAnswer((_) async {});
 
       // Source stays on day 31 — day 31 must clamp to Feb's last day (28).
       final result = await repository.updateBillAndSubsequents(
@@ -415,12 +423,16 @@ void main() {
       );
       expect(result.isRight(), isTrue);
 
-      final captured = verify(
+      final sourceCaptured = verify(
         () => remote.updateBill(captureAny()),
       ).captured.cast<BillModel>();
-      final byId = {for (final m in captured) m.id: m};
+      expect(sourceCaptured.first.id, 'bill-jan');
+      expect(sourceCaptured.first.dueDate, DateTime(2026, 1, 31));
 
-      expect(byId['bill-jan']!.dueDate, DateTime(2026, 1, 31));
+      final batchCaptured = verify(
+        () => remote.updateBillsBatch(captureAny()),
+      ).captured.cast<List<BillModel>>();
+      final byId = {for (final m in batchCaptured.first) m.id: m};
       // Feb 31 → clamped to Feb 28 (2026 is not a leap year).
       expect(byId['bill-feb']!.dueDate, DateTime(2026, 2, 28));
     });
@@ -448,18 +460,24 @@ void main() {
         (invocation) async =>
             invocation.positionalArguments.first as BillModel,
       );
+      when(() => remote.updateBillsBatch(any())).thenAnswer((_) async {});
 
       final edited = mai.copyWith(amount: 2500);
       final result = await repository.updateBillAndSubsequents(edited);
       expect(result.isRight(), isTrue);
 
-      final captured = verify(() => remote.updateBill(captureAny())).captured
-          .cast<BillModel>();
-      final byId = {for (final m in captured) m.id: m};
+      final sourceCaptured = verify(
+        () => remote.updateBill(captureAny()),
+      ).captured.cast<BillModel>();
+      expect(sourceCaptured.first.id, 'bill-mai');
 
-      // mai (source) and jul (descendant of paid jun) updated.
-      expect(byId.keys, containsAll(['bill-mai', 'bill-jul']));
-      // jun is paid → walked through but never written back.
+      final batchCaptured = verify(
+        () => remote.updateBillsBatch(captureAny()),
+      ).captured.cast<List<BillModel>>();
+      final byId = {for (final m in batchCaptured.first) m.id: m};
+      // jul (descendant of paid jun) updated; paid jun walked through but
+      // never written.
+      expect(byId.keys, contains('bill-jul'));
       expect(byId.containsKey('bill-jun'), isFalse);
       expect(byId['bill-jul']!.amount, 2500);
     });

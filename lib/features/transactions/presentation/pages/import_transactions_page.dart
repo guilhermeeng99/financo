@@ -7,6 +7,7 @@ import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -22,7 +23,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 enum _Tab { expense, income, transfer }
 
@@ -432,7 +432,7 @@ class _RowTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final dateLabel = DateFormat('dd/MM').format(row.date);
+    final dateLabel = formatDayMonth(row.date);
 
     final isExpenseLike =
         row.csvType == CsvTransactionType.despesa || row.isTransfer;
@@ -901,7 +901,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
-    final dateLabel = DateFormat('dd/MM/yyyy').format(_draft.date);
+    final dateLabel = formatDate(_draft.date);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,

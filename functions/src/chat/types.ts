@@ -1,5 +1,4 @@
 export type ChatRole = 'user' | 'assistant';
-export type ChatChannel = 'app' | 'whatsapp';
 
 export interface ChatMessage {
   id: string;
@@ -7,7 +6,6 @@ export interface ChatMessage {
   role: ChatRole;
   content: string;
   metadata?: Record<string, any> | null;
-  channel: ChatChannel;
   createdAt: Date;
 }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -14,9 +15,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
-final _dayMonthFormat = DateFormat('dd/MM');
 const double _mobileBreakpoint = 600;
 
 String _percentLabel(double amount, double total) =>
@@ -291,7 +290,7 @@ class _CategoryTransactionRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            _dayMonthFormat.format(transaction.date),
+            formatDayMonth(transaction.date),
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),

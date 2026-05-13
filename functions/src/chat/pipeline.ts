@@ -3,13 +3,12 @@ import { buildUserContext } from './context';
 import { extractAction } from './extractor';
 import { saveMessage } from './firestore';
 import { callGemini, type ImagePayload } from './gemini';
-import type { AssistantReply, ChatChannel, ChatMessage, HistoryTurn } from './types';
+import type { AssistantReply, ChatMessage, HistoryTurn } from './types';
 
 export interface ChatTurnInput {
   userId: string;
   content: string;
   history: HistoryTurn[];
-  channel: ChatChannel;
   image?: ImagePayload;
 }
 
@@ -29,7 +28,6 @@ export const runChatTurn = async (input: ChatTurnInput): Promise<AssistantReply>
     role: 'assistant',
     content: cleanText,
     metadata,
-    channel: input.channel,
     createdAt: new Date(),
   };
 
