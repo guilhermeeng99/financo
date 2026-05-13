@@ -248,6 +248,7 @@ class _TranslationsTransactionsPtBr implements TranslationsTransactionsEn {
 	@override String get amountLabel => 'Valor';
 	@override String get amountHint => '0,00';
 	@override String get description => 'Descrição';
+	@override String get descriptionOptional => 'Descrição (opcional)';
 	@override String get descriptionHint => 'ex.: Compras no mercado';
 	@override String get date => 'Data';
 	@override String get category => 'Categoria';
@@ -259,6 +260,7 @@ class _TranslationsTransactionsPtBr implements TranslationsTransactionsEn {
 	@override String get sourceAccount => 'Conta de origem';
 	@override String get destinationAccount => 'Conta de destino';
 	@override String get transferCreated => 'Transferência criada';
+	@override String get saveAndAddAnother => 'Salvar e lançar outra';
 	@override String get deleteTransaction => 'Excluir transação';
 	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta transação?';
 	@override String get transactionUpdated => 'Transação atualizada';
@@ -1010,6 +1012,7 @@ extension on TranslationsPtBr {
 			'transactions.amountLabel' => 'Valor',
 			'transactions.amountHint' => '0,00',
 			'transactions.description' => 'Descrição',
+			'transactions.descriptionOptional' => 'Descrição (opcional)',
 			'transactions.descriptionHint' => 'ex.: Compras no mercado',
 			'transactions.date' => 'Data',
 			'transactions.category' => 'Categoria',
@@ -1021,6 +1024,7 @@ extension on TranslationsPtBr {
 			'transactions.sourceAccount' => 'Conta de origem',
 			'transactions.destinationAccount' => 'Conta de destino',
 			'transactions.transferCreated' => 'Transferência criada',
+			'transactions.saveAndAddAnother' => 'Salvar e lançar outra',
 			'transactions.deleteTransaction' => 'Excluir transação',
 			'transactions.deleteConfirm' => 'Tem certeza que deseja excluir esta transação?',
 			'transactions.transactionUpdated' => 'Transação atualizada',
@@ -1407,10 +1411,10 @@ extension on TranslationsPtBr {
 			'bills.match.bannerTitle' => ({required Object count}) => '${count} possível(is) pagamento(s) detectado(s)',
 			'bills.match.bannerSubtitle' => 'Toque para confirmar se alguma transação existente quita uma conta pendente',
 			'bills.match.sheetTitle' => 'Confirmar pagamentos',
-			'bills.match.sheetIntro' => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.',
-			'bills.match.candidateQuestion' => 'Esta transação foi esta conta?',
 			_ => null,
 		} ?? switch (path) {
+			'bills.match.sheetIntro' => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.',
+			'bills.match.candidateQuestion' => 'Esta transação foi esta conta?',
 			'bills.match.yesItWas' => 'Sim',
 			'bills.match.notThisOne' => 'Não',
 			'bills.match.matchAccepted' => 'Conta marcada como quitada',

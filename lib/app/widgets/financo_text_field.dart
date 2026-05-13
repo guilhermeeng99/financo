@@ -1,3 +1,4 @@
+import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 
 class FinancoTextField extends StatelessWidget {
@@ -13,6 +14,7 @@ class FinancoTextField extends StatelessWidget {
     this.maxLines = 1,
     this.hintText,
     this.textInputAction,
+    this.subdued = false,
     super.key,
   });
 
@@ -28,8 +30,17 @@ class FinancoTextField extends StatelessWidget {
   final String? hintText;
   final TextInputAction? textInputAction;
 
+  /// When true, mutes the label and hint to `onBackgroundLight` so the
+  /// field reads as "secondary" — same visual weight as the placeholder
+  /// in `FinancoPickerField`. Used for low-importance inputs (notes,
+  /// transaction description) so they don't compete with primary fields
+  /// like amount/account/category.
+  final bool subdued;
+
   @override
   Widget build(BuildContext context) {
+    final mutedColor = context.appColors.onBackgroundLight;
+    final mutedStyle = TextStyle(color: mutedColor);
     return TextFormField(
       controller: controller,
       validator: validator,
@@ -43,6 +54,9 @@ class FinancoTextField extends StatelessWidget {
         hintText: hintText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
+        labelStyle: subdued ? mutedStyle : null,
+        floatingLabelStyle: subdued ? mutedStyle : null,
+        hintStyle: subdued ? mutedStyle : null,
       ),
     );
   }

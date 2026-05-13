@@ -57,15 +57,50 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void setTransferMode({required bool enabled}) =>
       emit(state.copyWith(isTransfer: enabled));
 
-  Future<void> submit() async {
+  /// Submits the form. When [continueAfterSave] is true, the resulting
+  /// `success` state carries the same flag so the page can keep the user
+  /// on the form (with all fields preserved) instead of popping the
+  /// route. Used by the "+ create another" affordance for fast batch
+  /// entry of similar transactions.
+  Future<void> submit({bool continueAfterSave = false}) async {
     if (!state.isValid) return;
-    emit(state.copyWith(status: FormStatus.submitting));
+    emit(
+      state.copyWith(
+        status: FormStatus.submitting,
+        continueAfterSave: continueAfterSave,
+      ),
+    );
 
     if (state.isTransfer && !state.isEditing) {
       await _submitTransfer();
     } else {
       await _submitTransaction();
     }
+  }
+
+  /// Drops the transient post-submit flags (`status`, `savedTransactionId`,
+  /// `continueAfterSave`, `failure`) while keeping every user-entered field
+  /// in place, so the form is immediately ready to submit another similar
+  /// transaction. Called by the page after handling a `success` state
+  /// produced by `submit(continueAfterSave: true)`.
+  void prepareForNext() {
+    emit(
+      TransactionFormState(
+        userId: state.userId,
+        type: state.type,
+        amount: state.amount,
+        description: state.description,
+        date: state.date,
+        accountId: state.accountId,
+        categoryId: state.categoryId,
+        destinationAccountId: state.destinationAccountId,
+        notes: state.notes,
+        status: FormStatus.initial,
+        isTransfer: state.isTransfer,
+        existingId: state.existingId,
+        linkedTransactionId: state.linkedTransactionId,
+      ),
+    );
   }
 
   Future<void> _submitTransaction() async {
@@ -162,6 +197,7 @@ class TransactionFormState extends Equatable {
     this.existingId,
     this.linkedTransactionId,
     this.savedTransactionId,
+    this.continueAfterSave = false,
     this.failure,
   });
 
@@ -206,6 +242,12 @@ class TransactionFormState extends Equatable {
   /// last submit (created or updated). Lets callers — e.g. the bill
   /// settlement flow — chain follow-ups without re-fetching.
   final String? savedTransactionId;
+
+  /// Mirrors the flag passed to `submit()` so the page can tell, on
+  /// `FormStatus.success`, whether to navigate away (false) or keep the
+  /// user on the form with prefilled fields (true) for fast back-to-back
+  /// entry. Reset to false by `prepareForNext()`.
+  final bool continueAfterSave;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
@@ -239,6 +281,7 @@ class TransactionFormState extends Equatable {
     FormStatus? status,
     bool? isTransfer,
     String? savedTransactionId,
+    bool? continueAfterSave,
     Failure? failure,
   }) {
     return TransactionFormState(
@@ -256,6 +299,7 @@ class TransactionFormState extends Equatable {
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
       savedTransactionId: savedTransactionId ?? this.savedTransactionId,
+      continueAfterSave: continueAfterSave ?? this.continueAfterSave,
       failure: failure ?? this.failure,
     );
   }
@@ -276,6 +320,7 @@ class TransactionFormState extends Equatable {
     existingId,
     linkedTransactionId,
     savedTransactionId,
+    continueAfterSave,
     failure,
   ];
 }

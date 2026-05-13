@@ -612,6 +612,88 @@ void main() {
       );
 
       blocTest<TransactionFormCubit, TransactionFormState>(
+        'submit(continueAfterSave: true) carries the flag into success',
+        setUp: () {
+          when(
+            () => mockCreate(any()),
+          ).thenAnswer(
+            (_) async => Right(TransactionFactory.expense(id: 'tx-saved')),
+          );
+        },
+        build: buildCubit,
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 100,
+          description: 'Coffee',
+          date: DateTime(2024, 3, 15),
+          accountId: 'acc-1',
+          categoryId: 'cat-1',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: false,
+        ),
+        act: (cubit) async => cubit.submit(continueAfterSave: true),
+        expect: () => [
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.submitting)
+              .having((s) => s.continueAfterSave, 'continueAfterSave', true),
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.success)
+              .having((s) => s.continueAfterSave, 'continueAfterSave', true)
+              .having(
+                (s) => s.savedTransactionId,
+                'savedTransactionId',
+                'tx-saved',
+              ),
+        ],
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'prepareForNext clears transient flags but keeps user input',
+        build: buildCubit,
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.income,
+          amount: 250,
+          description: 'Salary',
+          date: DateTime(2024, 4, 10),
+          accountId: 'acc-1',
+          categoryId: 'cat-1',
+          notes: 'Recurring',
+          status: FormStatus.success,
+          isTransfer: false,
+          savedTransactionId: 'tx-saved',
+          continueAfterSave: true,
+        ),
+        act: (cubit) => cubit.prepareForNext(),
+        expect: () => [
+          isA<TransactionFormState>()
+              // Input is preserved so the user can quickly edit the
+              // delta for the next entry.
+              .having((s) => s.amount, 'amount', 250)
+              .having((s) => s.description, 'description', 'Salary')
+              .having((s) => s.accountId, 'accountId', 'acc-1')
+              .having((s) => s.categoryId, 'categoryId', 'cat-1')
+              .having((s) => s.notes, 'notes', 'Recurring')
+              .having((s) => s.type, 'type', TransactionType.income)
+              // Transient post-submit flags reset so the next submit
+              // can transition state and re-trigger the page listener.
+              .having((s) => s.status, 'status', FormStatus.initial)
+              .having(
+                (s) => s.continueAfterSave,
+                'continueAfterSave',
+                false,
+              )
+              .having(
+                (s) => s.savedTransactionId,
+                'savedTransactionId',
+                isNull,
+              ),
+        ],
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
         'emits failure status when update fails',
         setUp: () {
           when(

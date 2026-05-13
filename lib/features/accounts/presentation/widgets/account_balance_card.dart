@@ -12,11 +12,19 @@ class AccountBalanceCard extends StatelessWidget {
   const AccountBalanceCard({
     required this.account,
     required this.balance,
+    this.showCreditMeta = false,
     super.key,
   });
 
   final AccountEntity account;
   final double balance;
+
+  /// When true and the account is a credit card, renders a compact
+  /// metadata strip (credit limit / closing day / due day) below the
+  /// balance. Used on mobile to fold the "CREDIT CARD" detail section
+  /// into the hero card so the transactions list keeps most of the
+  /// viewport instead of being squeezed by a second details block.
+  final bool showCreditMeta;
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +107,77 @@ class AccountBalanceCard extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+          if (showCreditMeta && isCredit) ...[
+            const SizedBox(height: 16),
+            _CreditMetaStrip(account: account),
+          ],
         ],
       ),
+    );
+  }
+}
+
+/// Compact label-on-top / value-below trio that folds the credit-card
+/// secondary info (limit, closing day, due day) into the hero card on
+/// mobile. Uses `Wrap` so the items break to a second row on very narrow
+/// screens instead of overflowing.
+class _CreditMetaStrip extends StatelessWidget {
+  const _CreditMetaStrip({required this.account});
+
+  final AccountEntity account;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 20,
+      runSpacing: 10,
+      children: [
+        _CreditMetaItem(
+          label: t.accounts.creditLimit,
+          value: formatCurrency(account.creditLimit ?? 0),
+        ),
+        _CreditMetaItem(
+          label: t.accounts.closingDay,
+          value: '${account.closingDay ?? '-'}',
+        ),
+        _CreditMetaItem(
+          label: t.accounts.dueDay,
+          value: '${account.dueDay ?? '-'}',
+        ),
+      ],
+    );
+  }
+}
+
+class _CreditMetaItem extends StatelessWidget {
+  const _CreditMetaItem({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: context.textTheme.labelSmall?.copyWith(
+            color: colors.onBackgroundLight,
+            letterSpacing: 0.4,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: context.textTheme.bodyMedium?.copyWith(
+            color: colors.onBackground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

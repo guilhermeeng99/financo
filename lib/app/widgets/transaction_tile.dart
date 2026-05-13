@@ -64,19 +64,24 @@ class TransactionTile extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      transaction.description.isEmpty
-                          ? _fallbackDescription(transaction)
-                          : transaction.description,
-                      style: context.textTheme.titleSmall?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: FontWeight.w600,
+                    // Descriptions are optional now — when blank we drop the
+                    // title row entirely instead of falling back to a generic
+                    // "Expense"/"Income"/"Transfer" label, which was just
+                    // restating the type already shown by the colored icon.
+                    if (transaction.description.isNotEmpty) ...[
+                      Text(
+                        transaction.description,
+                        style: context.textTheme.titleSmall?.copyWith(
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
+                      const SizedBox(height: 2),
+                    ],
                     Text(
                       _subtitleFor(transaction),
                       style: context.textTheme.bodySmall?.copyWith(
@@ -110,11 +115,6 @@ class TransactionTile extends StatelessWidget {
       parts.add(accountLabel!);
     }
     return parts.join(' · ');
-  }
-
-  String _fallbackDescription(TransactionEntity tx) {
-    if (tx.isTransfer) return 'Transfer';
-    return tx.type == TransactionType.income ? 'Income' : 'Expense';
   }
 }
 

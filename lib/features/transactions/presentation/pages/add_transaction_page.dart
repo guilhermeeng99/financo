@@ -249,6 +249,18 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     }
   }
 
+  /// Save the current transaction *and* stay on the form with every
+  /// field still populated, so the user can quickly file a series of
+  /// similar entries (e.g. several grocery purchases from the same
+  /// account/category) without re-typing the shared bits.
+  void _onSubmitAndContinue() {
+    if (_formKey.currentState?.validate() ?? false) {
+      unawaited(
+        context.read<TransactionFormCubit>().submit(continueAfterSave: true),
+      );
+    }
+  }
+
   void _onFormStateChanged(
     BuildContext context,
     TransactionFormState state,
@@ -280,6 +292,15 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
           ),
         ),
       );
+      // "Save and add another" branch — keep the user on the form with
+      // every field preserved so they can edit the next entry without
+      // re-typing the shared bits (account, category, date, etc.).
+      // The cubit also needs its status reset, otherwise the next submit
+      // wouldn't transition state and the listener wouldn't fire.
+      if (state.continueAfterSave) {
+        context.read<TransactionFormCubit>().prepareForNext();
+        return;
+      }
       _navigateBack();
     } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -354,13 +375,6 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                     FinancoFormSection(
                       label: t.bills.formDetails,
                       children: [
-                        FinancoTextField(
-                          controller: _descriptionController,
-                          label: t.transactions.description,
-                          hintText: t.transactions.descriptionHint,
-                          onChanged: cubit.updateDescription,
-                        ),
-                        const SizedBox(height: 12),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -396,11 +410,20 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                       label: t.transactions.notes,
                       children: [
                         FinancoTextField(
+                          controller: _descriptionController,
+                          label: t.transactions.descriptionOptional,
+                          hintText: t.transactions.descriptionHint,
+                          onChanged: cubit.updateDescription,
+                          subdued: true,
+                        ),
+                        const SizedBox(height: 12),
+                        FinancoTextField(
                           controller: _notesController,
                           label: t.transactions.notesOptional,
                           hintText: t.transactions.notesHint,
                           maxLines: 3,
                           onChanged: cubit.updateNotes,
+                          subdued: true,
                         ),
                       ],
                     ),
@@ -412,12 +435,27 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         ),
         bottomNavigationBar:
             BlocBuilder<TransactionFormCubit, TransactionFormState>(
-              builder: (context, state) => FinancoSubmitBar(
-                label: state.isEditing ? t.general.update : t.general.save,
-                isLoading: state.status == FormStatus.submitting,
-                isEnabled: state.isValid,
-                onSubmit: _onSubmit,
-              ),
+              builder: (context, state) {
+                // "Save and add another" only makes sense for fresh
+                // create flows. In edit mode there's no "next one" to
+                // queue up; in bill-settlement mode the page is single-
+                // shot because it dispatches `BillMatchAccepted` and
+                // the cubit lacks a fresh bill to link the next save to.
+                final canContinue =
+                    !state.isEditing && widget.prefillFromBill == null;
+                return FinancoSubmitBar(
+                  label: state.isEditing ? t.general.update : t.general.save,
+                  isLoading: state.status == FormStatus.submitting,
+                  isEnabled: state.isValid,
+                  onSubmit: _onSubmit,
+                  onSecondarySubmit:
+                      canContinue ? _onSubmitAndContinue : null,
+                  secondaryIcon: canContinue ? Icons.add : null,
+                  secondaryTooltip: canContinue
+                      ? t.transactions.saveAndAddAnother
+                      : null,
+                );
+              },
             ),
       ),
     );

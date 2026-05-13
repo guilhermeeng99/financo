@@ -478,6 +478,9 @@ class TranslationsTransactionsEn {
 	/// en: 'Description'
 	String get description => 'Description';
 
+	/// en: 'Description (optional)'
+	String get descriptionOptional => 'Description (optional)';
+
 	/// en: 'e.g. Grocery shopping'
 	String get descriptionHint => 'e.g. Grocery shopping';
 
@@ -510,6 +513,9 @@ class TranslationsTransactionsEn {
 
 	/// en: 'Transfer created'
 	String get transferCreated => 'Transfer created';
+
+	/// en: 'Save and add another'
+	String get saveAndAddAnother => 'Save and add another';
 
 	/// en: 'Delete Transaction'
 	String get deleteTransaction => 'Delete Transaction';
@@ -2255,6 +2261,7 @@ extension on Translations {
 			'transactions.amountLabel' => 'Amount',
 			'transactions.amountHint' => '0.00',
 			'transactions.description' => 'Description',
+			'transactions.descriptionOptional' => 'Description (optional)',
 			'transactions.descriptionHint' => 'e.g. Grocery shopping',
 			'transactions.date' => 'Date',
 			'transactions.category' => 'Category',
@@ -2266,6 +2273,7 @@ extension on Translations {
 			'transactions.sourceAccount' => 'Source account',
 			'transactions.destinationAccount' => 'Destination account',
 			'transactions.transferCreated' => 'Transfer created',
+			'transactions.saveAndAddAnother' => 'Save and add another',
 			'transactions.deleteTransaction' => 'Delete Transaction',
 			'transactions.deleteConfirm' => 'Are you sure you want to delete this transaction?',
 			'transactions.transactionUpdated' => 'Transaction updated',
@@ -2652,10 +2660,10 @@ extension on Translations {
 			'bills.match.bannerTitle' => ({required Object count}) => '${count} possible payment(s) detected',
 			'bills.match.bannerSubtitle' => 'Tap to confirm if any existing transaction settles a pending bill',
 			'bills.match.sheetTitle' => 'Confirm payments',
-			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
-			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
 			_ => null,
 		} ?? switch (path) {
+			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
+			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
 			'bills.match.yesItWas' => 'Yes',
 			'bills.match.notThisOne' => 'No',
 			'bills.match.matchAccepted' => 'Bill marked as settled',

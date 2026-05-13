@@ -257,6 +257,13 @@ class _SummarySide extends StatelessWidget {
         AccountBalanceCard(
           account: account,
           balance: state.runningBalance,
+          // On mobile, fold limit/closing/due into the hero card so the
+          // transactions list keeps most of the viewport. The standalone
+          // CREDIT CARD section was eating ~280dp of scroll height for
+          // info that's reference-only, making the list itself feel
+          // unusable (one tx visible at a time on small phones).
+          showCreditMeta:
+              isMobile && account.type == AccountType.creditCard,
         ),
         const SizedBox(height: 20),
         AccountDetailSection(
@@ -280,7 +287,7 @@ class _SummarySide extends StatelessWidget {
             ),
           ],
         ),
-        if (account.type == AccountType.creditCard) ...[
+        if (account.type == AccountType.creditCard && !isMobile) ...[
           const SizedBox(height: 20),
           AccountDetailSection(
             label: t.accounts.creditCard,
