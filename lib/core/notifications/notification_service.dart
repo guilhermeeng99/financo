@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/core/notifications/notification_background_handler.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,20 +16,29 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 /// - `init()` is called once at startup (after `Firebase.initializeApp`).
 /// - `saveToken(userId)` is called when a user signs in.
 /// - `removeTokenOnSignOut(userId)` is called when a user signs out.
+///
+/// Cross-account isolation: every push is matched against the currently
+/// signed-in `FirebaseAuth.uid` via [shouldDeliver]. Messages whose
+/// `data.userId` does not equal the local uid are silently dropped — they
+/// belong to a different account that ever logged into this device (its
+/// FCM token remained registered under that uid even after sign-out).
 class NotificationService {
   NotificationService({
     FirebaseMessaging? messaging,
     FlutterLocalNotificationsPlugin? localNotifications,
     FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
     void Function(String route)? onNavigate,
   }) : _messaging = messaging ?? FirebaseMessaging.instance,
        _local = localNotifications ?? FlutterLocalNotificationsPlugin(),
        _firestore = firestore ?? FirebaseFirestore.instance,
+       _auth = auth ?? FirebaseAuth.instance,
        _onNavigate = onNavigate;
 
   final FirebaseMessaging _messaging;
   final FlutterLocalNotificationsPlugin _local;
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
   final void Function(String route)? _onNavigate;
 
   static const _channelId = 'bills_due';
@@ -46,7 +57,36 @@ class NotificationService {
   static const Color _accent = Color(0xFF6366F1);
 
   bool _initialized = false;
-  String? _currentToken;
+
+  /// Pure predicate: should a message tagged with [messageUserId] reach
+  /// the device that is currently signed in as [currentUid]?
+  ///
+  /// Rules:
+  /// - Messages without `userId` in the data payload are delivered
+  ///   (backwards-compatible with un-scoped pushes; today there are none,
+  ///   but keeps the door open for system-wide announcements).
+  /// - Messages with a `userId` are delivered iff it equals the local
+  ///   uid. A signed-out device drops every scoped push.
+  ///
+  /// Why this exists: an FCM token survives across sign-ins on the same
+  /// device. If account A and account B both ever logged in here, the
+  /// token sits under `users/A/fcmTokens` AND `users/B/fcmTokens`. The
+  /// daily `notifyBillsDue` Cloud Function would then push *both*
+  /// accounts' reminders to a device currently logged into only one of
+  /// them. This filter is the client side of the fix; the server side
+  /// includes `userId` in the data payload so the client can decide.
+  ///
+  /// Called from both the foreground handler (here) and the top-level
+  /// `notificationBackgroundHandler` — kept public so both isolates can
+  /// share the same predicate without duplicating the rules.
+  static bool shouldDeliver({
+    required String? messageUserId,
+    required String? currentUid,
+  }) {
+    if (messageUserId == null || messageUserId.isEmpty) return true;
+    if (currentUid == null || currentUid.isEmpty) return false;
+    return messageUserId == currentUid;
+  }
 
   Future<void> init() async {
     if (_initialized) return;
@@ -90,8 +130,14 @@ class NotificationService {
         );
 
     // Foreground messages: FCM doesn't display anything itself, so we render
-    // via the local plugin.
+    // via the local plugin after the uid check passes.
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+
+    // Background/terminated messages: registered as a top-level handler
+    // since FCM spawns a separate isolate that can't capture `this`. The
+    // server now sends data-only pushes precisely so this handler can
+    // filter by uid before deciding whether to display.
+    FirebaseMessaging.onBackgroundMessage(notificationBackgroundHandler);
 
     // App was opened from a tapped notification (warm or cold start).
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
@@ -111,7 +157,6 @@ class NotificationService {
     try {
       final token = await _messaging.getToken();
       if (token == null || token.isEmpty) return;
-      _currentToken = token;
       await _firestore
           .collection('users')
           .doc(userId)
@@ -132,11 +177,17 @@ class NotificationService {
     }
   }
 
+  /// Deletes the device's FCM token from `users/{userId}/fcmTokens`.
+  ///
+  /// Fetches the token directly from FCM rather than relying on any
+  /// cached in-memory value — that cache is empty after an app restart,
+  /// which is exactly when the cross-account leak surfaces (the user
+  /// signs out before the app process holds a token reference).
   Future<void> removeTokenOnSignOut(String userId) async {
     if (userId.isEmpty) return;
-    final token = _currentToken;
-    if (token == null) return;
     try {
+      final token = await _messaging.getToken();
+      if (token == null || token.isEmpty) return;
       await _firestore
           .collection('users')
           .doc(userId)
@@ -149,6 +200,17 @@ class NotificationService {
   }
 
   Future<void> _onForegroundMessage(RemoteMessage message) async {
+    final messageUserId = message.data['userId'] as String?;
+    final currentUid = _auth.currentUser?.uid;
+    if (!shouldDeliver(messageUserId: messageUserId, currentUid: currentUid)) {
+      log(
+        'Dropping foreground push for foreign uid '
+        '(message=$messageUserId, current=$currentUid)',
+        name: 'NotificationService',
+      );
+      return;
+    }
+
     final notification = message.notification;
     final title = notification?.title ?? message.data['title'] as String?;
     final body = notification?.body ?? message.data['body'] as String?;

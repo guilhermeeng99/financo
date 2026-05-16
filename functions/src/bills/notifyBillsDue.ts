@@ -153,28 +153,41 @@ export const notifyBillsDue = onSchedule(
         if (tokens.length === 0) return;
 
         const { title, body } = buildMessage(bills);
+        // DATA-ONLY message on purpose. With a `notification` block the
+        // Android system tray displays the push *before* the app's
+        // background handler has a chance to filter by recipient uid —
+        // which means a device that ever logged into a different account
+        // still on FCM kept receiving the wrong account's reminders.
+        // Now the client renders via `flutter_local_notifications` after
+        // confirming `data.userId == currentUser.uid`.
         const response = await messaging.sendEachForMulticast({
           tokens,
-          notification: { title, body },
           data: {
             route: '/bills',
             count: String(bills.length),
             type: 'bills_due',
+            userId,
+            title,
+            body,
           },
           android: {
-            notification: {
-              channelId: 'bills_due',
-              priority: 'high',
-              // Mirror the manifest default-icon/color meta-data so this
-              // payload renders identically even if the device's FCM
-              // SDK ignores those defaults for any reason.
-              icon: 'ic_notification',
-              color: '#6366F1',
-            },
+            priority: 'high',
           },
           apns: {
             payload: {
-              aps: { sound: 'default', badge: bills.length },
+              // `content-available: 1` wakes iOS so the background handler
+              // runs and can display the local notification after the uid
+              // check. Without it, data-only messages are silently dropped
+              // by APNs on iOS.
+              aps: {
+                'content-available': 1,
+                'sound': 'default',
+                'badge': bills.length,
+              },
+            },
+            headers: {
+              'apns-priority': '5',
+              'apns-push-type': 'background',
             },
           },
         });

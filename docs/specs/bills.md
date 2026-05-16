@@ -457,18 +457,33 @@ The Bills entry in the bottom bar (mobile) and sidebar (web/tablet) shows a red 
 
 ## Notifications
 
-A scheduled Cloud Function (`notifyBillsDue`, `onSchedule('every day 09:00', timeZone: 'America/Sao_Paulo')`) queries `bills` where `status == pending AND dueDate <= today`, groups by `userId`, fetches each user's `users/{userId}/fcmTokens` subcollection, and sends a multicast FCM message:
+A scheduled Cloud Function (`notifyBillsDue`, `onSchedule('every day 09:00', timeZone: 'America/Sao_Paulo')`) queries `bills` where `status == pending AND dueDate <= today`, groups by `userId`, fetches each user's `users/{userId}/fcmTokens` subcollection, and sends a **data-only** multicast FCM message:
 
-- Title: "Você tem N contas a pagar"
-- Body: "{firstBillDescription} de R${amount} vence hoje" (or "venceu há X dias" if overdue)
-- Data: `{ type: 'bills_due', count: N }` — used by the app to deep-link to the Bills page.
+- Data: `{ type: 'bills_due', count: N, route: '/bills', userId, title, body }`.
+  - `title` and `body` carry the rendered strings ("Você tem N contas a pagar" / "X atrasada(s) e Y vencendo hoje"); they live in `data` instead of the `notification` block so the client has a chance to filter before display.
+  - `userId` is the recipient — required so the client can enforce cross-account isolation (see below).
 
 The Flutter `NotificationService`:
 - Initializes `firebase_messaging` and `flutter_local_notifications`.
 - On sign-in: saves the FCM token to `users/{userId}/fcmTokens/{tokenId}`.
-- On sign-out: deletes the token.
-- Foreground messages: displays via `flutter_local_notifications`.
+- On sign-out: fetches the current token via `_messaging.getToken()` (not a cached value — that cache is empty after an app restart, which was the exact scenario that left orphan tokens behind) and deletes the doc.
+- Foreground messages: dropped if `data.userId != FirebaseAuth.currentUser.uid`, otherwise displayed via `flutter_local_notifications`.
+- Background/terminated messages: a top-level handler (`notificationBackgroundHandler`) re-initializes Firebase in the spawned isolate, applies the same uid filter, and displays via `flutter_local_notifications`. Lives outside the class on purpose — FCM background isolates can't capture instance state.
 - Background tap: routes to `/bills`.
+
+### Cross-account isolation
+
+FCM tokens persist across sign-ins on a device. If account A and account B both ever signed in on the same physical device, the token ends up under both `users/A/fcmTokens` and `users/B/fcmTokens`. The daily Cloud Function pushes for *both* accounts to that token, so the device — currently signed in as only one of them — was receiving the other account's reminders.
+
+The fix lives on both sides:
+
+1. **Server** (`notifyBillsDue`) tags every push with `data.userId` and sends data-only (no `notification` field). Data-only is required because Android auto-displays anything in the `notification` block before the app sees it.
+2. **Client** (`NotificationService.shouldDeliver`) compares `data.userId` against `FirebaseAuth.currentUser?.uid`:
+   - Match → display.
+   - Mismatch or no current user → drop silently and log.
+   - Missing `data.userId` (legacy) → deliver, to stay backwards-compatible with untargeted pushes.
+
+Note: the client cannot clean up the orphan token registration directly — Firestore rules block writes to another user's `fcmTokens` subcollection. The wasted push is acceptable in scale; a future cleanup trigger (`onCreate(users/{uid}/fcmTokens/{tokenId})` with a collection-group sweep) can dedup using admin SDK.
 
 ### Notification appearance (Android)
 
