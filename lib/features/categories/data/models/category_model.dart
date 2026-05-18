@@ -8,6 +8,14 @@ CategoryType _parseCategoryType(String value) {
   return CategoryType.expense;
 }
 
+CategoryBucket? _parseCategoryBucket(Object? value) {
+  if (value is! String) return null;
+  for (final b in CategoryBucket.values) {
+    if (b.name == value) return b;
+  }
+  return null;
+}
+
 class CategoryModel extends CategoryEntity {
   const CategoryModel({
     required super.id,
@@ -17,6 +25,8 @@ class CategoryModel extends CategoryEntity {
     required super.type,
     super.userId,
     super.parentId,
+    super.bucket,
+    super.countsIn50_30_20,
   });
 
   factory CategoryModel.fromFirestore(DocumentSnapshot doc) {
@@ -38,6 +48,11 @@ class CategoryModel extends CategoryEntity {
       color: data['color'] as int,
       type: _parseCategoryType(data['type'] as String),
       parentId: data['parentId'] as String?,
+      bucket: _parseCategoryBucket(data['bucket']),
+      // Legacy docs (written before the flag existed) read `null` —
+      // default to `true` so they keep their prior behaviour of
+      // feeding the 50/30/20 income.
+      countsIn50_30_20: data['countsIn50_30_20'] as bool? ?? true,
     );
   }
 
@@ -50,6 +65,8 @@ class CategoryModel extends CategoryEntity {
       color: entity.color,
       type: entity.type,
       parentId: entity.parentId,
+      bucket: entity.bucket,
+      countsIn50_30_20: entity.countsIn50_30_20,
     );
   }
 
@@ -61,6 +78,10 @@ class CategoryModel extends CategoryEntity {
       'color': color,
       'type': type.name,
       if (parentId != null) 'parentId': parentId,
+      if (bucket != null) 'bucket': bucket!.name,
+      // Only worth persisting when explicitly false — saves space on
+      // every income/expense doc that uses the default.
+      if (!countsIn50_30_20) 'countsIn50_30_20': false,
     };
   }
 }

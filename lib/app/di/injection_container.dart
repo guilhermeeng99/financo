@@ -93,6 +93,9 @@ import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.d
 import 'package:financo/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 // Master Panel
 import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
 import 'package:financo/features/master_panel/data/repositories/master_users_repository_impl.dart';
@@ -427,6 +430,19 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => GetDashboardSummaryUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => GetFiftyThirtyTwentyTargetsUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => UpdateFiftyThirtyTwentyTargetsUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => GetFiftyThirtyTwentyHistoryUseCase(
+        transactionRepository: sl(),
+        accountRepository: sl(),
+        categoryRepository: sl(),
+      ),
     )
     ..registerLazySingleton(() => GetProfileUseCase(sl()))
     ..registerLazySingleton(

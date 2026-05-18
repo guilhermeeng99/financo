@@ -103,6 +103,7 @@ class AccountFormState extends Equatable {
     required this.linkedAccountId,
     required this.status,
     this.existingId,
+    this.originalType,
     this.failure,
   });
 
@@ -122,6 +123,7 @@ class AccountFormState extends Equatable {
       linkedAccountId: existing?.linkedAccountId ?? '',
       status: FormStatus.initial,
       existingId: existing?.id,
+      originalType: existing?.type,
     );
   }
 
@@ -136,12 +138,26 @@ class AccountFormState extends Equatable {
   final String linkedAccountId;
   final FormStatus status;
   final String? existingId;
+
+  /// Type the account had when the form opened. Drives whether the
+  /// type pill is editable: `checking ↔ investment` is allowed (same
+  /// balance sign convention, no credit-card-only fields), but
+  /// `creditCard` stays locked because flipping it would invalidate
+  /// `creditLimit` / `closingDay` / `dueDay` / `linkedAccountId` and
+  /// flip the sign convention on every persisted transaction.
+  final AccountType? originalType;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
   bool get isValid =>
       name.isNotEmpty &&
       (type != AccountType.creditCard || linkedAccountId.isNotEmpty);
+
+  /// True when the user is allowed to flip the account type. Always
+  /// true on create; on edit, only when the original type wasn't
+  /// `creditCard` (see [originalType] comment).
+  bool get canChangeType =>
+      !isEditing || originalType != AccountType.creditCard;
 
   AccountFormState copyWith({
     String? name,
@@ -167,6 +183,7 @@ class AccountFormState extends Equatable {
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
       status: status ?? this.status,
       existingId: existingId,
+      originalType: originalType,
       failure: failure ?? this.failure,
     );
   }
@@ -184,6 +201,7 @@ class AccountFormState extends Equatable {
     linkedAccountId,
     status,
     existingId,
+    originalType,
     failure,
   ];
 }

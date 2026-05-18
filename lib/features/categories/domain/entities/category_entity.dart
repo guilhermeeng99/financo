@@ -2,6 +2,13 @@ import 'package:equatable/equatable.dart';
 
 enum CategoryType { income, expense }
 
+/// Drives the 50/30/20 dashboard card — see
+/// specs/fifty_thirty_twenty.md. Only meaningful on `expense` categories;
+/// `null` means the user hasn't classified the category yet, which the
+/// overview surfaces as "unclassified" (it does not fall back to a
+/// parent's bucket — see rule 20 of specs/categories.md).
+enum CategoryBucket { needs, wants }
+
 class CategoryEntity extends Equatable {
   const CategoryEntity({
     required this.id,
@@ -11,6 +18,8 @@ class CategoryEntity extends Equatable {
     required this.type,
     this.userId,
     this.parentId,
+    this.bucket,
+    this.countsIn50_30_20 = true,
   });
 
   final String id;
@@ -20,6 +29,19 @@ class CategoryEntity extends Equatable {
   final int color;
   final CategoryType type;
   final String? parentId;
+  final CategoryBucket? bucket;
+
+  /// Only meaningful on **income** categories. When `true` (the default),
+  /// transactions on this category feed the 50/30/20 base income
+  /// ("100%"). Set to `false` to exclude one-off or non-recurring
+  /// receipts (insurance reimbursements, gifts, sold goods) so the
+  /// dashboard percentages reflect only the user's recurring income.
+  ///
+  /// Expense categories ignore this flag — the value is irrelevant.
+  /// Legacy categories without the field default to `true` so existing
+  /// data keeps its prior behaviour. Name keeps the "50/30/20" branding
+  /// for grep-ability with the rule's UI strings + spec.
+  final bool countsIn50_30_20;
 
   bool get canBeParent => parentId == null;
   bool get isSubcategory => parentId != null;
@@ -32,6 +54,9 @@ class CategoryEntity extends Equatable {
     int? color,
     CategoryType? type,
     String? parentId,
+    CategoryBucket? bucket,
+    bool clearBucket = false,
+    bool? countsIn50_30_20,
   }) {
     return CategoryEntity(
       id: id ?? this.id,
@@ -41,6 +66,8 @@ class CategoryEntity extends Equatable {
       color: color ?? this.color,
       type: type ?? this.type,
       parentId: parentId ?? this.parentId,
+      bucket: clearBucket ? null : (bucket ?? this.bucket),
+      countsIn50_30_20: countsIn50_30_20 ?? this.countsIn50_30_20,
     );
   }
 
@@ -53,6 +80,8 @@ class CategoryEntity extends Equatable {
     color,
     type,
     parentId,
+    bucket,
+    countsIn50_30_20,
   ];
 }
 

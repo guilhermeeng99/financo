@@ -22,7 +22,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class BudgetsPage extends StatefulWidget {
-  const BudgetsPage({super.key});
+  const BudgetsPage({super.key, this.embedded = false});
+
+  /// When `true`, the page is rendered as a sub-tab of a parent shell
+  /// (e.g. `PlanningPage`). The internal `Scaffold` skips its own
+  /// `FinancoLargeAppBar` so the parent's app bar can host the title
+  /// + page-level actions instead. The FAB and CSV-import action
+  /// surface as a floating affordance at the bottom-right of the body.
+  final bool embedded;
 
   @override
   State<BudgetsPage> createState() => _BudgetsPageState();
@@ -103,27 +110,57 @@ class _BudgetsPageState extends State<BudgetsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: FinancoLargeAppBar(
-        title: t.budgets.title,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16, top: 4),
-            child: _BudgetsAppBarIconButton(
-              icon: FontAwesomeIcons.fileArrowUp,
-              tooltip: t.budgets.importCsv,
-              color: context.appColors.primary,
-              onPressed: () => unawaited(_openImport()),
+      backgroundColor: Colors.transparent,
+      appBar: widget.embedded
+          ? null
+          : FinancoLargeAppBar(
+              title: t.budgets.title,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16, top: 4),
+                  child: _BudgetsAppBarIconButton(
+                    icon: FontAwesomeIcons.fileArrowUp,
+                    tooltip: t.budgets.importCsv,
+                    color: context.appColors.primary,
+                    onPressed: () => unawaited(_openImport()),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: LiftedFab(
-        child: FloatingActionButton(
-          heroTag: 'budgets_fab',
-          onPressed: _openAdd,
-          child: const FaIcon(FontAwesomeIcons.plus),
-        ),
-      ),
+      floatingActionButton: widget.embedded
+          // Embedded mode lost its app bar (parent shell owns the
+          // title row), so the "import CSV" action has nowhere to
+          // live — surface it as a small secondary FAB stacked
+          // above the primary "+" button.
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'budgets_import_fab',
+                  onPressed: () => unawaited(_openImport()),
+                  tooltip: t.budgets.importCsv,
+                  child: const FaIcon(
+                    FontAwesomeIcons.fileArrowUp,
+                    size: 14,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                LiftedFab(
+                  child: FloatingActionButton(
+                    heroTag: 'budgets_fab',
+                    onPressed: _openAdd,
+                    child: const FaIcon(FontAwesomeIcons.plus),
+                  ),
+                ),
+              ],
+            )
+          : LiftedFab(
+              child: FloatingActionButton(
+                heroTag: 'budgets_fab',
+                onPressed: _openAdd,
+                child: const FaIcon(FontAwesomeIcons.plus),
+              ),
+            ),
       body: BlocListener<DateFilterCubit, DateFilterState>(
         // Re-fetch whenever the global month stepper moves so the user
         // can review past months' spend vs. cap. Force refresh — the

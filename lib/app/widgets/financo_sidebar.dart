@@ -97,9 +97,13 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
               _NavItem(
                 icon: FontAwesomeIcons.bullseye,
                 expanded: _expanded,
-                label: t.nav.budgets,
-                onTap: () => context.go(AppRoutes.budgets),
-                isActive: location.startsWith(AppRoutes.budgets),
+                label: t.nav.planning,
+                onTap: () => context.go(AppRoutes.planning),
+                // Planning tab stays active for both sub-tabs and any
+                // legacy direct deep-link to /budgets or /fifty-thirty-twenty.
+                isActive: location.startsWith(AppRoutes.planning) ||
+                    location.startsWith(AppRoutes.budgets) ||
+                    location.startsWith(AppRoutes.fiftyThirtyTwenty),
               ),
               _NavItem(
                 icon: FontAwesomeIcons.wandMagicSparkles,

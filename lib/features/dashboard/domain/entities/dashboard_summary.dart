@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
 
 class CategoryAmount extends Equatable {
   const CategoryAmount({
@@ -27,6 +28,7 @@ class DashboardSummary extends Equatable {
     required this.accounts,
     required this.expensesByCategory,
     required this.incomeByCategory,
+    required this.fiftyThirtyTwenty,
   });
 
   final double totalBalance;
@@ -37,6 +39,11 @@ class DashboardSummary extends Equatable {
   final List<CategoryAmount> expensesByCategory;
   final List<CategoryAmount> incomeByCategory;
 
+  /// Per-period 50/30/20 split. Computed by `compute50_30_20Overview`
+  /// inside the repository so callers don't need to compose it. See
+  /// `specs/fifty_thirty_twenty.md`.
+  final FiftyThirtyTwentyOverview fiftyThirtyTwenty;
+
   @override
   List<Object> get props => [
     totalBalance,
@@ -46,5 +53,6 @@ class DashboardSummary extends Equatable {
     accounts,
     expensesByCategory,
     incomeByCategory,
+    fiftyThirtyTwenty,
   ];
 }

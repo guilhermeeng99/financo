@@ -282,6 +282,146 @@ void main() {
           expect(summary.accounts, isEmpty);
           expect(summary.expensesByCategory, isEmpty);
           expect(summary.incomeByCategory, isEmpty);
+          // 50/30/20 is wired in even on the empty path so the dashboard
+          // card has a safe default — see specs/fifty_thirty_twenty.md §3.
+          expect(summary.fiftyThirtyTwenty.income, 0);
+          expect(summary.fiftyThirtyTwenty.hasData, isFalse);
+        },
+      );
+    });
+
+    test('should populate fiftyThirtyTwenty from period data', () async {
+      final accounts = [
+        AccountEntity(
+          id: 'acc-chk',
+          userId: userId,
+          name: 'Nubank',
+          type: AccountType.checking,
+          bank: BankType.nubank,
+          initialBalance: 0,
+          createdAt: DateTime(2024),
+        ),
+        AccountEntity(
+          id: 'acc-inv',
+          userId: userId,
+          name: 'XP',
+          type: AccountType.investment,
+          bank: BankType.xp,
+          initialBalance: 0,
+          createdAt: DateTime(2024),
+        ),
+      ];
+
+      // March: income 5000, needs 2500 (cat-needs), wants 1500 (cat-wants),
+      // savings 1000 (checking → investment transfer).
+      final transactions = [
+        TransactionEntity(
+          id: 'tx-income',
+          userId: userId,
+          accountId: 'acc-chk',
+          categoryId: 'cat-salary',
+          type: TransactionType.income,
+          amount: 5000,
+          description: 'Salário',
+          date: DateTime(2024, 3, 5),
+          createdAt: DateTime(2024, 3, 5),
+          updatedAt: DateTime(2024, 3, 5),
+        ),
+        TransactionEntity(
+          id: 'tx-needs',
+          userId: userId,
+          accountId: 'acc-chk',
+          categoryId: 'cat-needs',
+          type: TransactionType.expense,
+          amount: 2500,
+          description: 'Aluguel',
+          date: DateTime(2024, 3, 10),
+          createdAt: DateTime(2024, 3, 10),
+          updatedAt: DateTime(2024, 3, 10),
+        ),
+        TransactionEntity(
+          id: 'tx-wants',
+          userId: userId,
+          accountId: 'acc-chk',
+          categoryId: 'cat-wants',
+          type: TransactionType.expense,
+          amount: 1500,
+          description: 'Lazer',
+          date: DateTime(2024, 3, 12),
+          createdAt: DateTime(2024, 3, 12),
+          updatedAt: DateTime(2024, 3, 12),
+        ),
+        TransactionEntity(
+          id: 'tx-transfer-exp',
+          userId: userId,
+          accountId: 'acc-chk',
+          categoryId: '',
+          type: TransactionType.expense,
+          amount: 1000,
+          description: 'Aporte',
+          date: DateTime(2024, 3, 15),
+          linkedTransactionId: 'tx-transfer-inc',
+          createdAt: DateTime(2024, 3, 15),
+          updatedAt: DateTime(2024, 3, 15),
+        ),
+        TransactionEntity(
+          id: 'tx-transfer-inc',
+          userId: userId,
+          accountId: 'acc-inv',
+          categoryId: '',
+          type: TransactionType.income,
+          amount: 1000,
+          description: 'Aporte',
+          date: DateTime(2024, 3, 15),
+          linkedTransactionId: 'tx-transfer-exp',
+          createdAt: DateTime(2024, 3, 15),
+          updatedAt: DateTime(2024, 3, 15),
+        ),
+      ];
+
+      stubAccounts(accounts);
+      stubTransactions(transactions);
+      stubCategories(const [
+        CategoryEntity(
+          id: 'cat-salary',
+          name: 'Salário',
+          icon: 58332,
+          color: 4283215696,
+          type: CategoryType.income,
+        ),
+        CategoryEntity(
+          id: 'cat-needs',
+          name: 'Aluguel',
+          icon: 58332,
+          color: 4280391411,
+          type: CategoryType.expense,
+          bucket: CategoryBucket.needs,
+        ),
+        CategoryEntity(
+          id: 'cat-wants',
+          name: 'Lazer',
+          icon: 58332,
+          color: 4280391411,
+          type: CategoryType.expense,
+          bucket: CategoryBucket.wants,
+        ),
+      ]);
+
+      final result = await repository.getDashboardSummary(
+        userId: userId,
+        month: month,
+      );
+
+      result.fold(
+        (_) => fail('Expected Right'),
+        (summary) {
+          final overview = summary.fiftyThirtyTwenty;
+          expect(overview.income, 5000);
+          expect(overview.needsSpent, 2500);
+          expect(overview.wantsSpent, 1500);
+          expect(overview.savingsAmount, 1000);
+          expect(overview.hasInvestmentAccount, isTrue);
+          expect(overview.unclassifiedSpent, 0);
         },
       );
     });

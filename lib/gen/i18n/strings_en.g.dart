@@ -48,6 +48,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsOnboardingEn onboarding = TranslationsOnboardingEn._(_root);
 	late final TranslationsNavEn nav = TranslationsNavEn._(_root);
 	late final TranslationsDashboardEn dashboard = TranslationsDashboardEn._(_root);
+	late final TranslationsFiftyThirtyTwentyEn fiftyThirtyTwenty = TranslationsFiftyThirtyTwentyEn._(_root);
 	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
@@ -336,6 +337,9 @@ class TranslationsNavEn {
 
 	/// en: 'Budgets'
 	String get budgets => 'Budgets';
+
+	/// en: 'Planning'
+	String get planning => 'Planning';
 }
 
 // Path: dashboard
@@ -373,8 +377,8 @@ class TranslationsDashboardEn {
 	/// en: 'No transactions yet'
 	String get noTransactionsYet => 'No transactions yet';
 
-	/// en: 'Account Balances'
-	String get accountBalances => 'Account Balances';
+	/// en: 'Balances'
+	String get accountBalances => 'Balances';
 
 	/// en: 'Month Result'
 	String get monthResult => 'Month Result';
@@ -393,6 +397,12 @@ class TranslationsDashboardEn {
 
 	/// en: 'No credit cards registered yet'
 	String get noCreditCardsYet => 'No credit cards registered yet';
+
+	/// en: 'Investments'
+	String get investmentBalance => 'Investments';
+
+	/// en: 'No investment accounts registered yet'
+	String get noInvestmentsYet => 'No investment accounts registered yet';
 
 	/// en: 'No expenses this month'
 	String get noExpensesYet => 'No expenses this month';
@@ -420,6 +430,111 @@ class TranslationsDashboardEn {
 
 	/// en: 'Close'
 	String get close => 'Close';
+}
+
+// Path: fiftyThirtyTwenty
+class TranslationsFiftyThirtyTwentyEn {
+	TranslationsFiftyThirtyTwentyEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: '50/30/20'
+	String get title => '50/30/20';
+
+	/// en: 'How your month is going'
+	String get subtitle => 'How your month is going';
+
+	/// en: 'Needs'
+	String get needsLabel => 'Needs';
+
+	/// en: 'Wants'
+	String get wantsLabel => 'Wants';
+
+	/// en: 'Savings'
+	String get savingsLabel => 'Savings';
+
+	/// en: '$actual% of $target%'
+	String ofTarget({required Object actual, required Object target}) => '${actual}% of ${target}%';
+
+	/// en: '100% = $value'
+	String baselinePill({required Object value}) => '100% = ${value}';
+
+	/// en: 'Log income for this month to track the 50/30/20 rule.'
+	String get noIncomeHeadline => 'Log income for this month to track the 50/30/20 rule.';
+
+	/// en: 'You're on track.'
+	String get onTrackHeadline => 'You\'re on track.';
+
+	/// en: 'A few tweaks would help.'
+	String get needsAttentionHeadline => 'A few tweaks would help.';
+
+	/// en: 'Classify your categories for an accurate read.'
+	String get unclassifiedDominantHeadline => 'Classify your categories for an accurate read.';
+
+	/// en: 'Trim $value off needs to hit the target.'
+	String tipNeedsOver({required Object value}) => 'Trim ${value} off needs to hit the target.';
+
+	/// en: 'You went $value over your wants budget this month.'
+	String tipWantsOver({required Object value}) => 'You went ${value} over your wants budget this month.';
+
+	/// en: 'Add $value to hit 20% savings.'
+	String tipSavingsShortWithAccount({required Object value}) => 'Add ${value} to hit 20% savings.';
+
+	/// en: 'Create an investment account to start logging contributions.'
+	String get tipSavingsShortNoAccount => 'Create an investment account to start logging contributions.';
+
+	/// en: '$count category(ies) still need classification.'
+	String tipUnclassified({required Object count}) => '${count} category(ies) still need classification.';
+
+	/// en: 'Create account'
+	String get ctaCreateInvestment => 'Create account';
+
+	/// en: 'Classify'
+	String get ctaClassify => 'Classify';
+
+	/// en: 'Unclassified'
+	String get unclassifiedLabel => 'Unclassified';
+
+	/// en: 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.'
+	String get principalDisclaimer => 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.';
+
+	/// en: 'Edit targets'
+	String get editTargets => 'Edit targets';
+
+	/// en: 'Set the percentage for each bucket. The three must add up to 100%.'
+	String get editTargetsHint => 'Set the percentage for each bucket. The three must add up to 100%.';
+
+	/// en: 'Reset to 50/30/20'
+	String get resetToClassic => 'Reset to 50/30/20';
+
+	/// en: 'Total: $percent% ✓'
+	String sumOk({required Object percent}) => 'Total: ${percent}% ✓';
+
+	/// en: 'Total: $percent% — must be 100%'
+	String sumInvalid({required Object percent}) => 'Total: ${percent}% — must be 100%';
+
+	/// en: '$spent / $target'
+	String spentOfTarget({required Object spent, required Object target}) => '${spent} / ${target}';
+
+	/// en: 'No expenses in this bucket this month.'
+	String get bucketEmpty => 'No expenses in this bucket this month.';
+
+	/// en: 'Last 3 months'
+	String get historyTitle => 'Last 3 months';
+
+	/// en: 'No history to show yet.'
+	String get historyEmpty => 'No history to show yet.';
+
+	/// en: 'Planning'
+	String get navLabel => 'Planning';
+
+	/// en: 'Budgets'
+	String get subTabBudgets => 'Budgets';
+
+	/// en: '50/30/20'
+	String get subTabFiftyThirtyTwenty => '50/30/20';
 }
 
 // Path: transactions
@@ -658,8 +773,20 @@ class TranslationsAccountsEn {
 	/// en: 'Credit Card'
 	String get creditCard => 'Credit Card';
 
+	/// en: 'Savings Account'
+	String get investment => 'Savings Account';
+
 	/// en: 'Checking'
 	String get checkingShort => 'Checking';
+
+	/// en: 'Savings'
+	String get investmentShort => 'Savings';
+
+	/// en: 'Dedicated account for contributions. Shows up as 'investment' on transfers and feeds the 50/30/20 card.'
+	String get investmentDescription => 'Dedicated account for contributions. Shows up as \'investment\' on transfers and feeds the 50/30/20 card.';
+
+	/// en: 'Balance reflects only your contributions (principal). Market yield is not tracked.'
+	String get investmentYieldDisclaimer => 'Balance reflects only your contributions (principal). Market yield is not tracked.';
 
 	/// en: 'Account Nickname'
 	String get name => 'Account Nickname';
@@ -1020,6 +1147,30 @@ class TranslationsCategoriesEn {
 
 	/// en: 'Appearance'
 	String get formSectionAppearance => 'Appearance';
+
+	/// en: '50/30/20 rule'
+	String get formSectionBucket => '50/30/20 rule';
+
+	/// en: 'Which group does this category fit into?'
+	String get bucketHint => 'Which group does this category fit into?';
+
+	/// en: 'Count toward 50/30/20'
+	String get incomeCountsTitle => 'Count toward 50/30/20';
+
+	/// en: 'When on, income on this category feeds the monthly base (100%). Turn off for one-off receipts (reimbursements, gifts, sold goods) that would otherwise distort the breakdown.'
+	String get incomeCountsHint => 'When on, income on this category feeds the monthly base (100%). Turn off for one-off receipts (reimbursements, gifts, sold goods) that would otherwise distort the breakdown.';
+
+	/// en: 'Need'
+	String get bucketNeeds => 'Need';
+
+	/// en: 'Want'
+	String get bucketWants => 'Want';
+
+	/// en: 'Unclassified'
+	String get bucketUnclassified => 'Unclassified';
+
+	/// en: 'Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is handled by transfers to investment accounts.'
+	String get bucketHelp => 'Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is handled by transfers to investment accounts.';
 
 	/// en: 'Parent category'
 	String get pickParent => 'Parent category';
@@ -2220,6 +2371,7 @@ extension on Translations {
 			'nav.profile' => 'Profile',
 			'nav.bills' => 'Bills',
 			'nav.budgets' => 'Budgets',
+			'nav.planning' => 'Planning',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -2229,13 +2381,15 @@ extension on Translations {
 			'dashboard.seeAll' => 'See all',
 			'dashboard.thisMonth' => 'This month',
 			'dashboard.noTransactionsYet' => 'No transactions yet',
-			'dashboard.accountBalances' => 'Account Balances',
+			'dashboard.accountBalances' => 'Balances',
 			'dashboard.monthResult' => 'Month Result',
 			'dashboard.expensesByCategory' => 'Expenses by Category',
 			'dashboard.incomeByCategory' => 'Income by Category',
 			'dashboard.noAccountsYet' => 'No accounts registered yet',
 			'dashboard.creditCardBalance' => 'Credit Card Balance',
 			'dashboard.noCreditCardsYet' => 'No credit cards registered yet',
+			'dashboard.investmentBalance' => 'Investments',
+			'dashboard.noInvestmentsYet' => 'No investment accounts registered yet',
 			'dashboard.noExpensesYet' => 'No expenses this month',
 			'dashboard.noIncomeYet' => 'No income this month',
 			'dashboard.totalExpenses' => 'Total Expenses',
@@ -2245,6 +2399,38 @@ extension on Translations {
 			'dashboard.noSubcategories' => 'No subcategories',
 			'dashboard.total' => 'Total',
 			'dashboard.close' => 'Close',
+			'fiftyThirtyTwenty.title' => '50/30/20',
+			'fiftyThirtyTwenty.subtitle' => 'How your month is going',
+			'fiftyThirtyTwenty.needsLabel' => 'Needs',
+			'fiftyThirtyTwenty.wantsLabel' => 'Wants',
+			'fiftyThirtyTwenty.savingsLabel' => 'Savings',
+			'fiftyThirtyTwenty.ofTarget' => ({required Object actual, required Object target}) => '${actual}% of ${target}%',
+			'fiftyThirtyTwenty.baselinePill' => ({required Object value}) => '100% = ${value}',
+			'fiftyThirtyTwenty.noIncomeHeadline' => 'Log income for this month to track the 50/30/20 rule.',
+			'fiftyThirtyTwenty.onTrackHeadline' => 'You\'re on track.',
+			'fiftyThirtyTwenty.needsAttentionHeadline' => 'A few tweaks would help.',
+			'fiftyThirtyTwenty.unclassifiedDominantHeadline' => 'Classify your categories for an accurate read.',
+			'fiftyThirtyTwenty.tipNeedsOver' => ({required Object value}) => 'Trim ${value} off needs to hit the target.',
+			'fiftyThirtyTwenty.tipWantsOver' => ({required Object value}) => 'You went ${value} over your wants budget this month.',
+			'fiftyThirtyTwenty.tipSavingsShortWithAccount' => ({required Object value}) => 'Add ${value} to hit 20% savings.',
+			'fiftyThirtyTwenty.tipSavingsShortNoAccount' => 'Create an investment account to start logging contributions.',
+			'fiftyThirtyTwenty.tipUnclassified' => ({required Object count}) => '${count} category(ies) still need classification.',
+			'fiftyThirtyTwenty.ctaCreateInvestment' => 'Create account',
+			'fiftyThirtyTwenty.ctaClassify' => 'Classify',
+			'fiftyThirtyTwenty.unclassifiedLabel' => 'Unclassified',
+			'fiftyThirtyTwenty.principalDisclaimer' => 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.',
+			'fiftyThirtyTwenty.editTargets' => 'Edit targets',
+			'fiftyThirtyTwenty.editTargetsHint' => 'Set the percentage for each bucket. The three must add up to 100%.',
+			'fiftyThirtyTwenty.resetToClassic' => 'Reset to 50/30/20',
+			'fiftyThirtyTwenty.sumOk' => ({required Object percent}) => 'Total: ${percent}% ✓',
+			'fiftyThirtyTwenty.sumInvalid' => ({required Object percent}) => 'Total: ${percent}% — must be 100%',
+			'fiftyThirtyTwenty.spentOfTarget' => ({required Object spent, required Object target}) => '${spent} / ${target}',
+			'fiftyThirtyTwenty.bucketEmpty' => 'No expenses in this bucket this month.',
+			'fiftyThirtyTwenty.historyTitle' => 'Last 3 months',
+			'fiftyThirtyTwenty.historyEmpty' => 'No history to show yet.',
+			'fiftyThirtyTwenty.navLabel' => 'Planning',
+			'fiftyThirtyTwenty.subTabBudgets' => 'Budgets',
+			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
@@ -2318,7 +2504,11 @@ extension on Translations {
 			'accounts.accountNotFound' => 'Account not found',
 			'accounts.checking' => 'Checking Account',
 			'accounts.creditCard' => 'Credit Card',
+			'accounts.investment' => 'Savings Account',
 			'accounts.checkingShort' => 'Checking',
+			'accounts.investmentShort' => 'Savings',
+			'accounts.investmentDescription' => 'Dedicated account for contributions. Shows up as \'investment\' on transfers and feeds the 50/30/20 card.',
+			'accounts.investmentYieldDisclaimer' => 'Balance reflects only your contributions (principal). Market yield is not tracked.',
 			'accounts.name' => 'Account Nickname',
 			'accounts.nameHint' => 'e.g. Nubank Gui',
 			'accounts.bank' => 'Bank',
@@ -2436,6 +2626,14 @@ extension on Translations {
 			'categories.formSectionType' => 'Type',
 			'categories.formSectionDetails' => 'Details',
 			'categories.formSectionAppearance' => 'Appearance',
+			'categories.formSectionBucket' => '50/30/20 rule',
+			'categories.bucketHint' => 'Which group does this category fit into?',
+			'categories.incomeCountsTitle' => 'Count toward 50/30/20',
+			'categories.incomeCountsHint' => 'When on, income on this category feeds the monthly base (100%). Turn off for one-off receipts (reimbursements, gifts, sold goods) that would otherwise distort the breakdown.',
+			'categories.bucketNeeds' => 'Need',
+			'categories.bucketWants' => 'Want',
+			'categories.bucketUnclassified' => 'Unclassified',
+			'categories.bucketHelp' => 'Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is handled by transfers to investment accounts.',
 			'categories.pickParent' => 'Parent category',
 			'categories.searchHint' => 'Search categories',
 			'categories.searchNoResults' => 'No categories match your search.',
@@ -2613,6 +2811,8 @@ extension on Translations {
 			'bills.filterAll' => 'All',
 			'bills.category' => 'Category',
 			'bills.categoryRequired' => 'Pick a category',
+			_ => null,
+		} ?? switch (path) {
 			'bills.notes' => 'Notes (optional)',
 			'bills.notesHint' => 'Additional details...',
 			'bills.markAsPaid' => 'Mark as paid',
@@ -2660,8 +2860,6 @@ extension on Translations {
 			'bills.match.bannerTitle' => ({required Object count}) => '${count} possible payment(s) detected',
 			'bills.match.bannerSubtitle' => 'Tap to confirm if any existing transaction settles a pending bill',
 			'bills.match.sheetTitle' => 'Confirm payments',
-			_ => null,
-		} ?? switch (path) {
 			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
 			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
 			'bills.match.yesItWas' => 'Yes',

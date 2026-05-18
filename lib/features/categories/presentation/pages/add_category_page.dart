@@ -100,6 +100,9 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     final state = context.read<CategoryFormCubit>().state;
     if (state.isEditing) _nameController.text = state.name;
     unawaited(_loadRootCategories());
+    if (state.isEditing) {
+      unawaited(_loadEditMetadata());
+    }
   }
 
   @override
@@ -120,6 +123,35 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
         (cats) => cats.where((c) => c.canBeParent).toList(),
       );
     });
+  }
+
+  /// Loads the data required to validate demote operations
+  /// (`hasChildren`, `hasBudget`) and hands it to the cubit. Run once
+  /// on mount when editing — the values don't change while the form is
+  /// open since CRUD on this user's data is single-threaded.
+  Future<void> _loadEditMetadata() async {
+    final cubitState = context.read<CategoryFormCubit>().state;
+    final categoryId = cubitState.existingId!;
+    final categoriesResult = await GetIt.I<GetCategoriesUseCase>()(
+      userId: cubitState.userId,
+    );
+    final budgetsResult = await GetIt.I<GetBudgetsUseCase>()(
+      userId: cubitState.userId,
+    );
+    if (!mounted) return;
+
+    final hasChildren = categoriesResult.fold(
+      (_) => false,
+      (cats) => cats.any((c) => c.parentId == categoryId),
+    );
+    final hasBudget = budgetsResult.fold<bool>(
+      (_) => false,
+      (budgets) => budgets.any((b) => b.categoryId == categoryId),
+    );
+    context.read<CategoryFormCubit>().setMetadata(
+      hasChildren: hasChildren,
+      hasBudget: hasBudget,
+    );
   }
 
   Future<void> _confirmDelete(String categoryId) async {
@@ -224,8 +256,10 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
   Future<void> _pickParent() async {
     final cubit = context.read<CategoryFormCubit>();
     final state = cubit.state;
+    // Same-type filter (rule 15). Also exclude self when editing
+    // so the category can't become its own parent.
     final candidates = _rootCategories
-        .where((c) => c.type == state.type)
+        .where((c) => c.type == state.type && c.id != state.existingId)
         .toList();
     final picked = await showParentCategoryPicker(
       context: context,
@@ -312,15 +346,74 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                           validator: Validators.requiredField,
                           onChanged: cubit.updateName,
                         ),
-                        if (!state.isEditing) ...[
-                          const SizedBox(height: 12),
-                          _ParentRow(
-                            selectedName: _resolveParentName(state.parentId),
-                            onTap: _pickParent,
-                          ),
-                        ],
+                        // Parent picker now editable on existing
+                        // categories too — drives re-parent, promote
+                        // (pick "Nenhuma") and demote (pick a root).
+                        // Demote guardrails (hasChildren / hasBudget)
+                        // are enforced at submit time in the cubit.
+                        const SizedBox(height: 12),
+                        _ParentRow(
+                          selectedName: _resolveParentName(state.parentId),
+                          onTap: _pickParent,
+                        ),
                       ],
                     ),
+                    // 50/30/20 only applies to root expense categories.
+                    // Subcategories inherit their parent's bucket
+                    // (specs/categories.md rule 20), so the picker is
+                    // hidden when a parent is set.
+                    if (state.type == CategoryType.expense &&
+                        state.parentId == null) ...[
+                      const SizedBox(height: 20),
+                      FinancoFormSection(
+                        label: t.categories.formSectionBucket,
+                        children: [
+                          Text(
+                            t.categories.bucketHint,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          _BucketPicker(
+                            selected: state.bucket,
+                            onChanged: cubit.updateBucket,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            t.categories.bucketHelp,
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    // Only root income categories expose the flag —
+                    // subcategories inherit from the parent (rule 22),
+                    // mirroring how expense subcategories inherit the
+                    // bucket. Keeps the form symmetric.
+                    if (state.type == CategoryType.income &&
+                        state.parentId == null) ...[
+                      const SizedBox(height: 20),
+                      FinancoFormSection(
+                        label: t.categories.formSectionBucket,
+                        children: [
+                          _IncomeCountsToggle(
+                            value: state.countsIn50_30_20,
+                            onChanged: (v) =>
+                                cubit.updateCountsIn50_30_20(value: v),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            t.categories.incomeCountsHint,
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     FinancoFormSection(
                       label: t.categories.formSectionAppearance,
@@ -487,6 +580,185 @@ class _ParentRow extends StatelessWidget {
                 color: colors.onBackgroundLight,
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Switch row used in the category form when type=income to control
+/// whether transactions on this category feed the 50/30/20 base
+/// income (the "100%"). Lives next to the bucket picker so income +
+/// expense forms expose related controls in the same visual slot.
+class _IncomeCountsToggle extends StatelessWidget {
+  const _IncomeCountsToggle({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Material(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            children: [
+              FaIcon(
+                FontAwesomeIcons.chartPie,
+                size: 14,
+                color: value ? colors.primary : colors.onBackgroundLight,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  t.categories.incomeCountsTitle,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: colors.onBackground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Switch.adaptive(
+                value: value,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Three-way pill toggle for the 50/30/20 bucket: Needs / Wants /
+/// Unclassified. Renders only for expense categories — the parent gates
+/// visibility. Tapping the currently selected pill clears the bucket
+/// (so the user can revert to "unclassified" without going via the
+/// type toggle).
+class _BucketPicker extends StatelessWidget {
+  const _BucketPicker({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final CategoryBucket? selected;
+  final ValueChanged<CategoryBucket?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final entries = <_BucketEntry>[
+      _BucketEntry(
+        value: CategoryBucket.needs,
+        label: t.categories.bucketNeeds,
+        icon: FontAwesomeIcons.house,
+        tint: colors.primary,
+      ),
+      _BucketEntry(
+        value: CategoryBucket.wants,
+        label: t.categories.bucketWants,
+        icon: FontAwesomeIcons.heart,
+        tint: colors.warning,
+      ),
+      _BucketEntry(
+        value: null,
+        label: t.categories.bucketUnclassified,
+        icon: FontAwesomeIcons.circleQuestion,
+        tint: colors.onBackgroundLight,
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: colors.surfaceVariant,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          for (final e in entries)
+            Expanded(
+              child: _BucketSegment(
+                entry: e,
+                isSelected: e.value == selected,
+                onTap: () => onChanged(e.value),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BucketEntry {
+  const _BucketEntry({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.tint,
+  });
+
+  final CategoryBucket? value;
+  final String label;
+  final FaIconData icon;
+  final Color tint;
+}
+
+class _BucketSegment extends StatelessWidget {
+  const _BucketSegment({
+    required this.entry,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final _BucketEntry entry;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final foreground = isSelected ? entry.tint : colors.onBackgroundLight;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? entry.tint.withValues(alpha: 0.14)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(entry.icon, size: 14, color: foreground),
+                const SizedBox(height: 6),
+                Text(
+                  entry.label,
+                  style: context.textTheme.labelSmall?.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),

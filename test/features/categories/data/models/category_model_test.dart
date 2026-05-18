@@ -179,6 +179,96 @@ void main() {
 
         expect(model.type, CategoryType.expense);
       });
+
+      test('should parse bucket when present', () {
+        final model = CategoryModel.fromMap(
+          id: 'cat-needs',
+          data: const {
+            'userId': 'user-1',
+            'name': 'Aluguel',
+            'icon': 58332,
+            'color': 4280391411,
+            'type': 'expense',
+            'bucket': 'needs',
+          },
+        );
+
+        expect(model.bucket, CategoryBucket.needs);
+      });
+
+      test('should default bucket to null when absent (legacy data)', () {
+        final model = CategoryModel.fromMap(
+          id: 'cat-legacy',
+          data: const {
+            'userId': 'user-1',
+            'name': 'Legacy',
+            'icon': 58332,
+            'color': 4280391411,
+            'type': 'expense',
+          },
+        );
+
+        expect(model.bucket, isNull);
+      });
+
+      test('should default bucket to null for unrecognised value', () {
+        final model = CategoryModel.fromMap(
+          id: 'cat-bad-bucket',
+          data: const {
+            'userId': 'user-1',
+            'name': 'Foo',
+            'icon': 58332,
+            'color': 4280391411,
+            'type': 'expense',
+            'bucket': 'savings',
+          },
+        );
+
+        expect(model.bucket, isNull);
+      });
+    });
+
+    group('bucket round-trip', () {
+      test('toJson omits bucket when null', () {
+        const model = CategoryModel(
+          id: 'cat-1',
+          userId: 'user-1',
+          name: 'Foo',
+          icon: 58332,
+          color: 4280391411,
+          type: CategoryType.expense,
+        );
+
+        expect(model.toJson().containsKey('bucket'), isFalse);
+      });
+
+      test('toJson serializes bucket as enum.name', () {
+        const model = CategoryModel(
+          id: 'cat-1',
+          userId: 'user-1',
+          name: 'Lazer',
+          icon: 58332,
+          color: 4280391411,
+          type: CategoryType.expense,
+          bucket: CategoryBucket.wants,
+        );
+
+        expect(model.toJson()['bucket'], 'wants');
+      });
+
+      test('fromEntity preserves bucket', () {
+        const entity = CategoryEntity(
+          id: 'cat-1',
+          userId: 'user-1',
+          name: 'Aluguel',
+          icon: 58332,
+          color: 4280391411,
+          type: CategoryType.expense,
+          bucket: CategoryBucket.needs,
+        );
+
+        expect(CategoryModel.fromEntity(entity).bucket, CategoryBucket.needs);
+      });
     });
   });
 }

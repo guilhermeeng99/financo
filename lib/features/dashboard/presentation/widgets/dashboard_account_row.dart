@@ -2,6 +2,7 @@ import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -57,14 +58,29 @@ class DashboardAccountRow extends StatelessWidget {
               Expanded(
                 child: Opacity(
                   opacity: muted ? 0.5 : 1,
-                  child: Text(
-                    account.name,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: colors.onBackground,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          account.name,
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: colors.onBackground,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Type tag lives next to the name so a mixed
+                      // "Balances" list can be parsed at-a-glance —
+                      // user reads the name, then the kind. Credit
+                      // cards skip it because they already sit in
+                      // their own section.
+                      if (account.type != AccountType.creditCard) ...[
+                        const SizedBox(width: 8),
+                        _AccountTypeTag(type: account.type),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -87,6 +103,43 @@ class DashboardAccountRow extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact pill rendered next to the account name indicating whether
+/// the row is a checking account or an investment account. Colour
+/// tracks the same accents the dashboard uses for those types
+/// elsewhere (primary for checking, income/green for investment) so
+/// the user builds a single visual vocabulary across the app.
+class _AccountTypeTag extends StatelessWidget {
+  const _AccountTypeTag({required this.type});
+
+  final AccountType type;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final (label, tint) = switch (type) {
+      AccountType.checking => (t.accounts.checkingShort, colors.primary),
+      AccountType.investment => (t.accounts.investmentShort, colors.income),
+      AccountType.creditCard => (t.accounts.creditCard, colors.warning),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: context.textTheme.labelSmall?.copyWith(
+          color: tint,
+          fontWeight: FontWeight.w700,
+          height: 1,
+          fontSize: 10,
         ),
       ),
     );

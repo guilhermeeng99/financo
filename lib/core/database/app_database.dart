@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 6;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

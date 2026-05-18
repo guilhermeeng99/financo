@@ -45,6 +45,7 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	@override late final _TranslationsOnboardingPtBr onboarding = _TranslationsOnboardingPtBr._(_root);
 	@override late final _TranslationsNavPtBr nav = _TranslationsNavPtBr._(_root);
 	@override late final _TranslationsDashboardPtBr dashboard = _TranslationsDashboardPtBr._(_root);
+	@override late final _TranslationsFiftyThirtyTwentyPtBr fiftyThirtyTwenty = _TranslationsFiftyThirtyTwentyPtBr._(_root);
 	@override late final _TranslationsTransactionsPtBr transactions = _TranslationsTransactionsPtBr._(_root);
 	@override late final _TranslationsAccountsPtBr accounts = _TranslationsAccountsPtBr._(_root);
 	@override late final _TranslationsCategoriesPtBr categories = _TranslationsCategoriesPtBr._(_root);
@@ -189,6 +190,7 @@ class _TranslationsNavPtBr implements TranslationsNavEn {
 	@override String get profile => 'Perfil';
 	@override String get bills => 'Contas';
 	@override String get budgets => 'Orçamento';
+	@override String get planning => 'Planejamento';
 }
 
 // Path: dashboard
@@ -207,13 +209,15 @@ class _TranslationsDashboardPtBr implements TranslationsDashboardEn {
 	@override String get seeAll => 'Ver tudo';
 	@override String get thisMonth => 'Este mês';
 	@override String get noTransactionsYet => 'Nenhuma transação ainda';
-	@override String get accountBalances => 'Saldos das contas';
+	@override String get accountBalances => 'Saldos';
 	@override String get monthResult => 'Resultado do mês';
 	@override String get expensesByCategory => 'Despesas por categoria';
 	@override String get incomeByCategory => 'Receitas por categoria';
 	@override String get noAccountsYet => 'Nenhuma conta cadastrada ainda';
 	@override String get creditCardBalance => 'Saldo do cartão';
 	@override String get noCreditCardsYet => 'Nenhum cartão de crédito cadastrado';
+	@override String get investmentBalance => 'Investimentos';
+	@override String get noInvestmentsYet => 'Nenhuma conta de investimento cadastrada';
 	@override String get noExpensesYet => 'Nenhuma despesa neste mês';
 	@override String get noIncomeYet => 'Nenhuma receita neste mês';
 	@override String get totalExpenses => 'Total de despesas';
@@ -223,6 +227,47 @@ class _TranslationsDashboardPtBr implements TranslationsDashboardEn {
 	@override String get noSubcategories => 'Sem subcategorias';
 	@override String get total => 'Total';
 	@override String get close => 'Fechar';
+}
+
+// Path: fiftyThirtyTwenty
+class _TranslationsFiftyThirtyTwentyPtBr implements TranslationsFiftyThirtyTwentyEn {
+	_TranslationsFiftyThirtyTwentyPtBr._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => '50/30/20';
+	@override String get subtitle => 'Como está seu mês';
+	@override String get needsLabel => 'Necessidades';
+	@override String get wantsLabel => 'Desejos';
+	@override String get savingsLabel => 'Investimento';
+	@override String ofTarget({required Object actual, required Object target}) => '${actual}% de ${target}%';
+	@override String baselinePill({required Object value}) => '100% = ${value}';
+	@override String get noIncomeHeadline => 'Registre uma receita do mês para acompanhar a regra 50/30/20.';
+	@override String get onTrackHeadline => 'Você está no caminho.';
+	@override String get needsAttentionHeadline => 'Alguns ajustes ajudariam.';
+	@override String get unclassifiedDominantHeadline => 'Classifique suas categorias para um diagnóstico preciso.';
+	@override String tipNeedsOver({required Object value}) => 'Reduza ${value} em necessidades para ficar no alvo.';
+	@override String tipWantsOver({required Object value}) => 'Você passou ${value} do orçamento de desejos este mês.';
+	@override String tipSavingsShortWithAccount({required Object value}) => 'Faltam ${value} para atingir 20% de investimento.';
+	@override String get tipSavingsShortNoAccount => 'Crie uma conta de investimento para começar a registrar seus aportes.';
+	@override String tipUnclassified({required Object count}) => '${count} categoria(s) ainda sem classificação.';
+	@override String get ctaCreateInvestment => 'Criar conta';
+	@override String get ctaClassify => 'Classificar';
+	@override String get unclassifiedLabel => 'Sem classificação';
+	@override String get principalDisclaimer => 'Investimento aqui = aportes do mês (transferências corrente → investimento). Rendimento de mercado não é acompanhado.';
+	@override String get editTargets => 'Editar metas';
+	@override String get editTargetsHint => 'Defina o percentual de cada categoria. Os três precisam somar 100%.';
+	@override String get resetToClassic => 'Restaurar 50/30/20 padrão';
+	@override String sumOk({required Object percent}) => 'Soma: ${percent}% ✓';
+	@override String sumInvalid({required Object percent}) => 'Soma: ${percent}% — precisa ser 100%';
+	@override String spentOfTarget({required Object spent, required Object target}) => '${spent} / ${target}';
+	@override String get bucketEmpty => 'Sem despesas nesse grupo este mês.';
+	@override String get historyTitle => 'Últimos 3 meses';
+	@override String get historyEmpty => 'Ainda não há histórico para mostrar.';
+	@override String get navLabel => 'Planejamento';
+	@override String get subTabBudgets => 'Orçamentos';
+	@override String get subTabFiftyThirtyTwenty => '50/30/20';
 }
 
 // Path: transactions
@@ -314,7 +359,11 @@ class _TranslationsAccountsPtBr implements TranslationsAccountsEn {
 	@override String get accountNotFound => 'Conta não encontrada';
 	@override String get checking => 'Conta corrente';
 	@override String get creditCard => 'Cartão de crédito';
+	@override String get investment => 'Conta investimento';
 	@override String get checkingShort => 'Corrente';
+	@override String get investmentShort => 'Invest.';
+	@override String get investmentDescription => 'Conta dedicada a aportes. Aparece como \'investimento\' nas transferências e alimenta o cartão 50/30/20.';
+	@override String get investmentYieldDisclaimer => 'O saldo reflete apenas seus aportes (principal). Rendimentos do mercado não são acompanhados.';
 	@override String get name => 'Apelido da conta';
 	@override String get nameHint => 'ex.: Nubank Gui';
 	@override String get bank => 'Banco';
@@ -441,6 +490,14 @@ class _TranslationsCategoriesPtBr implements TranslationsCategoriesEn {
 	@override String get formSectionType => 'Tipo';
 	@override String get formSectionDetails => 'Detalhes';
 	@override String get formSectionAppearance => 'Aparência';
+	@override String get formSectionBucket => 'Regra 50/30/20';
+	@override String get bucketHint => 'Em qual grupo essa categoria entra?';
+	@override String get incomeCountsTitle => 'Considerar na regra 50/30/20';
+	@override String get incomeCountsHint => 'Quando ativo, as receitas desta categoria entram no cálculo da renda mensal (100%). Desative para receitas eventuais (reembolso, presente, venda) que não devem distorcer o cálculo.';
+	@override String get bucketNeeds => 'Necessidade';
+	@override String get bucketWants => 'Desejo';
+	@override String get bucketUnclassified => 'Sem classificação';
+	@override String get bucketHelp => 'Necessidades cobrem o essencial (aluguel, mercado, transporte). Desejos cobrem o discricionário (lazer, restaurantes). Investimento é tratado pelas transferências para contas de investimento.';
 	@override String get pickParent => 'Categoria pai';
 	@override String get searchHint => 'Buscar categorias';
 	@override String get searchNoResults => 'Nenhuma categoria corresponde à busca.';
@@ -971,6 +1028,7 @@ extension on TranslationsPtBr {
 			'nav.profile' => 'Perfil',
 			'nav.bills' => 'Contas',
 			'nav.budgets' => 'Orçamento',
+			'nav.planning' => 'Planejamento',
 			'dashboard.title' => 'Início',
 			'dashboard.totalBalance' => 'Saldo total',
 			'dashboard.income' => 'Receitas',
@@ -980,13 +1038,15 @@ extension on TranslationsPtBr {
 			'dashboard.seeAll' => 'Ver tudo',
 			'dashboard.thisMonth' => 'Este mês',
 			'dashboard.noTransactionsYet' => 'Nenhuma transação ainda',
-			'dashboard.accountBalances' => 'Saldos das contas',
+			'dashboard.accountBalances' => 'Saldos',
 			'dashboard.monthResult' => 'Resultado do mês',
 			'dashboard.expensesByCategory' => 'Despesas por categoria',
 			'dashboard.incomeByCategory' => 'Receitas por categoria',
 			'dashboard.noAccountsYet' => 'Nenhuma conta cadastrada ainda',
 			'dashboard.creditCardBalance' => 'Saldo do cartão',
 			'dashboard.noCreditCardsYet' => 'Nenhum cartão de crédito cadastrado',
+			'dashboard.investmentBalance' => 'Investimentos',
+			'dashboard.noInvestmentsYet' => 'Nenhuma conta de investimento cadastrada',
 			'dashboard.noExpensesYet' => 'Nenhuma despesa neste mês',
 			'dashboard.noIncomeYet' => 'Nenhuma receita neste mês',
 			'dashboard.totalExpenses' => 'Total de despesas',
@@ -996,6 +1056,38 @@ extension on TranslationsPtBr {
 			'dashboard.noSubcategories' => 'Sem subcategorias',
 			'dashboard.total' => 'Total',
 			'dashboard.close' => 'Fechar',
+			'fiftyThirtyTwenty.title' => '50/30/20',
+			'fiftyThirtyTwenty.subtitle' => 'Como está seu mês',
+			'fiftyThirtyTwenty.needsLabel' => 'Necessidades',
+			'fiftyThirtyTwenty.wantsLabel' => 'Desejos',
+			'fiftyThirtyTwenty.savingsLabel' => 'Investimento',
+			'fiftyThirtyTwenty.ofTarget' => ({required Object actual, required Object target}) => '${actual}% de ${target}%',
+			'fiftyThirtyTwenty.baselinePill' => ({required Object value}) => '100% = ${value}',
+			'fiftyThirtyTwenty.noIncomeHeadline' => 'Registre uma receita do mês para acompanhar a regra 50/30/20.',
+			'fiftyThirtyTwenty.onTrackHeadline' => 'Você está no caminho.',
+			'fiftyThirtyTwenty.needsAttentionHeadline' => 'Alguns ajustes ajudariam.',
+			'fiftyThirtyTwenty.unclassifiedDominantHeadline' => 'Classifique suas categorias para um diagnóstico preciso.',
+			'fiftyThirtyTwenty.tipNeedsOver' => ({required Object value}) => 'Reduza ${value} em necessidades para ficar no alvo.',
+			'fiftyThirtyTwenty.tipWantsOver' => ({required Object value}) => 'Você passou ${value} do orçamento de desejos este mês.',
+			'fiftyThirtyTwenty.tipSavingsShortWithAccount' => ({required Object value}) => 'Faltam ${value} para atingir 20% de investimento.',
+			'fiftyThirtyTwenty.tipSavingsShortNoAccount' => 'Crie uma conta de investimento para começar a registrar seus aportes.',
+			'fiftyThirtyTwenty.tipUnclassified' => ({required Object count}) => '${count} categoria(s) ainda sem classificação.',
+			'fiftyThirtyTwenty.ctaCreateInvestment' => 'Criar conta',
+			'fiftyThirtyTwenty.ctaClassify' => 'Classificar',
+			'fiftyThirtyTwenty.unclassifiedLabel' => 'Sem classificação',
+			'fiftyThirtyTwenty.principalDisclaimer' => 'Investimento aqui = aportes do mês (transferências corrente → investimento). Rendimento de mercado não é acompanhado.',
+			'fiftyThirtyTwenty.editTargets' => 'Editar metas',
+			'fiftyThirtyTwenty.editTargetsHint' => 'Defina o percentual de cada categoria. Os três precisam somar 100%.',
+			'fiftyThirtyTwenty.resetToClassic' => 'Restaurar 50/30/20 padrão',
+			'fiftyThirtyTwenty.sumOk' => ({required Object percent}) => 'Soma: ${percent}% ✓',
+			'fiftyThirtyTwenty.sumInvalid' => ({required Object percent}) => 'Soma: ${percent}% — precisa ser 100%',
+			'fiftyThirtyTwenty.spentOfTarget' => ({required Object spent, required Object target}) => '${spent} / ${target}',
+			'fiftyThirtyTwenty.bucketEmpty' => 'Sem despesas nesse grupo este mês.',
+			'fiftyThirtyTwenty.historyTitle' => 'Últimos 3 meses',
+			'fiftyThirtyTwenty.historyEmpty' => 'Ainda não há histórico para mostrar.',
+			'fiftyThirtyTwenty.navLabel' => 'Planejamento',
+			'fiftyThirtyTwenty.subTabBudgets' => 'Orçamentos',
+			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
 			'transactions.title' => 'Transações',
 			'transactions.empty' => 'Nenhuma transação. Adicione sua primeira para começar.',
 			'transactions.addTransaction' => 'Nova transação',
@@ -1069,7 +1161,11 @@ extension on TranslationsPtBr {
 			'accounts.accountNotFound' => 'Conta não encontrada',
 			'accounts.checking' => 'Conta corrente',
 			'accounts.creditCard' => 'Cartão de crédito',
+			'accounts.investment' => 'Conta investimento',
 			'accounts.checkingShort' => 'Corrente',
+			'accounts.investmentShort' => 'Invest.',
+			'accounts.investmentDescription' => 'Conta dedicada a aportes. Aparece como \'investimento\' nas transferências e alimenta o cartão 50/30/20.',
+			'accounts.investmentYieldDisclaimer' => 'O saldo reflete apenas seus aportes (principal). Rendimentos do mercado não são acompanhados.',
 			'accounts.name' => 'Apelido da conta',
 			'accounts.nameHint' => 'ex.: Nubank Gui',
 			'accounts.bank' => 'Banco',
@@ -1187,6 +1283,14 @@ extension on TranslationsPtBr {
 			'categories.formSectionType' => 'Tipo',
 			'categories.formSectionDetails' => 'Detalhes',
 			'categories.formSectionAppearance' => 'Aparência',
+			'categories.formSectionBucket' => 'Regra 50/30/20',
+			'categories.bucketHint' => 'Em qual grupo essa categoria entra?',
+			'categories.incomeCountsTitle' => 'Considerar na regra 50/30/20',
+			'categories.incomeCountsHint' => 'Quando ativo, as receitas desta categoria entram no cálculo da renda mensal (100%). Desative para receitas eventuais (reembolso, presente, venda) que não devem distorcer o cálculo.',
+			'categories.bucketNeeds' => 'Necessidade',
+			'categories.bucketWants' => 'Desejo',
+			'categories.bucketUnclassified' => 'Sem classificação',
+			'categories.bucketHelp' => 'Necessidades cobrem o essencial (aluguel, mercado, transporte). Desejos cobrem o discricionário (lazer, restaurantes). Investimento é tratado pelas transferências para contas de investimento.',
 			'categories.pickParent' => 'Categoria pai',
 			'categories.searchHint' => 'Buscar categorias',
 			'categories.searchNoResults' => 'Nenhuma categoria corresponde à busca.',
@@ -1364,6 +1468,8 @@ extension on TranslationsPtBr {
 			'bills.filterAll' => 'Todas',
 			'bills.category' => 'Categoria',
 			'bills.categoryRequired' => 'Selecione uma categoria',
+			_ => null,
+		} ?? switch (path) {
 			'bills.notes' => 'Observações (opcional)',
 			'bills.notesHint' => 'Detalhes adicionais...',
 			'bills.markAsPaid' => 'Marcar como paga',
@@ -1411,8 +1517,6 @@ extension on TranslationsPtBr {
 			'bills.match.bannerTitle' => ({required Object count}) => '${count} possível(is) pagamento(s) detectado(s)',
 			'bills.match.bannerSubtitle' => 'Toque para confirmar se alguma transação existente quita uma conta pendente',
 			'bills.match.sheetTitle' => 'Confirmar pagamentos',
-			_ => null,
-		} ?? switch (path) {
 			'bills.match.sheetIntro' => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.',
 			'bills.match.candidateQuestion' => 'Esta transação foi esta conta?',
 			'bills.match.yesItWas' => 'Sim',

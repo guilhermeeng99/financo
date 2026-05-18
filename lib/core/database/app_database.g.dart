@@ -58,8 +58,50 @@ class $LocalUsersTable extends LocalUsers
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _fiftyThirtyTwentyNeedsMeta =
+      const VerificationMeta('fiftyThirtyTwentyNeeds');
   @override
-  List<GeneratedColumn> get $columns => [id, name, email, photoUrl, createdAt];
+  late final GeneratedColumn<double> fiftyThirtyTwentyNeeds =
+      GeneratedColumn<double>(
+        'fifty_thirty_twenty_needs',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fiftyThirtyTwentyWantsMeta =
+      const VerificationMeta('fiftyThirtyTwentyWants');
+  @override
+  late final GeneratedColumn<double> fiftyThirtyTwentyWants =
+      GeneratedColumn<double>(
+        'fifty_thirty_twenty_wants',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _fiftyThirtyTwentySavingsMeta =
+      const VerificationMeta('fiftyThirtyTwentySavings');
+  @override
+  late final GeneratedColumn<double> fiftyThirtyTwentySavings =
+      GeneratedColumn<double>(
+        'fifty_thirty_twenty_savings',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    email,
+    photoUrl,
+    createdAt,
+    fiftyThirtyTwentyNeeds,
+    fiftyThirtyTwentyWants,
+    fiftyThirtyTwentySavings,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -107,6 +149,33 @@ class $LocalUsersTable extends LocalUsers
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('fifty_thirty_twenty_needs')) {
+      context.handle(
+        _fiftyThirtyTwentyNeedsMeta,
+        fiftyThirtyTwentyNeeds.isAcceptableOrUnknown(
+          data['fifty_thirty_twenty_needs']!,
+          _fiftyThirtyTwentyNeedsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fifty_thirty_twenty_wants')) {
+      context.handle(
+        _fiftyThirtyTwentyWantsMeta,
+        fiftyThirtyTwentyWants.isAcceptableOrUnknown(
+          data['fifty_thirty_twenty_wants']!,
+          _fiftyThirtyTwentyWantsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fifty_thirty_twenty_savings')) {
+      context.handle(
+        _fiftyThirtyTwentySavingsMeta,
+        fiftyThirtyTwentySavings.isAcceptableOrUnknown(
+          data['fifty_thirty_twenty_savings']!,
+          _fiftyThirtyTwentySavingsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -136,6 +205,18 @@ class $LocalUsersTable extends LocalUsers
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      fiftyThirtyTwentyNeeds: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fifty_thirty_twenty_needs'],
+      ),
+      fiftyThirtyTwentyWants: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fifty_thirty_twenty_wants'],
+      ),
+      fiftyThirtyTwentySavings: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fifty_thirty_twenty_savings'],
+      ),
     );
   }
 
@@ -151,12 +232,18 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
   final String email;
   final String? photoUrl;
   final DateTime createdAt;
+  final double? fiftyThirtyTwentyNeeds;
+  final double? fiftyThirtyTwentyWants;
+  final double? fiftyThirtyTwentySavings;
   const LocalUser({
     required this.id,
     required this.name,
     required this.email,
     this.photoUrl,
     required this.createdAt,
+    this.fiftyThirtyTwentyNeeds,
+    this.fiftyThirtyTwentyWants,
+    this.fiftyThirtyTwentySavings,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -168,6 +255,21 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       map['photo_url'] = Variable<String>(photoUrl);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || fiftyThirtyTwentyNeeds != null) {
+      map['fifty_thirty_twenty_needs'] = Variable<double>(
+        fiftyThirtyTwentyNeeds,
+      );
+    }
+    if (!nullToAbsent || fiftyThirtyTwentyWants != null) {
+      map['fifty_thirty_twenty_wants'] = Variable<double>(
+        fiftyThirtyTwentyWants,
+      );
+    }
+    if (!nullToAbsent || fiftyThirtyTwentySavings != null) {
+      map['fifty_thirty_twenty_savings'] = Variable<double>(
+        fiftyThirtyTwentySavings,
+      );
+    }
     return map;
   }
 
@@ -180,6 +282,15 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
           ? const Value.absent()
           : Value(photoUrl),
       createdAt: Value(createdAt),
+      fiftyThirtyTwentyNeeds: fiftyThirtyTwentyNeeds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fiftyThirtyTwentyNeeds),
+      fiftyThirtyTwentyWants: fiftyThirtyTwentyWants == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fiftyThirtyTwentyWants),
+      fiftyThirtyTwentySavings: fiftyThirtyTwentySavings == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fiftyThirtyTwentySavings),
     );
   }
 
@@ -194,6 +305,15 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       email: serializer.fromJson<String>(json['email']),
       photoUrl: serializer.fromJson<String?>(json['photoUrl']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      fiftyThirtyTwentyNeeds: serializer.fromJson<double?>(
+        json['fiftyThirtyTwentyNeeds'],
+      ),
+      fiftyThirtyTwentyWants: serializer.fromJson<double?>(
+        json['fiftyThirtyTwentyWants'],
+      ),
+      fiftyThirtyTwentySavings: serializer.fromJson<double?>(
+        json['fiftyThirtyTwentySavings'],
+      ),
     );
   }
   @override
@@ -205,6 +325,15 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       'email': serializer.toJson<String>(email),
       'photoUrl': serializer.toJson<String?>(photoUrl),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'fiftyThirtyTwentyNeeds': serializer.toJson<double?>(
+        fiftyThirtyTwentyNeeds,
+      ),
+      'fiftyThirtyTwentyWants': serializer.toJson<double?>(
+        fiftyThirtyTwentyWants,
+      ),
+      'fiftyThirtyTwentySavings': serializer.toJson<double?>(
+        fiftyThirtyTwentySavings,
+      ),
     };
   }
 
@@ -214,12 +343,24 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
     String? email,
     Value<String?> photoUrl = const Value.absent(),
     DateTime? createdAt,
+    Value<double?> fiftyThirtyTwentyNeeds = const Value.absent(),
+    Value<double?> fiftyThirtyTwentyWants = const Value.absent(),
+    Value<double?> fiftyThirtyTwentySavings = const Value.absent(),
   }) => LocalUser(
     id: id ?? this.id,
     name: name ?? this.name,
     email: email ?? this.email,
     photoUrl: photoUrl.present ? photoUrl.value : this.photoUrl,
     createdAt: createdAt ?? this.createdAt,
+    fiftyThirtyTwentyNeeds: fiftyThirtyTwentyNeeds.present
+        ? fiftyThirtyTwentyNeeds.value
+        : this.fiftyThirtyTwentyNeeds,
+    fiftyThirtyTwentyWants: fiftyThirtyTwentyWants.present
+        ? fiftyThirtyTwentyWants.value
+        : this.fiftyThirtyTwentyWants,
+    fiftyThirtyTwentySavings: fiftyThirtyTwentySavings.present
+        ? fiftyThirtyTwentySavings.value
+        : this.fiftyThirtyTwentySavings,
   );
   LocalUser copyWithCompanion(LocalUsersCompanion data) {
     return LocalUser(
@@ -228,6 +369,15 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
       email: data.email.present ? data.email.value : this.email,
       photoUrl: data.photoUrl.present ? data.photoUrl.value : this.photoUrl,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      fiftyThirtyTwentyNeeds: data.fiftyThirtyTwentyNeeds.present
+          ? data.fiftyThirtyTwentyNeeds.value
+          : this.fiftyThirtyTwentyNeeds,
+      fiftyThirtyTwentyWants: data.fiftyThirtyTwentyWants.present
+          ? data.fiftyThirtyTwentyWants.value
+          : this.fiftyThirtyTwentyWants,
+      fiftyThirtyTwentySavings: data.fiftyThirtyTwentySavings.present
+          ? data.fiftyThirtyTwentySavings.value
+          : this.fiftyThirtyTwentySavings,
     );
   }
 
@@ -238,13 +388,25 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
           ..write('name: $name, ')
           ..write('email: $email, ')
           ..write('photoUrl: $photoUrl, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('fiftyThirtyTwentyNeeds: $fiftyThirtyTwentyNeeds, ')
+          ..write('fiftyThirtyTwentyWants: $fiftyThirtyTwentyWants, ')
+          ..write('fiftyThirtyTwentySavings: $fiftyThirtyTwentySavings')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, email, photoUrl, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    email,
+    photoUrl,
+    createdAt,
+    fiftyThirtyTwentyNeeds,
+    fiftyThirtyTwentyWants,
+    fiftyThirtyTwentySavings,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -253,7 +415,10 @@ class LocalUser extends DataClass implements Insertable<LocalUser> {
           other.name == this.name &&
           other.email == this.email &&
           other.photoUrl == this.photoUrl &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.fiftyThirtyTwentyNeeds == this.fiftyThirtyTwentyNeeds &&
+          other.fiftyThirtyTwentyWants == this.fiftyThirtyTwentyWants &&
+          other.fiftyThirtyTwentySavings == this.fiftyThirtyTwentySavings);
 }
 
 class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
@@ -262,6 +427,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
   final Value<String> email;
   final Value<String?> photoUrl;
   final Value<DateTime> createdAt;
+  final Value<double?> fiftyThirtyTwentyNeeds;
+  final Value<double?> fiftyThirtyTwentyWants;
+  final Value<double?> fiftyThirtyTwentySavings;
   final Value<int> rowid;
   const LocalUsersCompanion({
     this.id = const Value.absent(),
@@ -269,6 +437,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     this.email = const Value.absent(),
     this.photoUrl = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.fiftyThirtyTwentyNeeds = const Value.absent(),
+    this.fiftyThirtyTwentyWants = const Value.absent(),
+    this.fiftyThirtyTwentySavings = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalUsersCompanion.insert({
@@ -277,6 +448,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     required String email,
     this.photoUrl = const Value.absent(),
     required DateTime createdAt,
+    this.fiftyThirtyTwentyNeeds = const Value.absent(),
+    this.fiftyThirtyTwentyWants = const Value.absent(),
+    this.fiftyThirtyTwentySavings = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -288,6 +462,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     Expression<String>? email,
     Expression<String>? photoUrl,
     Expression<DateTime>? createdAt,
+    Expression<double>? fiftyThirtyTwentyNeeds,
+    Expression<double>? fiftyThirtyTwentyWants,
+    Expression<double>? fiftyThirtyTwentySavings,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -296,6 +473,12 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
       if (email != null) 'email': email,
       if (photoUrl != null) 'photo_url': photoUrl,
       if (createdAt != null) 'created_at': createdAt,
+      if (fiftyThirtyTwentyNeeds != null)
+        'fifty_thirty_twenty_needs': fiftyThirtyTwentyNeeds,
+      if (fiftyThirtyTwentyWants != null)
+        'fifty_thirty_twenty_wants': fiftyThirtyTwentyWants,
+      if (fiftyThirtyTwentySavings != null)
+        'fifty_thirty_twenty_savings': fiftyThirtyTwentySavings,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -306,6 +489,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     Value<String>? email,
     Value<String?>? photoUrl,
     Value<DateTime>? createdAt,
+    Value<double?>? fiftyThirtyTwentyNeeds,
+    Value<double?>? fiftyThirtyTwentyWants,
+    Value<double?>? fiftyThirtyTwentySavings,
     Value<int>? rowid,
   }) {
     return LocalUsersCompanion(
@@ -314,6 +500,12 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
       email: email ?? this.email,
       photoUrl: photoUrl ?? this.photoUrl,
       createdAt: createdAt ?? this.createdAt,
+      fiftyThirtyTwentyNeeds:
+          fiftyThirtyTwentyNeeds ?? this.fiftyThirtyTwentyNeeds,
+      fiftyThirtyTwentyWants:
+          fiftyThirtyTwentyWants ?? this.fiftyThirtyTwentyWants,
+      fiftyThirtyTwentySavings:
+          fiftyThirtyTwentySavings ?? this.fiftyThirtyTwentySavings,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -336,6 +528,21 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (fiftyThirtyTwentyNeeds.present) {
+      map['fifty_thirty_twenty_needs'] = Variable<double>(
+        fiftyThirtyTwentyNeeds.value,
+      );
+    }
+    if (fiftyThirtyTwentyWants.present) {
+      map['fifty_thirty_twenty_wants'] = Variable<double>(
+        fiftyThirtyTwentyWants.value,
+      );
+    }
+    if (fiftyThirtyTwentySavings.present) {
+      map['fifty_thirty_twenty_savings'] = Variable<double>(
+        fiftyThirtyTwentySavings.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -350,6 +557,9 @@ class LocalUsersCompanion extends UpdateCompanion<LocalUser> {
           ..write('email: $email, ')
           ..write('photoUrl: $photoUrl, ')
           ..write('createdAt: $createdAt, ')
+          ..write('fiftyThirtyTwentyNeeds: $fiftyThirtyTwentyNeeds, ')
+          ..write('fiftyThirtyTwentyWants: $fiftyThirtyTwentyWants, ')
+          ..write('fiftyThirtyTwentySavings: $fiftyThirtyTwentySavings, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1812,6 +2022,30 @@ class $LocalCategoriesTable extends LocalCategories
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _bucketMeta = const VerificationMeta('bucket');
+  @override
+  late final GeneratedColumn<String> bucket = GeneratedColumn<String>(
+    'bucket',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _countsInFiftyThirtyTwentyMeta =
+      const VerificationMeta('countsInFiftyThirtyTwenty');
+  @override
+  late final GeneratedColumn<bool> countsInFiftyThirtyTwenty =
+      GeneratedColumn<bool>(
+        'counts_in_fifty_thirty_twenty',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("counts_in_fifty_thirty_twenty" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1821,6 +2055,8 @@ class $LocalCategoriesTable extends LocalCategories
     color,
     type,
     parentId,
+    bucket,
+    countsInFiftyThirtyTwenty,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1883,6 +2119,21 @@ class $LocalCategoriesTable extends LocalCategories
         parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
       );
     }
+    if (data.containsKey('bucket')) {
+      context.handle(
+        _bucketMeta,
+        bucket.isAcceptableOrUnknown(data['bucket']!, _bucketMeta),
+      );
+    }
+    if (data.containsKey('counts_in_fifty_thirty_twenty')) {
+      context.handle(
+        _countsInFiftyThirtyTwentyMeta,
+        countsInFiftyThirtyTwenty.isAcceptableOrUnknown(
+          data['counts_in_fifty_thirty_twenty']!,
+          _countsInFiftyThirtyTwentyMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1920,6 +2171,14 @@ class $LocalCategoriesTable extends LocalCategories
         DriftSqlType.string,
         data['${effectivePrefix}parent_id'],
       ),
+      bucket: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bucket'],
+      ),
+      countsInFiftyThirtyTwenty: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}counts_in_fifty_thirty_twenty'],
+      )!,
     );
   }
 
@@ -1937,6 +2196,8 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
   final int color;
   final String type;
   final String? parentId;
+  final String? bucket;
+  final bool countsInFiftyThirtyTwenty;
   const LocalCategory({
     required this.id,
     this.userId,
@@ -1945,6 +2206,8 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     required this.color,
     required this.type,
     this.parentId,
+    this.bucket,
+    required this.countsInFiftyThirtyTwenty,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1960,6 +2223,12 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     if (!nullToAbsent || parentId != null) {
       map['parent_id'] = Variable<String>(parentId);
     }
+    if (!nullToAbsent || bucket != null) {
+      map['bucket'] = Variable<String>(bucket);
+    }
+    map['counts_in_fifty_thirty_twenty'] = Variable<bool>(
+      countsInFiftyThirtyTwenty,
+    );
     return map;
   }
 
@@ -1976,6 +2245,10 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       parentId: parentId == null && nullToAbsent
           ? const Value.absent()
           : Value(parentId),
+      bucket: bucket == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bucket),
+      countsInFiftyThirtyTwenty: Value(countsInFiftyThirtyTwenty),
     );
   }
 
@@ -1992,6 +2265,10 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       color: serializer.fromJson<int>(json['color']),
       type: serializer.fromJson<String>(json['type']),
       parentId: serializer.fromJson<String?>(json['parentId']),
+      bucket: serializer.fromJson<String?>(json['bucket']),
+      countsInFiftyThirtyTwenty: serializer.fromJson<bool>(
+        json['countsInFiftyThirtyTwenty'],
+      ),
     );
   }
   @override
@@ -2005,6 +2282,10 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       'color': serializer.toJson<int>(color),
       'type': serializer.toJson<String>(type),
       'parentId': serializer.toJson<String?>(parentId),
+      'bucket': serializer.toJson<String?>(bucket),
+      'countsInFiftyThirtyTwenty': serializer.toJson<bool>(
+        countsInFiftyThirtyTwenty,
+      ),
     };
   }
 
@@ -2016,6 +2297,8 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     int? color,
     String? type,
     Value<String?> parentId = const Value.absent(),
+    Value<String?> bucket = const Value.absent(),
+    bool? countsInFiftyThirtyTwenty,
   }) => LocalCategory(
     id: id ?? this.id,
     userId: userId.present ? userId.value : this.userId,
@@ -2024,6 +2307,9 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
     color: color ?? this.color,
     type: type ?? this.type,
     parentId: parentId.present ? parentId.value : this.parentId,
+    bucket: bucket.present ? bucket.value : this.bucket,
+    countsInFiftyThirtyTwenty:
+        countsInFiftyThirtyTwenty ?? this.countsInFiftyThirtyTwenty,
   );
   LocalCategory copyWithCompanion(LocalCategoriesCompanion data) {
     return LocalCategory(
@@ -2034,6 +2320,10 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
       color: data.color.present ? data.color.value : this.color,
       type: data.type.present ? data.type.value : this.type,
       parentId: data.parentId.present ? data.parentId.value : this.parentId,
+      bucket: data.bucket.present ? data.bucket.value : this.bucket,
+      countsInFiftyThirtyTwenty: data.countsInFiftyThirtyTwenty.present
+          ? data.countsInFiftyThirtyTwenty.value
+          : this.countsInFiftyThirtyTwenty,
     );
   }
 
@@ -2046,14 +2336,25 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           ..write('icon: $icon, ')
           ..write('color: $color, ')
           ..write('type: $type, ')
-          ..write('parentId: $parentId')
+          ..write('parentId: $parentId, ')
+          ..write('bucket: $bucket, ')
+          ..write('countsInFiftyThirtyTwenty: $countsInFiftyThirtyTwenty')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, name, icon, color, type, parentId);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    name,
+    icon,
+    color,
+    type,
+    parentId,
+    bucket,
+    countsInFiftyThirtyTwenty,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2064,7 +2365,9 @@ class LocalCategory extends DataClass implements Insertable<LocalCategory> {
           other.icon == this.icon &&
           other.color == this.color &&
           other.type == this.type &&
-          other.parentId == this.parentId);
+          other.parentId == this.parentId &&
+          other.bucket == this.bucket &&
+          other.countsInFiftyThirtyTwenty == this.countsInFiftyThirtyTwenty);
 }
 
 class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
@@ -2075,6 +2378,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
   final Value<int> color;
   final Value<String> type;
   final Value<String?> parentId;
+  final Value<String?> bucket;
+  final Value<bool> countsInFiftyThirtyTwenty;
   final Value<int> rowid;
   const LocalCategoriesCompanion({
     this.id = const Value.absent(),
@@ -2084,6 +2389,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     this.color = const Value.absent(),
     this.type = const Value.absent(),
     this.parentId = const Value.absent(),
+    this.bucket = const Value.absent(),
+    this.countsInFiftyThirtyTwenty = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalCategoriesCompanion.insert({
@@ -2094,6 +2401,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     required int color,
     required String type,
     this.parentId = const Value.absent(),
+    this.bucket = const Value.absent(),
+    this.countsInFiftyThirtyTwenty = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2108,6 +2417,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Expression<int>? color,
     Expression<String>? type,
     Expression<String>? parentId,
+    Expression<String>? bucket,
+    Expression<bool>? countsInFiftyThirtyTwenty,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2118,6 +2429,9 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       if (color != null) 'color': color,
       if (type != null) 'type': type,
       if (parentId != null) 'parent_id': parentId,
+      if (bucket != null) 'bucket': bucket,
+      if (countsInFiftyThirtyTwenty != null)
+        'counts_in_fifty_thirty_twenty': countsInFiftyThirtyTwenty,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2130,6 +2444,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     Value<int>? color,
     Value<String>? type,
     Value<String?>? parentId,
+    Value<String?>? bucket,
+    Value<bool>? countsInFiftyThirtyTwenty,
     Value<int>? rowid,
   }) {
     return LocalCategoriesCompanion(
@@ -2140,6 +2456,9 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
       color: color ?? this.color,
       type: type ?? this.type,
       parentId: parentId ?? this.parentId,
+      bucket: bucket ?? this.bucket,
+      countsInFiftyThirtyTwenty:
+          countsInFiftyThirtyTwenty ?? this.countsInFiftyThirtyTwenty,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2168,6 +2487,14 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
     if (parentId.present) {
       map['parent_id'] = Variable<String>(parentId.value);
     }
+    if (bucket.present) {
+      map['bucket'] = Variable<String>(bucket.value);
+    }
+    if (countsInFiftyThirtyTwenty.present) {
+      map['counts_in_fifty_thirty_twenty'] = Variable<bool>(
+        countsInFiftyThirtyTwenty.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2184,6 +2511,8 @@ class LocalCategoriesCompanion extends UpdateCompanion<LocalCategory> {
           ..write('color: $color, ')
           ..write('type: $type, ')
           ..write('parentId: $parentId, ')
+          ..write('bucket: $bucket, ')
+          ..write('countsInFiftyThirtyTwenty: $countsInFiftyThirtyTwenty, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3562,6 +3891,9 @@ typedef $$LocalUsersTableCreateCompanionBuilder =
       required String email,
       Value<String?> photoUrl,
       required DateTime createdAt,
+      Value<double?> fiftyThirtyTwentyNeeds,
+      Value<double?> fiftyThirtyTwentyWants,
+      Value<double?> fiftyThirtyTwentySavings,
       Value<int> rowid,
     });
 typedef $$LocalUsersTableUpdateCompanionBuilder =
@@ -3571,6 +3903,9 @@ typedef $$LocalUsersTableUpdateCompanionBuilder =
       Value<String> email,
       Value<String?> photoUrl,
       Value<DateTime> createdAt,
+      Value<double?> fiftyThirtyTwentyNeeds,
+      Value<double?> fiftyThirtyTwentyWants,
+      Value<double?> fiftyThirtyTwentySavings,
       Value<int> rowid,
     });
 
@@ -3605,6 +3940,21 @@ class $$LocalUsersTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fiftyThirtyTwentyNeeds => $composableBuilder(
+    column: $table.fiftyThirtyTwentyNeeds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fiftyThirtyTwentyWants => $composableBuilder(
+    column: $table.fiftyThirtyTwentyWants,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fiftyThirtyTwentySavings => $composableBuilder(
+    column: $table.fiftyThirtyTwentySavings,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3642,6 +3992,21 @@ class $$LocalUsersTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get fiftyThirtyTwentyNeeds => $composableBuilder(
+    column: $table.fiftyThirtyTwentyNeeds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fiftyThirtyTwentyWants => $composableBuilder(
+    column: $table.fiftyThirtyTwentyWants,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fiftyThirtyTwentySavings => $composableBuilder(
+    column: $table.fiftyThirtyTwentySavings,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalUsersTableAnnotationComposer
@@ -3667,6 +4032,21 @@ class $$LocalUsersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<double> get fiftyThirtyTwentyNeeds => $composableBuilder(
+    column: $table.fiftyThirtyTwentyNeeds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fiftyThirtyTwentyWants => $composableBuilder(
+    column: $table.fiftyThirtyTwentyWants,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fiftyThirtyTwentySavings => $composableBuilder(
+    column: $table.fiftyThirtyTwentySavings,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalUsersTableTableManager
@@ -3705,6 +4085,9 @@ class $$LocalUsersTableTableManager
                 Value<String> email = const Value.absent(),
                 Value<String?> photoUrl = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<double?> fiftyThirtyTwentyNeeds = const Value.absent(),
+                Value<double?> fiftyThirtyTwentyWants = const Value.absent(),
+                Value<double?> fiftyThirtyTwentySavings = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalUsersCompanion(
                 id: id,
@@ -3712,6 +4095,9 @@ class $$LocalUsersTableTableManager
                 email: email,
                 photoUrl: photoUrl,
                 createdAt: createdAt,
+                fiftyThirtyTwentyNeeds: fiftyThirtyTwentyNeeds,
+                fiftyThirtyTwentyWants: fiftyThirtyTwentyWants,
+                fiftyThirtyTwentySavings: fiftyThirtyTwentySavings,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3721,6 +4107,9 @@ class $$LocalUsersTableTableManager
                 required String email,
                 Value<String?> photoUrl = const Value.absent(),
                 required DateTime createdAt,
+                Value<double?> fiftyThirtyTwentyNeeds = const Value.absent(),
+                Value<double?> fiftyThirtyTwentyWants = const Value.absent(),
+                Value<double?> fiftyThirtyTwentySavings = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalUsersCompanion.insert(
                 id: id,
@@ -3728,6 +4117,9 @@ class $$LocalUsersTableTableManager
                 email: email,
                 photoUrl: photoUrl,
                 createdAt: createdAt,
+                fiftyThirtyTwentyNeeds: fiftyThirtyTwentyNeeds,
+                fiftyThirtyTwentyWants: fiftyThirtyTwentyWants,
+                fiftyThirtyTwentySavings: fiftyThirtyTwentySavings,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4435,6 +4827,8 @@ typedef $$LocalCategoriesTableCreateCompanionBuilder =
       required int color,
       required String type,
       Value<String?> parentId,
+      Value<String?> bucket,
+      Value<bool> countsInFiftyThirtyTwenty,
       Value<int> rowid,
     });
 typedef $$LocalCategoriesTableUpdateCompanionBuilder =
@@ -4446,6 +4840,8 @@ typedef $$LocalCategoriesTableUpdateCompanionBuilder =
       Value<int> color,
       Value<String> type,
       Value<String?> parentId,
+      Value<String?> bucket,
+      Value<bool> countsInFiftyThirtyTwenty,
       Value<int> rowid,
     });
 
@@ -4490,6 +4886,16 @@ class $$LocalCategoriesTableFilterComposer
 
   ColumnFilters<String> get parentId => $composableBuilder(
     column: $table.parentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bucket => $composableBuilder(
+    column: $table.bucket,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get countsInFiftyThirtyTwenty => $composableBuilder(
+    column: $table.countsInFiftyThirtyTwenty,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -4537,6 +4943,16 @@ class $$LocalCategoriesTableOrderingComposer
     column: $table.parentId,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get bucket => $composableBuilder(
+    column: $table.bucket,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get countsInFiftyThirtyTwenty => $composableBuilder(
+    column: $table.countsInFiftyThirtyTwenty,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalCategoriesTableAnnotationComposer
@@ -4568,6 +4984,14 @@ class $$LocalCategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get parentId =>
       $composableBuilder(column: $table.parentId, builder: (column) => column);
+
+  GeneratedColumn<String> get bucket =>
+      $composableBuilder(column: $table.bucket, builder: (column) => column);
+
+  GeneratedColumn<bool> get countsInFiftyThirtyTwenty => $composableBuilder(
+    column: $table.countsInFiftyThirtyTwenty,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalCategoriesTableTableManager
@@ -4610,6 +5034,8 @@ class $$LocalCategoriesTableTableManager
                 Value<int> color = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<String?> parentId = const Value.absent(),
+                Value<String?> bucket = const Value.absent(),
+                Value<bool> countsInFiftyThirtyTwenty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion(
                 id: id,
@@ -4619,6 +5045,8 @@ class $$LocalCategoriesTableTableManager
                 color: color,
                 type: type,
                 parentId: parentId,
+                bucket: bucket,
+                countsInFiftyThirtyTwenty: countsInFiftyThirtyTwenty,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4630,6 +5058,8 @@ class $$LocalCategoriesTableTableManager
                 required int color,
                 required String type,
                 Value<String?> parentId = const Value.absent(),
+                Value<String?> bucket = const Value.absent(),
+                Value<bool> countsInFiftyThirtyTwenty = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalCategoriesCompanion.insert(
                 id: id,
@@ -4639,6 +5069,8 @@ class $$LocalCategoriesTableTableManager
                 color: color,
                 type: type,
                 parentId: parentId,
+                bucket: bucket,
+                countsInFiftyThirtyTwenty: countsInFiftyThirtyTwenty,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

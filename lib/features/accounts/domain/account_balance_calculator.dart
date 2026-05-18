@@ -5,8 +5,10 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 /// running effect of [transactions].
 ///
 /// Sign convention per account type:
-/// - **Checking**: `seed + Σincome - Σexpense` — positive means money in
-///   the account.
+/// - **Checking / Investment**: `seed + Σincome - Σexpense` — positive
+///   means money in the account. Investment accounts track principal
+///   only (deposits − withdrawals); market yield is intentionally not
+///   modelled here. See specs/fifty_thirty_twenty.md.
 /// - **Credit card**: `seed + Σexpense - Σincome` — positive means the
 ///   amount currently owed. Spending on the card raises the bill;
 ///   payments (transfers from a checking account, refunds) reduce it.
@@ -39,6 +41,7 @@ List<AccountEntity> applyTransactionsToAccounts(
 double _delta(AccountType type, TransactionEntity tx) {
   switch (type) {
     case AccountType.checking:
+    case AccountType.investment:
       return tx.type == TransactionType.income ? tx.amount : -tx.amount;
     case AccountType.creditCard:
       return tx.type == TransactionType.expense ? tx.amount : -tx.amount;

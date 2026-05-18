@@ -26,6 +26,7 @@ Extends `Equatable`.
 | accounts | List\<AccountEntity\> | Adjusted with cumulative transactions |
 | expensesByCategory | List\<CategoryAmount\> | Sorted descending by amount |
 | incomeByCategory | List\<CategoryAmount\> | Sorted descending by amount |
+| fiftyThirtyTwenty | FiftyThirtyTwentyOverview | Per-period 50/30/20 split, computed via `compute50_30_20Overview`. See [fifty_thirty_twenty.md](fifty_thirty_twenty.md). |
 
 Extends `Equatable`.
 
@@ -48,7 +49,8 @@ Extends `Equatable`.
 6. Compute `totalBalance` (sum of adjusted accounts), `totalIncome`, `totalExpenses` from period transactions — **excluding transfers**
 7. Compute `netResult = totalIncome - totalExpenses`
 8. Aggregate expenses and income by category (sorted descending by amount) — **excluding transfers**
-9. Return Right(DashboardSummary)
+9. Compute `fiftyThirtyTwenty` by calling the pure function `compute50_30_20Overview(periodTransactions, categories, accounts)` — single pass, no extra IO. See [fifty_thirty_twenty.md](fifty_thirty_twenty.md) for the algorithm.
+10. Return Right(DashboardSummary)
 
 ### Business Rules
 
@@ -106,7 +108,7 @@ Extends `Equatable`.
 
 ## Account selection (dashboard "Total")
 
-The dashboard's "Total Balance" is no longer shown as a hero number on top of the page. Instead, the **Account Balances** (checking) section trails a **Total** row that lives below the list and reflects the sum of the **selected** accounts.
+The dashboard's "Total Balance" is no longer shown as a hero number on top of the page. Instead, the **Account Balances** section (checking + investment combined — both share the positive-sign convention and represent money held) trails a **Total** row that lives below the list and reflects the sum of the **selected** accounts. Credit cards stay in their own section because their sign convention is inverted.
 
 `DashboardAccountSelectionCubit` (in `lib/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart`) owns the selection:
 

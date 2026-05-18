@@ -5,7 +5,9 @@ import 'package:financo/features/accounts/domain/repositories/account_repository
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:financo/features/dashboard/domain/services/compute_fifty_thirty_twenty.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 
@@ -27,6 +29,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required String userId,
     required DateTime month,
     bool forceRefresh = false,
+    FiftyThirtyTwentyTargets fiftyThirtyTwentyTargets =
+        FiftyThirtyTwentyTargets.classic,
   }) async {
     final accountsResult = await _accountRepo.getAccounts(
       userId: userId,
@@ -106,6 +110,16 @@ class DashboardRepositoryImpl implements DashboardRepository {
               categoryMap,
             );
 
+            // 50/30/20 reuses the period transactions, categories and
+            // accounts we already have on hand — no extra IO. See
+            // specs/fifty_thirty_twenty.md §3.
+            final fiftyThirtyTwenty = compute50_30_20Overview(
+              periodTransactions: transactions,
+              categories: categories,
+              accounts: adjustedAccounts,
+              targets: fiftyThirtyTwentyTargets,
+            );
+
             final summary = DashboardSummary(
               totalBalance: totalBalance,
               totalIncome: totalIncome,
@@ -114,6 +128,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
               accounts: adjustedAccounts,
               expensesByCategory: expensesByCategory,
               incomeByCategory: incomeByCategory,
+              fiftyThirtyTwenty: fiftyThirtyTwenty,
             );
 
             return Right(summary);

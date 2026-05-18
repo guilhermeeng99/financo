@@ -1,7 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 
-enum AccountType { checking, creditCard }
+/// Persisted as `enum.name` in Firestore + Drift. `investment` exists so
+/// the 50/30/20 dashboard card can identify which transfers count as
+/// savings (see specs/fifty_thirty_twenty.md). Functionally it behaves
+/// like `checking` for every other widget and calculation.
+enum AccountType { checking, creditCard, investment }
 
 /// Supported banks. Persisted as `enum.name` in Firestore + Drift, so
 /// any rename here is a breaking change for existing rows. Add new

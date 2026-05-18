@@ -10,14 +10,17 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
+import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart';
+import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/widgets/category_breakdown_list.dart';
 import 'package:financo/features/dashboard/presentation/widgets/category_details_dialog.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_account_row.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_hero.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_section.dart';
+import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_card.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -97,6 +100,42 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             },
           ),
+          BlocListener<CategoriesCubit, CategoriesState>(
+            // Categories carry the 50/30/20 bucket; re-classifying a
+            // category mid-month would otherwise leave the dashboard card
+            // stale until the next month-step. Same pattern as the
+            // accounts listener above.
+            listenWhen: (previous, current) =>
+                current is CategoriesLoaded && previous != current,
+            listener: (context, state) {
+              final filter = context.read<DateFilterCubit>().state;
+              context.read<DashboardBloc>().add(
+                DashboardLoadRequested(
+                  year: filter.year,
+                  month: filter.month,
+                  forceRefresh: true,
+                ),
+              );
+            },
+          ),
+          BlocListener<FiftyThirtyTwentyTargetsCubit,
+              FiftyThirtyTwentyTargetsState>(
+            // Targets feed the 50/30/20 overview directly. Without this
+            // listener, editing targets on the detail page wouldn't
+            // re-bin the dashboard card until the next month-step.
+            listenWhen: (previous, current) =>
+                previous.targets != current.targets,
+            listener: (context, state) {
+              final filter = context.read<DateFilterCubit>().state;
+              context.read<DashboardBloc>().add(
+                DashboardLoadRequested(
+                  year: filter.year,
+                  month: filter.month,
+                  forceRefresh: true,
+                ),
+              );
+            },
+          ),
         ],
         child: BlocBuilder<DashboardBloc, DashboardState>(
           builder: (context, state) {
@@ -134,8 +173,16 @@ class _DashboardContent extends StatelessWidget {
     // most relevant accounts at the top of each section. For credit
     // cards, "biggest" = closest to zero, since their balance trends
     // negative as the user spends.
-    final checking = (summary.accounts
-            .where((a) => a.type == AccountType.checking)
+    //
+    // Checking + investment share one "Account Balances" section —
+    // both represent money the user holds (positive sign convention)
+    // so a unified, mute-able total mirrors how the user thinks about
+    // net liquidity. Credit cards keep their own section: opposite
+    // sign convention + different mental model.
+    final bankAccounts = (summary.accounts
+            .where((a) =>
+                a.type == AccountType.checking ||
+                a.type == AccountType.investment)
             .toList())
       ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
     final creditCards = (summary.accounts
@@ -169,13 +216,13 @@ class _DashboardContent extends StatelessWidget {
               duration: 400.ms,
               curve: Curves.easeOut,
             ),
-        if (checking.isNotEmpty) ...[
+        if (bankAccounts.isNotEmpty) ...[
           const SizedBox(height: 24),
           DashboardSection(
             label: t.dashboard.accountBalances,
-            count: checking.length,
+            count: bankAccounts.length,
             accent: colors.primary,
-            child: _CheckingList(accounts: checking),
+            child: _BankAccountList(accounts: bankAccounts),
           )
               .animate()
               .fadeIn(delay: 100.ms, duration: 400.ms)
@@ -205,7 +252,21 @@ class _DashboardContent extends StatelessWidget {
                 curve: Curves.easeOut,
               ),
         ],
-        if (checking.isEmpty && creditCards.isEmpty) ...[
+        // 50/30/20 card sits after the credit-card section so the user
+        // sees account balances first (most-glanced data) then the
+        // rule-of-thumb summary.
+        const SizedBox(height: 20),
+        FiftyThirtyTwentyCard(overview: summary.fiftyThirtyTwenty)
+            .animate()
+            .fadeIn(delay: 175.ms, duration: 400.ms)
+            .slideY(
+              begin: 0.05,
+              end: 0,
+              delay: 175.ms,
+              duration: 400.ms,
+              curve: Curves.easeOut,
+            ),
+        if (bankAccounts.isEmpty && creditCards.isEmpty) ...[
           const SizedBox(height: 24),
           _NoAccountsHint(),
         ],
@@ -287,13 +348,13 @@ class _AccountList extends StatelessWidget {
   }
 }
 
-/// Account list for the **checking** section. Adds a per-row checkbox
-/// that controls whether the account is summed into the trailing
-/// "Total" row. Selection state is owned by
-/// [DashboardAccountSelectionCubit] so it survives navigation and app
-/// restarts.
-class _CheckingList extends StatelessWidget {
-  const _CheckingList({required this.accounts});
+/// Account list for the **bank accounts** section (checking +
+/// investment combined). Adds a per-row checkbox that controls whether
+/// the account is summed into the trailing "Total" row. Selection
+/// state is owned by [DashboardAccountSelectionCubit] so it survives
+/// navigation and app restarts.
+class _BankAccountList extends StatelessWidget {
+  const _BankAccountList({required this.accounts});
 
   final List<AccountEntity> accounts;
 

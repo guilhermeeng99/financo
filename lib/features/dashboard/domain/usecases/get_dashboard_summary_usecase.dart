@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 
 class GetDashboardSummaryUseCase {
@@ -12,9 +13,12 @@ class GetDashboardSummaryUseCase {
     required String userId,
     required DateTime month,
     bool forceRefresh = false,
+    FiftyThirtyTwentyTargets fiftyThirtyTwentyTargets =
+        FiftyThirtyTwentyTargets.classic,
   }) => _repository.getDashboardSummary(
     userId: userId,
     month: month,
     forceRefresh: forceRefresh,
+    fiftyThirtyTwentyTargets: fiftyThirtyTwentyTargets,
   );
 }

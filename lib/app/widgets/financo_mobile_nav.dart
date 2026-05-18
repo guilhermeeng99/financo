@@ -33,7 +33,7 @@ class FinancoBottomBar extends StatelessWidget {
         case 1:
           context.go(AppRoutes.bills);
         case 2:
-          context.go(AppRoutes.budgets);
+          context.go(AppRoutes.planning);
         case 3:
           context.go(AppRoutes.chat);
         case 4:
@@ -84,7 +84,7 @@ class FinancoBottomBar extends StatelessWidget {
             ),
             _NavItem(
               icon: FontAwesomeIcons.bullseye,
-              label: t.nav.budgets,
+              label: t.nav.planning,
               isActive: currentIndex == 2,
               onTap: () => onTap(2),
             ),
@@ -108,7 +108,11 @@ class FinancoBottomBar extends StatelessWidget {
 
   static int _resolveCurrentIndex(String location) {
     if (location.startsWith(AppRoutes.bills)) return 1;
-    if (location.startsWith(AppRoutes.budgets)) return 2;
+    if (location.startsWith(AppRoutes.planning) ||
+        location.startsWith(AppRoutes.budgets) ||
+        location.startsWith(AppRoutes.fiftyThirtyTwenty)) {
+      return 2;
+    }
     if (location.startsWith(AppRoutes.chat)) return 3;
     if (location.startsWith(AppRoutes.profile)) return 4;
     return 0;

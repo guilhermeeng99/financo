@@ -8,19 +8,30 @@
 
 ### CategoryEntity
 
-| Field    | Type         | Nullable | Constraints                                                    |
-|----------|--------------|----------|----------------------------------------------------------------|
-| id       | String       | No       | Firestore document ID; empty on create                         |
-| userId   | String?      | Yes      | Owner user ID                                                  |
-| name     | String       | No       | Non-empty                                                      |
-| icon     | int          | No       | Material icon code point                                       |
-| color    | int          | No       | ARGB color value                                               |
-| type     | CategoryType | No       | `income` or `expense`                                          |
-| parentId | String?      | Yes      | References another category's ID; `null` = root category       |
+| Field    | Type             | Nullable | Constraints                                                                                          |
+|----------|------------------|----------|------------------------------------------------------------------------------------------------------|
+| id       | String           | No       | Firestore document ID; empty on create                                                               |
+| userId   | String?          | Yes      | Owner user ID                                                                                        |
+| name     | String           | No       | Non-empty                                                                                            |
+| icon     | int              | No       | Material icon code point                                                                             |
+| color    | int              | No       | ARGB color value                                                                                     |
+| type     | CategoryType     | No       | `income` or `expense`                                                                                |
+| parentId | String?          | Yes      | References another category's ID; `null` = root category                                             |
+| bucket   | CategoryBucket?  | Yes      | Only meaningful when `type == expense`. Drives the 50/30/20 overview. `null` = unclassified.         |
 
 ### CategoryType (enum)
 - `income`
 - `expense`
+
+### CategoryBucket (enum)
+- `needs` — essentials (rent, groceries, utilities, transport-to-work).
+- `wants` — discretionary (dining out, streaming, hobbies).
+
+The bucket is consumed exclusively by the 50/30/20 dashboard card — see
+[fifty_thirty_twenty.md](fifty_thirty_twenty.md) for the full feature
+spec. Income categories ignore the field. Savings is tracked at the
+account level (transfers `checking → investment`), not as a bucket on
+the category.
 
 ### Computed Properties
 - `canBeParent` → `parentId == null` (only root categories can be parents)
@@ -44,8 +55,16 @@
 14. **Only one level of nesting**: A child category (`parentId != null`) cannot itself be a parent. When selecting a parent, only root categories are shown.
 15. **Same-type constraint**: A child category must have the same `type` (income/expense) as its parent.
 16. **Cannot delete parent with children**: A category that has subcategories cannot be deleted. The user must first remove or reassign all children.
-17. **`parentId` is immutable after creation** (same as `type`). The parent selector is hidden in edit mode.
+17. **`parentId` is mutable after creation**, with three flows the form supports:
+    - **Re-parent (sub → other sub-of-same-type)**: change the parent picker to another root with matching `type`. No data migration — transactions hold `categoryId` only, so the new parent's bucket / `countsIn50_30_20` flag apply on the next refresh.
+    - **Promote (sub → root)**: clear the parent (pick "Nenhuma"). The bucket / 50/30/20-income flag fields become editable on the form because the category is now a root.
+    - **Demote (root → sub)**: pick a parent. Blocked at submit time when (a) the category owns subcategories (rule 14: only one nesting level), or (b) the category has a budget attached (budgets only bind to root expense categories — see `specs/budgets.md`). User must clear the blocker first. On a successful demote, the persisted `bucket` and `countsIn50_30_20` revert to neutral defaults (`null` / `true`); the compute pipelines resolve via the new parent.
+    - The parent picker filters by `type` (rule 15) and excludes self.
 18. **Dashboard aggregation**: Subcategory transaction amounts roll up into their parent category totals in reports and charts.
+19. **`bucket` is editable at any time** (unlike `type` and `parentId`). Changing a category's bucket re-bins live 50/30/20 spend on the next dashboard refresh — there is no historical "bucket-at-time-of-transaction" record. Justification: users will classify retroactively, and rewriting historical bucket attribution would surprise them.
+20. **`bucket` is set only on root categories — subcategories inherit from the parent**. The user classifies once, at the root. Storing a separate bucket on each child would force re-classification on every subcategory and create silent drift (a "Mercado" parent flagged as `needs` while a forgotten "Delivery" child stayed as `null`). At write time, subcategory rows have `bucket == null`; the 50/30/20 calculation walks up to the parent to resolve the effective bucket. If the parent itself is missing (orphan parent), the transaction counts as unclassified.
+21. **`bucket` is only meaningful when `type == expense` AND `parentId == null`**. The form hides the bucket selector for income categories and for subcategories. Toggling type to income clears any previously chosen bucket; picking a parent also clears it.
+22. **`countsIn50_30_20` (bool, default `true`)** — only meaningful on **root income categories**. Drives whether transactions on this category feed the 50/30/20 base income (see [fifty_thirty_twenty.md](fifty_thirty_twenty.md)). The form exposes a toggle when `type == income` AND `parentId == null`; set to `false` to exclude one-off receipts (reimbursements, gifts, sold goods) that would otherwise distort the monthly breakdown. Sub-income categories **inherit the flag from the parent** — same rationale as rule 20 (single classification point at the root, no per-child drift). Expense categories ignore the field entirely. Legacy data without the field falls back to `true` so prior behaviour is preserved.
 
 ## 3. Repository Contract
 
@@ -116,7 +135,7 @@ Transitions:
 FormStatus enum: initial | submitting | success | failure
 
 State fields:
-  userId, name, type, icon, color, status, existingId?, failure?, parentId?
+  userId, name, type, icon, color, status, existingId?, failure?, parentId?, bucket?
 
 Computed:
   isEditing = existingId != null
@@ -125,25 +144,35 @@ Computed:
 Actions:
   updateName(String)  → emits state with new name
   updateType(CategoryType) → emits state with new type
+                              (sets bucket to null when type becomes income)
   updateIcon(int)     → emits state with new icon
   updateColor(int)    → emits state with new color
   updateParentId(String?) → emits state with new parentId (create mode only)
+                            (sets bucket to null when a parent is chosen —
+                             subcategories inherit per rule 20)
+  updateBucket(CategoryBucket?) → emits state with new bucket
+                                   (input is silently ignored when type == income
+                                    OR parentId != null — see rule 21)
 
   submit():
     if !isValid → no-op
     emits status: submitting
+    bucket is only written when type == expense AND parentId == null
     isEditing ? updateCategory : createCategory
     success → emits status: success
     failure → emits status: failure + failure object
 
 Initial state (create mode):
-  name: '', type: expense, icon: 58332, color: 4280391411, status: initial, parentId: null
+  name: '', type: expense, icon: 58332, color: 4280391411,
+  status: initial, parentId: null, bucket: null
 
 Initial state (edit mode):
   name: existing.name, type: existing.type, icon: existing.icon,
-  color: existing.color, existingId: existing.id, parentId: existing.parentId
+  color: existing.color, existingId: existing.id, parentId: existing.parentId,
+  bucket: existing.bucket
   Type selector is DISABLED (type immutable after creation)
   Parent selector is HIDDEN (parentId immutable after creation)
+  Bucket selector is shown when type == expense AND parentId == null (rule 21)
 ```
 
 ## 5. Edge Cases

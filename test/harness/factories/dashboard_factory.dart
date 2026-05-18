@@ -1,5 +1,6 @@
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
 
 class DashboardFactory {
   const DashboardFactory._();
@@ -26,6 +27,7 @@ class DashboardFactory {
     List<AccountEntity>? accounts,
     List<CategoryAmount>? expensesByCategory,
     List<CategoryAmount>? incomeByCategory,
+    FiftyThirtyTwentyOverview? fiftyThirtyTwenty,
   }) {
     return DashboardSummary(
       totalBalance: totalBalance,
@@ -71,6 +73,8 @@ class DashboardFactory {
               amount: 3000,
             ),
           ],
+      fiftyThirtyTwenty:
+          fiftyThirtyTwenty ?? FiftyThirtyTwentyOverview.empty,
     );
   }
 
@@ -83,6 +87,7 @@ class DashboardFactory {
       accounts: [],
       expensesByCategory: [],
       incomeByCategory: [],
+      fiftyThirtyTwenty: FiftyThirtyTwentyOverview.empty,
     );
   }
 }

@@ -61,6 +61,8 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
         color: e.color,
         type: e.type.name,
         parentId: Value(e.parentId),
+        bucket: Value(e.bucket?.name),
+        countsInFiftyThirtyTwenty: Value(e.countsIn50_30_20),
       );
 
   CategoryEntity _toEntity(LocalCategory row) => CategoryEntity(
@@ -71,5 +73,15 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     color: row.color,
     type: CategoryType.values.byName(row.type),
     parentId: row.parentId,
+    bucket: _parseBucket(row.bucket),
+    countsIn50_30_20: row.countsInFiftyThirtyTwenty,
   );
+
+  CategoryBucket? _parseBucket(String? raw) {
+    if (raw == null) return null;
+    for (final b in CategoryBucket.values) {
+      if (b.name == raw) return b;
+    }
+    return null;
+  }
 }

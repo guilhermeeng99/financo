@@ -390,6 +390,11 @@ class ImportAccountsCsvUseCase {
   /// "Credit Card") via accent-insensitive substring match. Empty or
   /// unrecognized values raise a [FormatException] tagged with the
   /// offending [csvRow] so the UI can point the user to the exact row.
+  ///
+  /// Investment accounts are intentionally **not** importable via CSV in
+  /// V1 (see specs/accounts.md rule 13 and specs/fifty_thirty_twenty.md).
+  /// They must be created through the add-account form so the user sees
+  /// the inline disclaimer about principal-only tracking.
   AccountType _parseType(String raw, int csvRow) {
     final normalized = _normalize(raw);
     if (normalized.isEmpty) {
@@ -406,6 +411,13 @@ class ImportAccountsCsvUseCase {
         normalized.contains('cartao') ||
         normalized.contains('card')) {
       return AccountType.creditCard;
+    }
+    if (normalized.contains('investimento') ||
+        normalized.contains('investment')) {
+      throw FormatException(
+        'Row $csvRow: investment accounts cannot be imported from CSV in '
+        'this version. Create them manually from the add-account screen.',
+      );
     }
     throw FormatException(
       'Row $csvRow: invalid type "$raw". '

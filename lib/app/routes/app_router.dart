@@ -37,7 +37,6 @@ import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_us
 import 'package:financo/features/budgets/domain/usecases/import_budgets_csv_usecase.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/budgets/presentation/pages/add_budget_page.dart';
-import 'package:financo/features/budgets/presentation/pages/budgets_page.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
@@ -47,9 +46,13 @@ import 'package:financo/features/categories/presentation/pages/categories_page.d
 import 'package:financo/features/categories/presentation/pages/import_categories_page.dart';
 import 'package:financo/features/chat/presentation/pages/chat_page.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart';
+import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
@@ -135,12 +138,24 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       builder: (context, state, child) {
         final authState = context.read<AuthBloc>().state;
         final userId = authState is Authenticated ? authState.user.id : '';
+        // Instantiated here (instead of inside MultiBlocProvider) because
+        // DashboardBloc depends on it. Provided downstream via
+        // BlocProvider.value so the targets editor / detail page can read
+        // and mutate it from anywhere under the shell.
+        final targetsCubit = FiftyThirtyTwentyTargetsCubit(
+          getTargets: GetIt.I<GetFiftyThirtyTwentyTargetsUseCase>(),
+          updateTargets: GetIt.I<UpdateFiftyThirtyTwentyTargetsUseCase>(),
+          userId: userId,
+        );
+        unawaited(targetsCubit.loadTargets());
         return MultiBlocProvider(
           providers: [
+            BlocProvider.value(value: targetsCubit),
             BlocProvider(
               create: (_) => DashboardBloc(
                 getDashboardSummary: GetIt.I<GetDashboardSummaryUseCase>(),
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
+                targetsCubit: targetsCubit,
                 userId: userId,
               ),
             ),
@@ -344,8 +359,20 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           },
         ),
         GoRoute(
+          path: AppRoutes.planning,
+          builder: (context, state) => const PlanningPage(),
+        ),
+        GoRoute(
           path: AppRoutes.budgets,
-          builder: (context, state) => const BudgetsPage(),
+          // Direct deep-link to the budgets sub-tab — opens the planning
+          // shell so the URL preserves legacy bookmarks. The Budgets tab
+          // is the default (index 0).
+          builder: (context, state) => const PlanningPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.fiftyThirtyTwenty,
+          builder: (context, state) =>
+              const PlanningPage(initialTab: 1),
         ),
         GoRoute(
           path: AppRoutes.addBudget,

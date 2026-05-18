@@ -4,6 +4,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
+import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,6 +17,7 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockGetDashboardSummaryUseCase mockGetSummary;
   late MockGetTransactionsUseCase mockGetTransactions;
+  late FiftyThirtyTwentyTargetsCubit targetsCubit;
 
   const userId = 'user-1';
 
@@ -27,11 +29,22 @@ void main() {
   setUp(() {
     mockGetSummary = MockGetDashboardSummaryUseCase();
     mockGetTransactions = MockGetTransactionsUseCase();
+    // Real cubit with mocked use cases — we never call loadTargets in
+    // these tests, so it stays in the initial state (classic targets)
+    // and the bloc reads `state.targets` from a stable singleton.
+    targetsCubit = FiftyThirtyTwentyTargetsCubit(
+      getTargets: MockGetFiftyThirtyTwentyTargetsUseCase(),
+      updateTargets: MockUpdateFiftyThirtyTwentyTargetsUseCase(),
+      userId: userId,
+    );
   });
+
+  tearDown(() => targetsCubit.close());
 
   DashboardBloc buildBloc() => DashboardBloc(
     getDashboardSummary: mockGetSummary,
     getTransactions: mockGetTransactions,
+    targetsCubit: targetsCubit,
     userId: userId,
   );
 
@@ -41,6 +54,8 @@ void main() {
         userId: any(named: 'userId'),
         month: any(named: 'month'),
         forceRefresh: any(named: 'forceRefresh'),
+        fiftyThirtyTwentyTargets:
+            any(named: 'fiftyThirtyTwentyTargets'),
       ),
     ).thenAnswer(
       (_) async => Right<Failure, DashboardSummary>(
@@ -102,6 +117,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => const Left<Failure, DashboardSummary>(
@@ -141,6 +158,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(
@@ -191,6 +210,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).called(1);
       },
@@ -250,6 +271,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(
@@ -324,6 +347,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => const Left<Failure, DashboardSummary>(
@@ -382,6 +407,8 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
+            fiftyThirtyTwentyTargets:
+                any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(

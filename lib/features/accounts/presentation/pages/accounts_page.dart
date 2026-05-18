@@ -174,6 +174,9 @@ class _AccountsList extends StatelessWidget {
     final creditCards = accounts
         .where((a) => a.type == AccountType.creditCard)
         .toList();
+    final investments = accounts
+        .where((a) => a.type == AccountType.investment)
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
@@ -195,6 +198,16 @@ class _AccountsList extends StatelessWidget {
             accent: colors.warning,
           ),
           ...creditCards.map(
+            (a) => AccountCard(account: a, onTap: () => onTap(a)),
+          ),
+        ],
+        if (investments.isNotEmpty) ...[
+          FinancoSectionHeader(
+            title: t.accounts.investment,
+            count: investments.length,
+            accent: colors.income,
+          ),
+          ...investments.map(
             (a) => AccountCard(account: a, onTap: () => onTap(a)),
           ),
         ],

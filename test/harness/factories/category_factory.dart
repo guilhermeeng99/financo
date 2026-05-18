@@ -26,6 +26,7 @@ class CategoryFactory {
     String name = 'Salary',
     int icon = 59472,
     int color = 4283215696,
+    bool countsIn50_30_20 = true,
   }) {
     return CategoryEntity(
       id: id,
@@ -34,6 +35,7 @@ class CategoryFactory {
       icon: icon,
       color: color,
       type: CategoryType.income,
+      countsIn50_30_20: countsIn50_30_20,
     );
   }
 

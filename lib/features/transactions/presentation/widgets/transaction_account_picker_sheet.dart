@@ -119,9 +119,11 @@ class _AccountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final typeLabel = account.type == AccountType.creditCard
-        ? t.accounts.creditCard
-        : t.accounts.checking;
+    final typeLabel = switch (account.type) {
+      AccountType.creditCard => t.accounts.creditCard,
+      AccountType.investment => t.accounts.investment,
+      AccountType.checking => t.accounts.checking,
+    };
     return Material(
       color: isSelected
           ? colors.primary.withValues(alpha: 0.08)

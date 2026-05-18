@@ -64,6 +64,8 @@ import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart'
 import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
@@ -293,3 +295,9 @@ class MockDashboardRepository extends Mock implements DashboardRepository {}
 // ── Use Cases: Dashboard ──
 class MockGetDashboardSummaryUseCase extends Mock
     implements GetDashboardSummaryUseCase {}
+
+class MockGetFiftyThirtyTwentyTargetsUseCase extends Mock
+    implements GetFiftyThirtyTwentyTargetsUseCase {}
+
+class MockUpdateFiftyThirtyTwentyTargetsUseCase extends Mock
+    implements UpdateFiftyThirtyTwentyTargetsUseCase {}

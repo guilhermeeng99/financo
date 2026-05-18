@@ -1,6 +1,7 @@
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
+import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,9 +9,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   DashboardBloc({
     required GetDashboardSummaryUseCase getDashboardSummary,
     required GetTransactionsUseCase getTransactions,
+    required FiftyThirtyTwentyTargetsCubit targetsCubit,
     required String userId,
   }) : _getDashboardSummary = getDashboardSummary,
        _getTransactions = getTransactions,
+       _targetsCubit = targetsCubit,
        _userId = userId,
        super(const DashboardInitial()) {
     on<DashboardLoadRequested>(_onLoadRequested);
@@ -19,6 +22,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
   final GetDashboardSummaryUseCase _getDashboardSummary;
   final GetTransactionsUseCase _getTransactions;
+  final FiftyThirtyTwentyTargetsCubit _targetsCubit;
   final String _userId;
 
   Future<void> _onLoadRequested(
@@ -64,6 +68,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       userId: _userId,
       month: target,
       forceRefresh: forceRefresh,
+      fiftyThirtyTwentyTargets: _targetsCubit.state.targets,
     );
     final transactionsFuture = _getTransactions(
       userId: _userId,

@@ -136,6 +136,255 @@ void main() {
               .having((s) => s.parentId, 'parentId', isNull),
         ],
       );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateBucket sets needs/wants when type is expense',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId),
+        act: (cubit) => cubit.updateBucket(CategoryBucket.needs),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.bucket,
+            'bucket',
+            CategoryBucket.needs,
+          ),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateBucket(null) clears the bucket',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          bucket: CategoryBucket.wants,
+        ),
+        act: (cubit) => cubit.updateBucket(null),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.bucket,
+            'bucket',
+            isNull,
+          ),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateBucket is a no-op on income categories',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          type: CategoryType.income,
+        ),
+        act: (cubit) => cubit.updateBucket(CategoryBucket.needs),
+        expect: () => <CategoryFormState>[],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateBucket is a no-op on subcategories (parent inherits)',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          parentId: 'parent-1',
+        ),
+        act: (cubit) => cubit.updateBucket(CategoryBucket.needs),
+        expect: () => <CategoryFormState>[],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateParentId(non-null) clears a previously chosen bucket',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          bucket: CategoryBucket.wants,
+        ),
+        act: (cubit) => cubit.updateParentId('parent-1'),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.parentId, 'parentId', 'parent-1')
+              .having((s) => s.bucket, 'bucket', isNull),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateType to income clears a previously set bucket',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          bucket: CategoryBucket.wants,
+        ),
+        act: (cubit) => cubit.updateType(CategoryType.income),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.type, 'type', CategoryType.income)
+              .having((s) => s.bucket, 'bucket', isNull),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateCountsIn50_30_20 toggles flag on income categories',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          type: CategoryType.income,
+        ),
+        act: (cubit) => cubit.updateCountsIn50_30_20(value: false),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.countsIn50_30_20,
+            'countsIn50_30_20',
+            isFalse,
+          ),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateCountsIn50_30_20 is a no-op on expense categories',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId),
+        act: (cubit) => cubit.updateCountsIn50_30_20(value: false),
+        expect: () => <CategoryFormState>[],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'updateCountsIn50_30_20 is a no-op on sub-income (inherits parent)',
+        build: buildCubit,
+        seed: () => CategoryFormState.initial(userId: userId).copyWith(
+          type: CategoryType.income,
+          parentId: 'parent-1',
+        ),
+        act: (cubit) => cubit.updateCountsIn50_30_20(value: false),
+        expect: () => <CategoryFormState>[],
+      );
+
+      test('isDemoting true when root edits parent to non-null', () {
+        final existing = CategoryFactory.expense(id: 'root-cat');
+        final cubit = buildCubit(existing: existing)
+          ..updateParentId('some-parent');
+        expect(cubit.state.isDemoting, isTrue);
+        expect(cubit.state.isPromoting, isFalse);
+        addTearDown(cubit.close);
+      });
+
+      test('isPromoting true when sub edits parent to null', () {
+        final existing = CategoryFactory.subcategory(
+          id: 'sub-cat',
+          parentId: 'parent',
+        );
+        final cubit = buildCubit(existing: existing)..updateParentId(null);
+        expect(cubit.state.isPromoting, isTrue);
+        expect(cubit.state.isDemoting, isFalse);
+        addTearDown(cubit.close);
+      });
+    });
+
+    group('demote guardrails', () {
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'demote blocked when hasChildren is true',
+        build: () => buildCubit(existing: CategoryFactory.expense()),
+        seed: () => CategoryFormState.initial(
+          userId: userId,
+          existing: CategoryFactory.expense(),
+        ).copyWith(parentId: 'new-parent', hasChildren: true),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having(
+                (s) => s.failure,
+                'failure',
+                isA<ValidationFailure>(),
+              ),
+        ],
+        verify: (_) {
+          verifyNever(() => mockUpdate(any()));
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'demote blocked when hasBudget is true',
+        build: () => buildCubit(existing: CategoryFactory.expense()),
+        seed: () => CategoryFormState.initial(
+          userId: userId,
+          existing: CategoryFactory.expense(),
+        ).copyWith(parentId: 'new-parent', hasBudget: true),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having(
+                (s) => s.failure,
+                'failure',
+                isA<ValidationFailure>(),
+              ),
+        ],
+        verify: (_) {
+          verifyNever(() => mockUpdate(any()));
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'demote proceeds when no children and no budget',
+        setUp: () {
+          when(() => mockUpdate(any())).thenAnswer(
+            (_) async => Right(CategoryFactory.expense()),
+          );
+        },
+        build: () => buildCubit(existing: CategoryFactory.expense()),
+        seed: () => CategoryFormState.initial(
+          userId: userId,
+          existing: CategoryFactory.expense(),
+        ).copyWith(parentId: 'new-parent'),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          verify(() => mockUpdate(any())).called(1);
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'promote (sub → root) is not gated by demote guardrails',
+        setUp: () {
+          when(() => mockUpdate(any())).thenAnswer(
+            (_) async => Right(CategoryFactory.expense()),
+          );
+        },
+        build: () => buildCubit(
+          existing: CategoryFactory.subcategory(parentId: 'parent'),
+        ),
+        seed: () => CategoryFormState.initial(
+          userId: userId,
+          existing: CategoryFactory.subcategory(parentId: 'parent'),
+        ).copyWith(clearParentId: true),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<CategoryFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          verify(() => mockUpdate(any())).called(1);
+        },
+      );
+
+      test('setMetadata updates hasChildren and hasBudget', () {
+        final cubit = buildCubit(existing: CategoryFactory.expense())
+          ..setMetadata(hasChildren: true, hasBudget: false);
+        expect(cubit.state.hasChildren, isTrue);
+        expect(cubit.state.hasBudget, isFalse);
+        addTearDown(cubit.close);
+      });
     });
 
     group('submit', () {

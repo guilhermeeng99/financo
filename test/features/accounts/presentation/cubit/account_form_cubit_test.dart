@@ -104,6 +104,39 @@ void main() {
         ],
       );
 
+      test('canChangeType is true on create', () {
+        final cubit = buildCubit();
+        expect(cubit.state.canChangeType, isTrue);
+        addTearDown(cubit.close);
+      });
+
+      test('canChangeType is true when editing a checking account', () {
+        final cubit = buildCubit(existing: AccountFactory.checking());
+        expect(cubit.state.canChangeType, isTrue);
+        expect(cubit.state.originalType, AccountType.checking);
+        addTearDown(cubit.close);
+      });
+
+      test('canChangeType is false when editing a credit card', () {
+        final cubit = buildCubit(existing: AccountFactory.creditCard());
+        expect(cubit.state.canChangeType, isFalse);
+        expect(cubit.state.originalType, AccountType.creditCard);
+        addTearDown(cubit.close);
+      });
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'updateType allows checking → investment on edit',
+        build: () => buildCubit(existing: AccountFactory.checking()),
+        act: (cubit) => cubit.updateType(AccountType.investment),
+        expect: () => [
+          isA<AccountFormState>().having(
+            (s) => s.type,
+            'type',
+            AccountType.investment,
+          ),
+        ],
+      );
+
       blocTest<AccountFormCubit, AccountFormState>(
         'updateBalance parses string to double',
         build: buildCubit,

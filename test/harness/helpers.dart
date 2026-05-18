@@ -12,6 +12,8 @@ import 'package:financo/features/categories/domain/entities/category_entity.dart
 import 'package:financo/features/chat/data/models/chat_message_model.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
+import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -130,8 +132,10 @@ void registerDashboardFallbackValues() {
       accounts: [],
       expensesByCategory: [],
       incomeByCategory: [],
+      fiftyThirtyTwenty: FiftyThirtyTwentyOverview.empty,
     ),
   );
+  registerFallbackValue(FiftyThirtyTwentyTargets.classic);
 }
 
 void registerBillFallbackValues() {
