@@ -47,16 +47,29 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   void updateColor(int color) => emit(state.copyWith(color: color));
 
-  void updateParentId(String? parentId) {
+  void updateParentId(String? parentId, {CategoryEntity? parent}) {
     // Choosing a parent flips the category into a subcategory, which
     // inherits the parent's 50/30/20 bucket (see specs/categories.md
     // rule 20). Clear any previously-picked bucket so we don't write a
     // dangling value that the overview will ignore anyway.
+    //
+    // Subcategories also inherit the parent's icon + color so the
+    // hierarchy reads as a single visual family in the list. The page
+    // resolves the parent entity from its cached root list and passes
+    // it in; when absent (e.g. picker only knew the id) the current
+    // appearance is left untouched.
     if (parentId == null) {
       emit(state.copyWith(clearParentId: true));
       return;
     }
-    emit(state.copyWith(parentId: parentId, clearBucket: true));
+    emit(
+      state.copyWith(
+        parentId: parentId,
+        clearBucket: true,
+        icon: parent?.icon,
+        color: parent?.color,
+      ),
+    );
   }
 
   /// Sets the 50/30/20 bucket. Pass `null` to clear. No-ops on:

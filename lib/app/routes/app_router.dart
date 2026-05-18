@@ -365,14 +365,14 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.budgets,
           // Direct deep-link to the budgets sub-tab — opens the planning
-          // shell so the URL preserves legacy bookmarks. The Budgets tab
-          // is the default (index 0).
-          builder: (context, state) => const PlanningPage(),
+          // shell so the URL preserves legacy bookmarks. Budgets is the
+          // second tab (index 1) since 50/30/20 leads the shell.
+          builder: (context, state) => const PlanningPage(initialTab: 1),
         ),
         GoRoute(
           path: AppRoutes.fiftyThirtyTwenty,
-          builder: (context, state) =>
-              const PlanningPage(initialTab: 1),
+          // 50/30/20 is the default tab (index 0).
+          builder: (context, state) => const PlanningPage(),
         ),
         GoRoute(
           path: AppRoutes.addBudget,

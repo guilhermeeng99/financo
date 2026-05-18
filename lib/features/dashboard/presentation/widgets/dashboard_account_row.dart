@@ -58,26 +58,26 @@ class DashboardAccountRow extends StatelessWidget {
               Expanded(
                 child: Opacity(
                   opacity: muted ? 0.5 : 1,
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Flexible(
-                        child: Text(
-                          account.name,
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: colors.onBackground,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        account.name,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      // Type tag lives next to the name so a mixed
-                      // "Balances" list can be parsed at-a-glance —
-                      // user reads the name, then the kind. Credit
-                      // cards skip it because they already sit in
-                      // their own section.
+                      // Type tag sits below the name so long account
+                      // names get the full row width instead of being
+                      // truncated by the pill. Credit cards skip the
+                      // tag because they already sit in their own
+                      // section.
                       if (account.type != AccountType.creditCard) ...[
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 4),
                         _AccountTypeTag(type: account.type),
                       ],
                     ],

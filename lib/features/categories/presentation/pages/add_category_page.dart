@@ -112,7 +112,8 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
   }
 
   Future<void> _loadRootCategories() async {
-    final cubitState = context.read<CategoryFormCubit>().state;
+    final cubit = context.read<CategoryFormCubit>();
+    final cubitState = cubit.state;
     final result = await GetIt.I<GetCategoriesUseCase>()(
       userId: cubitState.userId,
     );
@@ -123,6 +124,18 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
         (cats) => cats.where((c) => c.canBeParent).toList(),
       );
     });
+    // Re-apply inheritance for subcategories opened in edit mode so
+    // legacy rows whose icon/color drifted from the parent snap back
+    // into the visual family on save.
+    final parentId = cubitState.parentId;
+    if (parentId != null) {
+      final parent = _rootCategories
+          .where((c) => c.id == parentId)
+          .firstOrNull;
+      if (parent != null) {
+        cubit.updateParentId(parentId, parent: parent);
+      }
+    }
   }
 
   /// Loads the data required to validate demote operations
@@ -267,7 +280,14 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
       selectedId: state.parentId,
     );
     if (picked == null) return;
-    cubit.updateParentId(picked.isEmpty ? null : picked);
+    if (picked.isEmpty) {
+      cubit.updateParentId(null);
+      return;
+    }
+    final parent = _rootCategories
+        .where((c) => c.id == picked)
+        .firstOrNull;
+    cubit.updateParentId(picked, parent: parent);
   }
 
   void _onSubmit() {
@@ -425,35 +445,51 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                           icon: state.icon,
                           color: state.color,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          t.categories.selectColor.toUpperCase(),
-                          style: context.textTheme.labelSmall?.copyWith(
-                            color: colors.onBackgroundLight,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.6,
+                        // Subcategories inherit icon + color from the
+                        // parent so the hierarchy reads as a single
+                        // visual family in the list — hide the pickers
+                        // and surface a hint instead of letting the
+                        // user pick values that will be overwritten on
+                        // the next parent change.
+                        if (state.parentId == null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            t.categories.selectColor.toUpperCase(),
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.6,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        CategoryColorPicker(
-                          selected: state.color,
-                          onChanged: cubit.updateColor,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          t.categories.selectIcon.toUpperCase(),
-                          style: context.textTheme.labelSmall?.copyWith(
-                            color: colors.onBackgroundLight,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.6,
+                          const SizedBox(height: 8),
+                          CategoryColorPicker(
+                            selected: state.color,
+                            onChanged: cubit.updateColor,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        CategoryIconPickerLauncher(
-                          selectedIcon: state.icon,
-                          color: state.color,
-                          onChanged: cubit.updateIcon,
-                        ),
+                          const SizedBox(height: 16),
+                          Text(
+                            t.categories.selectIcon.toUpperCase(),
+                            style: context.textTheme.labelSmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          CategoryIconPickerLauncher(
+                            selectedIcon: state.icon,
+                            color: state.color,
+                            onChanged: cubit.updateIcon,
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            t.categories.subcategoryAppearanceInherited,
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],

@@ -12,18 +12,28 @@ class CategoryTile extends StatelessWidget {
     required this.category,
     required this.parentName,
     required this.onTap,
+    this.parent,
     super.key,
   });
 
   final CategoryEntity category;
   final String? parentName;
+
+  /// Resolved parent entity for subcategories. When provided, the tile
+  /// renders the parent's icon + color so subs read as a single visual
+  /// family with their root — also masks any legacy rows whose stored
+  /// appearance drifted from the parent.
+  final CategoryEntity? parent;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final isSub = category.isSubcategory;
-    final categoryColor = Color(category.color);
+    final displayIcon = isSub ? parent?.icon ?? category.icon : category.icon;
+    final categoryColor = Color(
+      isSub ? parent?.color ?? category.color : category.color,
+    );
 
     return Padding(
       padding: EdgeInsets.only(
@@ -46,7 +56,7 @@ class CategoryTile extends StatelessWidget {
               child: Row(
                 children: [
                   _IconDisc(
-                    iconCode: category.icon,
+                    iconCode: displayIcon,
                     color: categoryColor,
                   ),
                   const SizedBox(width: 12),

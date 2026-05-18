@@ -462,6 +462,7 @@ class _TranslationsCategoriesPtBr implements TranslationsCategoriesEn {
 	@override String get parentCategory => 'Categoria pai';
 	@override String get noParent => 'Sem categoria pai';
 	@override String get subcategoryLabel => 'Subcategoria';
+	@override String get subcategoryAppearanceInherited => 'Subcategorias herdam o ícone e a cor da categoria pai.';
 	@override String get importCsv => 'Importar categorias';
 	@override String get importCsvIntroTitle => 'Importar categorias de CSV';
 	@override String get importCsvIntroBody => 'Seu arquivo deve seguir o formato esperado (colunas Categoria, Subcategoria, Tipo — onde Tipo é Receita/Despesa ou Income/Expense). Baixe o exemplo para ver como funciona.';
@@ -1255,6 +1256,7 @@ extension on TranslationsPtBr {
 			'categories.parentCategory' => 'Categoria pai',
 			'categories.noParent' => 'Sem categoria pai',
 			'categories.subcategoryLabel' => 'Subcategoria',
+			'categories.subcategoryAppearanceInherited' => 'Subcategorias herdam o ícone e a cor da categoria pai.',
 			'categories.importCsv' => 'Importar categorias',
 			'categories.importCsvIntroTitle' => 'Importar categorias de CSV',
 			'categories.importCsvIntroBody' => 'Seu arquivo deve seguir o formato esperado (colunas Categoria, Subcategoria, Tipo — onde Tipo é Receita/Despesa ou Income/Expense). Baixe o exemplo para ver como funciona.',
@@ -1467,9 +1469,9 @@ extension on TranslationsPtBr {
 			'bills.typeReceivable' => 'A receber',
 			'bills.filterAll' => 'Todas',
 			'bills.category' => 'Categoria',
-			'bills.categoryRequired' => 'Selecione uma categoria',
 			_ => null,
 		} ?? switch (path) {
+			'bills.categoryRequired' => 'Selecione uma categoria',
 			'bills.notes' => 'Observações (opcional)',
 			'bills.notesHint' => 'Detalhes adicionais...',
 			'bills.markAsPaid' => 'Marcar como paga',

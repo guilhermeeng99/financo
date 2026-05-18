@@ -321,6 +321,7 @@
     "parentCategory": "Parent category",
     "noParent": "No parent",
     "subcategoryLabel": "Subcategory",
+    "subcategoryAppearanceInherited": "Subcategories inherit the parent category's icon and color.",
     "importCsv": "Import categories",
     "importCsvIntroTitle": "Import categories from CSV",
     "importCsvIntroBody": "Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.",

@@ -1064,6 +1064,9 @@ class TranslationsCategoriesEn {
 	/// en: 'Subcategory'
 	String get subcategoryLabel => 'Subcategory';
 
+	/// en: 'Subcategories inherit the parent category's icon and color.'
+	String get subcategoryAppearanceInherited => 'Subcategories inherit the parent category\'s icon and color.';
+
 	/// en: 'Import categories'
 	String get importCsv => 'Import categories';
 
@@ -2598,6 +2601,7 @@ extension on Translations {
 			'categories.parentCategory' => 'Parent category',
 			'categories.noParent' => 'No parent',
 			'categories.subcategoryLabel' => 'Subcategory',
+			'categories.subcategoryAppearanceInherited' => 'Subcategories inherit the parent category\'s icon and color.',
 			'categories.importCsv' => 'Import categories',
 			'categories.importCsvIntroTitle' => 'Import categories from CSV',
 			'categories.importCsvIntroBody' => 'Your file must follow the expected format (columns Categoria, Subcategoria, Tipo — where Tipo is Receita/Despesa or Income/Expense). Download the example to see how it works.',
@@ -2810,9 +2814,9 @@ extension on Translations {
 			'bills.typeReceivable' => 'To receive',
 			'bills.filterAll' => 'All',
 			'bills.category' => 'Category',
-			'bills.categoryRequired' => 'Pick a category',
 			_ => null,
 		} ?? switch (path) {
+			'bills.categoryRequired' => 'Pick a category',
 			'bills.notes' => 'Notes (optional)',
 			'bills.notesHint' => 'Additional details...',
 			'bills.markAsPaid' => 'Mark as paid',

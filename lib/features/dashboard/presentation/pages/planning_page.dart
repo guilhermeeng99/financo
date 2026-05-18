@@ -7,9 +7,13 @@ import 'package:flutter/material.dart';
 
 /// Shell tab container for budgeting tools. Hosts two sub-tabs:
 ///
-/// 1. **Orçamentos** — per-category monthly caps (the original Budgets
+/// 1. **50/30/20** — the rule overview + history + targets editor.
+/// 2. **Orçamentos** — per-category monthly caps (the original Budgets
 ///    feature).
-/// 2. **50/30/20** — the rule overview + history + targets editor.
+///
+/// 50/30/20 sits first because it is the higher-level lens users open
+/// the planning shell to consume; per-category budgets are a drill-down
+/// from there.
 ///
 /// Lives in the dashboard feature folder because the 50/30/20 detail
 /// page already lives there; the Budgets feature is consumed as-is.
@@ -87,8 +91,8 @@ class _PlanningPageState extends State<PlanningPage>
                         fontWeight: FontWeight.w700,
                       ),
                       tabs: [
-                        Tab(text: t.fiftyThirtyTwenty.subTabBudgets),
                         Tab(text: t.fiftyThirtyTwenty.subTabFiftyThirtyTwenty),
+                        Tab(text: t.fiftyThirtyTwenty.subTabBudgets),
                       ],
                     ),
                   ),
@@ -104,8 +108,8 @@ class _PlanningPageState extends State<PlanningPage>
           // Sub-pages render in `embedded: true` so they don't draw
           // their own FinancoLargeAppBar — the parent shell already
           // owns the title row above the TabBar.
-          BudgetsPage(embedded: true),
           FiftyThirtyTwentyPage(embedded: true),
+          BudgetsPage(embedded: true),
         ],
       ),
     );

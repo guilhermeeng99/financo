@@ -178,6 +178,7 @@ class _CategoriesBody extends StatelessWidget {
                         : byId[c.parentId];
                     return CategoryTile(
                       category: c,
+                      parent: parent,
                       parentName: parent?.name,
                       onTap: () => onTapCategory(c),
                     );
