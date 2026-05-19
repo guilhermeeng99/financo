@@ -25,11 +25,8 @@
     "required": "This field is required.",
     "emailRequired": "Email is required.",
     "emailInvalid": "Enter a valid email.",
-    "passwordRequired": "Password is required.",
-    "passwordMinLength": "Password must be at least 6 characters.",
     "amountRequired": "Amount is required.",
     "amountInvalid": "Enter a valid amount.",
-    "dateInFuture": "Date cannot be in the future.",
     "selectAccount": "Select an account",
     "selectCategory": "Select a category"
   },
@@ -78,12 +75,8 @@
   },
   "nav": {
     "dashboard": "Dashboard",
-    "transactions": "Transactions",
     "chat": "Chat",
-    "reports": "Reports",
     "profile": "Profile",
-    "bills": "Bills",
-    "budgets": "Budgets",
     "planning": "Planning",
     "investments": "Investments"
   },
@@ -516,21 +509,6 @@
       "resolveAccountNotFound": "Account \"$query\" not found. Please create it first or use the exact name.",
       "resolveAccountMultiple": "Multiple accounts match \"$query\": $names. Please be more specific."
     }
-  },
-  "reports": {
-    "title": "Reports",
-    "incomeVsExpenses": "Income vs Expenses",
-    "expensesByCategory": "Expenses by Category",
-    "income": "Income",
-    "expenses": "Expenses",
-    "net": "Net",
-    "currentMonth": "Current month",
-    "lastMonth": "Last month",
-    "customRange": "Custom range",
-    "categoryBreakdown": "Category Breakdown",
-    "monthlyComparison": "Monthly Comparison",
-    "balanceEvolution": "Balance Evolution",
-    "noData": "Not enough data to generate reports."
   },
   "bills": {
     "title": "Bills",

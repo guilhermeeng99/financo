@@ -53,7 +53,6 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
 	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
 	late final TranslationsChatEn chat = TranslationsChatEn._(_root);
-	late final TranslationsReportsEn reports = TranslationsReportsEn._(_root);
 	late final TranslationsBillsEn bills = TranslationsBillsEn._(_root);
 	late final TranslationsBudgetsEn budgets = TranslationsBudgetsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
@@ -147,20 +146,11 @@ class TranslationsValidatorsEn {
 	/// en: 'Enter a valid email.'
 	String get emailInvalid => 'Enter a valid email.';
 
-	/// en: 'Password is required.'
-	String get passwordRequired => 'Password is required.';
-
-	/// en: 'Password must be at least 6 characters.'
-	String get passwordMinLength => 'Password must be at least 6 characters.';
-
 	/// en: 'Amount is required.'
 	String get amountRequired => 'Amount is required.';
 
 	/// en: 'Enter a valid amount.'
 	String get amountInvalid => 'Enter a valid amount.';
-
-	/// en: 'Date cannot be in the future.'
-	String get dateInFuture => 'Date cannot be in the future.';
 
 	/// en: 'Select an account'
 	String get selectAccount => 'Select an account';
@@ -321,23 +311,11 @@ class TranslationsNavEn {
 	/// en: 'Dashboard'
 	String get dashboard => 'Dashboard';
 
-	/// en: 'Transactions'
-	String get transactions => 'Transactions';
-
 	/// en: 'Chat'
 	String get chat => 'Chat';
 
-	/// en: 'Reports'
-	String get reports => 'Reports';
-
 	/// en: 'Profile'
 	String get profile => 'Profile';
-
-	/// en: 'Bills'
-	String get bills => 'Bills';
-
-	/// en: 'Budgets'
-	String get budgets => 'Budgets';
 
 	/// en: 'Planning'
 	String get planning => 'Planning';
@@ -1264,54 +1242,6 @@ class TranslationsChatEn {
 	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
 	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
 	late final TranslationsChatHandlersEn handlers = TranslationsChatHandlersEn._(_root);
-}
-
-// Path: reports
-class TranslationsReportsEn {
-	TranslationsReportsEn._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Reports'
-	String get title => 'Reports';
-
-	/// en: 'Income vs Expenses'
-	String get incomeVsExpenses => 'Income vs Expenses';
-
-	/// en: 'Expenses by Category'
-	String get expensesByCategory => 'Expenses by Category';
-
-	/// en: 'Income'
-	String get income => 'Income';
-
-	/// en: 'Expenses'
-	String get expenses => 'Expenses';
-
-	/// en: 'Net'
-	String get net => 'Net';
-
-	/// en: 'Current month'
-	String get currentMonth => 'Current month';
-
-	/// en: 'Last month'
-	String get lastMonth => 'Last month';
-
-	/// en: 'Custom range'
-	String get customRange => 'Custom range';
-
-	/// en: 'Category Breakdown'
-	String get categoryBreakdown => 'Category Breakdown';
-
-	/// en: 'Monthly Comparison'
-	String get monthlyComparison => 'Monthly Comparison';
-
-	/// en: 'Balance Evolution'
-	String get balanceEvolution => 'Balance Evolution';
-
-	/// en: 'Not enough data to generate reports.'
-	String get noData => 'Not enough data to generate reports.';
 }
 
 // Path: bills
@@ -2632,11 +2562,8 @@ extension on Translations {
 			'validators.required' => 'This field is required.',
 			'validators.emailRequired' => 'Email is required.',
 			'validators.emailInvalid' => 'Enter a valid email.',
-			'validators.passwordRequired' => 'Password is required.',
-			'validators.passwordMinLength' => 'Password must be at least 6 characters.',
 			'validators.amountRequired' => 'Amount is required.',
 			'validators.amountInvalid' => 'Enter a valid amount.',
-			'validators.dateInFuture' => 'Date cannot be in the future.',
 			'validators.selectAccount' => 'Select an account',
 			'validators.selectCategory' => 'Select a category',
 			'auth.signOut' => 'Sign Out',
@@ -2675,12 +2602,8 @@ extension on Translations {
 			'onboarding.next' => 'Next',
 			'onboarding.skip' => 'Skip',
 			'nav.dashboard' => 'Dashboard',
-			'nav.transactions' => 'Transactions',
 			'nav.chat' => 'Chat',
-			'nav.reports' => 'Reports',
 			'nav.profile' => 'Profile',
-			'nav.bills' => 'Bills',
-			'nav.budgets' => 'Budgets',
 			'nav.planning' => 'Planning',
 			'nav.investments' => 'Investments',
 			'dashboard.title' => 'Dashboard',
@@ -3093,19 +3016,6 @@ extension on Translations {
 			'chat.handlers.resolveAccountMissing' => 'Which account should I use? Please tell me the account name.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Account "${query}" not found. Please create it first or use the exact name.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.',
-			'reports.title' => 'Reports',
-			'reports.incomeVsExpenses' => 'Income vs Expenses',
-			'reports.expensesByCategory' => 'Expenses by Category',
-			'reports.income' => 'Income',
-			'reports.expenses' => 'Expenses',
-			'reports.net' => 'Net',
-			'reports.currentMonth' => 'Current month',
-			'reports.lastMonth' => 'Last month',
-			'reports.customRange' => 'Custom range',
-			'reports.categoryBreakdown' => 'Category Breakdown',
-			'reports.monthlyComparison' => 'Monthly Comparison',
-			'reports.balanceEvolution' => 'Balance Evolution',
-			'reports.noData' => 'Not enough data to generate reports.',
 			'bills.title' => 'Bills',
 			'bills.empty' => 'No bills. Add a bill to get reminders before it\'s due.',
 			'bills.addBill' => 'New Bill',
@@ -3121,8 +3031,6 @@ extension on Translations {
 			'bills.type' => 'Type',
 			'bills.typePayable' => 'To pay',
 			'bills.typeReceivable' => 'To receive',
-			_ => null,
-		} ?? switch (path) {
 			'bills.filterAll' => 'All',
 			'bills.category' => 'Category',
 			'bills.categoryRequired' => 'Pick a category',
@@ -3143,6 +3051,8 @@ extension on Translations {
 			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
 			'bills.billCreated' => 'Bill created',
 			'bills.billUpdated' => 'Bill updated',
+			_ => null,
+		} ?? switch (path) {
 			'bills.billDeleted' => 'Bill deleted',
 			'bills.billPaid' => 'Bill paid — transaction created',
 			'bills.billReceived' => 'Payment received — transaction created',

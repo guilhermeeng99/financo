@@ -73,15 +73,14 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     color: row.color,
     type: CategoryType.values.byName(row.type),
     parentId: row.parentId,
-    bucket: _parseBucket(row.bucket),
+    // Legacy rows may carry an unknown bucket name (e.g. after enum
+    // renames); fall back to `null` so the 50/30/20 pipeline treats
+    // them as unclassified rather than crashing.
+    bucket: row.bucket == null
+        ? null
+        : CategoryBucket.values
+              .where((b) => b.name == row.bucket)
+              .firstOrNull,
     countsIn50_30_20: row.countsInFiftyThirtyTwenty,
   );
-
-  CategoryBucket? _parseBucket(String? raw) {
-    if (raw == null) return null;
-    for (final b in CategoryBucket.values) {
-      if (b.name == raw) return b;
-    }
-    return null;
-  }
 }

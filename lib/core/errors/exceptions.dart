@@ -10,12 +10,6 @@ class AuthException implements Exception {
   final String message;
 }
 
-class CacheException implements Exception {
-  const CacheException([this.message = 'Cache error occurred.']);
-
-  final String message;
-}
-
 class AiException implements Exception {
   const AiException([this.message = 'AI service error occurred.']);
 

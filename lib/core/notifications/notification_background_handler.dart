@@ -1,11 +1,11 @@
 import 'dart:developer';
 
+import 'package:financo/core/notifications/notification_constants.dart';
 import 'package:financo/core/notifications/notification_service.dart';
 import 'package:financo/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Top-level FCM background handler. Must be top-level (or static) so
@@ -50,7 +50,7 @@ Future<void> notificationBackgroundHandler(RemoteMessage message) async {
   final plugin = FlutterLocalNotificationsPlugin();
   await plugin.initialize(
     settings: const InitializationSettings(
-      android: AndroidInitializationSettings('ic_notification'),
+      android: AndroidInitializationSettings(NotificationConstants.smallIcon),
       iOS: DarwinInitializationSettings(),
     ),
   );
@@ -61,13 +61,13 @@ Future<void> notificationBackgroundHandler(RemoteMessage message) async {
     body: body,
     notificationDetails: const NotificationDetails(
       android: AndroidNotificationDetails(
-        'bills_due',
-        'Bill reminders',
-        channelDescription: 'Alerts when a bill is due or overdue.',
+        NotificationConstants.channelId,
+        NotificationConstants.channelName,
+        channelDescription: NotificationConstants.channelDescription,
         importance: Importance.high,
         priority: Priority.high,
-        icon: 'ic_notification',
-        color: Color(0xFF6366F1),
+        icon: NotificationConstants.smallIcon,
+        color: NotificationConstants.accent,
         colorized: true,
       ),
       iOS: DarwinNotificationDetails(),

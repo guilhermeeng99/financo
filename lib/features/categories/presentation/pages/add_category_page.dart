@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
@@ -246,9 +247,9 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
   }
 
   /// Cascade-delete every budget that referenced [categoryId]. Failures
-  /// are intentionally swallowed: the category deletion is the user's
+  /// are logged but not surfaced: the category deletion is the user's
   /// primary intent, and orphan budgets are tolerated by the overview
-  /// pipeline (see specs/budgets.md rule 8).
+  /// pipeline (see specs/budgets.md rule 7-8).
   Future<void> _deleteBudgetsForCategory({
     required String userId,
     required String categoryId,
@@ -257,13 +258,26 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     final deleteBudget = GetIt.I<DeleteBudgetUseCase>();
     final budgetsResult = await getBudgets(userId: userId);
     final budgets = budgetsResult.fold<List<BudgetEntity>>(
-      (_) => const [],
+      (failure) {
+        log(
+          'Budget cascade lookup failed; orphan budgets may remain. '
+          '${failure.message}',
+          name: 'CategoryDelete',
+        );
+        return const [];
+      },
       (list) => list,
     );
     for (final b in budgets) {
-      if (b.categoryId == categoryId) {
-        await deleteBudget(b.id);
-      }
+      if (b.categoryId != categoryId) continue;
+      final result = await deleteBudget(b.id);
+      result.fold(
+        (failure) => log(
+          'Budget cascade delete failed for ${b.id}. ${failure.message}',
+          name: 'CategoryDelete',
+        ),
+        (_) {},
+      );
     }
   }
 

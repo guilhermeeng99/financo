@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
@@ -320,7 +321,7 @@ class ImportAccountsCsvUseCase {
   /// Resolves header columns to logical field keys so the parser tolerates
   /// extra columns (e.g. `Data Saldo Inicial` from Mobills exports), a
   /// reordered layout, or English headers. Matching is accent- and
-  /// case-insensitive via [_normalize].
+  /// case-insensitive via `normalizeForMatch`.
   Map<String, int> _mapHeaderColumns(List<dynamic> header) {
     const synonyms = <String, List<String>>{
       'name': ['nome', 'name', 'account name', 'apelido'],
@@ -346,7 +347,7 @@ class ImportAccountsCsvUseCase {
 
     final out = <String, int>{};
     for (var i = 0; i < header.length; i++) {
-      final norm = _normalize('${header[i] ?? ''}');
+      final norm = normalizeForMatch('${header[i] ?? ''}');
       if (norm.isEmpty) continue;
       for (final entry in synonyms.entries) {
         if (out.containsKey(entry.key)) continue;
@@ -396,7 +397,7 @@ class ImportAccountsCsvUseCase {
   /// They must be created through the add-account form so the user sees
   /// the inline disclaimer about principal-only tracking.
   AccountType _parseType(String raw, int csvRow) {
-    final normalized = _normalize(raw);
+    final normalized = normalizeForMatch(raw);
     if (normalized.isEmpty) {
       throw FormatException(
         'Row $csvRow: type column is empty. '
@@ -475,29 +476,4 @@ class ImportAccountsCsvUseCase {
     return _parseDay(parts[0]);
   }
 
-  // Lowercase + strip Portuguese accents so "Cartão de Crédito" matches
-  // "cartao de credito" etc. without keeping a brittle synonym list.
-  String _normalize(String raw) {
-    final lower = raw.trim().toLowerCase();
-    const map = {
-      'á': 'a',
-      'à': 'a',
-      'â': 'a',
-      'ã': 'a',
-      'é': 'e',
-      'ê': 'e',
-      'í': 'i',
-      'ó': 'o',
-      'ô': 'o',
-      'õ': 'o',
-      'ú': 'u',
-      'ü': 'u',
-      'ç': 'c',
-    };
-    final buf = StringBuffer();
-    for (final c in lower.split('')) {
-      buf.write(map[c] ?? c);
-    }
-    return buf.toString();
-  }
 }

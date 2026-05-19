@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
@@ -82,15 +83,13 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
       (t) => t,
     );
 
-    // Running balance = seed balance + all income - all expenses
-    var runningBalance = account.initialBalance;
-    for (final tx in allTransactions) {
-      if (tx.type == TransactionType.income) {
-        runningBalance += tx.amount;
-      } else {
-        runningBalance -= tx.amount;
-      }
-    }
+    // Delegate the running-balance math to the shared calculator so
+    // checking/investment vs credit-card sign conventions stay in one
+    // place (specs/accounts.md "Live balance semantics").
+    final runningBalance = applyTransactionsToAccounts(
+      [account],
+      allTransactions,
+    ).single.effectiveBalance;
 
     // Period summary
     final sorted = List<TransactionEntity>.from(periodTransactions)

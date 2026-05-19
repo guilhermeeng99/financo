@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 const _collapsedWidth = 80.0;
 const _expandedWidth = 240.0;
@@ -367,21 +368,10 @@ class _DateScope extends StatelessWidget {
   }
 
   static String _shortMonth(int m) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[m - 1];
+    // Locale-aware month abbreviation so the sidebar reads "fev" / "out"
+    // in pt-BR instead of the hardcoded English list it used to ship.
+    final locale = LocaleSettings.currentLocale.languageTag;
+    return DateFormat.MMM(locale).format(DateTime(2000, m));
   }
 }
 

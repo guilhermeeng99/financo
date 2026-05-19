@@ -72,7 +72,10 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       linkedAccountId: state.type == AccountType.creditCard
           ? state.linkedAccountId
           : null,
-      createdAt: DateTime.now(),
+      // Preserve original creation time on edit — overwriting with `now`
+      // would rewrite the account's "added on" timestamp in Firestore
+      // every time the user tweaks a field.
+      createdAt: state.originalCreatedAt ?? DateTime.now(),
     );
 
     (state.isEditing
@@ -104,6 +107,7 @@ class AccountFormState extends Equatable {
     required this.status,
     this.existingId,
     this.originalType,
+    this.originalCreatedAt,
     this.failure,
   });
 
@@ -124,6 +128,7 @@ class AccountFormState extends Equatable {
       status: FormStatus.initial,
       existingId: existing?.id,
       originalType: existing?.type,
+      originalCreatedAt: existing?.createdAt,
     );
   }
 
@@ -146,6 +151,11 @@ class AccountFormState extends Equatable {
   /// `creditLimit` / `closingDay` / `dueDay` / `linkedAccountId` and
   /// flip the sign convention on every persisted transaction.
   final AccountType? originalType;
+
+  /// Captured at form open time on edit so `submit` can preserve the
+  /// account's original `createdAt`. `null` in create mode — submit
+  /// falls back to `DateTime.now()`.
+  final DateTime? originalCreatedAt;
   final Failure? failure;
 
   bool get isEditing => existingId != null;
@@ -184,6 +194,7 @@ class AccountFormState extends Equatable {
       status: status ?? this.status,
       existingId: existingId,
       originalType: originalType,
+      originalCreatedAt: originalCreatedAt,
       failure: failure ?? this.failure,
     );
   }
@@ -202,6 +213,7 @@ class AccountFormState extends Equatable {
     status,
     existingId,
     originalType,
+    originalCreatedAt,
     failure,
   ];
 }

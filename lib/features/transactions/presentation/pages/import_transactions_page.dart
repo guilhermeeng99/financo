@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
@@ -850,7 +851,10 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   /// the reason in a snackbar instead of silently disabling the button.
   List<String> _missingFields() {
     final missing = <String>[];
-    final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
+    // `parseDecimalAmount` handles both BR (`1.234,56`) and EN (`1234.56`)
+    // styles — the previous naive `replaceAll(',', '.')` parsed BR values
+    // with thousands separators as null.
+    final amount = parseDecimalAmount(_amountController.text);
     if (amount == null || amount <= 0) {
       missing.add(t.transactions.amountLabel);
     }
@@ -886,9 +890,9 @@ class _EditRowSheetState extends State<_EditRowSheet> {
       );
       return;
     }
-    final amount = double.parse(
-      _amountController.text.replaceAll(',', '.'),
-    );
+    // Safe to assert non-null: [_missingFields] above already gated this
+    // path on `parseDecimalAmount` returning a positive value.
+    final amount = parseDecimalAmount(_amountController.text)!;
     Navigator.of(context).pop(
       _draft.copyWith(
         amount: amount,

@@ -50,7 +50,6 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	@override late final _TranslationsAccountsPtBr accounts = _TranslationsAccountsPtBr._(_root);
 	@override late final _TranslationsCategoriesPtBr categories = _TranslationsCategoriesPtBr._(_root);
 	@override late final _TranslationsChatPtBr chat = _TranslationsChatPtBr._(_root);
-	@override late final _TranslationsReportsPtBr reports = _TranslationsReportsPtBr._(_root);
 	@override late final _TranslationsBillsPtBr bills = _TranslationsBillsPtBr._(_root);
 	@override late final _TranslationsBudgetsPtBr budgets = _TranslationsBudgetsPtBr._(_root);
 	@override late final _TranslationsProfilePtBr profile = _TranslationsProfilePtBr._(_root);
@@ -97,11 +96,8 @@ class _TranslationsValidatorsPtBr implements TranslationsValidatorsEn {
 	@override String get required => 'Este campo é obrigatório.';
 	@override String get emailRequired => 'O e-mail é obrigatório.';
 	@override String get emailInvalid => 'Informe um e-mail válido.';
-	@override String get passwordRequired => 'A senha é obrigatória.';
-	@override String get passwordMinLength => 'A senha deve ter pelo menos 6 caracteres.';
 	@override String get amountRequired => 'O valor é obrigatório.';
 	@override String get amountInvalid => 'Informe um valor válido.';
-	@override String get dateInFuture => 'A data não pode estar no futuro.';
 	@override String get selectAccount => 'Selecione uma conta';
 	@override String get selectCategory => 'Selecione uma categoria';
 }
@@ -185,12 +181,8 @@ class _TranslationsNavPtBr implements TranslationsNavEn {
 
 	// Translations
 	@override String get dashboard => 'Início';
-	@override String get transactions => 'Transações';
 	@override String get chat => 'Chat';
-	@override String get reports => 'Relatórios';
 	@override String get profile => 'Perfil';
-	@override String get bills => 'Contas';
-	@override String get budgets => 'Orçamento';
 	@override String get planning => 'Planejamento';
 	@override String get investments => 'Investimentos';
 }
@@ -538,28 +530,6 @@ class _TranslationsChatPtBr implements TranslationsChatEn {
 	@override late final _TranslationsChatAudioPtBr audio = _TranslationsChatAudioPtBr._(_root);
 	@override late final _TranslationsChatImagePtBr image = _TranslationsChatImagePtBr._(_root);
 	@override late final _TranslationsChatHandlersPtBr handlers = _TranslationsChatHandlersPtBr._(_root);
-}
-
-// Path: reports
-class _TranslationsReportsPtBr implements TranslationsReportsEn {
-	_TranslationsReportsPtBr._(this._root);
-
-	final TranslationsPtBr _root; // ignore: unused_field
-
-	// Translations
-	@override String get title => 'Relatórios';
-	@override String get incomeVsExpenses => 'Receitas vs Despesas';
-	@override String get expensesByCategory => 'Despesas por categoria';
-	@override String get income => 'Receitas';
-	@override String get expenses => 'Despesas';
-	@override String get net => 'Líquido';
-	@override String get currentMonth => 'Mês atual';
-	@override String get lastMonth => 'Mês passado';
-	@override String get customRange => 'Período personalizado';
-	@override String get categoryBreakdown => 'Detalhamento por categoria';
-	@override String get monthlyComparison => 'Comparativo mensal';
-	@override String get balanceEvolution => 'Evolução do saldo';
-	@override String get noData => 'Dados insuficientes para gerar relatórios.';
 }
 
 // Path: bills
@@ -1089,11 +1059,8 @@ extension on TranslationsPtBr {
 			'validators.required' => 'Este campo é obrigatório.',
 			'validators.emailRequired' => 'O e-mail é obrigatório.',
 			'validators.emailInvalid' => 'Informe um e-mail válido.',
-			'validators.passwordRequired' => 'A senha é obrigatória.',
-			'validators.passwordMinLength' => 'A senha deve ter pelo menos 6 caracteres.',
 			'validators.amountRequired' => 'O valor é obrigatório.',
 			'validators.amountInvalid' => 'Informe um valor válido.',
-			'validators.dateInFuture' => 'A data não pode estar no futuro.',
 			'validators.selectAccount' => 'Selecione uma conta',
 			'validators.selectCategory' => 'Selecione uma categoria',
 			'auth.signOut' => 'Sair',
@@ -1132,12 +1099,8 @@ extension on TranslationsPtBr {
 			'onboarding.next' => 'Próximo',
 			'onboarding.skip' => 'Pular',
 			'nav.dashboard' => 'Início',
-			'nav.transactions' => 'Transações',
 			'nav.chat' => 'Chat',
-			'nav.reports' => 'Relatórios',
 			'nav.profile' => 'Perfil',
-			'nav.bills' => 'Contas',
-			'nav.budgets' => 'Orçamento',
 			'nav.planning' => 'Planejamento',
 			'nav.investments' => 'Investimentos',
 			'dashboard.title' => 'Início',
@@ -1550,19 +1513,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.resolveAccountMissing' => 'Qual conta devo usar? Me diga o nome da conta.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.',
-			'reports.title' => 'Relatórios',
-			'reports.incomeVsExpenses' => 'Receitas vs Despesas',
-			'reports.expensesByCategory' => 'Despesas por categoria',
-			'reports.income' => 'Receitas',
-			'reports.expenses' => 'Despesas',
-			'reports.net' => 'Líquido',
-			'reports.currentMonth' => 'Mês atual',
-			'reports.lastMonth' => 'Mês passado',
-			'reports.customRange' => 'Período personalizado',
-			'reports.categoryBreakdown' => 'Detalhamento por categoria',
-			'reports.monthlyComparison' => 'Comparativo mensal',
-			'reports.balanceEvolution' => 'Evolução do saldo',
-			'reports.noData' => 'Dados insuficientes para gerar relatórios.',
 			'bills.title' => 'Contas',
 			'bills.empty' => 'Nenhuma conta. Adicione uma conta para receber lembretes antes do vencimento.',
 			'bills.addBill' => 'Nova conta',
@@ -1578,8 +1528,6 @@ extension on TranslationsPtBr {
 			'bills.type' => 'Tipo',
 			'bills.typePayable' => 'A pagar',
 			'bills.typeReceivable' => 'A receber',
-			_ => null,
-		} ?? switch (path) {
 			'bills.filterAll' => 'Todas',
 			'bills.category' => 'Categoria',
 			'bills.categoryRequired' => 'Selecione uma categoria',
@@ -1600,6 +1548,8 @@ extension on TranslationsPtBr {
 			'bills.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
 			'bills.billCreated' => 'Conta criada',
 			'bills.billUpdated' => 'Conta atualizada',
+			_ => null,
+		} ?? switch (path) {
 			'bills.billDeleted' => 'Conta excluída',
 			'bills.billPaid' => 'Conta paga — transação criada',
 			'bills.billReceived' => 'Pagamento recebido — transação criada',

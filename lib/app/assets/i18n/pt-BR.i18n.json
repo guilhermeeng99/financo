@@ -25,11 +25,8 @@
     "required": "Este campo é obrigatório.",
     "emailRequired": "O e-mail é obrigatório.",
     "emailInvalid": "Informe um e-mail válido.",
-    "passwordRequired": "A senha é obrigatória.",
-    "passwordMinLength": "A senha deve ter pelo menos 6 caracteres.",
     "amountRequired": "O valor é obrigatório.",
     "amountInvalid": "Informe um valor válido.",
-    "dateInFuture": "A data não pode estar no futuro.",
     "selectAccount": "Selecione uma conta",
     "selectCategory": "Selecione uma categoria"
   },
@@ -78,12 +75,8 @@
   },
   "nav": {
     "dashboard": "Início",
-    "transactions": "Transações",
     "chat": "Chat",
-    "reports": "Relatórios",
     "profile": "Perfil",
-    "bills": "Contas",
-    "budgets": "Orçamento",
     "planning": "Planejamento",
     "investments": "Investimentos"
   },
@@ -516,21 +509,6 @@
       "resolveAccountNotFound": "Conta \"$query\" não encontrada. Crie-a primeiro ou use o nome exato.",
       "resolveAccountMultiple": "Várias contas correspondem a \"$query\": $names. Seja mais específico."
     }
-  },
-  "reports": {
-    "title": "Relatórios",
-    "incomeVsExpenses": "Receitas vs Despesas",
-    "expensesByCategory": "Despesas por categoria",
-    "income": "Receitas",
-    "expenses": "Despesas",
-    "net": "Líquido",
-    "currentMonth": "Mês atual",
-    "lastMonth": "Mês passado",
-    "customRange": "Período personalizado",
-    "categoryBreakdown": "Detalhamento por categoria",
-    "monthlyComparison": "Comparativo mensal",
-    "balanceEvolution": "Evolução do saldo",
-    "noData": "Dados insuficientes para gerar relatórios."
   },
   "bills": {
     "title": "Contas",

@@ -24,13 +24,18 @@ The master panel reuses two entities — there is no master-specific shape.
 
 ### `UserEntity` (from `features/auth`)
 
-| Field       | Type       | Notes                                    |
-| ----------- | ---------- | ---------------------------------------- |
-| `id`        | `String`   | Firebase Auth UID                        |
-| `name`      | `String`   |                                          |
-| `email`     | `String`   |                                          |
-| `isMaster`  | `bool`     | Drives the admin gate                    |
-| `createdAt` | `DateTime` | First sign-in                            |
+| Field       | Type       | Notes                                                                  |
+| ----------- | ---------- | ---------------------------------------------------------------------- |
+| `id`        | `String`   | Firebase Auth UID                                                      |
+| `name`      | `String`   |                                                                        |
+| `email`     | `String`   | Compared against `kMasterEmail` to drive the admin gate (see rule 1).  |
+| `createdAt` | `DateTime` | First sign-in                                                          |
+
+The master identity is **derived from `email`**, not persisted as a flag on
+`users/{id}`. The single source of truth is the constant
+`kMasterEmail` in `lib/core/constants/access_control.dart`, mirrored by
+`MASTER_EMAIL` in `functions/src/config.ts` and the literal inside
+`firestore.rules`. See [access_control.md](./access_control.md).
 
 ### `AllowedEmail` (from `features/access_control`)
 
@@ -45,13 +50,15 @@ The master panel reuses two entities — there is no master-specific shape.
 
 ## 2. Business Rules
 
-1. **Master gate.** The page is only routable when `auth.user.isMaster` is
-   `true`. The route guard in `app_router.dart` does not enforce this —
-   the navigation menu hides the link, and the page itself short-circuits
-   to a permission error if hit directly. This is defence-in-depth, not
-   the primary control; the **authoritative gate** is the Firestore
-   security rule (`firestore.rules`) and the `deleteUserAsAdmin` Cloud
-   Function — both must verify `request.auth.token.master == true`.
+1. **Master gate.** The page is only routable when
+   `isMasterEmail(auth.user.email)` is `true`. The route guard in
+   `app_router.dart` does not enforce this — the navigation menu hides
+   the link, and the page itself short-circuits to a permission error
+   if hit directly. This is defence-in-depth, not the primary control;
+   the **authoritative gate** is the Firestore security rule
+   (`firestore.rules`) and the `deleteUserAsAdmin` Cloud Function —
+   both must verify that `request.auth.token.email` (lower-cased) equals
+   the master email constant.
 2. **Allowlist is the onboarding gate.** A new sign-in is allowed through
    `Authenticated` only when the user's email matches an entry in
    `allowed_emails/` (see `access_control.md`). Removing an entry does
@@ -67,9 +74,11 @@ The master panel reuses two entities — there is no master-specific shape.
 4. **Self-protection.** The UI hides the delete affordance for the
    admin's own row. Attempting to delete oneself via the Cloud Function
    directly is rejected by the function.
-5. **Master flag is server-issued.** `isMaster` cannot be flipped from the
-   client — it is set via Firestore console or the Cloud Function during
-   initial bootstrap. The master panel does NOT expose a toggle.
+5. **Master identity is code-constant.** There is no `isMaster` flag on
+   `users/{id}` — the gate is derived from the email at runtime by
+   `isMasterEmail`. Promoting another user therefore requires editing the
+   `kMasterEmail` / `MASTER_EMAIL` / `firestore.rules` literals in
+   lockstep and shipping a release; there is no Firestore-console toggle.
 
 ---
 

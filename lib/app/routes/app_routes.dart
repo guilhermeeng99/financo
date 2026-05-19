@@ -6,9 +6,7 @@ class AppRoutes {
   static const accessRestricted = '/access-restricted';
   static const masterPanel = '/master-panel';
   static const dashboard = '/';
-  static const transactions = '/transactions';
   static const chat = '/chat';
-  static const reports = '/reports';
   static const profile = '/profile';
   static const addTransaction = '/transaction/add';
   static const importTransactions = '/transactions/import';

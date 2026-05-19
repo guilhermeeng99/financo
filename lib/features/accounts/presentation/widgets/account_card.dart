@@ -23,8 +23,16 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final isCredit = account.type == AccountType.creditCard;
-    final typeLabel =
-        isCredit ? t.accounts.creditCard : t.accounts.checking;
+    final typeLabel = switch (account.type) {
+      AccountType.creditCard => t.accounts.creditCard,
+      AccountType.investment => t.accounts.investment,
+      AccountType.checking => t.accounts.checking,
+    };
+    final typeIcon = switch (account.type) {
+      AccountType.creditCard => FontAwesomeIcons.creditCard,
+      AccountType.investment => FontAwesomeIcons.piggyBank,
+      AccountType.checking => FontAwesomeIcons.buildingColumns,
+    };
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -64,9 +72,7 @@ class AccountCard extends StatelessWidget {
                           Row(
                             children: [
                               FaIcon(
-                                isCredit
-                                    ? FontAwesomeIcons.creditCard
-                                    : FontAwesomeIcons.buildingColumns,
+                                typeIcon,
                                 size: 10,
                                 color: colors.onBackgroundLight,
                               ),

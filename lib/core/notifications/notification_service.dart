@@ -3,10 +3,10 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/notifications/notification_background_handler.dart';
+import 'package:financo/core/notifications/notification_constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Wraps Firebase Cloud Messaging + flutter_local_notifications so the rest
@@ -40,21 +40,6 @@ class NotificationService {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
   final void Function(String route)? _onNavigate;
-
-  static const _channelId = 'bills_due';
-  static const _channelName = 'Bill reminders';
-  static const _channelDescription =
-      'Alerts when a bill is due or overdue.';
-
-  /// Drawable resource name (no `@drawable/` prefix) for the small icon
-  /// shown in the status bar. Must match `ic_notification.xml` and the
-  /// `default_notification_icon` meta-data in AndroidManifest so cold
-  /// FCM messages and foreground local notifications look identical.
-  static const _smallIcon = 'ic_notification';
-
-  /// Tint applied to `_smallIcon`. Matches the launcher background and
-  /// the `notification_color` resource.
-  static const Color _accent = Color(0xFF6366F1);
 
   bool _initialized = false;
 
@@ -91,17 +76,25 @@ class NotificationService {
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
+    await _requestFcmPermission();
+    await _initLocalNotifications();
+    await _registerAndroidChannel();
+    _registerMessageHandlers();
+    await _handleColdStartMessage();
+  }
 
-    // FCM permission. On iOS this triggers the system prompt; on Android 13+
-    // we still rely on POST_NOTIFICATIONS but FCM also needs this call to
-    // mint APNs tokens.
-    await _messaging.requestPermission();
+  // FCM permission: triggers the iOS system prompt and lets Android mint
+  // APNs tokens (POST_NOTIFICATIONS is still required separately on 13+).
+  Future<void> _requestFcmPermission() => _messaging.requestPermission();
 
-    // Local notifications init (used to display foreground messages on
-    // Android, and as the channel registration target). The default
-    // small icon is the monochrome silhouette — using the colored
-    // launcher icon would render as the system bell on Android 5+.
-    const androidInit = AndroidInitializationSettings(_smallIcon);
+  // Local notification plugin: used to render foreground messages on
+  // Android and to own the channel registration. Small icon is the
+  // monochrome silhouette — the colored launcher icon would degrade to
+  // the system bell on Android 5+.
+  Future<void> _initLocalNotifications() async {
+    const androidInit = AndroidInitializationSettings(
+      NotificationConstants.smallIcon,
+    );
     const iosInit = DarwinInitializationSettings();
     await _local.initialize(
       settings: const InitializationSettings(
@@ -113,43 +106,45 @@ class NotificationService {
         if (payload != null) _handlePayload(payload);
       },
     );
+  }
 
-    // Create the Android channel up-front so the first notification doesn't
-    // race the channel-not-found warning.
+  // Pre-create the channel so the first delivery doesn't race the
+  // channel-not-found warning.
+  Future<void> _registerAndroidChannel() async {
     await _local
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(
           const AndroidNotificationChannel(
-            _channelId,
-            _channelName,
-            description: _channelDescription,
+            NotificationConstants.channelId,
+            NotificationConstants.channelName,
+            description: NotificationConstants.channelDescription,
             importance: Importance.high,
           ),
         );
+  }
 
-    // Foreground messages: FCM doesn't display anything itself, so we render
-    // via the local plugin after the uid check passes.
+  void _registerMessageHandlers() {
+    // Foreground: FCM doesn't display anything itself, render via the
+    // local plugin after the uid check passes.
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
-
-    // Background/terminated messages: registered as a top-level handler
-    // since FCM spawns a separate isolate that can't capture `this`. The
-    // server now sends data-only pushes precisely so this handler can
-    // filter by uid before deciding whether to display.
+    // Background/terminated: top-level handler — FCM spawns a separate
+    // isolate that can't capture `this`. Server sends data-only pushes
+    // precisely so this handler can filter by uid before display.
     FirebaseMessaging.onBackgroundMessage(notificationBackgroundHandler);
-
-    // App was opened from a tapped notification (warm or cold start).
+    // App opened from a tapped notification (warm start).
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       final route = message.data['route'] as String?;
       if (route != null) _onNavigate?.call(route);
     });
+  }
 
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      final route = initialMessage.data['route'] as String?;
-      if (route != null) _onNavigate?.call(route);
-    }
+  // Cold start: app launched by tapping a notification while terminated.
+  Future<void> _handleColdStartMessage() async {
+    final initial = await _messaging.getInitialMessage();
+    final route = initial?.data['route'] as String?;
+    if (route != null) _onNavigate?.call(route);
   }
 
   Future<void> saveToken(String userId) async {
@@ -222,17 +217,17 @@ class NotificationService {
       body: body,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
-          _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
+          NotificationConstants.channelId,
+          NotificationConstants.channelName,
+          channelDescription: NotificationConstants.channelDescription,
           importance: Importance.high,
           priority: Priority.high,
           // Pin the small-icon + tint here too — without this Android
           // would otherwise grab whatever the AppCompat default is, and
           // foreground notifications would diverge visually from the
           // background ones delivered by FCM.
-          icon: _smallIcon,
-          color: _accent,
+          icon: NotificationConstants.smallIcon,
+          color: NotificationConstants.accent,
           colorized: true,
         ),
         iOS: DarwinNotificationDetails(),

@@ -59,9 +59,11 @@ class AccountDetailPage extends StatelessWidget {
                 rows: [
                   AccountDetailRow(
                     label: t.accounts.type,
-                    value: account.type == AccountType.checking
-                        ? t.accounts.checking
-                        : t.accounts.creditCard,
+                    value: switch (account.type) {
+                      AccountType.creditCard => t.accounts.creditCard,
+                      AccountType.investment => t.accounts.investment,
+                      AccountType.checking => t.accounts.checking,
+                    },
                   ),
                   AccountDetailRow(
                     label: t.accounts.bank,

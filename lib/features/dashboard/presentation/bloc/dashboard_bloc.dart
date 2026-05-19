@@ -29,6 +29,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardLoadRequested event,
     Emitter<DashboardState> emit,
   ) async {
+    // Skip the Loading emission when the dashboard is already showing
+    // some Loaded data (avoids the flicker on tab focus). The cache
+    // re-read is still issued so newly created rows surface without a
+    // pull-to-refresh — the use case is a Drift round-trip in that
+    // path, so the cost is negligible.
     if (event.forceRefresh || state is! DashboardLoaded) {
       emit(const DashboardLoading());
     }

@@ -22,16 +22,6 @@ class Validators {
     return null;
   }
 
-  static String? password(String? value) {
-    if (value == null || value.isEmpty) {
-      return t.validators.passwordRequired;
-    }
-    if (value.length < 6) {
-      return t.validators.passwordMinLength;
-    }
-    return null;
-  }
-
   static String? amount(String? value) {
     if (value == null || value.trim().isEmpty) {
       return t.validators.amountRequired;
@@ -46,15 +36,4 @@ class Validators {
     return null;
   }
 
-  static String? dateNotFuture(DateTime? value) {
-    if (value == null) {
-      return t.validators.required;
-    }
-    final today = DateTime.now();
-    final endOfToday = DateTime(today.year, today.month, today.day, 23, 59, 59);
-    if (value.isAfter(endOfToday)) {
-      return t.validators.dateInFuture;
-    }
-    return null;
-  }
 }

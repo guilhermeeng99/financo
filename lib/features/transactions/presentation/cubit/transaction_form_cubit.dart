@@ -104,6 +104,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   }
 
   Future<void> _submitTransaction() async {
+    final now = DateTime.now();
     final transaction = TransactionEntity(
       id: state.existingId ?? '',
       userId: state.userId,
@@ -115,8 +116,10 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       date: state.date,
       notes: state.notes,
       linkedTransactionId: state.linkedTransactionId,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      // Preserve original createdAt on edit — overwriting with `now`
+      // would corrupt the audit trail in Firestore.
+      createdAt: state.originalCreatedAt ?? now,
+      updatedAt: now,
     );
 
     (state.isEditing
@@ -196,6 +199,7 @@ class TransactionFormState extends Equatable {
     this.destinationAccountId = '',
     this.existingId,
     this.linkedTransactionId,
+    this.originalCreatedAt,
     this.savedTransactionId,
     this.continueAfterSave = false,
     this.failure,
@@ -221,6 +225,7 @@ class TransactionFormState extends Equatable {
       isTransfer: existing?.isTransfer ?? false,
       existingId: existing?.id,
       linkedTransactionId: existing?.linkedTransactionId,
+      originalCreatedAt: existing?.createdAt,
     );
   }
 
@@ -237,6 +242,11 @@ class TransactionFormState extends Equatable {
   final String destinationAccountId;
   final String? existingId;
   final String? linkedTransactionId;
+
+  /// Captured at form open time on edit so `_submitTransaction` can
+  /// preserve the transaction's original `createdAt`. `null` in create
+  /// mode — submit falls back to `DateTime.now()`.
+  final DateTime? originalCreatedAt;
 
   /// Set on `FormStatus.success` to the id of the row written by the
   /// last submit (created or updated). Lets callers — e.g. the bill
@@ -298,6 +308,7 @@ class TransactionFormState extends Equatable {
       isTransfer: isTransfer ?? this.isTransfer,
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
+      originalCreatedAt: originalCreatedAt,
       savedTransactionId: savedTransactionId ?? this.savedTransactionId,
       continueAfterSave: continueAfterSave ?? this.continueAfterSave,
       failure: failure ?? this.failure,
@@ -319,6 +330,7 @@ class TransactionFormState extends Equatable {
     isTransfer,
     existingId,
     linkedTransactionId,
+    originalCreatedAt,
     savedTransactionId,
     continueAfterSave,
     failure,
