@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
@@ -7,6 +8,7 @@ import 'package:financo/features/investments/domain/entities/asset_holding_entit
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
 import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
 import 'package:financo/features/investments/domain/services/compute_investment_overview.dart';
+import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 
 /// Creates a holding after enforcing the V1 invariants from
 /// `specs/investments.md` §2:
@@ -25,13 +27,16 @@ class CreateAssetHoldingUseCase {
     required AssetHoldingRepository holdingRepository,
     required AccountRepository accountRepository,
     required AssetClassRepository assetClassRepository,
+    required TransactionRepository transactionRepository,
   }) : _holdings = holdingRepository,
        _accounts = accountRepository,
-       _classes = assetClassRepository;
+       _classes = assetClassRepository,
+       _transactions = transactionRepository;
 
   final AssetHoldingRepository _holdings;
   final AccountRepository _accounts;
   final AssetClassRepository _classes;
+  final TransactionRepository _transactions;
 
   Future<Either<Failure, AssetHoldingEntity>> call(
     AssetHoldingEntity holding,
@@ -59,7 +64,22 @@ class CreateAssetHoldingUseCase {
       },
     );
     if (accountFailure != null) return Left(accountFailure);
-    final account = accountResult.fold<AccountEntity?>((_) => null, (a) => a)!;
+    final rawAccount =
+        accountResult.fold<AccountEntity?>((_) => null, (a) => a)!;
+
+    // `getAccount` returns the seed balance (`currentBalance == null`).
+    // The form's helper compares against `effectiveBalance` which would
+    // collapse to the seed and reject any allocation above it. Apply
+    // the transaction history here so the use case agrees with the
+    // page-level snapshot built by `GetInvestmentOverviewUseCase`.
+    final txResult = await _transactions.getTransactions(
+      userId: holding.userId,
+      accountId: holding.accountId,
+    );
+    final account = txResult.fold(
+      (_) => rawAccount,
+      (txns) => applyTransactionsToAccounts([rawAccount], txns).single,
+    );
 
     final existingResult = await _holdings.getAssetHoldings(
       userId: holding.userId,

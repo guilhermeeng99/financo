@@ -509,6 +509,7 @@ Future<void> initDependencies() async {
         holdingRepository: sl(),
         accountRepository: sl(),
         assetClassRepository: sl(),
+        transactionRepository: sl(),
       ),
     )
     ..registerLazySingleton(
@@ -516,6 +517,7 @@ Future<void> initDependencies() async {
         holdingRepository: sl(),
         accountRepository: sl(),
         assetClassRepository: sl(),
+        transactionRepository: sl(),
       ),
     )
     ..registerLazySingleton(() => DeleteAssetHoldingUseCase(sl()))

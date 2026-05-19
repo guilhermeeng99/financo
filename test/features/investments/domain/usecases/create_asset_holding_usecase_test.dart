@@ -4,6 +4,7 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/entities/asset_holding_entity.dart';
 import 'package:financo/features/investments/domain/usecases/create_asset_holding_usecase.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -17,6 +18,7 @@ void main() {
   late MockAssetHoldingRepository holdingRepository;
   late MockAccountRepository accountRepository;
   late MockAssetClassRepository classRepository;
+  late MockTransactionRepository transactionRepository;
   late CreateAssetHoldingUseCase useCase;
 
   setUpAll(() {
@@ -35,10 +37,12 @@ void main() {
     holdingRepository = MockAssetHoldingRepository();
     accountRepository = MockAccountRepository();
     classRepository = MockAssetClassRepository();
+    transactionRepository = MockTransactionRepository();
     useCase = CreateAssetHoldingUseCase(
       holdingRepository: holdingRepository,
       accountRepository: accountRepository,
       assetClassRepository: classRepository,
+      transactionRepository: transactionRepository,
     );
     // Default class list: a root + a subclass under it. Tests that
     // need the root-only edge override this.
@@ -46,6 +50,19 @@ void main() {
       () => classRepository.getAssetClasses(userId: any(named: 'userId')),
     ).thenAnswer(
       (_) async => Right<Failure, List<AssetClassEntity>>([stocks, apple]),
+    );
+    // No transactions by default — `effectiveBalance` falls back to
+    // `currentBalance` (or `initialBalance` when the factory left it
+    // null).
+    when(
+      () => transactionRepository.getTransactions(
+        userId: any(named: 'userId'),
+        accountId: any(named: 'accountId'),
+      ),
+    ).thenAnswer(
+      (_) async => const Right<Failure, List<TransactionEntity>>(
+        <TransactionEntity>[],
+      ),
     );
   });
 
