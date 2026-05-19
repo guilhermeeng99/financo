@@ -53,10 +53,7 @@ Adding a new bank means: append a value to `BankType`, add a matching entry in `
 ## Business Rules
 
 1. **Name is required** — cannot be empty.
-2. **Account type is partially mutable after creation**:
-   - `checking ↔ investment` is allowed via the edit form. Both share the same balance sign convention (positive = held) and neither uses credit-card-only fields, so the swap is data-safe — useful for users who set up a "checking" before the investment type existed and want to migrate.
-   - `creditCard` is **immutable** in either direction. Switching it would invalidate `creditLimit` / `closingDay` / `dueDay` / `linkedAccountId` and flip the sign convention on every persisted transaction.
-   - The form hides the `creditCard` pill in edit mode and disables the toggle entirely when the original type was `creditCard`.
+2. **Account type is immutable after creation.** The type pill is the only top-level form section that disappears entirely on edit — there is no read-only label, no disabled toggle. Flipping any pair invalidates either the credit-card-only fields or the sign convention applied to every persisted transaction. A transient checking ↔ investment swap was available while the original users migrated their pre-investment-type accounts and has been removed.
 3. **Credit card fields are conditional:**
    - `creditLimit`, `closingDay`, `dueDay`, `linkedAccountId` — required when `type == creditCard`, null when `type == checking` or `type == investment`.
    - `linkedAccountId` must reference an existing checking account.

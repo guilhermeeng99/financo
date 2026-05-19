@@ -58,6 +58,7 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
     BankType.next,
     BankType.will,
     BankType.neon,
+    BankType.avenue,
     BankType.others,
   ];
 

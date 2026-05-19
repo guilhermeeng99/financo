@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:financo/app/widgets/bank_avatar.dart';
+import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
@@ -624,14 +626,16 @@ class _EditItemSheetState extends State<_EditItemSheet> {
     super.initState();
     _draft = widget.item;
     _nameController = TextEditingController(text: _draft.name);
+    // Seed the controllers with BR-formatted text so the first paint
+    // matches what `BrlCurrencyInputFormatter` produces on edit.
     _balanceController = TextEditingController(
-      text: _draft.initialBalance.toStringAsFixed(2),
+      text: BrlCurrencyInputFormatter.format(_draft.initialBalance),
     );
     _limitController = TextEditingController(
       // Show whatever the CSV gave us (including 0,00) so the user can see
       // the field is "set but invalid" instead of just empty placeholder.
       text: _draft.creditLimit != null
-          ? _draft.creditLimit!.toStringAsFixed(2)
+          ? BrlCurrencyInputFormatter.format(_draft.creditLimit!)
           : '',
     );
   }
@@ -724,8 +728,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       missing.add(t.accounts.name);
     }
     if (_draft.isCreditCard) {
-      final limit =
-          double.tryParse(_limitController.text.replaceAll(',', '.'));
+      final limit = parseDecimalAmount(_limitController.text);
       if (limit == null || limit <= 0) missing.add(t.accounts.creditLimit);
       if (_draft.closingDay == null) missing.add(t.accounts.closingDay);
       if (_draft.dueDay == null) missing.add(t.accounts.dueDay);
@@ -749,10 +752,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       );
       return;
     }
-    final balance =
-        double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0;
-    final limit =
-        double.tryParse(_limitController.text.replaceAll(',', '.')) ?? 0;
+    final balance = parseDecimalAmount(_balanceController.text) ?? 0;
+    final limit = parseDecimalAmount(_limitController.text) ?? 0;
     Navigator.of(context).pop(
       _draft.copyWith(
         name: _nameController.text.trim(),
@@ -839,13 +840,10 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
-                      FinancoTextField(
+                      FinancoCurrencyField(
                         controller: _balanceController,
                         label: t.accounts.balanceLabel,
                         hintText: t.accounts.balanceHint,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
@@ -861,14 +859,10 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                     FinancoFormSection(
                       label: t.accounts.formSectionCreditCard,
                       children: [
-                        FinancoTextField(
+                        FinancoCurrencyField(
                           controller: _limitController,
                           label: t.accounts.creditLimitLabel,
                           hintText: t.accounts.creditLimitHint,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
                           onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 12),

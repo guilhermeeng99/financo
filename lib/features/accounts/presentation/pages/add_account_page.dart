@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
@@ -76,9 +77,13 @@ class _AddAccountViewState extends State<_AddAccountView> {
     final state = context.read<AccountFormCubit>().state;
     if (state.isEditing) {
       _nameController.text = state.name;
-      _balanceController.text = state.balance.toStringAsFixed(2);
+      // Seed the controllers with the BR-formatted numeric portion so the
+      // first paint matches what `BrlCurrencyInputFormatter` will produce
+      // on every subsequent keystroke ("65.679,36" not "65679.36").
+      _balanceController.text = BrlCurrencyInputFormatter.format(state.balance);
       if (state.creditLimit > 0) {
-        _creditLimitController.text = state.creditLimit.toStringAsFixed(2);
+        _creditLimitController.text =
+            BrlCurrencyInputFormatter.format(state.creditLimit);
       }
       if (state.linkedAccountId.isNotEmpty) {
         unawaited(_loadLinkedAccountName(state.userId, state.linkedAccountId));
@@ -233,50 +238,42 @@ class _AddAccountViewState extends State<_AddAccountView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FinancoFormSection(
-                      label: t.accounts.formSectionType,
-                      children: [
-                        FinancoPillToggle<AccountType>(
-                          selected: state.type,
-                          // Only locks when the original type was
-                          // creditCard — checking ↔ investment is a
-                          // free swap (same balance sign, no
-                          // credit-card-only fields), enabling users
-                          // who set up a "checking" to track an
-                          // investment account to migrate later.
-                          disabled: !state.canChangeType,
-                          onChanged: cubit.updateType,
-                          options: [
-                            FinancoPillToggleOption(
-                              value: AccountType.checking,
-                              label: t.accounts.checkingShort,
-                              icon: FontAwesomeIcons.buildingColumns,
-                            ),
-                            // creditCard pill stays available only on
-                            // create — flipping checking/investment
-                            // into credit on an existing account
-                            // would invalidate the sign convention
-                            // and the credit-card-only fields.
-                            if (!state.isEditing)
+                    // Type is locked once an account exists — hide the
+                    // toggle entirely on edit so the user isn't teased
+                    // with a non-interactive control.
+                    if (!state.isEditing) ...[
+                      FinancoFormSection(
+                        label: t.accounts.formSectionType,
+                        children: [
+                          FinancoPillToggle<AccountType>(
+                            selected: state.type,
+                            onChanged: cubit.updateType,
+                            options: [
+                              FinancoPillToggleOption(
+                                value: AccountType.checking,
+                                label: t.accounts.checkingShort,
+                                icon: FontAwesomeIcons.buildingColumns,
+                              ),
                               FinancoPillToggleOption(
                                 value: AccountType.creditCard,
                                 label: t.accounts.creditCard,
                                 icon: FontAwesomeIcons.creditCard,
                               ),
-                            FinancoPillToggleOption(
-                              value: AccountType.investment,
-                              label: t.accounts.investmentShort,
-                              icon: FontAwesomeIcons.piggyBank,
-                            ),
+                              FinancoPillToggleOption(
+                                value: AccountType.investment,
+                                label: t.accounts.investmentShort,
+                                icon: FontAwesomeIcons.piggyBank,
+                              ),
+                            ],
+                          ),
+                          if (state.type == AccountType.investment) ...[
+                            const SizedBox(height: 12),
+                            _InvestmentHint(),
                           ],
-                        ),
-                        if (state.type == AccountType.investment) ...[
-                          const SizedBox(height: 12),
-                          _InvestmentHint(),
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 20),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     FinancoFormSection(
                       label: t.accounts.formSectionDetails,
                       children: [
@@ -293,19 +290,10 @@ class _AddAccountViewState extends State<_AddAccountView> {
                           onChanged: cubit.updateBank,
                         ),
                         const SizedBox(height: 12),
-                        FinancoTextField(
+                        FinancoCurrencyField(
                           controller: _balanceController,
                           label: t.accounts.balanceLabel,
                           hintText: t.accounts.balanceHint,
-                          // signed: true so accounts that start in
-                          // overdraft (negative balance) can be entered
-                          // on mobile — desktop already accepts `-` from
-                          // the physical keyboard.
-                          keyboardType:
-                              const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
                           onChanged: cubit.updateBalance,
                         ),
                       ],
@@ -325,14 +313,10 @@ class _AddAccountViewState extends State<_AddAccountView> {
                             onTap: _pickLinkedAccount,
                           ),
                           const SizedBox(height: 12),
-                          FinancoTextField(
+                          FinancoCurrencyField(
                             controller: _creditLimitController,
                             label: t.accounts.creditLimitLabel,
                             hintText: t.accounts.creditLimitHint,
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
                             onChanged: cubit.updateCreditLimit,
                           ),
                           const SizedBox(height: 12),

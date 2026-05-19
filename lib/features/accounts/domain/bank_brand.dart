@@ -126,6 +126,11 @@ class BankBrand {
       abbreviation: 'Neon',
       color: 0xFFFFFC00,
     ),
+    BankType.avenue: BankBrand(
+      label: 'Avenue',
+      abbreviation: 'Av',
+      color: 0xFFE6007E,
+    ),
     BankType.others: BankBrand(
       label: 'Others',
       abbreviation: '',
@@ -202,6 +207,8 @@ class BankBrand {
       'will bank': BankType.will,
       'neon pagamentos': BankType.neon,
       'banco neon': BankType.neon,
+      'avenue securities': BankType.avenue,
+      'avenue corretora': BankType.avenue,
     };
     for (final e in extras.entries) {
       map[e.key] = e.value;

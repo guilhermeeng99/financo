@@ -106,7 +106,6 @@ class AccountFormState extends Equatable {
     required this.linkedAccountId,
     required this.status,
     this.existingId,
-    this.originalType,
     this.originalCreatedAt,
     this.failure,
   });
@@ -127,7 +126,6 @@ class AccountFormState extends Equatable {
       linkedAccountId: existing?.linkedAccountId ?? '',
       status: FormStatus.initial,
       existingId: existing?.id,
-      originalType: existing?.type,
       originalCreatedAt: existing?.createdAt,
     );
   }
@@ -144,14 +142,6 @@ class AccountFormState extends Equatable {
   final FormStatus status;
   final String? existingId;
 
-  /// Type the account had when the form opened. Drives whether the
-  /// type pill is editable: `checking ↔ investment` is allowed (same
-  /// balance sign convention, no credit-card-only fields), but
-  /// `creditCard` stays locked because flipping it would invalidate
-  /// `creditLimit` / `closingDay` / `dueDay` / `linkedAccountId` and
-  /// flip the sign convention on every persisted transaction.
-  final AccountType? originalType;
-
   /// Captured at form open time on edit so `submit` can preserve the
   /// account's original `createdAt`. `null` in create mode — submit
   /// falls back to `DateTime.now()`.
@@ -163,11 +153,12 @@ class AccountFormState extends Equatable {
       name.isNotEmpty &&
       (type != AccountType.creditCard || linkedAccountId.isNotEmpty);
 
-  /// True when the user is allowed to flip the account type. Always
-  /// true on create; on edit, only when the original type wasn't
-  /// `creditCard` (see [originalType] comment).
-  bool get canChangeType =>
-      !isEditing || originalType != AccountType.creditCard;
+  /// Type is locked once an account exists: flipping it would
+  /// invalidate credit-card-only fields and the sign convention applied
+  /// to every persisted transaction. The free checking ↔ investment
+  /// swap that existed transiently to migrate legacy accounts was
+  /// removed once the affected users had finished migrating.
+  bool get canChangeType => !isEditing;
 
   AccountFormState copyWith({
     String? name,
@@ -193,7 +184,6 @@ class AccountFormState extends Equatable {
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
       status: status ?? this.status,
       existingId: existingId,
-      originalType: originalType,
       originalCreatedAt: originalCreatedAt,
       failure: failure ?? this.failure,
     );
@@ -212,7 +202,6 @@ class AccountFormState extends Equatable {
     linkedAccountId,
     status,
     existingId,
-    originalType,
     originalCreatedAt,
     failure,
   ];

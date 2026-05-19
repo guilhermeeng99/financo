@@ -34,6 +34,7 @@ enum BankType {
   next,
   will,
   neon,
+  avenue,
   others,
 }
 
