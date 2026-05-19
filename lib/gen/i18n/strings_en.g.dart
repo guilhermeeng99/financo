@@ -58,6 +58,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsBudgetsEn budgets = TranslationsBudgetsEn._(_root);
 	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
 	late final TranslationsStartupEn startup = TranslationsStartupEn._(_root);
+	late final TranslationsInvestmentsEn investments = TranslationsInvestmentsEn._(_root);
 }
 
 // Path: general
@@ -340,6 +341,9 @@ class TranslationsNavEn {
 
 	/// en: 'Planning'
 	String get planning => 'Planning';
+
+	/// en: 'Investments'
+	String get investments => 'Investments';
 }
 
 // Path: dashboard
@@ -535,6 +539,9 @@ class TranslationsFiftyThirtyTwentyEn {
 
 	/// en: '50/30/20'
 	String get subTabFiftyThirtyTwenty => '50/30/20';
+
+	/// en: 'Bills'
+	String get subTabBills => 'Bills';
 }
 
 // Path: transactions
@@ -1814,6 +1821,306 @@ class TranslationsStartupEn {
 	String get errorRetry => 'Try again';
 }
 
+// Path: investments
+class TranslationsInvestmentsEn {
+	TranslationsInvestmentsEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Investments'
+	String get title => 'Investments';
+
+	/// en: 'INVESTED CAPITAL'
+	String get heroTitle => 'INVESTED CAPITAL';
+
+	/// en: 'Allocated'
+	String get heroAllocated => 'Allocated';
+
+	/// en: 'Pending'
+	String get heroPending => 'Pending';
+
+	/// en: '$amount unallocated'
+	String pendingBannerTitle({required Object amount}) => '${amount} unallocated';
+
+	/// en: 'Tell us where this money is invested.'
+	String get pendingBannerSubtitle => 'Tell us where this money is invested.';
+
+	/// en: 'Allocation'
+	String get sectionAllocation => 'Allocation';
+
+	/// en: 'Classes'
+	String get sectionClasses => 'Classes';
+
+	/// en: 'Rebalance'
+	String get sectionRebalance => 'Rebalance';
+
+	/// en: 'Pending per account'
+	String get sectionAccountPending => 'Pending per account';
+
+	/// en: 'No allocations yet. Create classes and log holdings to see the breakdown.'
+	String get allocationEmpty => 'No allocations yet. Create classes and log holdings to see the breakdown.';
+
+	/// en: '$actual of $target'
+	String classRowSubtitle({required Object actual, required Object target}) => '${actual} of ${target}';
+
+	/// en: 'on target'
+	String get classRowOnTarget => 'on target';
+
+	/// en: '$amount below'
+	String classRowUnderTarget({required Object amount}) => '${amount} below';
+
+	/// en: '$amount above'
+	String classRowOverTarget({required Object amount}) => '${amount} above';
+
+	/// en: '$amount unallocated'
+	String accountPending({required Object amount}) => '${amount} unallocated';
+
+	/// en: 'Allocation ($allocated) exceeds balance ($balance) — reconcile'
+	String accountOverflow({required Object allocated, required Object balance}) => 'Allocation (${allocated}) exceeds balance (${balance}) — reconcile';
+
+	/// en: 'Allocate'
+	String get allocateAction => 'Allocate';
+
+	/// en: 'Allocate $amount pending'
+	String rebalanceAllocatePending({required Object amount}) => 'Allocate ${amount} pending';
+
+	/// en: 'Buy $amount of $className'
+	String rebalanceBuy({required Object amount, required Object className}) => 'Buy ${amount} of ${className}';
+
+	/// en: 'Sell $amount of $className'
+	String rebalanceSell({required Object amount, required Object className}) => 'Sell ${amount} of ${className}';
+
+	/// en: 'Targets sum to $percent% — adjust to 100%.'
+	String targetsBanner({required Object percent}) => 'Targets sum to ${percent}% — adjust to 100%.';
+
+	/// en: 'Maintenance: $count orphan holding(s) excluded from totals.'
+	String orphanBanner({required Object count}) => 'Maintenance: ${count} orphan holding(s) excluded from totals.';
+
+	/// en: 'Create an investment account'
+	String get emptyNoAccountTitle => 'Create an investment account';
+
+	/// en: 'Before declaring where your money is allocated, add an Investment-type account. It becomes the ceiling your classes split.'
+	String get emptyNoAccountMessage => 'Before declaring where your money is allocated, add an Investment-type account. It becomes the ceiling your classes split.';
+
+	/// en: 'E.g. "XP Portfolio" with R$ 60,000 balance'
+	String get emptyNoAccountExample => 'E.g. "XP Portfolio" with R\$ 60,000 balance';
+
+	/// en: 'Create account'
+	String get emptyNoAccountAction => 'Create account';
+
+	/// en: 'Define your asset classes'
+	String get emptyNoClassesTitle => 'Define your asset classes';
+
+	/// en: 'Create buckets that match how you split your investments. Each class carries the target (%) you want — the page compares actual against target.'
+	String get emptyNoClassesMessage => 'Create buckets that match how you split your investments. Each class carries the target (%) you want — the page compares actual against target.';
+
+	/// en: 'E.g. ARCA — Stocks 25% · REITs 25% · Crypto 25% · Bonds 25%'
+	String get emptyNoClassesExample => 'E.g. ARCA — Stocks 25% · REITs 25% · Crypto 25% · Bonds 25%';
+
+	/// en: 'Create class'
+	String get emptyNoClassesAction => 'Create class';
+
+	/// en: 'Identity'
+	String get sectionIdentity => 'Identity';
+
+	/// en: 'Target'
+	String get sectionTarget => 'Target';
+
+	/// en: 'Name'
+	String get classNameLabel => 'Name';
+
+	/// en: 'e.g. Real Estate'
+	String get classNameHint => 'e.g. Real Estate';
+
+	/// en: 'Icon'
+	String get classIcon => 'Icon';
+
+	/// en: 'Color'
+	String get classColor => 'Color';
+
+	/// en: 'Target %'
+	String get targetPercentLabel => 'Target %';
+
+	/// en: 'Share of total wealth you want allocated to this class.'
+	String get targetHelper => 'Share of total wealth you want allocated to this class.';
+
+	/// en: 'Share of the parent class this subclass should represent.'
+	String get targetSubclassHelper => 'Share of the parent class this subclass should represent.';
+
+	/// en: 'New class'
+	String get newClassTitle => 'New class';
+
+	/// en: 'Edit class'
+	String get editClassTitle => 'Edit class';
+
+	/// en: 'New subclass'
+	String get newSubclassTitle => 'New subclass';
+
+	/// en: 'Edit subclass'
+	String get editSubclassTitle => 'Edit subclass';
+
+	/// en: 'Create class'
+	String get createClass => 'Create class';
+
+	/// en: 'Create subclass'
+	String get createSubclass => 'Create subclass';
+
+	/// en: 'Save class'
+	String get saveClass => 'Save class';
+
+	/// en: 'Class created'
+	String get classCreated => 'Class created';
+
+	/// en: 'Class updated'
+	String get classUpdated => 'Class updated';
+
+	/// en: 'e.g. Apple'
+	String get subclassNameHint => 'e.g. Apple';
+
+	/// en: 'Parent class'
+	String get parentLabel => 'Parent class';
+
+	/// en: 'None — root class'
+	String get parentPlaceholder => 'None — root class';
+
+	/// en: 'Pick a parent class'
+	String get pickParentClass => 'Pick a parent class';
+
+	/// en: 'Create a root class first.'
+	String get parentPickerEmpty => 'Create a root class first.';
+
+	/// en: 'None (root class)'
+	String get parentPickerNone => 'None (root class)';
+
+	/// en: 'Subclass inherits icon and color from $parent.'
+	String subclassInheritsHint({required Object parent}) => 'Subclass inherits icon and color from ${parent}.';
+
+	/// en: 'Subclass of $parent'
+	String subclassOf({required Object parent}) => 'Subclass of ${parent}';
+
+	/// en: '$percent of class'
+	String subclassRowSubtitle({required Object percent}) => '${percent} of class';
+
+	/// en: 'Add subclass'
+	String get addSubclass => 'Add subclass';
+
+	/// en: 'No subclasses yet — tap to add one.'
+	String get classRowNoSubclasses => 'No subclasses yet — tap to add one.';
+
+	/// en: 'Class'
+	String get classDetailTitle => 'Class';
+
+	/// en: 'Subclasses'
+	String get detailSubclassesSection => 'Subclasses';
+
+	/// en: 'Target: $amount'
+	String detailTargetAmount({required Object amount}) => 'Target: ${amount}';
+
+	/// en: 'Create your first subclass'
+	String get detailNoSubclassesTitle => 'Create your first subclass';
+
+	/// en: 'Subclasses are where money is actually allocated (e.g. Apple, Tesla). The class organises the group.'
+	String get detailNoSubclassesBody => 'Subclasses are where money is actually allocated (e.g. Apple, Tesla). The class organises the group.';
+
+	/// en: '$amount · $percent of class'
+	String subclassDetailLine({required Object amount, required Object percent}) => '${amount} · ${percent} of class';
+
+	/// en: 'Add $amount to reach the suggested target'
+	String subclassSuggestionAdd({required Object amount}) => 'Add ${amount} to reach the suggested target';
+
+	/// en: 'Trim $amount — above the suggested target'
+	String subclassSuggestionTrim({required Object amount}) => 'Trim ${amount} — above the suggested target';
+
+	/// en: 'On suggested target'
+	String get subclassSuggestionBalanced => 'On suggested target';
+
+	/// en: 'Set a target % to see a suggestion'
+	String get subclassSuggestionNoTarget => 'Set a target % to see a suggestion';
+
+	/// en: 'Delete class'
+	String get deleteClassTitle => 'Delete class';
+
+	/// en: 'Linked holdings must be reassigned or removed first. Continue?'
+	String get deleteClassConfirm => 'Linked holdings must be reassigned or removed first. Continue?';
+
+	/// en: 'Class deleted'
+	String get deleteClassSuccess => 'Class deleted';
+
+	/// en: 'New holding'
+	String get newHoldingTitle => 'New holding';
+
+	/// en: 'Edit holding'
+	String get editHoldingTitle => 'Edit holding';
+
+	/// en: 'Create holding'
+	String get createHolding => 'Create holding';
+
+	/// en: 'Save holding'
+	String get saveHolding => 'Save holding';
+
+	/// en: 'Delete holding'
+	String get deleteHoldingTitle => 'Delete holding';
+
+	/// en: 'This holding will be removed from the breakdown. The account balance is not affected.'
+	String get deleteHoldingConfirm => 'This holding will be removed from the breakdown. The account balance is not affected.';
+
+	/// en: 'Account'
+	String get account => 'Account';
+
+	/// en: 'Class'
+	String get assetClass => 'Class';
+
+	/// en: 'Amount'
+	String get amount => 'Amount';
+
+	/// en: 'Notes'
+	String get notes => 'Notes';
+
+	/// en: 'Optional details (e.g. CDB Banco Inter, matures 2028)'
+	String get notesHint => 'Optional details (e.g. CDB Banco Inter, matures 2028)';
+
+	/// en: 'Pick an account'
+	String get pickAccount => 'Pick an account';
+
+	/// en: 'Pick a class'
+	String get pickClass => 'Pick a class';
+
+	/// en: 'Nothing to pick yet.'
+	String get pickerEmpty => 'Nothing to pick yet.';
+
+	/// en: 'Available on this account: $available'
+	String amountHelper({required Object available}) => 'Available on this account: ${available}';
+
+	/// en: 'Above available ($available)'
+	String amountOverflow({required Object available}) => 'Above available (${available})';
+
+	/// en: 'target'
+	String get targetShort => 'target';
+
+	/// en: 'New class'
+	String get fabAddClass => 'New class';
+
+	/// en: 'Create an investment bucket (e.g. REITs).'
+	String get fabAddClassSubtitle => 'Create an investment bucket (e.g. REITs).';
+
+	/// en: 'New holding'
+	String get fabAddHolding => 'New holding';
+
+	/// en: 'Tell us how a slice of the balance is invested.'
+	String get fabAddHoldingSubtitle => 'Tell us how a slice of the balance is invested.';
+
+	/// en: 'Create an investment account first.'
+	String get fabAddHoldingNoAccount => 'Create an investment account first.';
+
+	/// en: 'Create a class first.'
+	String get fabAddHoldingNoClass => 'Create a class first.';
+
+	/// en: 'Add a subclass before allocating — classes are organisers only.'
+	String get fabAddHoldingNoSubclass => 'Add a subclass before allocating — classes are organisers only.';
+}
+
 // Path: chat.action
 class TranslationsChatActionEn {
 	TranslationsChatActionEn._(this._root);
@@ -2375,6 +2682,7 @@ extension on Translations {
 			'nav.bills' => 'Bills',
 			'nav.budgets' => 'Budgets',
 			'nav.planning' => 'Planning',
+			'nav.investments' => 'Investments',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -2434,6 +2742,7 @@ extension on Translations {
 			'fiftyThirtyTwenty.navLabel' => 'Planning',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Budgets',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
+			'fiftyThirtyTwenty.subTabBills' => 'Bills',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
@@ -2812,10 +3121,10 @@ extension on Translations {
 			'bills.type' => 'Type',
 			'bills.typePayable' => 'To pay',
 			'bills.typeReceivable' => 'To receive',
-			'bills.filterAll' => 'All',
-			'bills.category' => 'Category',
 			_ => null,
 		} ?? switch (path) {
+			'bills.filterAll' => 'All',
+			'bills.category' => 'Category',
 			'bills.categoryRequired' => 'Pick a category',
 			'bills.notes' => 'Notes (optional)',
 			'bills.notesHint' => 'Additional details...',
@@ -2974,6 +3283,103 @@ extension on Translations {
 			'startup.stepReady' => 'Almost there',
 			'startup.errorTitle' => 'Something went wrong',
 			'startup.errorRetry' => 'Try again',
+			'investments.title' => 'Investments',
+			'investments.heroTitle' => 'INVESTED CAPITAL',
+			'investments.heroAllocated' => 'Allocated',
+			'investments.heroPending' => 'Pending',
+			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} unallocated',
+			'investments.pendingBannerSubtitle' => 'Tell us where this money is invested.',
+			'investments.sectionAllocation' => 'Allocation',
+			'investments.sectionClasses' => 'Classes',
+			'investments.sectionRebalance' => 'Rebalance',
+			'investments.sectionAccountPending' => 'Pending per account',
+			'investments.allocationEmpty' => 'No allocations yet. Create classes and log holdings to see the breakdown.',
+			'investments.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} of ${target}',
+			'investments.classRowOnTarget' => 'on target',
+			'investments.classRowUnderTarget' => ({required Object amount}) => '${amount} below',
+			'investments.classRowOverTarget' => ({required Object amount}) => '${amount} above',
+			'investments.accountPending' => ({required Object amount}) => '${amount} unallocated',
+			'investments.accountOverflow' => ({required Object allocated, required Object balance}) => 'Allocation (${allocated}) exceeds balance (${balance}) — reconcile',
+			'investments.allocateAction' => 'Allocate',
+			'investments.rebalanceAllocatePending' => ({required Object amount}) => 'Allocate ${amount} pending',
+			'investments.rebalanceBuy' => ({required Object amount, required Object className}) => 'Buy ${amount} of ${className}',
+			'investments.rebalanceSell' => ({required Object amount, required Object className}) => 'Sell ${amount} of ${className}',
+			'investments.targetsBanner' => ({required Object percent}) => 'Targets sum to ${percent}% — adjust to 100%.',
+			'investments.orphanBanner' => ({required Object count}) => 'Maintenance: ${count} orphan holding(s) excluded from totals.',
+			'investments.emptyNoAccountTitle' => 'Create an investment account',
+			'investments.emptyNoAccountMessage' => 'Before declaring where your money is allocated, add an Investment-type account. It becomes the ceiling your classes split.',
+			'investments.emptyNoAccountExample' => 'E.g. "XP Portfolio" with R\$ 60,000 balance',
+			'investments.emptyNoAccountAction' => 'Create account',
+			'investments.emptyNoClassesTitle' => 'Define your asset classes',
+			'investments.emptyNoClassesMessage' => 'Create buckets that match how you split your investments. Each class carries the target (%) you want — the page compares actual against target.',
+			'investments.emptyNoClassesExample' => 'E.g. ARCA — Stocks 25% · REITs 25% · Crypto 25% · Bonds 25%',
+			'investments.emptyNoClassesAction' => 'Create class',
+			'investments.sectionIdentity' => 'Identity',
+			'investments.sectionTarget' => 'Target',
+			'investments.classNameLabel' => 'Name',
+			'investments.classNameHint' => 'e.g. Real Estate',
+			'investments.classIcon' => 'Icon',
+			'investments.classColor' => 'Color',
+			'investments.targetPercentLabel' => 'Target %',
+			'investments.targetHelper' => 'Share of total wealth you want allocated to this class.',
+			'investments.targetSubclassHelper' => 'Share of the parent class this subclass should represent.',
+			'investments.newClassTitle' => 'New class',
+			'investments.editClassTitle' => 'Edit class',
+			'investments.newSubclassTitle' => 'New subclass',
+			'investments.editSubclassTitle' => 'Edit subclass',
+			'investments.createClass' => 'Create class',
+			'investments.createSubclass' => 'Create subclass',
+			'investments.saveClass' => 'Save class',
+			'investments.classCreated' => 'Class created',
+			'investments.classUpdated' => 'Class updated',
+			'investments.subclassNameHint' => 'e.g. Apple',
+			'investments.parentLabel' => 'Parent class',
+			'investments.parentPlaceholder' => 'None — root class',
+			'investments.pickParentClass' => 'Pick a parent class',
+			'investments.parentPickerEmpty' => 'Create a root class first.',
+			'investments.parentPickerNone' => 'None (root class)',
+			'investments.subclassInheritsHint' => ({required Object parent}) => 'Subclass inherits icon and color from ${parent}.',
+			'investments.subclassOf' => ({required Object parent}) => 'Subclass of ${parent}',
+			'investments.subclassRowSubtitle' => ({required Object percent}) => '${percent} of class',
+			'investments.addSubclass' => 'Add subclass',
+			'investments.classRowNoSubclasses' => 'No subclasses yet — tap to add one.',
+			'investments.classDetailTitle' => 'Class',
+			'investments.detailSubclassesSection' => 'Subclasses',
+			'investments.detailTargetAmount' => ({required Object amount}) => 'Target: ${amount}',
+			'investments.detailNoSubclassesTitle' => 'Create your first subclass',
+			'investments.detailNoSubclassesBody' => 'Subclasses are where money is actually allocated (e.g. Apple, Tesla). The class organises the group.',
+			'investments.subclassDetailLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent} of class',
+			'investments.subclassSuggestionAdd' => ({required Object amount}) => 'Add ${amount} to reach the suggested target',
+			'investments.subclassSuggestionTrim' => ({required Object amount}) => 'Trim ${amount} — above the suggested target',
+			'investments.subclassSuggestionBalanced' => 'On suggested target',
+			'investments.subclassSuggestionNoTarget' => 'Set a target % to see a suggestion',
+			'investments.deleteClassTitle' => 'Delete class',
+			'investments.deleteClassConfirm' => 'Linked holdings must be reassigned or removed first. Continue?',
+			'investments.deleteClassSuccess' => 'Class deleted',
+			'investments.newHoldingTitle' => 'New holding',
+			'investments.editHoldingTitle' => 'Edit holding',
+			'investments.createHolding' => 'Create holding',
+			'investments.saveHolding' => 'Save holding',
+			'investments.deleteHoldingTitle' => 'Delete holding',
+			'investments.deleteHoldingConfirm' => 'This holding will be removed from the breakdown. The account balance is not affected.',
+			'investments.account' => 'Account',
+			'investments.assetClass' => 'Class',
+			'investments.amount' => 'Amount',
+			'investments.notes' => 'Notes',
+			'investments.notesHint' => 'Optional details (e.g. CDB Banco Inter, matures 2028)',
+			'investments.pickAccount' => 'Pick an account',
+			'investments.pickClass' => 'Pick a class',
+			'investments.pickerEmpty' => 'Nothing to pick yet.',
+			'investments.amountHelper' => ({required Object available}) => 'Available on this account: ${available}',
+			'investments.amountOverflow' => ({required Object available}) => 'Above available (${available})',
+			'investments.targetShort' => 'target',
+			'investments.fabAddClass' => 'New class',
+			'investments.fabAddClassSubtitle' => 'Create an investment bucket (e.g. REITs).',
+			'investments.fabAddHolding' => 'New holding',
+			'investments.fabAddHoldingSubtitle' => 'Tell us how a slice of the balance is invested.',
+			'investments.fabAddHoldingNoAccount' => 'Create an investment account first.',
+			'investments.fabAddHoldingNoClass' => 'Create a class first.',
+			'investments.fabAddHoldingNoSubclass' => 'Add a subclass before allocating — classes are organisers only.',
 			_ => null,
 		};
 	}

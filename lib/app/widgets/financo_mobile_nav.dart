@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/nav_bills_badge.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +30,7 @@ class FinancoBottomBar extends StatelessWidget {
         case 0:
           context.go(AppRoutes.dashboard);
         case 1:
-          context.go(AppRoutes.bills);
+          context.go(AppRoutes.investments);
         case 2:
           context.go(AppRoutes.planning);
         case 3:
@@ -76,11 +75,10 @@ class FinancoBottomBar extends StatelessWidget {
               onTap: () => onTap(0),
             ),
             _NavItem(
-              icon: FontAwesomeIcons.fileInvoiceDollar,
-              label: t.nav.bills,
+              icon: FontAwesomeIcons.chartPie,
+              label: t.nav.investments,
               isActive: currentIndex == 1,
               onTap: () => onTap(1),
-              iconWrapper: (icon) => NavBillsBadge(child: icon),
             ),
             _NavItem(
               icon: FontAwesomeIcons.bullseye,
@@ -107,8 +105,11 @@ class FinancoBottomBar extends StatelessWidget {
   }
 
   static int _resolveCurrentIndex(String location) {
-    if (location.startsWith(AppRoutes.bills)) return 1;
+    if (location.startsWith(AppRoutes.investments)) return 1;
+    // Bills moved into the Planning shell as a sub-tab; legacy
+    // `/bills` deep links still resolve, so route them to slot 2.
     if (location.startsWith(AppRoutes.planning) ||
+        location.startsWith(AppRoutes.bills) ||
         location.startsWith(AppRoutes.budgets) ||
         location.startsWith(AppRoutes.fiftyThirtyTwenty)) {
       return 2;
@@ -125,7 +126,6 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
-    this.iconWrapper,
   });
 
   final FaIconData icon;
@@ -133,17 +133,11 @@ class _NavItem extends StatelessWidget {
   final bool isActive;
   final VoidCallback onTap;
 
-  /// Optional decorator applied to the rendered icon — used to overlay
-  /// adornments like a count badge without coupling this widget to the
-  /// specific feature that needs them.
-  final Widget Function(Widget icon)? iconWrapper;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final foreground = isActive ? colors.primary : colors.onBackgroundLight;
     final iconWidget = FaIcon(icon, size: 16, color: foreground);
-    final wrappedIcon = iconWrapper?.call(iconWidget) ?? iconWidget;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -165,7 +159,7 @@ class _NavItem extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              wrappedIcon,
+              iconWidget,
               ClipRect(
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 240),

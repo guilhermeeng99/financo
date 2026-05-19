@@ -49,6 +49,27 @@ class AccountFactory {
     );
   }
 
+  static AccountEntity investment({
+    String id = 'acc-inv-1',
+    String userId = 'user-1',
+    String name = 'XP Investimentos',
+    BankType bank = BankType.xp,
+    double initialBalance = 10000,
+    double? currentBalance,
+    DateTime? createdAt,
+  }) {
+    return AccountEntity(
+      id: id,
+      userId: userId,
+      name: name,
+      type: AccountType.investment,
+      bank: bank,
+      initialBalance: initialBalance,
+      currentBalance: currentBalance,
+      createdAt: createdAt ?? DateTime(2024),
+    );
+  }
+
   static List<AccountEntity> list() {
     return [
       checking(),

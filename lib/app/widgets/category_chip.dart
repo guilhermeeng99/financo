@@ -1,3 +1,4 @@
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,7 @@ class CategoryChip extends StatelessWidget {
       selected: isSelected,
       label: Text(category.name),
       avatar: Icon(
-        IconData(category.icon, fontFamily: 'MaterialIcons'),
+        materialIconFor(category.icon),
         size: 18,
         color: Color(category.color),
       ),

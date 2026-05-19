@@ -1,4 +1,5 @@
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/presentation/widgets/category_icon_picker_sheet.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,7 @@ class CategoryIconPickerLauncher extends StatelessWidget {
                 ),
                 child: Center(
                   child: Icon(
-                    IconData(selectedIcon, fontFamily: 'MaterialIcons'),
+                    materialIconFor(selectedIcon),
                     color: Colors.white,
                     size: 20,
                   ),

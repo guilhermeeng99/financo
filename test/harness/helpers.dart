@@ -14,6 +14,10 @@ import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
+import 'package:financo/features/investments/data/models/asset_class_model.dart';
+import 'package:financo/features/investments/data/models/asset_holding_model.dart';
+import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
+import 'package:financo/features/investments/domain/entities/asset_holding_entity.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -189,6 +193,51 @@ void registerBudgetFallbackValues() {
       amount: 1,
       createdAt: DateTime(2026),
       updatedAt: DateTime(2026),
+    ),
+  );
+}
+
+void registerInvestmentFallbackValues() {
+  registerFallbackValue(
+    AssetClassEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      name: 'fallback',
+      icon: 0,
+      color: 0,
+      targetPercent: 0,
+      createdAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    AssetClassModel(
+      id: 'fallback',
+      userId: 'fallback',
+      name: 'fallback',
+      icon: 0,
+      color: 0,
+      targetPercent: 0,
+      createdAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    AssetHoldingEntity(
+      id: 'fallback',
+      userId: 'fallback',
+      accountId: 'fallback',
+      assetClassId: 'fallback',
+      amount: 0,
+      updatedAt: DateTime(2024),
+    ),
+  );
+  registerFallbackValue(
+    AssetHoldingModel(
+      id: 'fallback',
+      userId: 'fallback',
+      accountId: 'fallback',
+      assetClassId: 'fallback',
+      amount: 0,
+      updatedAt: DateTime(2024),
     ),
   );
 }

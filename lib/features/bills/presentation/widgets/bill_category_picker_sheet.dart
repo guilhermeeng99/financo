@@ -1,5 +1,6 @@
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
@@ -194,7 +195,7 @@ class _CategoryRow extends StatelessWidget {
                 ),
                 child: Center(
                   child: Icon(
-                    IconData(category.icon, fontFamily: 'MaterialIcons'),
+                    materialIconFor(category.icon),
                     size: 18,
                     color: categoryColor,
                   ),

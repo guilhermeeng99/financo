@@ -9,6 +9,8 @@ import 'package:financo/core/app_info/app_info_service_impl.dart';
 import 'package:financo/core/app_info/app_version.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
+import 'package:financo/core/database/daos/asset_classes_dao.dart';
+import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
@@ -43,6 +45,7 @@ import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecas
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
+import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 // Bills
 import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
 import 'package:financo/features/bills/data/repositories/bill_repository_impl.dart';
@@ -96,6 +99,22 @@ import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
+// Investments
+import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
+import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
+import 'package:financo/features/investments/data/repositories/asset_class_repository_impl.dart';
+import 'package:financo/features/investments/data/repositories/asset_holding_repository_impl.dart';
+import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
+import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
+import 'package:financo/features/investments/domain/usecases/create_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/create_asset_holding_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/delete_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/delete_asset_holding_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_holdings_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/update_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/update_asset_holding_usecase.dart';
 // Master Panel
 import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
 import 'package:financo/features/master_panel/data/repositories/master_users_repository_impl.dart';
@@ -164,6 +183,8 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => CategoriesDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => BillsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => BudgetsDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => AssetClassesDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => AssetHoldingsDao(sl<AppDatabase>()))
     // ─── Sync Service ───────────────────────────────────────
     ..registerLazySingleton(
       () => SyncService(
@@ -221,6 +242,12 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<ProfileRemoteDataSource>(
       () => ProfileRemoteDataSourceImpl(firestore: sl()),
+    )
+    ..registerLazySingleton<AssetClassRemoteDataSource>(
+      () => AssetClassRemoteDataSourceImpl(firestore: sl()),
+    )
+    ..registerLazySingleton<AssetHoldingRemoteDataSource>(
+      () => AssetHoldingRemoteDataSourceImpl(firestore: sl()),
     )
     // ─── Repositories ───────────────────────────────────────
     ..registerLazySingleton<AccessControlRepository>(
@@ -286,6 +313,25 @@ Future<void> initDependencies() async {
         remoteDataSource: sl(),
         usersDao: sl(),
         database: sl(),
+      ),
+    )
+    ..registerLazySingleton<AssetClassRepository>(
+      () => AssetClassRepositoryImpl(
+        remoteDataSource: sl(),
+        assetClassesDao: sl(),
+      ),
+    )
+    ..registerLazySingleton<AssetHoldingRepository>(
+      () => AssetHoldingRepositoryImpl(
+        remoteDataSource: sl(),
+        assetHoldingsDao: sl(),
+        // The cascade-by-account flow does not pass userId; resolve
+        // lazily through the AuthBloc state so the singleton works
+        // whether or not a session is active.
+        resolveUserId: () {
+          final state = sl<AuthBloc>().state;
+          return state is Authenticated ? state.user.id : '';
+        },
       ),
     )
     // ─── Use Cases ──────────────────────────────────────────
@@ -447,6 +493,39 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => GetProfileUseCase(sl()))
     ..registerLazySingleton(
       () => ClearAccountDataUseCase(repository: sl()),
+    )
+    ..registerLazySingleton(() => GetAssetClassesUseCase(sl()))
+    ..registerLazySingleton(() => CreateAssetClassUseCase(sl()))
+    ..registerLazySingleton(() => UpdateAssetClassUseCase(sl()))
+    ..registerLazySingleton(
+      () => DeleteAssetClassUseCase(
+        assetClassRepository: sl(),
+        assetHoldingRepository: sl(),
+      ),
+    )
+    ..registerLazySingleton(() => GetAssetHoldingsUseCase(sl()))
+    ..registerLazySingleton(
+      () => CreateAssetHoldingUseCase(
+        holdingRepository: sl(),
+        accountRepository: sl(),
+        assetClassRepository: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => UpdateAssetHoldingUseCase(
+        holdingRepository: sl(),
+        accountRepository: sl(),
+        assetClassRepository: sl(),
+      ),
+    )
+    ..registerLazySingleton(() => DeleteAssetHoldingUseCase(sl()))
+    ..registerLazySingleton(
+      () => GetInvestmentOverviewUseCase(
+        accountRepository: sl(),
+        assetClassRepository: sl(),
+        assetHoldingRepository: sl(),
+        transactionRepository: sl(),
+      ),
     )
     // ─── Blocs / Cubits (global singletons) ─────────────────
     ..registerLazySingleton(

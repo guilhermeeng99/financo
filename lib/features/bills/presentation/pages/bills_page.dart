@@ -35,7 +35,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class BillsPage extends StatefulWidget {
-  const BillsPage({super.key});
+  const BillsPage({super.key, this.embedded = false});
+
+  /// When `true`, the page is mounted as a sub-tab and skips its own
+  /// `FinancoLargeAppBar` — the parent shell hosts the title row. The
+  /// CSV-import affordance moves to a small secondary FAB stacked
+  /// above the primary "+" so users can still kick off an import.
+  final bool embedded;
 
   @override
   State<BillsPage> createState() => _BillsPageState();
@@ -178,27 +184,52 @@ class _BillsPageState extends State<BillsPage> {
         ),
       ],
       child: Scaffold(
-        appBar: FinancoLargeAppBar(
-          title: t.bills.title,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16, top: 4),
-              child: _BillsAppBarIconButton(
-                icon: FontAwesomeIcons.fileArrowUp,
-                tooltip: t.bills.importCsv,
-                color: context.appColors.primary,
-                onPressed: () => unawaited(_openImport()),
+        appBar: widget.embedded
+            ? null
+            : FinancoLargeAppBar(
+                title: t.bills.title,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16, top: 4),
+                    child: _BillsAppBarIconButton(
+                      icon: FontAwesomeIcons.fileArrowUp,
+                      tooltip: t.bills.importCsv,
+                      color: context.appColors.primary,
+                      onPressed: () => unawaited(_openImport()),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        floatingActionButton: LiftedFab(
-          child: FloatingActionButton(
-            heroTag: 'bills_fab',
-            onPressed: _openAddBill,
-            child: const Icon(Icons.add),
-          ),
-        ),
+        floatingActionButton: widget.embedded
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton.small(
+                    heroTag: 'bills_import_fab',
+                    onPressed: () => unawaited(_openImport()),
+                    tooltip: t.bills.importCsv,
+                    child: const FaIcon(
+                      FontAwesomeIcons.fileArrowUp,
+                      size: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  LiftedFab(
+                    child: FloatingActionButton(
+                      heroTag: 'bills_fab',
+                      onPressed: _openAddBill,
+                      child: const Icon(Icons.add),
+                    ),
+                  ),
+                ],
+              )
+            : LiftedFab(
+                child: FloatingActionButton(
+                  heroTag: 'bills_fab',
+                  onPressed: _openAddBill,
+                  child: const Icon(Icons.add),
+                ),
+              ),
         body: BlocBuilder<BillsBloc, BillsState>(
           builder: (context, state) {
             if (state is BillsLoading || state is BillsInitial) {

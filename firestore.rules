@@ -95,5 +95,23 @@ service cloud.firestore {
       allow read, update, delete: if (isAllowed() && ownsResource())
         || isMaster();
     }
+
+    // ─── Asset Classes (Investments) ───────────────────────
+    // User-defined buckets used by the investments tracking layer.
+    // See docs/specs/investments.md.
+    match /asset_classes/{assetClassId} {
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
+    }
+
+    // ─── Asset Holdings (Investments) ──────────────────────
+    // Declared allocations of money into asset classes. Writes never
+    // touch transactions/accounts (Model A isolation).
+    match /asset_holdings/{assetHoldingId} {
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
+    }
   }
 }

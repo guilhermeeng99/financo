@@ -17,6 +17,7 @@ import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.
 import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
+import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
@@ -145,7 +146,15 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
 
     await deleteAccount(accountId);
-    if (mounted) context.pop(true);
+    if (!mounted) return;
+    // Cascade-delete any investment holdings still pointing at this
+    // account (rule 6 of specs/investments.md). Best-effort — the
+    // account delete already succeeded, so a failure here only leaves
+    // orphan holdings that the overview filters out.
+    unawaited(
+      context.read<InvestmentsCubit>().removeHoldingsForAccount(accountId),
+    );
+    context.pop(true);
   }
 
   Future<void> _pickClosingDay() async {

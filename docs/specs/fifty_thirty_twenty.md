@@ -617,17 +617,21 @@ and we have real usage signal:
 - The bottom-nav and sidebar entry previously labelled "Orçamento" is
   renamed to "Planejamento" (key `t.nav.planning`) and targets the new
   `/planning` route.
-- `PlanningPage` is a tabbed container with two `TabBarView` children:
-  - Tab 0: **Orçamentos** — existing `BudgetsPage`.
-  - Tab 1: **50/30/20** — `FiftyThirtyTwentyPage`.
-- Legacy direct links to `/budgets` and `/fifty-thirty-twenty` resolve
-  to `PlanningPage` with the appropriate `initialTab` so bookmarks /
-  chat-tap navigation keep working.
-- Bottom-bar "active" detection covers all three paths
-  (`/planning`, `/budgets`, `/fifty-thirty-twenty`).
-- Mobile bottom bar stays at 5 items — no new tab. Option A from the
-  design discussion: card-tap on dashboard + sidebar icon for direct
-  access on wider screens.
+- `PlanningPage` is a tabbed container with three `TabBarView`
+  children (order intentionally matches "high-level → tactical"):
+  - Tab 0: **50/30/20** — `FiftyThirtyTwentyPage` (embedded).
+  - Tab 1: **Contas** — `BillsPage` (embedded). Inherited the slot
+    from the old top-level Bills nav entry; see [investments.md](investments.md)
+    for the navigation refactor rationale.
+  - Tab 2: **Orçamentos** — `BudgetsPage` (embedded).
+- Legacy direct links to `/bills`, `/budgets`, and `/fifty-thirty-twenty`
+  resolve to `PlanningPage` with the appropriate `initialTab` so
+  bookmarks, push notifications, and chat-tap navigation keep working.
+- Bottom-bar "active" detection covers all four paths
+  (`/planning`, `/bills`, `/budgets`, `/fifty-thirty-twenty`).
+- Mobile bottom bar stays at 5 items. The slot freed by Bills moving
+  into Planning is now occupied by the **Investimentos** entry
+  (see [investments.md](investments.md)).
 
 ### 12.6 Editor sheet
 

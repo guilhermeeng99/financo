@@ -3850,6 +3850,981 @@ class LocalBudgetsCompanion extends UpdateCompanion<LocalBudget> {
   }
 }
 
+class $LocalAssetClassesTable extends LocalAssetClasses
+    with TableInfo<$LocalAssetClassesTable, LocalAssetClassesData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalAssetClassesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<int> icon = GeneratedColumn<int>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetPercentMeta = const VerificationMeta(
+    'targetPercent',
+  );
+  @override
+  late final GeneratedColumn<double> targetPercent = GeneratedColumn<double>(
+    'target_percent',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _parentIdMeta = const VerificationMeta(
+    'parentId',
+  );
+  @override
+  late final GeneratedColumn<String> parentId = GeneratedColumn<String>(
+    'parent_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    name,
+    icon,
+    color,
+    targetPercent,
+    parentId,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_asset_classes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalAssetClassesData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iconMeta);
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('target_percent')) {
+      context.handle(
+        _targetPercentMeta,
+        targetPercent.isAcceptableOrUnknown(
+          data['target_percent']!,
+          _targetPercentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parent_id')) {
+      context.handle(
+        _parentIdMeta,
+        parentId.isAcceptableOrUnknown(data['parent_id']!, _parentIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalAssetClassesData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalAssetClassesData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}icon'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      targetPercent: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}target_percent'],
+      )!,
+      parentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parent_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalAssetClassesTable createAlias(String alias) {
+    return $LocalAssetClassesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalAssetClassesData extends DataClass
+    implements Insertable<LocalAssetClassesData> {
+  final String id;
+  final String userId;
+  final String name;
+  final int icon;
+  final int color;
+  final double targetPercent;
+  final String? parentId;
+  final DateTime createdAt;
+  const LocalAssetClassesData({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.targetPercent,
+    this.parentId,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<int>(icon);
+    map['color'] = Variable<int>(color);
+    map['target_percent'] = Variable<double>(targetPercent);
+    if (!nullToAbsent || parentId != null) {
+      map['parent_id'] = Variable<String>(parentId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  LocalAssetClassesCompanion toCompanion(bool nullToAbsent) {
+    return LocalAssetClassesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      name: Value(name),
+      icon: Value(icon),
+      color: Value(color),
+      targetPercent: Value(targetPercent),
+      parentId: parentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentId),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory LocalAssetClassesData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalAssetClassesData(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<int>(json['icon']),
+      color: serializer.fromJson<int>(json['color']),
+      targetPercent: serializer.fromJson<double>(json['targetPercent']),
+      parentId: serializer.fromJson<String?>(json['parentId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<int>(icon),
+      'color': serializer.toJson<int>(color),
+      'targetPercent': serializer.toJson<double>(targetPercent),
+      'parentId': serializer.toJson<String?>(parentId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  LocalAssetClassesData copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    int? icon,
+    int? color,
+    double? targetPercent,
+    Value<String?> parentId = const Value.absent(),
+    DateTime? createdAt,
+  }) => LocalAssetClassesData(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    color: color ?? this.color,
+    targetPercent: targetPercent ?? this.targetPercent,
+    parentId: parentId.present ? parentId.value : this.parentId,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  LocalAssetClassesData copyWithCompanion(LocalAssetClassesCompanion data) {
+    return LocalAssetClassesData(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      color: data.color.present ? data.color.value : this.color,
+      targetPercent: data.targetPercent.present
+          ? data.targetPercent.value
+          : this.targetPercent,
+      parentId: data.parentId.present ? data.parentId.value : this.parentId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetClassesData(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('targetPercent: $targetPercent, ')
+          ..write('parentId: $parentId, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    name,
+    icon,
+    color,
+    targetPercent,
+    parentId,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalAssetClassesData &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.color == this.color &&
+          other.targetPercent == this.targetPercent &&
+          other.parentId == this.parentId &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalAssetClassesCompanion
+    extends UpdateCompanion<LocalAssetClassesData> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> name;
+  final Value<int> icon;
+  final Value<int> color;
+  final Value<double> targetPercent;
+  final Value<String?> parentId;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const LocalAssetClassesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.color = const Value.absent(),
+    this.targetPercent = const Value.absent(),
+    this.parentId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalAssetClassesCompanion.insert({
+    required String id,
+    required String userId,
+    required String name,
+    required int icon,
+    required int color,
+    this.targetPercent = const Value.absent(),
+    this.parentId = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       name = Value(name),
+       icon = Value(icon),
+       color = Value(color),
+       createdAt = Value(createdAt);
+  static Insertable<LocalAssetClassesData> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? name,
+    Expression<int>? icon,
+    Expression<int>? color,
+    Expression<double>? targetPercent,
+    Expression<String>? parentId,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (color != null) 'color': color,
+      if (targetPercent != null) 'target_percent': targetPercent,
+      if (parentId != null) 'parent_id': parentId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalAssetClassesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? name,
+    Value<int>? icon,
+    Value<int>? color,
+    Value<double>? targetPercent,
+    Value<String?>? parentId,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LocalAssetClassesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      color: color ?? this.color,
+      targetPercent: targetPercent ?? this.targetPercent,
+      parentId: parentId ?? this.parentId,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<int>(icon.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (targetPercent.present) {
+      map['target_percent'] = Variable<double>(targetPercent.value);
+    }
+    if (parentId.present) {
+      map['parent_id'] = Variable<String>(parentId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetClassesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('color: $color, ')
+          ..write('targetPercent: $targetPercent, ')
+          ..write('parentId: $parentId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalAssetHoldingsTable extends LocalAssetHoldings
+    with TableInfo<$LocalAssetHoldingsTable, LocalAssetHolding> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalAssetHoldingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _assetClassIdMeta = const VerificationMeta(
+    'assetClassId',
+  );
+  @override
+  late final GeneratedColumn<String> assetClassId = GeneratedColumn<String>(
+    'asset_class_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    accountId,
+    assetClassId,
+    amount,
+    notes,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_asset_holdings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalAssetHolding> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('asset_class_id')) {
+      context.handle(
+        _assetClassIdMeta,
+        assetClassId.isAcceptableOrUnknown(
+          data['asset_class_id']!,
+          _assetClassIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_assetClassIdMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalAssetHolding map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalAssetHolding(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      )!,
+      assetClassId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_class_id'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalAssetHoldingsTable createAlias(String alias) {
+    return $LocalAssetHoldingsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalAssetHolding extends DataClass
+    implements Insertable<LocalAssetHolding> {
+  final String id;
+  final String userId;
+  final String accountId;
+  final String assetClassId;
+  final double amount;
+  final String? notes;
+  final DateTime updatedAt;
+  const LocalAssetHolding({
+    required this.id,
+    required this.userId,
+    required this.accountId,
+    required this.assetClassId,
+    required this.amount,
+    this.notes,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['account_id'] = Variable<String>(accountId);
+    map['asset_class_id'] = Variable<String>(assetClassId);
+    map['amount'] = Variable<double>(amount);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LocalAssetHoldingsCompanion toCompanion(bool nullToAbsent) {
+    return LocalAssetHoldingsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      accountId: Value(accountId),
+      assetClassId: Value(assetClassId),
+      amount: Value(amount),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LocalAssetHolding.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalAssetHolding(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      assetClassId: serializer.fromJson<String>(json['assetClassId']),
+      amount: serializer.fromJson<double>(json['amount']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'accountId': serializer.toJson<String>(accountId),
+      'assetClassId': serializer.toJson<String>(assetClassId),
+      'amount': serializer.toJson<double>(amount),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LocalAssetHolding copyWith({
+    String? id,
+    String? userId,
+    String? accountId,
+    String? assetClassId,
+    double? amount,
+    Value<String?> notes = const Value.absent(),
+    DateTime? updatedAt,
+  }) => LocalAssetHolding(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    accountId: accountId ?? this.accountId,
+    assetClassId: assetClassId ?? this.assetClassId,
+    amount: amount ?? this.amount,
+    notes: notes.present ? notes.value : this.notes,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LocalAssetHolding copyWithCompanion(LocalAssetHoldingsCompanion data) {
+    return LocalAssetHolding(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      assetClassId: data.assetClassId.present
+          ? data.assetClassId.value
+          : this.assetClassId,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetHolding(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('accountId: $accountId, ')
+          ..write('assetClassId: $assetClassId, ')
+          ..write('amount: $amount, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    accountId,
+    assetClassId,
+    amount,
+    notes,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalAssetHolding &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.accountId == this.accountId &&
+          other.assetClassId == this.assetClassId &&
+          other.amount == this.amount &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalAssetHoldingsCompanion extends UpdateCompanion<LocalAssetHolding> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> accountId;
+  final Value<String> assetClassId;
+  final Value<double> amount;
+  final Value<String?> notes;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LocalAssetHoldingsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.assetClassId = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalAssetHoldingsCompanion.insert({
+    required String id,
+    required String userId,
+    required String accountId,
+    required String assetClassId,
+    required double amount,
+    this.notes = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       accountId = Value(accountId),
+       assetClassId = Value(assetClassId),
+       amount = Value(amount),
+       updatedAt = Value(updatedAt);
+  static Insertable<LocalAssetHolding> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? accountId,
+    Expression<String>? assetClassId,
+    Expression<double>? amount,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (accountId != null) 'account_id': accountId,
+      if (assetClassId != null) 'asset_class_id': assetClassId,
+      if (amount != null) 'amount': amount,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalAssetHoldingsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? accountId,
+    Value<String>? assetClassId,
+    Value<double>? amount,
+    Value<String?>? notes,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalAssetHoldingsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      accountId: accountId ?? this.accountId,
+      assetClassId: assetClassId ?? this.assetClassId,
+      amount: amount ?? this.amount,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (assetClassId.present) {
+      map['asset_class_id'] = Variable<String>(assetClassId.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalAssetHoldingsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('accountId: $accountId, ')
+          ..write('assetClassId: $assetClassId, ')
+          ..write('amount: $amount, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3862,6 +4837,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $LocalBillsTable localBills = $LocalBillsTable(this);
   late final $LocalBudgetsTable localBudgets = $LocalBudgetsTable(this);
+  late final $LocalAssetClassesTable localAssetClasses =
+      $LocalAssetClassesTable(this);
+  late final $LocalAssetHoldingsTable localAssetHoldings =
+      $LocalAssetHoldingsTable(this);
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final AccountsDao accountsDao = AccountsDao(this as AppDatabase);
   late final TransactionsDao transactionsDao = TransactionsDao(
@@ -3870,6 +4849,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final CategoriesDao categoriesDao = CategoriesDao(this as AppDatabase);
   late final BillsDao billsDao = BillsDao(this as AppDatabase);
   late final BudgetsDao budgetsDao = BudgetsDao(this as AppDatabase);
+  late final AssetClassesDao assetClassesDao = AssetClassesDao(
+    this as AppDatabase,
+  );
+  late final AssetHoldingsDao assetHoldingsDao = AssetHoldingsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3881,6 +4866,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localCategories,
     localBills,
     localBudgets,
+    localAssetClasses,
+    localAssetHoldings,
   ];
 }
 
@@ -5737,6 +6724,531 @@ typedef $$LocalBudgetsTableProcessedTableManager =
       LocalBudget,
       PrefetchHooks Function()
     >;
+typedef $$LocalAssetClassesTableCreateCompanionBuilder =
+    LocalAssetClassesCompanion Function({
+      required String id,
+      required String userId,
+      required String name,
+      required int icon,
+      required int color,
+      Value<double> targetPercent,
+      Value<String?> parentId,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$LocalAssetClassesTableUpdateCompanionBuilder =
+    LocalAssetClassesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> name,
+      Value<int> icon,
+      Value<int> color,
+      Value<double> targetPercent,
+      Value<String?> parentId,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LocalAssetClassesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalAssetClassesTable> {
+  $$LocalAssetClassesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalAssetClassesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalAssetClassesTable> {
+  $$LocalAssetClassesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parentId => $composableBuilder(
+    column: $table.parentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalAssetClassesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalAssetClassesTable> {
+  $$LocalAssetClassesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<double> get targetPercent => $composableBuilder(
+    column: $table.targetPercent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parentId =>
+      $composableBuilder(column: $table.parentId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalAssetClassesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalAssetClassesTable,
+          LocalAssetClassesData,
+          $$LocalAssetClassesTableFilterComposer,
+          $$LocalAssetClassesTableOrderingComposer,
+          $$LocalAssetClassesTableAnnotationComposer,
+          $$LocalAssetClassesTableCreateCompanionBuilder,
+          $$LocalAssetClassesTableUpdateCompanionBuilder,
+          (
+            LocalAssetClassesData,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalAssetClassesTable,
+              LocalAssetClassesData
+            >,
+          ),
+          LocalAssetClassesData,
+          PrefetchHooks Function()
+        > {
+  $$LocalAssetClassesTableTableManager(
+    _$AppDatabase db,
+    $LocalAssetClassesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalAssetClassesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalAssetClassesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalAssetClassesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> icon = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<double> targetPercent = const Value.absent(),
+                Value<String?> parentId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAssetClassesCompanion(
+                id: id,
+                userId: userId,
+                name: name,
+                icon: icon,
+                color: color,
+                targetPercent: targetPercent,
+                parentId: parentId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String name,
+                required int icon,
+                required int color,
+                Value<double> targetPercent = const Value.absent(),
+                Value<String?> parentId = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAssetClassesCompanion.insert(
+                id: id,
+                userId: userId,
+                name: name,
+                icon: icon,
+                color: color,
+                targetPercent: targetPercent,
+                parentId: parentId,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalAssetClassesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalAssetClassesTable,
+      LocalAssetClassesData,
+      $$LocalAssetClassesTableFilterComposer,
+      $$LocalAssetClassesTableOrderingComposer,
+      $$LocalAssetClassesTableAnnotationComposer,
+      $$LocalAssetClassesTableCreateCompanionBuilder,
+      $$LocalAssetClassesTableUpdateCompanionBuilder,
+      (
+        LocalAssetClassesData,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalAssetClassesTable,
+          LocalAssetClassesData
+        >,
+      ),
+      LocalAssetClassesData,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalAssetHoldingsTableCreateCompanionBuilder =
+    LocalAssetHoldingsCompanion Function({
+      required String id,
+      required String userId,
+      required String accountId,
+      required String assetClassId,
+      required double amount,
+      Value<String?> notes,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalAssetHoldingsTableUpdateCompanionBuilder =
+    LocalAssetHoldingsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> accountId,
+      Value<String> assetClassId,
+      Value<double> amount,
+      Value<String?> notes,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalAssetHoldingsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalAssetHoldingsTable> {
+  $$LocalAssetHoldingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assetClassId => $composableBuilder(
+    column: $table.assetClassId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalAssetHoldingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalAssetHoldingsTable> {
+  $$LocalAssetHoldingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assetClassId => $composableBuilder(
+    column: $table.assetClassId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalAssetHoldingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalAssetHoldingsTable> {
+  $$LocalAssetHoldingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get assetClassId => $composableBuilder(
+    column: $table.assetClassId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalAssetHoldingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalAssetHoldingsTable,
+          LocalAssetHolding,
+          $$LocalAssetHoldingsTableFilterComposer,
+          $$LocalAssetHoldingsTableOrderingComposer,
+          $$LocalAssetHoldingsTableAnnotationComposer,
+          $$LocalAssetHoldingsTableCreateCompanionBuilder,
+          $$LocalAssetHoldingsTableUpdateCompanionBuilder,
+          (
+            LocalAssetHolding,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalAssetHoldingsTable,
+              LocalAssetHolding
+            >,
+          ),
+          LocalAssetHolding,
+          PrefetchHooks Function()
+        > {
+  $$LocalAssetHoldingsTableTableManager(
+    _$AppDatabase db,
+    $LocalAssetHoldingsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalAssetHoldingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalAssetHoldingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalAssetHoldingsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> accountId = const Value.absent(),
+                Value<String> assetClassId = const Value.absent(),
+                Value<double> amount = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAssetHoldingsCompanion(
+                id: id,
+                userId: userId,
+                accountId: accountId,
+                assetClassId: assetClassId,
+                amount: amount,
+                notes: notes,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String accountId,
+                required String assetClassId,
+                required double amount,
+                Value<String?> notes = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalAssetHoldingsCompanion.insert(
+                id: id,
+                userId: userId,
+                accountId: accountId,
+                assetClassId: assetClassId,
+                amount: amount,
+                notes: notes,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalAssetHoldingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalAssetHoldingsTable,
+      LocalAssetHolding,
+      $$LocalAssetHoldingsTableFilterComposer,
+      $$LocalAssetHoldingsTableOrderingComposer,
+      $$LocalAssetHoldingsTableAnnotationComposer,
+      $$LocalAssetHoldingsTableCreateCompanionBuilder,
+      $$LocalAssetHoldingsTableUpdateCompanionBuilder,
+      (
+        LocalAssetHolding,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalAssetHoldingsTable,
+          LocalAssetHolding
+        >,
+      ),
+      LocalAssetHolding,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5753,4 +7265,8 @@ class $AppDatabaseManager {
       $$LocalBillsTableTableManager(_db, _db.localBills);
   $$LocalBudgetsTableTableManager get localBudgets =>
       $$LocalBudgetsTableTableManager(_db, _db.localBudgets);
+  $$LocalAssetClassesTableTableManager get localAssetClasses =>
+      $$LocalAssetClassesTableTableManager(_db, _db.localAssetClasses);
+  $$LocalAssetHoldingsTableTableManager get localAssetHoldings =>
+      $$LocalAssetHoldingsTableTableManager(_db, _db.localAssetHoldings);
 }

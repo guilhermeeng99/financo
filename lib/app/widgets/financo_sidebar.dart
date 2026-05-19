@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/theme/app_colors.dart';
-import 'package:financo/app/widgets/nav_bills_badge.dart';
 import 'package:financo/core/constants/app_constants.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -87,21 +86,22 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 isActive: location == AppRoutes.dashboard,
               ),
               _NavItem(
-                icon: FontAwesomeIcons.fileInvoiceDollar,
+                icon: FontAwesomeIcons.chartPie,
                 expanded: _expanded,
-                label: t.nav.bills,
-                onTap: () => context.go(AppRoutes.bills),
-                isActive: location.startsWith(AppRoutes.bills),
-                iconWrapper: (icon) => NavBillsBadge(child: icon),
+                label: t.nav.investments,
+                onTap: () => context.go(AppRoutes.investments),
+                isActive: location.startsWith(AppRoutes.investments),
               ),
               _NavItem(
                 icon: FontAwesomeIcons.bullseye,
                 expanded: _expanded,
                 label: t.nav.planning,
                 onTap: () => context.go(AppRoutes.planning),
-                // Planning tab stays active for both sub-tabs and any
-                // legacy direct deep-link to /budgets or /fifty-thirty-twenty.
+                // Planning tab stays active for every sub-tab and any
+                // legacy direct deep-link — bills moved into the shell
+                // (see specs/investments.md §10) so /bills sits here too.
                 isActive: location.startsWith(AppRoutes.planning) ||
+                    location.startsWith(AppRoutes.bills) ||
                     location.startsWith(AppRoutes.budgets) ||
                     location.startsWith(AppRoutes.fiftyThirtyTwenty),
               ),
@@ -211,7 +211,6 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.isActive,
-    this.iconWrapper,
   });
 
   final FaIconData icon;
@@ -220,17 +219,11 @@ class _NavItem extends StatelessWidget {
   final VoidCallback onTap;
   final bool isActive;
 
-  /// Optional decorator applied to the rendered icon — used to overlay
-  /// adornments like a count badge without coupling this widget to the
-  /// specific feature that needs them.
-  final Widget Function(Widget icon)? iconWrapper;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final foreground = isActive ? colors.primary : colors.onBackgroundLight;
     final iconWidget = FaIcon(icon, size: 17, color: foreground);
-    final wrappedIcon = iconWrapper?.call(iconWidget) ?? iconWidget;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Stack(
@@ -265,7 +258,7 @@ class _NavItem extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: 52,
-                      child: Center(child: wrappedIcon),
+                      child: Center(child: iconWidget),
                     ),
                     if (expanded)
                       Expanded(

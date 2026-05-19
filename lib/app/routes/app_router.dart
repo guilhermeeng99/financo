@@ -53,6 +53,13 @@ import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
+import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
+import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
+import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
+import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
+import 'package:financo/features/investments/presentation/pages/asset_class_detail_page.dart';
+import 'package:financo/features/investments/presentation/pages/asset_class_form_page.dart';
+import 'package:financo/features/investments/presentation/pages/investments_page.dart';
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
@@ -227,6 +234,20 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 userId: userId,
               ),
             ),
+            // Session-scoped so any tab can observe `totalPending` (the
+            // dashboard banner planned for V1.1 reads it directly).
+            // Refreshing on mount is the page's job.
+            BlocProvider(
+              create: (_) {
+                final cubit = InvestmentsCubit(
+                  getOverview: GetIt.I<GetInvestmentOverviewUseCase>(),
+                  assetHoldingRepository: GetIt.I<AssetHoldingRepository>(),
+                  userId: userId,
+                );
+                unawaited(cubit.refresh());
+                return cubit;
+              },
+            ),
           ],
           child: _ShellWithSidebar(child: child),
         );
@@ -389,6 +410,40 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             final existing = state.extra as BudgetEntity?;
             return SubPageScope(
               child: AddBudgetPage(existingBudget: existing),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.investments,
+          builder: (context, state) => const InvestmentsPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.assetClass,
+          builder: (context, state) {
+            // Two-shape `extra`: `AssetClassFormArgs` from the page
+            // (carries either an editing entity or a preset parent)
+            // or a bare `AssetClassEntity` from legacy callers (edit
+            // mode by default).
+            final extra = state.extra;
+            final args = switch (extra) {
+              AssetClassFormArgs() => extra,
+              AssetClassEntity() => AssetClassFormArgs(existing: extra),
+              _ => const AssetClassFormArgs(),
+            };
+            return SubPageScope(
+              child: AssetClassFormPage(
+                existing: args.existing,
+                presetParent: args.presetParent,
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.assetClassDetail,
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return SubPageScope(
+              child: AssetClassDetailPage(classId: id),
             );
           },
         ),

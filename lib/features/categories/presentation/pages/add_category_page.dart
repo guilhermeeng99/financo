@@ -5,6 +5,7 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
@@ -841,7 +842,7 @@ class _PreviewTile extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                IconData(icon, fontFamily: 'MaterialIcons'),
+                materialIconFor(icon),
                 size: 20,
                 color: Colors.white,
               ),

@@ -33,6 +33,11 @@ class AppRoutes {
   static const addBudget = '/budget/add';
   static const editBudget = '/budget/edit';
   static const fiftyThirtyTwenty = '/fifty-thirty-twenty';
+  static const investments = '/investments';
+  static const assetClass = '/investments/class/edit';
+  static const assetClassDetail = '/investments/class/:id';
+
+  static String assetClassDetailById(String id) => '/investments/class/$id';
 
   static String transactionById(String id) => '/transaction/$id';
   static String accountById(String id) => '/account/$id';

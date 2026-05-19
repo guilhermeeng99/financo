@@ -1,3 +1,4 @@
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +31,7 @@ class FinancoCategoryAvatar extends StatelessWidget {
       ),
       child: Center(
         child: Icon(
-          IconData(category.icon, fontFamily: 'MaterialIcons'),
+          materialIconFor(category.icon),
           size: size * 0.5,
           color: color,
         ),

@@ -8,6 +8,7 @@ import 'package:financo/features/accounts/domain/usecases/delete_account_usecase
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/account_balance_card.dart';
 import 'package:financo/features/accounts/presentation/widgets/account_detail_section.dart';
+import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -192,7 +193,13 @@ class AccountDetailPage extends StatelessWidget {
     );
     if (confirmed != true || !context.mounted) return;
     await GetIt.I<DeleteAccountUseCase>()(account.id);
-    if (context.mounted) context.pop(true);
+    if (!context.mounted) return;
+    // Cascade-delete investment holdings tied to this account
+    // (rule 6 of specs/investments.md). Best-effort.
+    unawaited(
+      context.read<InvestmentsCubit>().removeHoldingsForAccount(account.id),
+    );
+    context.pop(true);
   }
 }
 

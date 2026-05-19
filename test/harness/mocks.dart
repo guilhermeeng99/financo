@@ -66,6 +66,19 @@ import 'package:financo/features/dashboard/domain/repositories/dashboard_reposit
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
+import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
+import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
+import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
+import 'package:financo/features/investments/domain/usecases/create_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/create_asset_holding_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/delete_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/delete_asset_holding_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_holdings_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/update_asset_class_usecase.dart';
+import 'package:financo/features/investments/domain/usecases/update_asset_holding_usecase.dart';
 import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
@@ -301,3 +314,42 @@ class MockGetFiftyThirtyTwentyTargetsUseCase extends Mock
 
 class MockUpdateFiftyThirtyTwentyTargetsUseCase extends Mock
     implements UpdateFiftyThirtyTwentyTargetsUseCase {}
+
+// ── Investments ──
+class MockAssetClassRepository extends Mock implements AssetClassRepository {}
+
+class MockAssetHoldingRepository extends Mock
+    implements AssetHoldingRepository {}
+
+class MockAssetClassRemoteDataSource extends Mock
+    implements AssetClassRemoteDataSource {}
+
+class MockAssetHoldingRemoteDataSource extends Mock
+    implements AssetHoldingRemoteDataSource {}
+
+class MockGetAssetClassesUseCase extends Mock
+    implements GetAssetClassesUseCase {}
+
+class MockCreateAssetClassUseCase extends Mock
+    implements CreateAssetClassUseCase {}
+
+class MockUpdateAssetClassUseCase extends Mock
+    implements UpdateAssetClassUseCase {}
+
+class MockDeleteAssetClassUseCase extends Mock
+    implements DeleteAssetClassUseCase {}
+
+class MockGetAssetHoldingsUseCase extends Mock
+    implements GetAssetHoldingsUseCase {}
+
+class MockCreateAssetHoldingUseCase extends Mock
+    implements CreateAssetHoldingUseCase {}
+
+class MockUpdateAssetHoldingUseCase extends Mock
+    implements UpdateAssetHoldingUseCase {}
+
+class MockDeleteAssetHoldingUseCase extends Mock
+    implements DeleteAssetHoldingUseCase {}
+
+class MockGetInvestmentOverviewUseCase extends Mock
+    implements GetInvestmentOverviewUseCase {}

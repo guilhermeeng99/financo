@@ -55,6 +55,7 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	@override late final _TranslationsBudgetsPtBr budgets = _TranslationsBudgetsPtBr._(_root);
 	@override late final _TranslationsProfilePtBr profile = _TranslationsProfilePtBr._(_root);
 	@override late final _TranslationsStartupPtBr startup = _TranslationsStartupPtBr._(_root);
+	@override late final _TranslationsInvestmentsPtBr investments = _TranslationsInvestmentsPtBr._(_root);
 }
 
 // Path: general
@@ -191,6 +192,7 @@ class _TranslationsNavPtBr implements TranslationsNavEn {
 	@override String get bills => 'Contas';
 	@override String get budgets => 'Orçamento';
 	@override String get planning => 'Planejamento';
+	@override String get investments => 'Investimentos';
 }
 
 // Path: dashboard
@@ -268,6 +270,7 @@ class _TranslationsFiftyThirtyTwentyPtBr implements TranslationsFiftyThirtyTwent
 	@override String get navLabel => 'Planejamento';
 	@override String get subTabBudgets => 'Orçamentos';
 	@override String get subTabFiftyThirtyTwenty => '50/30/20';
+	@override String get subTabBills => 'Contas';
 }
 
 // Path: transactions
@@ -361,7 +364,7 @@ class _TranslationsAccountsPtBr implements TranslationsAccountsEn {
 	@override String get creditCard => 'Cartão de crédito';
 	@override String get investment => 'Conta investimento';
 	@override String get checkingShort => 'Corrente';
-	@override String get investmentShort => 'Invest.';
+	@override String get investmentShort => 'Investimento';
 	@override String get investmentDescription => 'Conta dedicada a aportes. Aparece como \'investimento\' nas transferências e alimenta o cartão 50/30/20.';
 	@override String get investmentYieldDisclaimer => 'O saldo reflete apenas seus aportes (principal). Rendimentos do mercado não são acompanhados.';
 	@override String get name => 'Apelido da conta';
@@ -753,6 +756,112 @@ class _TranslationsStartupPtBr implements TranslationsStartupEn {
 	@override String get errorRetry => 'Tentar novamente';
 }
 
+// Path: investments
+class _TranslationsInvestmentsPtBr implements TranslationsInvestmentsEn {
+	_TranslationsInvestmentsPtBr._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Investimentos';
+	@override String get heroTitle => 'PATRIMÔNIO INVESTIDO';
+	@override String get heroAllocated => 'Alocado';
+	@override String get heroPending => 'Pendente';
+	@override String pendingBannerTitle({required Object amount}) => '${amount} não alocados';
+	@override String get pendingBannerSubtitle => 'Indique onde esse dinheiro está investido.';
+	@override String get sectionAllocation => 'Alocação';
+	@override String get sectionClasses => 'Classes';
+	@override String get sectionRebalance => 'Rebalanceamento';
+	@override String get sectionAccountPending => 'Pendência por conta';
+	@override String get allocationEmpty => 'Sem aportes no momento. Crie classes e registre alocações para ver a distribuição.';
+	@override String classRowSubtitle({required Object actual, required Object target}) => '${actual} de ${target}';
+	@override String get classRowOnTarget => 'no alvo';
+	@override String classRowUnderTarget({required Object amount}) => '${amount} abaixo';
+	@override String classRowOverTarget({required Object amount}) => '${amount} acima';
+	@override String accountPending({required Object amount}) => '${amount} não alocados';
+	@override String accountOverflow({required Object allocated, required Object balance}) => 'Alocação (${allocated}) excede o saldo (${balance}) — reconcilie';
+	@override String get allocateAction => 'Alocar';
+	@override String rebalanceAllocatePending({required Object amount}) => 'Alocar ${amount} pendentes';
+	@override String rebalanceBuy({required Object amount, required Object className}) => 'Aportar ${amount} em ${className}';
+	@override String rebalanceSell({required Object amount, required Object className}) => 'Resgatar ${amount} de ${className}';
+	@override String targetsBanner({required Object percent}) => 'Os alvos somam ${percent}% — ajuste para 100%.';
+	@override String orphanBanner({required Object count}) => 'Manutenção: ${count} holding(s) órfão(s) ignorados nos cálculos.';
+	@override String get emptyNoAccountTitle => 'Crie uma conta de investimento';
+	@override String get emptyNoAccountMessage => 'Antes de declarar onde seu dinheiro está alocado, cadastre uma conta do tipo Investimento. Ela vira o teto que as classes vão dividir.';
+	@override String get emptyNoAccountExample => 'Ex.: "Carteira XP" com saldo R\$ 60.000';
+	@override String get emptyNoAccountAction => 'Criar conta';
+	@override String get emptyNoClassesTitle => 'Defina suas classes de investimento';
+	@override String get emptyNoClassesMessage => 'Crie buckets que representem como você divide seus aportes. Cada classe carrega o alvo (%) que você quer atingir — a tela compara o real contra o alvo.';
+	@override String get emptyNoClassesExample => 'Ex.: ARCA — Ações 25% · FIIs 25% · Cripto 25% · Renda Fixa 25%';
+	@override String get emptyNoClassesAction => 'Criar classe';
+	@override String get sectionIdentity => 'Identidade';
+	@override String get sectionTarget => 'Alvo';
+	@override String get classNameLabel => 'Nome';
+	@override String get classNameHint => 'ex.: Real Estate';
+	@override String get classIcon => 'Ícone';
+	@override String get classColor => 'Cor';
+	@override String get targetPercentLabel => '% alvo';
+	@override String get targetHelper => 'Quanto do patrimônio você quer alocado nesta classe.';
+	@override String get targetSubclassHelper => 'Quanto da classe pai esta subclasse deve representar.';
+	@override String get newClassTitle => 'Nova classe';
+	@override String get editClassTitle => 'Editar classe';
+	@override String get newSubclassTitle => 'Nova subclasse';
+	@override String get editSubclassTitle => 'Editar subclasse';
+	@override String get createClass => 'Criar classe';
+	@override String get createSubclass => 'Criar subclasse';
+	@override String get saveClass => 'Salvar classe';
+	@override String get classCreated => 'Classe criada';
+	@override String get classUpdated => 'Classe atualizada';
+	@override String get subclassNameHint => 'ex.: Apple';
+	@override String get parentLabel => 'Classe pai';
+	@override String get parentPlaceholder => 'Nenhuma — classe raiz';
+	@override String get pickParentClass => 'Escolher classe pai';
+	@override String get parentPickerEmpty => 'Crie uma classe raiz primeiro.';
+	@override String get parentPickerNone => 'Nenhuma (classe raiz)';
+	@override String subclassInheritsHint({required Object parent}) => 'Subclasse herda ícone e cor de ${parent}.';
+	@override String subclassOf({required Object parent}) => 'Subclasse de ${parent}';
+	@override String subclassRowSubtitle({required Object percent}) => '${percent} da classe';
+	@override String get addSubclass => 'Adicionar subclasse';
+	@override String get classRowNoSubclasses => 'Sem subclasses ainda — toque para criar.';
+	@override String get classDetailTitle => 'Classe';
+	@override String get detailSubclassesSection => 'Subclasses';
+	@override String detailTargetAmount({required Object amount}) => 'Meta: ${amount}';
+	@override String get detailNoSubclassesTitle => 'Crie sua primeira subclasse';
+	@override String get detailNoSubclassesBody => 'Subclasses são onde o dinheiro é realmente alocado (ex.: Apple, Tesla). A classe organiza o grupo.';
+	@override String subclassDetailLine({required Object amount, required Object percent}) => '${amount} · ${percent} da classe';
+	@override String subclassSuggestionAdd({required Object amount}) => 'Aporte ${amount} para chegar à meta sugerida';
+	@override String subclassSuggestionTrim({required Object amount}) => 'Reduza ${amount} — está acima da meta sugerida';
+	@override String get subclassSuggestionBalanced => 'No alvo sugerido';
+	@override String get subclassSuggestionNoTarget => 'Defina um alvo % para ver sugestão';
+	@override String get deleteClassTitle => 'Excluir classe';
+	@override String get deleteClassConfirm => 'Holdings vinculados precisam ser reatribuídos ou removidos antes. Deseja prosseguir?';
+	@override String get deleteClassSuccess => 'Classe excluída';
+	@override String get newHoldingTitle => 'Nova alocação';
+	@override String get editHoldingTitle => 'Editar alocação';
+	@override String get createHolding => 'Criar alocação';
+	@override String get saveHolding => 'Salvar alocação';
+	@override String get deleteHoldingTitle => 'Excluir alocação';
+	@override String get deleteHoldingConfirm => 'Esta alocação será removida da composição. O saldo da conta não é afetado.';
+	@override String get account => 'Conta';
+	@override String get assetClass => 'Classe';
+	@override String get amount => 'Valor';
+	@override String get notes => 'Notas';
+	@override String get notesHint => 'Detalhes opcionais (ex.: CDB Banco Inter, vence 2028)';
+	@override String get pickAccount => 'Selecione uma conta';
+	@override String get pickClass => 'Selecione uma classe';
+	@override String get pickerEmpty => 'Nada para escolher ainda.';
+	@override String amountHelper({required Object available}) => 'Disponível na conta: ${available}';
+	@override String amountOverflow({required Object available}) => 'Acima do disponível (${available})';
+	@override String get targetShort => 'alvo';
+	@override String get fabAddClass => 'Nova classe';
+	@override String get fabAddClassSubtitle => 'Crie uma categoria de investimento (ex.: FIIs).';
+	@override String get fabAddHolding => 'Nova alocação';
+	@override String get fabAddHoldingSubtitle => 'Indique onde uma parte do saldo está investida.';
+	@override String get fabAddHoldingNoAccount => 'Crie uma conta de investimento primeiro.';
+	@override String get fabAddHoldingNoClass => 'Crie uma classe primeiro.';
+	@override String get fabAddHoldingNoSubclass => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.';
+}
+
 // Path: chat.action
 class _TranslationsChatActionPtBr implements TranslationsChatActionEn {
 	_TranslationsChatActionPtBr._(this._root);
@@ -1030,6 +1139,7 @@ extension on TranslationsPtBr {
 			'nav.bills' => 'Contas',
 			'nav.budgets' => 'Orçamento',
 			'nav.planning' => 'Planejamento',
+			'nav.investments' => 'Investimentos',
 			'dashboard.title' => 'Início',
 			'dashboard.totalBalance' => 'Saldo total',
 			'dashboard.income' => 'Receitas',
@@ -1089,6 +1199,7 @@ extension on TranslationsPtBr {
 			'fiftyThirtyTwenty.navLabel' => 'Planejamento',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Orçamentos',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
+			'fiftyThirtyTwenty.subTabBills' => 'Contas',
 			'transactions.title' => 'Transações',
 			'transactions.empty' => 'Nenhuma transação. Adicione sua primeira para começar.',
 			'transactions.addTransaction' => 'Nova transação',
@@ -1164,7 +1275,7 @@ extension on TranslationsPtBr {
 			'accounts.creditCard' => 'Cartão de crédito',
 			'accounts.investment' => 'Conta investimento',
 			'accounts.checkingShort' => 'Corrente',
-			'accounts.investmentShort' => 'Invest.',
+			'accounts.investmentShort' => 'Investimento',
 			'accounts.investmentDescription' => 'Conta dedicada a aportes. Aparece como \'investimento\' nas transferências e alimenta o cartão 50/30/20.',
 			'accounts.investmentYieldDisclaimer' => 'O saldo reflete apenas seus aportes (principal). Rendimentos do mercado não são acompanhados.',
 			'accounts.name' => 'Apelido da conta',
@@ -1467,10 +1578,10 @@ extension on TranslationsPtBr {
 			'bills.type' => 'Tipo',
 			'bills.typePayable' => 'A pagar',
 			'bills.typeReceivable' => 'A receber',
-			'bills.filterAll' => 'Todas',
-			'bills.category' => 'Categoria',
 			_ => null,
 		} ?? switch (path) {
+			'bills.filterAll' => 'Todas',
+			'bills.category' => 'Categoria',
 			'bills.categoryRequired' => 'Selecione uma categoria',
 			'bills.notes' => 'Observações (opcional)',
 			'bills.notesHint' => 'Detalhes adicionais...',
@@ -1629,6 +1740,103 @@ extension on TranslationsPtBr {
 			'startup.stepReady' => 'Quase lá',
 			'startup.errorTitle' => 'Algo deu errado',
 			'startup.errorRetry' => 'Tentar novamente',
+			'investments.title' => 'Investimentos',
+			'investments.heroTitle' => 'PATRIMÔNIO INVESTIDO',
+			'investments.heroAllocated' => 'Alocado',
+			'investments.heroPending' => 'Pendente',
+			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} não alocados',
+			'investments.pendingBannerSubtitle' => 'Indique onde esse dinheiro está investido.',
+			'investments.sectionAllocation' => 'Alocação',
+			'investments.sectionClasses' => 'Classes',
+			'investments.sectionRebalance' => 'Rebalanceamento',
+			'investments.sectionAccountPending' => 'Pendência por conta',
+			'investments.allocationEmpty' => 'Sem aportes no momento. Crie classes e registre alocações para ver a distribuição.',
+			'investments.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} de ${target}',
+			'investments.classRowOnTarget' => 'no alvo',
+			'investments.classRowUnderTarget' => ({required Object amount}) => '${amount} abaixo',
+			'investments.classRowOverTarget' => ({required Object amount}) => '${amount} acima',
+			'investments.accountPending' => ({required Object amount}) => '${amount} não alocados',
+			'investments.accountOverflow' => ({required Object allocated, required Object balance}) => 'Alocação (${allocated}) excede o saldo (${balance}) — reconcilie',
+			'investments.allocateAction' => 'Alocar',
+			'investments.rebalanceAllocatePending' => ({required Object amount}) => 'Alocar ${amount} pendentes',
+			'investments.rebalanceBuy' => ({required Object amount, required Object className}) => 'Aportar ${amount} em ${className}',
+			'investments.rebalanceSell' => ({required Object amount, required Object className}) => 'Resgatar ${amount} de ${className}',
+			'investments.targetsBanner' => ({required Object percent}) => 'Os alvos somam ${percent}% — ajuste para 100%.',
+			'investments.orphanBanner' => ({required Object count}) => 'Manutenção: ${count} holding(s) órfão(s) ignorados nos cálculos.',
+			'investments.emptyNoAccountTitle' => 'Crie uma conta de investimento',
+			'investments.emptyNoAccountMessage' => 'Antes de declarar onde seu dinheiro está alocado, cadastre uma conta do tipo Investimento. Ela vira o teto que as classes vão dividir.',
+			'investments.emptyNoAccountExample' => 'Ex.: "Carteira XP" com saldo R\$ 60.000',
+			'investments.emptyNoAccountAction' => 'Criar conta',
+			'investments.emptyNoClassesTitle' => 'Defina suas classes de investimento',
+			'investments.emptyNoClassesMessage' => 'Crie buckets que representem como você divide seus aportes. Cada classe carrega o alvo (%) que você quer atingir — a tela compara o real contra o alvo.',
+			'investments.emptyNoClassesExample' => 'Ex.: ARCA — Ações 25% · FIIs 25% · Cripto 25% · Renda Fixa 25%',
+			'investments.emptyNoClassesAction' => 'Criar classe',
+			'investments.sectionIdentity' => 'Identidade',
+			'investments.sectionTarget' => 'Alvo',
+			'investments.classNameLabel' => 'Nome',
+			'investments.classNameHint' => 'ex.: Real Estate',
+			'investments.classIcon' => 'Ícone',
+			'investments.classColor' => 'Cor',
+			'investments.targetPercentLabel' => '% alvo',
+			'investments.targetHelper' => 'Quanto do patrimônio você quer alocado nesta classe.',
+			'investments.targetSubclassHelper' => 'Quanto da classe pai esta subclasse deve representar.',
+			'investments.newClassTitle' => 'Nova classe',
+			'investments.editClassTitle' => 'Editar classe',
+			'investments.newSubclassTitle' => 'Nova subclasse',
+			'investments.editSubclassTitle' => 'Editar subclasse',
+			'investments.createClass' => 'Criar classe',
+			'investments.createSubclass' => 'Criar subclasse',
+			'investments.saveClass' => 'Salvar classe',
+			'investments.classCreated' => 'Classe criada',
+			'investments.classUpdated' => 'Classe atualizada',
+			'investments.subclassNameHint' => 'ex.: Apple',
+			'investments.parentLabel' => 'Classe pai',
+			'investments.parentPlaceholder' => 'Nenhuma — classe raiz',
+			'investments.pickParentClass' => 'Escolher classe pai',
+			'investments.parentPickerEmpty' => 'Crie uma classe raiz primeiro.',
+			'investments.parentPickerNone' => 'Nenhuma (classe raiz)',
+			'investments.subclassInheritsHint' => ({required Object parent}) => 'Subclasse herda ícone e cor de ${parent}.',
+			'investments.subclassOf' => ({required Object parent}) => 'Subclasse de ${parent}',
+			'investments.subclassRowSubtitle' => ({required Object percent}) => '${percent} da classe',
+			'investments.addSubclass' => 'Adicionar subclasse',
+			'investments.classRowNoSubclasses' => 'Sem subclasses ainda — toque para criar.',
+			'investments.classDetailTitle' => 'Classe',
+			'investments.detailSubclassesSection' => 'Subclasses',
+			'investments.detailTargetAmount' => ({required Object amount}) => 'Meta: ${amount}',
+			'investments.detailNoSubclassesTitle' => 'Crie sua primeira subclasse',
+			'investments.detailNoSubclassesBody' => 'Subclasses são onde o dinheiro é realmente alocado (ex.: Apple, Tesla). A classe organiza o grupo.',
+			'investments.subclassDetailLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent} da classe',
+			'investments.subclassSuggestionAdd' => ({required Object amount}) => 'Aporte ${amount} para chegar à meta sugerida',
+			'investments.subclassSuggestionTrim' => ({required Object amount}) => 'Reduza ${amount} — está acima da meta sugerida',
+			'investments.subclassSuggestionBalanced' => 'No alvo sugerido',
+			'investments.subclassSuggestionNoTarget' => 'Defina um alvo % para ver sugestão',
+			'investments.deleteClassTitle' => 'Excluir classe',
+			'investments.deleteClassConfirm' => 'Holdings vinculados precisam ser reatribuídos ou removidos antes. Deseja prosseguir?',
+			'investments.deleteClassSuccess' => 'Classe excluída',
+			'investments.newHoldingTitle' => 'Nova alocação',
+			'investments.editHoldingTitle' => 'Editar alocação',
+			'investments.createHolding' => 'Criar alocação',
+			'investments.saveHolding' => 'Salvar alocação',
+			'investments.deleteHoldingTitle' => 'Excluir alocação',
+			'investments.deleteHoldingConfirm' => 'Esta alocação será removida da composição. O saldo da conta não é afetado.',
+			'investments.account' => 'Conta',
+			'investments.assetClass' => 'Classe',
+			'investments.amount' => 'Valor',
+			'investments.notes' => 'Notas',
+			'investments.notesHint' => 'Detalhes opcionais (ex.: CDB Banco Inter, vence 2028)',
+			'investments.pickAccount' => 'Selecione uma conta',
+			'investments.pickClass' => 'Selecione uma classe',
+			'investments.pickerEmpty' => 'Nada para escolher ainda.',
+			'investments.amountHelper' => ({required Object available}) => 'Disponível na conta: ${available}',
+			'investments.amountOverflow' => ({required Object available}) => 'Acima do disponível (${available})',
+			'investments.targetShort' => 'alvo',
+			'investments.fabAddClass' => 'Nova classe',
+			'investments.fabAddClassSubtitle' => 'Crie uma categoria de investimento (ex.: FIIs).',
+			'investments.fabAddHolding' => 'Nova alocação',
+			'investments.fabAddHoldingSubtitle' => 'Indique onde uma parte do saldo está investida.',
+			'investments.fabAddHoldingNoAccount' => 'Crie uma conta de investimento primeiro.',
+			'investments.fabAddHoldingNoClass' => 'Crie uma classe primeiro.',
+			'investments.fabAddHoldingNoSubclass' => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.',
 			_ => null,
 		};
 	}

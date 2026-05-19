@@ -1,5 +1,6 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
 import 'package:financo/features/dashboard/domain/services/compute_fifty_thirty_twenty_breakdown.dart';
@@ -192,7 +193,7 @@ class _CategoryRow extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                IconData(row.categoryIcon, fontFamily: 'MaterialIcons'),
+                materialIconFor(row.categoryIcon),
                 size: 16,
                 color: tint,
               ),
