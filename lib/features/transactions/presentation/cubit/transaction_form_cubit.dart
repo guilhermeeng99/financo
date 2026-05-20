@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,23 +15,33 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     required CreateTransactionUseCase createTransaction,
     required UpdateTransactionUseCase updateTransaction,
     required CreateTransferUseCase createTransfer,
+    required GetTransactionUseCase getTransaction,
     required String userId,
     TransactionEntity? existingTransaction,
     String? prefillAccountId,
   }) : _createTransaction = createTransaction,
        _updateTransaction = updateTransaction,
        _createTransfer = createTransfer,
+       _getTransaction = getTransaction,
        super(
          TransactionFormState.initial(
            userId: userId,
            existing: existingTransaction,
            prefillAccountId: prefillAccountId,
          ),
-       );
+       ) {
+    // Editing a transfer: only the tapped leg arrives. Fetch the linked
+    // leg so the form can show both source and destination accounts —
+    // and so submit can update *both* legs (see `_updateTransfer`).
+    if (existingTransaction != null && existingTransaction.isTransfer) {
+      unawaited(_resolveTransferCounterpart(existingTransaction));
+    }
+  }
 
   final CreateTransactionUseCase _createTransaction;
   final UpdateTransactionUseCase _updateTransaction;
   final CreateTransferUseCase _createTransfer;
+  final GetTransactionUseCase _getTransaction;
 
   void updateType(TransactionType type) => emit(state.copyWith(type: type));
 
@@ -71,11 +84,35 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       ),
     );
 
-    if (state.isTransfer && !state.isEditing) {
-      await _submitTransfer();
+    if (state.isTransfer) {
+      await (state.isEditing ? _updateTransfer() : _submitTransfer());
     } else {
       await _submitTransaction();
     }
+  }
+
+  /// Fetches the linked leg of a transfer being edited and fills in the
+  /// account that the tapped leg didn't carry. `accountId` always ends up
+  /// holding the source (expense leg) account and `destinationAccountId`
+  /// the destination (income leg) account — regardless of which leg the
+  /// user tapped. On fetch failure the unknown account stays empty so the
+  /// form remains invalid rather than guessing.
+  Future<void> _resolveTransferCounterpart(TransactionEntity tapped) async {
+    final counterpartId = tapped.linkedTransactionId;
+    if (counterpartId == null) return;
+    final result = await _getTransaction(counterpartId);
+    if (isClosed) return;
+    result.fold((_) {}, (counterpart) {
+      final isExpenseLeg = counterpart.type == TransactionType.expense;
+      emit(
+        state.copyWith(
+          accountId: isExpenseLeg ? counterpart.accountId : null,
+          destinationAccountId: isExpenseLeg ? null : counterpart.accountId,
+          originalCreatedAt: isExpenseLeg ? counterpart.createdAt : null,
+          destinationCreatedAt: isExpenseLeg ? null : counterpart.createdAt,
+        ),
+      );
+    });
   }
 
   /// Drops the transient post-submit flags (`status`, `savedTransactionId`,
@@ -180,6 +217,59 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       (_) => emit(state.copyWith(status: FormStatus.success)),
     );
   }
+
+  /// Edits an existing transfer by updating *both* legs. `existingId` is the
+  /// expense (source) leg, `linkedTransactionId` the income (destination)
+  /// leg — normalized at form open by [_resolveTransferCounterpart]. Each
+  /// leg keeps its own `createdAt` so the audit trail isn't corrupted.
+  ///
+  /// The two writes aren't atomic: a failure between them can leave the
+  /// legs divergent. Mirrors the existing non-batched create path; a proper
+  /// fix needs a repository-level transfer update.
+  Future<void> _updateTransfer() async {
+    final now = DateTime.now();
+    final expense = TransactionEntity(
+      id: state.existingId ?? '',
+      userId: state.userId,
+      accountId: state.accountId,
+      categoryId: '',
+      type: TransactionType.expense,
+      amount: state.amount,
+      description: state.description,
+      date: state.date,
+      notes: state.notes,
+      linkedTransactionId: state.linkedTransactionId,
+      createdAt: state.originalCreatedAt ?? now,
+      updatedAt: now,
+    );
+    final income = TransactionEntity(
+      id: state.linkedTransactionId ?? '',
+      userId: state.userId,
+      accountId: state.destinationAccountId,
+      categoryId: '',
+      type: TransactionType.income,
+      amount: state.amount,
+      description: state.description,
+      date: state.date,
+      notes: state.notes,
+      linkedTransactionId: state.existingId,
+      createdAt: state.destinationCreatedAt ?? now,
+      updatedAt: now,
+    );
+
+    final expenseResult = await _updateTransaction(expense);
+    final expenseFailure = expenseResult.fold((f) => f, (_) => null);
+    if (expenseFailure != null) {
+      emit(state.copyWith(status: FormStatus.failure, failure: expenseFailure));
+      return;
+    }
+    (await _updateTransaction(income)).fold(
+      (failure) => emit(
+        state.copyWith(status: FormStatus.failure, failure: failure),
+      ),
+      (_) => emit(state.copyWith(status: FormStatus.success)),
+    );
+  }
 }
 
 enum FormStatus { initial, submitting, success, failure }
@@ -200,6 +290,7 @@ class TransactionFormState extends Equatable {
     this.existingId,
     this.linkedTransactionId,
     this.originalCreatedAt,
+    this.destinationCreatedAt,
     this.savedTransactionId,
     this.continueAfterSave = false,
     this.failure,
@@ -210,6 +301,12 @@ class TransactionFormState extends Equatable {
     TransactionEntity? existing,
     String? prefillAccountId,
   }) {
+    if (existing != null && existing.isTransfer) {
+      return TransactionFormState._forTransferEdit(
+        userId: userId,
+        tapped: existing,
+      );
+    }
     return TransactionFormState(
       userId: userId,
       type: existing?.type ?? TransactionType.expense,
@@ -222,10 +319,43 @@ class TransactionFormState extends Equatable {
       categoryId: existing?.categoryId ?? '',
       notes: existing?.notes ?? '',
       status: FormStatus.initial,
-      isTransfer: existing?.isTransfer ?? false,
+      isTransfer: false,
       existingId: existing?.id,
       linkedTransactionId: existing?.linkedTransactionId,
       originalCreatedAt: existing?.createdAt,
+    );
+  }
+
+  /// Seeds the form from one leg of a transfer being edited. A transfer is
+  /// a pair: the expense leg holds the source account, the income leg the
+  /// destination. Only the tapped leg is known here, but its
+  /// `linkedTransactionId` already identifies the other leg — so both
+  /// transaction ids are known up front and `existingId`/`linkedTransactionId`
+  /// are normalized to expense/income respectively. The counterpart leg's
+  /// *account* is filled in later by `_resolveTransferCounterpart`.
+  factory TransactionFormState._forTransferEdit({
+    required String userId,
+    required TransactionEntity tapped,
+  }) {
+    final tappedIsExpense = tapped.type == TransactionType.expense;
+    return TransactionFormState(
+      userId: userId,
+      type: tapped.type,
+      amount: tapped.amount,
+      description: tapped.description,
+      date: tapped.date,
+      accountId: tappedIsExpense ? tapped.accountId : '',
+      destinationAccountId: tappedIsExpense ? '' : tapped.accountId,
+      categoryId: '',
+      notes: tapped.notes ?? '',
+      status: FormStatus.initial,
+      isTransfer: true,
+      existingId: tappedIsExpense ? tapped.id : tapped.linkedTransactionId,
+      linkedTransactionId: tappedIsExpense
+          ? tapped.linkedTransactionId
+          : tapped.id,
+      originalCreatedAt: tappedIsExpense ? tapped.createdAt : null,
+      destinationCreatedAt: tappedIsExpense ? null : tapped.createdAt,
     );
   }
 
@@ -243,10 +373,16 @@ class TransactionFormState extends Equatable {
   final String? existingId;
   final String? linkedTransactionId;
 
-  /// Captured at form open time on edit so `_submitTransaction` can
-  /// preserve the transaction's original `createdAt`. `null` in create
-  /// mode — submit falls back to `DateTime.now()`.
+  /// Captured at form open time on edit so `_submitTransaction` /
+  /// `_updateTransfer` can preserve the (expense leg, when a transfer)
+  /// transaction's original `createdAt`. `null` in create mode — submit
+  /// falls back to `DateTime.now()`.
   final DateTime? originalCreatedAt;
+
+  /// The income (destination) leg's original `createdAt`, captured when
+  /// editing a transfer so `_updateTransfer` preserves its audit trail.
+  /// `null` outside transfer edits.
+  final DateTime? destinationCreatedAt;
 
   /// Set on `FormStatus.success` to the id of the row written by the
   /// last submit (created or updated). Lets callers — e.g. the bill
@@ -290,6 +426,8 @@ class TransactionFormState extends Equatable {
     String? notes,
     FormStatus? status,
     bool? isTransfer,
+    DateTime? originalCreatedAt,
+    DateTime? destinationCreatedAt,
     String? savedTransactionId,
     bool? continueAfterSave,
     Failure? failure,
@@ -308,7 +446,10 @@ class TransactionFormState extends Equatable {
       isTransfer: isTransfer ?? this.isTransfer,
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
-      originalCreatedAt: originalCreatedAt,
+      // These are only ever assigned (filling in the counterpart leg on
+      // transfer edit), never cleared — so `?? this.` is correct.
+      originalCreatedAt: originalCreatedAt ?? this.originalCreatedAt,
+      destinationCreatedAt: destinationCreatedAt ?? this.destinationCreatedAt,
       savedTransactionId: savedTransactionId ?? this.savedTransactionId,
       continueAfterSave: continueAfterSave ?? this.continueAfterSave,
       failure: failure ?? this.failure,
@@ -331,6 +472,7 @@ class TransactionFormState extends Equatable {
     existingId,
     linkedTransactionId,
     originalCreatedAt,
+    destinationCreatedAt,
     savedTransactionId,
     continueAfterSave,
     failure,

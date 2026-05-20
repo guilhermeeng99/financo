@@ -129,7 +129,7 @@ class BankBrand {
     BankType.avenue: BankBrand(
       label: 'Avenue',
       abbreviation: 'Av',
-      color: 0xFFE6007E,
+      color: 0xFF002820,
     ),
     BankType.others: BankBrand(
       label: 'Others',

@@ -371,8 +371,8 @@ class _SubclassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final percentOfClass =
-        (slice.percentOfClass * 100).toStringAsFixed(0);
+    final actualPercent = (slice.percentOfClass * 100).toStringAsFixed(0);
+    final targetPercent = slice.targetPercent.toStringAsFixed(0);
     final hasTarget = slice.targetPercent > 0;
     final delta = suggestedTarget - slice.currentAmount;
     final isBelow = hasTarget && delta > 1;
@@ -393,6 +393,19 @@ class _SubclassCard extends StatelessWidget {
                     amount: formatCurrency(delta.abs()),
                   )
                 : t.investments.subclassSuggestionBalanced);
+    // "16% of 30%" makes the gap between what this subclass holds and
+    // what it should hold readable at a glance. Falls back to plain
+    // share-of-class when no target has been set.
+    final detailLine = hasTarget
+        ? t.investments.subclassDetailLineTarget(
+            amount: formatCurrency(slice.currentAmount),
+            actual: '$actualPercent%',
+            target: '$targetPercent%',
+          )
+        : t.investments.subclassDetailLine(
+            amount: formatCurrency(slice.currentAmount),
+            percent: '$actualPercent%',
+          );
     return Material(
       color: colors.surface,
       borderRadius: BorderRadius.circular(16),
@@ -427,10 +440,7 @@ class _SubclassCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      t.investments.subclassDetailLine(
-                        amount: formatCurrency(slice.currentAmount),
-                        percent: '$percentOfClass%',
-                      ),
+                      detailLine,
                       style: context.textTheme.bodySmall?.copyWith(
                         color: colors.onBackgroundLight,
                       ),
@@ -443,9 +453,9 @@ class _SubclassCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-              ],
-            ),
-          ),
+                  ],
+                ),
+              ),
               const SizedBox(width: 8),
               _AllocateChip(onTap: onAllocate),
             ],

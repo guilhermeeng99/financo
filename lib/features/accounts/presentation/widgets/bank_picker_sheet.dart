@@ -1,5 +1,6 @@
 import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -34,33 +35,22 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
   final _queryController = TextEditingController();
   String _query = '';
 
-  /// Order surfaced to the user. "Outros" is anchored to the bottom so
-  /// the picker reads as a list of named banks first, fallback last.
-  static const _displayOrder = <BankType>[
-    BankType.nubank,
-    BankType.nuInvest,
-    BankType.itau,
-    BankType.bradesco,
-    BankType.bancoDoBrasil,
-    BankType.santander,
-    BankType.caixa,
-    BankType.inter,
-    BankType.c6,
-    BankType.btg,
-    BankType.sicredi,
-    BankType.sicoob,
-    BankType.picpay,
-    BankType.mercadoPago,
-    BankType.pan,
-    BankType.original,
-    BankType.safra,
-    BankType.xp,
-    BankType.next,
-    BankType.will,
-    BankType.neon,
-    BankType.avenue,
-    BankType.others,
-  ];
+  /// Order surfaced to the user: banks sorted alphabetically by label
+  /// (accent-insensitive), with "Outros" anchored to the bottom as the
+  /// catch-all fallback. Derived from [BankType] so new banks are placed
+  /// automatically — no hand-maintained order to keep in sync.
+  static final List<BankType> _displayOrder = _buildDisplayOrder();
+
+  static List<BankType> _buildDisplayOrder() {
+    final banks =
+        BankType.values.where((b) => b != BankType.others).toList()
+          ..sort(
+            (a, b) => normalizeForMatch(
+              BankBrand.of(a).label,
+            ).compareTo(normalizeForMatch(BankBrand.of(b).label)),
+          );
+    return [...banks, BankType.others];
+  }
 
   @override
   void dispose() {

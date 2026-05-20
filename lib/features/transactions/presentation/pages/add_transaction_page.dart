@@ -23,6 +23,7 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
@@ -76,6 +77,7 @@ class AddTransactionPage extends StatelessWidget {
         createTransaction: GetIt.I<CreateTransactionUseCase>(),
         updateTransaction: GetIt.I<UpdateTransactionUseCase>(),
         createTransfer: GetIt.I<CreateTransferUseCase>(),
+        getTransaction: GetIt.I<GetTransactionUseCase>(),
         userId: userId,
         existingTransaction: existingTransaction,
         prefillAccountId: prefillAccountId,

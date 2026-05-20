@@ -58,7 +58,7 @@ These were debated and locked before code:
 | name           | String  | No       | Non-empty. Free text — "Real Estate", "Bitcoin", "Tesouro Selic"...  |
 | icon           | int     | No       | Material/FontAwesome icon code point. **Subclass rows inherit from the parent at write time.** |
 | color          | int     | No       | ARGB. **Subclass rows inherit from the parent at write time.**       |
-| targetPercent  | double  | No       | `[0, 100]`. Only meaningful on **root** classes — subclasses always persist `0`. |
+| targetPercent  | double  | No       | `[0, 100]`. Carried by **both** roots and subclasses: on a root it is the share of the **total portfolio**; on a subclass it is the share of its **parent class's** allocation. `0` = no target set. |
 | parentId       | String? | Yes      | References another root class; `null` = root. See subclass rules.    |
 | createdAt      | DateTime| No       | Set on creation.                                                     |
 
@@ -72,7 +72,7 @@ Computed getters:
 
 1. **One nesting level only.** A subclass cannot itself own subclasses. The parent picker filters to root classes; saving a subclass with a `parentId` pointing at another subclass is blocked at the use-case layer.
 2. **Subclasses inherit `icon` + `color` from the parent at write time** — the form mirrors the parent's appearance and the persisted row carries that snapshot. If the parent's appearance changes later, existing subclasses keep the old visuals; users can re-save the subclass to re-sync. (Mirrors the explicit-on-write trade-off used by categories — see `specs/categories.md` rule 17.)
-3. **Subclasses do not carry their own `targetPercent`.** The root class's target represents the whole group; within the group, subclasses share the parent's bucket. The form hides the target slider when `parentId != null` and persists `targetPercent: 0`.
+3. **Subclasses carry their own `targetPercent`** — the share of the parent class they should represent. The root's target sizes the whole group against the portfolio; each subclass's target splits that group internally. The form shows the target slider for subclasses too. `0` means "no target set yet", in which case the detail page shows share-of-class only and offers no suggestion. Sibling subclass targets should sum to 100 (not hard-enforced — see rule 7).
 4. **Holdings only reference subclasses.** Root classes are pure
    organisational containers — the user never writes a holding
    directly on a root. The use cases (`CreateAssetHoldingUseCase` and
@@ -150,6 +150,7 @@ when the parent has no holdings yet).
 | currentAmount   | double | Σ of holdings tied to this subclass.               |
 | percentOfClass  | double | `[0, 1]` — share of the parent class's total.     |
 | percentOfTotal  | double | `[0, 1]` — share of `totalInvested`.              |
+| targetPercent   | double | `[0, 100]` — user-declared share of the parent class. `0` = no target. |
 
 ### `RebalanceAction`
 
@@ -443,6 +444,28 @@ current overview).
 - Linear progress bar: `currentPercent / max(currentPercent, targetFraction)`
   capped at 1.0 so over-target classes show a full bar (the delta
   copy carries the magnitude).
+
+### Class detail page (`AssetClassDetailPage`)
+
+Reached by tapping a class row; the app-bar pencil opens the class form.
+
+- **Hero card**: the class's current amount, `actual% / target%` of the
+  portfolio, a progress bar (`currentPercent / targetFraction`), the
+  target amount, and the over/under/on-target delta.
+- **Subclass list**: one `_SubclassCard` per subclass, accent stripe in
+  the parent's colour (subclasses inherit it). Each card shows:
+  - name;
+  - a detail line `R$ X · actual% de target%` — the subclass's
+    share of the class now vs. its `targetPercent`. Falls back to
+    `R$ X · actual% da classe` when no target is set;
+  - a suggestion line (add / trim / on-target / "set a target") derived
+    from the suggested amount = `class.targetAmount × subclass.targetPercent / 100`;
+  - an inline "Alocar" chip opening the holding sheet preset to the subclass.
+- Trailing full-width "Adicionar subclasse" button; an empty state with
+  the same CTA when the class has no subclasses.
+
+There is **no donut** on this page — the per-subclass numbers carry the
+breakdown; an early donut iteration was dropped as visual noise.
 
 ### Rebalance section
 

@@ -231,16 +231,12 @@ class _TranslationsFiftyThirtyTwentyPtBr implements TranslationsFiftyThirtyTwent
 
 	// Translations
 	@override String get title => '50/30/20';
-	@override String get subtitle => 'Como está seu mês';
 	@override String get needsLabel => 'Necessidades';
 	@override String get wantsLabel => 'Desejos';
 	@override String get savingsLabel => 'Investimento';
 	@override String ofTarget({required Object actual, required Object target}) => '${actual}% de ${target}%';
 	@override String baselinePill({required Object value}) => '100% = ${value}';
 	@override String get noIncomeHeadline => 'Registre uma receita do mês para acompanhar a regra 50/30/20.';
-	@override String get onTrackHeadline => 'Você está no caminho.';
-	@override String get needsAttentionHeadline => 'Alguns ajustes ajudariam.';
-	@override String get unclassifiedDominantHeadline => 'Classifique suas categorias para um diagnóstico preciso.';
 	@override String tipNeedsOver({required Object value}) => 'Reduza ${value} em necessidades para ficar no alvo.';
 	@override String tipWantsOver({required Object value}) => 'Você passou ${value} do orçamento de desejos este mês.';
 	@override String tipSavingsShortWithAccount({required Object value}) => 'Faltam ${value} para atingir 20% de investimento.';
@@ -803,6 +799,7 @@ class _TranslationsInvestmentsPtBr implements TranslationsInvestmentsEn {
 	@override String subclassSuggestionTrim({required Object amount}) => 'Reduza ${amount} — está acima da meta sugerida';
 	@override String get subclassSuggestionBalanced => 'No alvo sugerido';
 	@override String get subclassSuggestionNoTarget => 'Defina um alvo % para ver sugestão';
+	@override String subclassDetailLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}';
 	@override String get deleteClassTitle => 'Excluir classe';
 	@override String get deleteClassConfirm => 'Holdings vinculados precisam ser reatribuídos ou removidos antes. Deseja prosseguir?';
 	@override String get deleteClassSuccess => 'Classe excluída';
@@ -1131,16 +1128,12 @@ extension on TranslationsPtBr {
 			'dashboard.total' => 'Total',
 			'dashboard.close' => 'Fechar',
 			'fiftyThirtyTwenty.title' => '50/30/20',
-			'fiftyThirtyTwenty.subtitle' => 'Como está seu mês',
 			'fiftyThirtyTwenty.needsLabel' => 'Necessidades',
 			'fiftyThirtyTwenty.wantsLabel' => 'Desejos',
 			'fiftyThirtyTwenty.savingsLabel' => 'Investimento',
 			'fiftyThirtyTwenty.ofTarget' => ({required Object actual, required Object target}) => '${actual}% de ${target}%',
 			'fiftyThirtyTwenty.baselinePill' => ({required Object value}) => '100% = ${value}',
 			'fiftyThirtyTwenty.noIncomeHeadline' => 'Registre uma receita do mês para acompanhar a regra 50/30/20.',
-			'fiftyThirtyTwenty.onTrackHeadline' => 'Você está no caminho.',
-			'fiftyThirtyTwenty.needsAttentionHeadline' => 'Alguns ajustes ajudariam.',
-			'fiftyThirtyTwenty.unclassifiedDominantHeadline' => 'Classifique suas categorias para um diagnóstico preciso.',
 			'fiftyThirtyTwenty.tipNeedsOver' => ({required Object value}) => 'Reduza ${value} em necessidades para ficar no alvo.',
 			'fiftyThirtyTwenty.tipWantsOver' => ({required Object value}) => 'Você passou ${value} do orçamento de desejos este mês.',
 			'fiftyThirtyTwenty.tipSavingsShortWithAccount' => ({required Object value}) => 'Faltam ${value} para atingir 20% de investimento.',
@@ -1548,12 +1541,12 @@ extension on TranslationsPtBr {
 			'bills.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
 			'bills.billCreated' => 'Conta criada',
 			'bills.billUpdated' => 'Conta atualizada',
-			_ => null,
-		} ?? switch (path) {
 			'bills.billDeleted' => 'Conta excluída',
 			'bills.billPaid' => 'Conta paga — transação criada',
 			'bills.billReceived' => 'Pagamento recebido — transação criada',
 			'bills.nextOccurrenceCreated' => 'Conta do próximo mês agendada',
+			_ => null,
+		} ?? switch (path) {
 			'bills.alreadyPaid' => 'Esta conta já está quitada',
 			'bills.cannotEditPaid' => 'Contas quitadas não podem ser editadas',
 			'bills.payDialogTitle' => 'Pagar conta',
@@ -1760,6 +1753,7 @@ extension on TranslationsPtBr {
 			'investments.subclassSuggestionTrim' => ({required Object amount}) => 'Reduza ${amount} — está acima da meta sugerida',
 			'investments.subclassSuggestionBalanced' => 'No alvo sugerido',
 			'investments.subclassSuggestionNoTarget' => 'Defina um alvo % para ver sugestão',
+			'investments.subclassDetailLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}',
 			'investments.deleteClassTitle' => 'Excluir classe',
 			'investments.deleteClassConfirm' => 'Holdings vinculados precisam ser reatribuídos ou removidos antes. Deseja prosseguir?',
 			'investments.deleteClassSuccess' => 'Classe excluída',

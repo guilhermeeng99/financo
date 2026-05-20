@@ -46,7 +46,7 @@ The credit usage bar on the accounts list reads `account.usedCredit`, so it now 
 
 `BankAvatar` always renders the same way: a solid coloured circle with the abbreviation. `BankType.others` is the one exception — it shows a generic `buildingColumns` icon instead of a letter abbreviation.
 
-Adding a new bank means: append a value to `BankType`, add a matching entry in `BankBrand._registry`, and append it to `_BankPickerSheet._displayOrder` so it appears in the picker.
+Adding a new bank means: append a value to `BankType` and add a matching entry in `BankBrand._registry`. The picker order is derived automatically — `_BankPickerSheet` sorts every `BankType` alphabetically by label (accent-insensitive), with `BankType.others` anchored last — so there is no hand-maintained order to update.
 
 `BankBrand.resolveAlias(input)` parses free-text bank labels (CSV cells, AI tool calls, user typing in the picker search field) into a `BankType?`. Matching is case- and accent-insensitive against the registry label, the `enum.name` string, and a hand-curated alias map (`"nu"` → Nubank, `"bb"` → Banco do Brasil, `"cef"` → Caixa, etc.). Returns `null` when nothing matches; callers default to `BankType.others`.
 

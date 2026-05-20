@@ -329,8 +329,7 @@ border-radius (matches the rest of the dashboard surfaces).
 
 ```
 ┌────────────────────────────────────────────┐
-│ 50/30/20 · Como está seu mês               │  <- header row
-│ Você está no caminho.                      │  <- status headline
+│ 50/30/20 ······················ 100% = R$ X │  <- header row
 │                                            │
 │ 🟢 Necessidades  · 48% de 50%  R$ 2.400   │
 │ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░ ← bar w/ target  │
@@ -345,13 +344,14 @@ border-radius (matches the rest of the dashboard surfaces).
 └────────────────────────────────────────────┘
 ```
 
-- **Header line**: section title using the same `dot + uppercase label`
-  treatment as `DashboardSection`, but inline within the card.
-- **Status headline**: one sentence keyed off `overview.status`. Copy in
-  i18n. For `onTrack` — "Você está no caminho.". For `needsAttention` —
-  "Alguns ajustes ajudariam.". For `unclassifiedDominant` — "Classifique
-  suas categorias para ver um diagnóstico preciso.". For `noData` —
-  "Registre suas receitas do mês para acompanhar a regra 50/30/20.".
+- **Header line**: section title (`dot + uppercase label`, like
+  `DashboardSection`) inline within the card, with the `100% = R$ X`
+  baseline pill anchored to the right (hidden when income is 0).
+- **No status headline**: the card does *not* render a status sentence
+  ("Você está no caminho." etc. were removed for being noise). The
+  `overview.status` enum still exists and is still computed — it drives
+  the **footer dica precedence** (e.g. `unclassifiedDominant` surfaces
+  the classify tip first), not any headline copy.
 - **Per-bucket rows** (3 of them):
   - Leading icon (FontAwesome): `walletAlt` (needs), `face_grin_beam`
     (wants — use a sensible mapping like `cocktail`), `piggy_bank`
@@ -382,7 +382,7 @@ border-radius (matches the rest of the dashboard surfaces).
 
 | Scenario                                                | Render                                                                                                                                       |
 |---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| `income == 0`                                           | Compact card with the status headline only ("Registre suas receitas..."). No bars. No bucket rows. Same visual height as a `_NoAccountsHint`. |
+| `income == 0`                                           | Compact card with a single no-income hint row ("Registre suas receitas...", `noIncomeHeadline`) + chart-pie icon. No baseline pill. No bars. No bucket rows. Same visual height as a `_NoAccountsHint`. |
 | `income > 0` but every expense category is unclassified | Bars rendered with all spend pooled in a 4th, muted "Sem classificação" row. CTA to classify (chip → `/categories`).                          |
 | `income > 0`, partial classification                    | Bars rendered normally + footer dica counts the unclassified                                                                                  |
 | No investment accounts                                  | Savings row still rendered (will read `R$ 0 · 0% de 20%`) + footer dica with `/account/add` chip                                              |

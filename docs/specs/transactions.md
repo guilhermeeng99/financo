@@ -39,8 +39,9 @@ bool get isTransfer => linkedTransactionId != null
 11. **Transfers create two linked transactions** — an expense on the source account and an income on the destination account, linked by `linkedTransactionId`.
 12. **Transfers have no category** — `categoryId` is empty string for both sides.
 13. **Deleting one side of a transfer deletes both** — cascading delete at the repository level.
-14. **Editing a transfer** — only amount, date, description, and notes can be changed. Accounts and type are immutable.
-15. **Source and destination accounts must differ** — validated in form state.
+14. **Editing a transfer updates both legs** — amount, date, description, notes, **source account, and destination account** can all be changed; type stays immutable (the pill toggle is disabled in edit mode). Both the expense and income legs are rewritten so they never diverge. Each leg keeps its own `createdAt` (audit trail). The two writes are sequential, not atomic — a failure between them can leave the legs inconsistent (mirrors the non-batched create path; a repository-level transfer update is the proper fix).
+15. **Transfer edit resolves the counterpart leg on open** — the form receives only the tapped leg. It fetches the linked leg (`GetTransactionUseCase`) to populate both source (expense leg) and destination (income leg) accounts, regardless of which leg was tapped. `existingId` is normalized to the expense leg, `linkedTransactionId` to the income leg. On fetch failure the unknown account stays empty (form invalid) rather than guessing.
+16. **Source and destination accounts must differ** — validated in form state.
 
 ## Repository Contract
 
@@ -138,10 +139,21 @@ Default year/month: DateTime.now() when not specified in event.
 ```
 State: { userId, type, amount, description, date, accountId, categoryId,
          destinationAccountId, notes, status, isTransfer,
-         existingId?, linkedTransactionId?, failure? }
+         existingId?, linkedTransactionId?,
+         originalCreatedAt?, destinationCreatedAt?, failure? }
+
+  // originalCreatedAt    = expense-leg createdAt (preserved on update)
+  // destinationCreatedAt = income-leg createdAt (preserved on transfer update)
+
+Deps: createTransaction, updateTransaction, createTransfer, getTransaction
 
 isEditing  = existingId != null
 isTransfer = state.isTransfer flag (or linkedTransactionId != null on existing)
+
+On construct (editing a transfer):
+  fetch the linked leg via getTransaction → fill the unknown account so
+  accountId = source (expense leg), destinationAccountId = destination
+  (income leg). See Transfer Rule 15.
 
 isValid (normal):
   amount > 0 && accountId.isNotEmpty && categoryId.isNotEmpty && !date.isAfter(endOfToday)
@@ -158,7 +170,8 @@ Field update methods:
 submit():
   if !isValid → no-op
   → emit(submitting)
-  → if isTransfer && !isEditing → createTransfer(expense, income)
+  → if isTransfer
+      → isEditing ? updateTransfer(both legs) : createTransfer(expense, income)
   → else → isEditing ? updateTransaction : createTransaction
   → success: emit(success)
   → failure: emit(failure + Failure)

@@ -14,6 +14,7 @@ void main() {
   late MockCreateTransactionUseCase mockCreate;
   late MockUpdateTransactionUseCase mockUpdate;
   late MockCreateTransferUseCase mockTransfer;
+  late MockGetTransactionUseCase mockGet;
 
   const userId = 'user-1';
 
@@ -23,6 +24,14 @@ void main() {
     mockCreate = MockCreateTransactionUseCase();
     mockUpdate = MockUpdateTransactionUseCase();
     mockTransfer = MockCreateTransferUseCase();
+    mockGet = MockGetTransactionUseCase();
+    // Default counterpart-leg fetch (used when editing a transfer). The
+    // income leg is the typical counterpart; individual tests override.
+    when(() => mockGet(any())).thenAnswer(
+      (_) async => Right(
+        TransactionFactory.transfer().income,
+      ),
+    );
   });
 
   TransactionFormCubit buildCubit({TransactionEntity? existing}) =>
@@ -30,6 +39,7 @@ void main() {
         createTransaction: mockCreate,
         updateTransaction: mockUpdate,
         createTransfer: mockTransfer,
+        getTransaction: mockGet,
         userId: userId,
         existingTransaction: existing,
       );
@@ -86,6 +96,74 @@ void main() {
       expect(state.linkedTransactionId, pair.income.id);
 
       addTearDown(cubit.close);
+    });
+
+    group('transfer edit — counterpart resolution', () {
+      test('tapping the expense leg keeps source, fills destination', () async {
+        final pair = TransactionFactory.transfer(
+          sourceAccountId: 'acc-src',
+          destinationAccountId: 'acc-dst',
+        );
+        when(
+          () => mockGet('tx-transfer-inc'),
+        ).thenAnswer((_) async => Right(pair.income));
+
+        final cubit = buildCubit(existing: pair.expense);
+
+        // Synchronously the tapped (expense) leg is the source; the income
+        // leg's account isn't known yet.
+        expect(cubit.state.isTransfer, true);
+        expect(cubit.state.accountId, 'acc-src');
+        expect(cubit.state.destinationAccountId, '');
+        expect(cubit.state.existingId, 'tx-transfer-exp');
+        expect(cubit.state.linkedTransactionId, 'tx-transfer-inc');
+
+        // The async counterpart fetch fills the destination account.
+        await pumpEventQueue();
+        expect(cubit.state.destinationAccountId, 'acc-dst');
+        addTearDown(cubit.close);
+      });
+
+      test('tapping the income leg fills source, keeps destination', () async {
+        final pair = TransactionFactory.transfer(
+          sourceAccountId: 'acc-src',
+          destinationAccountId: 'acc-dst',
+        );
+        when(
+          () => mockGet('tx-transfer-exp'),
+        ).thenAnswer((_) async => Right(pair.expense));
+
+        final cubit = buildCubit(existing: pair.income);
+
+        // Tapping the income leg: destination is known up front, the
+        // source (expense leg) account is pending. `existingId` is still
+        // normalized to the expense leg so submit updates the right rows.
+        expect(cubit.state.isTransfer, true);
+        expect(cubit.state.destinationAccountId, 'acc-dst');
+        expect(cubit.state.accountId, '');
+        expect(cubit.state.existingId, 'tx-transfer-exp');
+        expect(cubit.state.linkedTransactionId, 'tx-transfer-inc');
+
+        await pumpEventQueue();
+        expect(cubit.state.accountId, 'acc-src');
+        addTearDown(cubit.close);
+      });
+
+      test('counterpart fetch failure leaves the unknown account empty',
+          () async {
+        final pair = TransactionFactory.transfer();
+        when(
+          () => mockGet(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('offline')));
+
+        final cubit = buildCubit(existing: pair.income);
+        await pumpEventQueue();
+
+        // Source stays empty so the form is invalid rather than guessing.
+        expect(cubit.state.accountId, '');
+        expect(cubit.state.isValid, false);
+        addTearDown(cubit.close);
+      });
     });
 
     group('field updates', () {
@@ -560,7 +638,7 @@ void main() {
       );
 
       blocTest<TransactionFormCubit, TransactionFormState>(
-        'editing a transfer submits as regular transaction (not transfer)',
+        'editing a transfer updates both legs (expense + income)',
         setUp: () {
           when(
             () => mockUpdate(any()),
@@ -568,10 +646,10 @@ void main() {
             (_) async => Right(TransactionFactory.expense()),
           );
         },
-        build: () {
-          final transfer = TransactionFactory.transfer();
-          return buildCubit(existing: transfer.expense);
-        },
+        // No `existing` passed: the seeded state already carries the
+        // normalized transfer, and we don't want the constructor's async
+        // counterpart fetch emitting into this submit-focused test.
+        build: buildCubit,
         seed: () => TransactionFormState(
           userId: userId,
           type: TransactionType.expense,
@@ -601,13 +679,68 @@ void main() {
           ),
         ],
         verify: (_) {
-          verify(() => mockUpdate(any())).called(1);
+          // Both legs (source/expense + destination/income) are written.
+          final updated = verify(() => mockUpdate(captureAny())).captured
+              .cast<TransactionEntity>();
+          expect(updated, hasLength(2));
+          final expenseLeg = updated.firstWhere(
+            (t) => t.type == TransactionType.expense,
+          );
+          final incomeLeg = updated.firstWhere(
+            (t) => t.type == TransactionType.income,
+          );
+          expect(expenseLeg.id, 'tx-transfer-exp');
+          expect(expenseLeg.accountId, 'acc-1');
+          expect(expenseLeg.linkedTransactionId, 'tx-transfer-inc');
+          expect(incomeLeg.id, 'tx-transfer-inc');
+          expect(incomeLeg.accountId, 'acc-2');
+          expect(incomeLeg.linkedTransactionId, 'tx-transfer-exp');
           verifyNever(
             () => mockTransfer(
               expense: any(named: 'expense'),
               income: any(named: 'income'),
             ),
           );
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'editing a transfer fails fast when the expense leg update fails',
+        setUp: () {
+          when(() => mockUpdate(any())).thenAnswer(
+            (_) async => const Left(ServerFailure('Update failed')),
+          );
+        },
+        build: buildCubit,
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 500,
+          description: 'Transfer',
+          date: DateTime(2024, 3, 20),
+          accountId: 'acc-1',
+          categoryId: '',
+          destinationAccountId: 'acc-2',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: true,
+          existingId: 'tx-transfer-exp',
+          linkedTransactionId: 'tx-transfer-inc',
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<TransactionFormState>()
+              .having((s) => s.status, 'status', FormStatus.failure)
+              .having((s) => s.failure, 'failure', isA<ServerFailure>()),
+        ],
+        verify: (_) {
+          // Income leg is never touched once the expense leg write fails.
+          verify(() => mockUpdate(any())).called(1);
         },
       );
 

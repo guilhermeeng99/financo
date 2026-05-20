@@ -105,8 +105,6 @@ class _FullLayout extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _CardHeader(income: overview.income),
-        const SizedBox(height: 8),
-        _Headline(status: overview.status),
         const SizedBox(height: 14),
         _BucketRow(
           label: t.fiftyThirtyTwenty.needsLabel,
@@ -181,17 +179,7 @@ class _CardHeader extends StatelessWidget {
             letterSpacing: 0.8,
           ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            t.fiftyThirtyTwenty.subtitle,
-            style: context.textTheme.labelSmall?.copyWith(
-              color: colors.onBackgroundLight,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        const Spacer(),
         if (income != null && income! > 0) ...[
           const SizedBox(width: 8),
           _BaselinePill(income: income!),
@@ -224,42 +212,6 @@ class _BaselinePill extends StatelessWidget {
           color: colors.income,
           fontWeight: FontWeight.w700,
         ),
-      ),
-    );
-  }
-}
-
-class _Headline extends StatelessWidget {
-  const _Headline({required this.status});
-
-  final FiftyThirtyTwentyStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final (text, tint) = switch (status) {
-      FiftyThirtyTwentyStatus.noData => (
-        t.fiftyThirtyTwenty.noIncomeHeadline,
-        colors.onBackgroundLight,
-      ),
-      FiftyThirtyTwentyStatus.onTrack => (
-        t.fiftyThirtyTwenty.onTrackHeadline,
-        colors.income,
-      ),
-      FiftyThirtyTwentyStatus.needsAttention => (
-        t.fiftyThirtyTwenty.needsAttentionHeadline,
-        colors.warning,
-      ),
-      FiftyThirtyTwentyStatus.unclassifiedDominant => (
-        t.fiftyThirtyTwenty.unclassifiedDominantHeadline,
-        colors.onBackgroundLight,
-      ),
-    };
-    return Text(
-      text,
-      style: context.textTheme.titleSmall?.copyWith(
-        color: tint,
-        fontWeight: FontWeight.w700,
       ),
     );
   }

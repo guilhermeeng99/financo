@@ -425,9 +425,6 @@ class TranslationsFiftyThirtyTwentyEn {
 	/// en: '50/30/20'
 	String get title => '50/30/20';
 
-	/// en: 'How your month is going'
-	String get subtitle => 'How your month is going';
-
 	/// en: 'Needs'
 	String get needsLabel => 'Needs';
 
@@ -445,15 +442,6 @@ class TranslationsFiftyThirtyTwentyEn {
 
 	/// en: 'Log income for this month to track the 50/30/20 rule.'
 	String get noIncomeHeadline => 'Log income for this month to track the 50/30/20 rule.';
-
-	/// en: 'You're on track.'
-	String get onTrackHeadline => 'You\'re on track.';
-
-	/// en: 'A few tweaks would help.'
-	String get needsAttentionHeadline => 'A few tweaks would help.';
-
-	/// en: 'Classify your categories for an accurate read.'
-	String get unclassifiedDominantHeadline => 'Classify your categories for an accurate read.';
 
 	/// en: 'Trim $value off needs to hit the target.'
 	String tipNeedsOver({required Object value}) => 'Trim ${value} off needs to hit the target.';
@@ -1969,6 +1957,9 @@ class TranslationsInvestmentsEn {
 	/// en: 'Set a target % to see a suggestion'
 	String get subclassSuggestionNoTarget => 'Set a target % to see a suggestion';
 
+	/// en: '$amount · $actual of $target'
+	String subclassDetailLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}';
+
 	/// en: 'Delete class'
 	String get deleteClassTitle => 'Delete class';
 
@@ -2634,16 +2625,12 @@ extension on Translations {
 			'dashboard.total' => 'Total',
 			'dashboard.close' => 'Close',
 			'fiftyThirtyTwenty.title' => '50/30/20',
-			'fiftyThirtyTwenty.subtitle' => 'How your month is going',
 			'fiftyThirtyTwenty.needsLabel' => 'Needs',
 			'fiftyThirtyTwenty.wantsLabel' => 'Wants',
 			'fiftyThirtyTwenty.savingsLabel' => 'Savings',
 			'fiftyThirtyTwenty.ofTarget' => ({required Object actual, required Object target}) => '${actual}% of ${target}%',
 			'fiftyThirtyTwenty.baselinePill' => ({required Object value}) => '100% = ${value}',
 			'fiftyThirtyTwenty.noIncomeHeadline' => 'Log income for this month to track the 50/30/20 rule.',
-			'fiftyThirtyTwenty.onTrackHeadline' => 'You\'re on track.',
-			'fiftyThirtyTwenty.needsAttentionHeadline' => 'A few tweaks would help.',
-			'fiftyThirtyTwenty.unclassifiedDominantHeadline' => 'Classify your categories for an accurate read.',
 			'fiftyThirtyTwenty.tipNeedsOver' => ({required Object value}) => 'Trim ${value} off needs to hit the target.',
 			'fiftyThirtyTwenty.tipWantsOver' => ({required Object value}) => 'You went ${value} over your wants budget this month.',
 			'fiftyThirtyTwenty.tipSavingsShortWithAccount' => ({required Object value}) => 'Add ${value} to hit 20% savings.',
@@ -3051,12 +3038,12 @@ extension on Translations {
 			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
 			'bills.billCreated' => 'Bill created',
 			'bills.billUpdated' => 'Bill updated',
-			_ => null,
-		} ?? switch (path) {
 			'bills.billDeleted' => 'Bill deleted',
 			'bills.billPaid' => 'Bill paid — transaction created',
 			'bills.billReceived' => 'Payment received — transaction created',
 			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
+			_ => null,
+		} ?? switch (path) {
 			'bills.alreadyPaid' => 'This bill is already settled',
 			'bills.cannotEditPaid' => 'Settled bills can\'t be edited',
 			'bills.payDialogTitle' => 'Pay bill',
@@ -3263,6 +3250,7 @@ extension on Translations {
 			'investments.subclassSuggestionTrim' => ({required Object amount}) => 'Trim ${amount} — above the suggested target',
 			'investments.subclassSuggestionBalanced' => 'On suggested target',
 			'investments.subclassSuggestionNoTarget' => 'Set a target % to see a suggestion',
+			'investments.subclassDetailLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}',
 			'investments.deleteClassTitle' => 'Delete class',
 			'investments.deleteClassConfirm' => 'Linked holdings must be reassigned or removed first. Continue?',
 			'investments.deleteClassSuccess' => 'Class deleted',
