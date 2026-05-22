@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
-import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/data/models/asset_holding_model.dart';
 import 'package:financo/features/investments/domain/entities/asset_holding_entity.dart';
@@ -28,8 +28,8 @@ class AssetHoldingRepositoryImpl implements AssetHoldingRepository {
   Future<Either<Failure, List<AssetHoldingEntity>>> getAssetHoldings({
     required String userId,
     bool forceRefresh = false,
-  }) async {
-    try {
+  }) {
+    return guardServer(() async {
       if (forceRefresh) {
         final remote = await _remote.getAssetHoldings(userId: userId);
         await _dao.deleteAllAssetHoldings();
@@ -37,82 +37,64 @@ class AssetHoldingRepositoryImpl implements AssetHoldingRepository {
           await _dao.insertAllAssetHoldings(remote);
         }
       }
-      return Right(await _dao.getAssetHoldings(userId));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return _dao.getAssetHoldings(userId);
+    });
   }
 
   @override
   Future<Either<Failure, AssetHoldingEntity>> createAssetHolding(
     AssetHoldingEntity holding,
-  ) async {
-    try {
-      final model = AssetHoldingModel.fromEntity(holding);
-      final result = await _remote.createAssetHolding(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.createAssetHolding(
+        AssetHoldingModel.fromEntity(holding),
+      );
       await _dao.upsertAssetHolding(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
   Future<Either<Failure, AssetHoldingEntity>> updateAssetHolding(
     AssetHoldingEntity holding,
-  ) async {
-    try {
-      final model = AssetHoldingModel.fromEntity(holding);
-      final result = await _remote.updateAssetHolding(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.updateAssetHolding(
+        AssetHoldingModel.fromEntity(holding),
+      );
       await _dao.upsertAssetHolding(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
-  Future<Either<Failure, void>> deleteAssetHolding(String id) async {
-    try {
+  Future<Either<Failure, void>> deleteAssetHolding(String id) {
+    return guardServerVoid(() async {
       await _remote.deleteAssetHolding(id);
       await _dao.deleteAssetHolding(id);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+    });
   }
 
   @override
-  Future<Either<Failure, void>> deleteHoldingsForAccount(
-    String accountId,
-  ) async {
-    try {
+  Future<Either<Failure, void>> deleteHoldingsForAccount(String accountId) {
+    return guardServerVoid(() async {
       final userId = _resolveUserId();
-      if (userId.isEmpty) return const Right(null);
+      if (userId.isEmpty) return;
       await _remote.deleteHoldingsForAccount(
         userId: userId,
         accountId: accountId,
       );
       await _dao.deleteHoldingsForAccount(accountId);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+    });
   }
 
   @override
-  Future<Either<Failure, void>> deleteHoldingsForClass(String classId) async {
-    try {
+  Future<Either<Failure, void>> deleteHoldingsForClass(String classId) {
+    return guardServerVoid(() async {
       final userId = _resolveUserId();
-      if (userId.isEmpty) return const Right(null);
-      await _remote.deleteHoldingsForClass(
-        userId: userId,
-        classId: classId,
-      );
+      if (userId.isEmpty) return;
+      await _remote.deleteHoldingsForClass(userId: userId, classId: classId);
       await _dao.deleteHoldingsForClass(classId);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+    });
   }
 }

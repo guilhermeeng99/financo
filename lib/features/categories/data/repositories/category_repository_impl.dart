@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/categories/data/models/category_model.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -21,53 +22,49 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Either<Failure, List<CategoryEntity>>> getCategories({
     required String userId,
     bool forceRefresh = false,
-  }) async {
-    try {
+  }) {
+    return guardServer(() async {
       if (forceRefresh) {
-        final remote = await _remote.getCategories(
-          userId: userId,
-        );
+        final remote = await _remote.getCategories(userId: userId);
         await _dao.deleteAllCategories();
         if (remote.isNotEmpty) {
           await _dao.insertAllCategories(remote);
         }
       }
-      return Right(await _dao.getCategories(userId));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return _dao.getCategories(userId);
+    });
   }
 
   @override
   Future<Either<Failure, CategoryEntity>> createCategory(
     CategoryEntity category,
-  ) async {
-    try {
-      final model = CategoryModel.fromEntity(category);
-      final result = await _remote.createCategory(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.createCategory(
+        CategoryModel.fromEntity(category),
+      );
       await _dao.upsertCategory(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
   Future<Either<Failure, CategoryEntity>> updateCategory(
     CategoryEntity category,
-  ) async {
-    try {
-      final model = CategoryModel.fromEntity(category);
-      final result = await _remote.updateCategory(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.updateCategory(
+        CategoryModel.fromEntity(category),
+      );
       await _dao.upsertCategory(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
   Future<Either<Failure, void>> deleteCategory(String id) async {
+    // Not routed through guardServer: the subcategory guard returns a
+    // ValidationFailure (not a ServerException) before any remote call.
     try {
       final children = await _dao.getChildCategories(id);
       if (children.isNotEmpty) {

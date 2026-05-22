@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
-import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/accounts/data/models/account_model.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
@@ -21,8 +21,8 @@ class AccountRepositoryImpl implements AccountRepository {
   Future<Either<Failure, List<AccountEntity>>> getAccounts({
     required String userId,
     bool forceRefresh = false,
-  }) async {
-    try {
+  }) {
+    return guardServer(() async {
       if (forceRefresh) {
         final remote = await _remote.getAccounts(userId: userId);
         await _dao.deleteAllAccounts();
@@ -30,61 +30,48 @@ class AccountRepositoryImpl implements AccountRepository {
           await _dao.insertAllAccounts(remote);
         }
       }
-      return Right(await _dao.getAccounts(userId));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return _dao.getAccounts(userId);
+    });
   }
 
   @override
-  Future<Either<Failure, AccountEntity>> getAccount(String id) async {
-    try {
+  Future<Either<Failure, AccountEntity>> getAccount(String id) {
+    return guardServer(() async {
       final local = await _dao.getAccountById(id);
-      if (local != null) return Right(local);
+      if (local != null) return local;
       final result = await _remote.getAccount(id);
       await _dao.upsertAccount(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
-  Future<Either<Failure, AccountEntity>> createAccount(
-    AccountEntity account,
-  ) async {
-    try {
-      final model = AccountModel.fromEntity(account);
-      final result = await _remote.createAccount(model);
+  Future<Either<Failure, AccountEntity>> createAccount(AccountEntity account) {
+    return guardServer(() async {
+      final result = await _remote.createAccount(
+        AccountModel.fromEntity(account),
+      );
       await _dao.upsertAccount(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
-  Future<Either<Failure, AccountEntity>> updateAccount(
-    AccountEntity account,
-  ) async {
-    try {
-      final model = AccountModel.fromEntity(account);
-      final result = await _remote.updateAccount(model);
+  Future<Either<Failure, AccountEntity>> updateAccount(AccountEntity account) {
+    return guardServer(() async {
+      final result = await _remote.updateAccount(
+        AccountModel.fromEntity(account),
+      );
       await _dao.upsertAccount(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
-  Future<Either<Failure, void>> deleteAccount(String id) async {
-    try {
+  Future<Either<Failure, void>> deleteAccount(String id) {
+    return guardServerVoid(() async {
       await _remote.deleteAccount(id);
       await _dao.deleteAccount(id);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+    });
   }
 }

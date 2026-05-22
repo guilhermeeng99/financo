@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
-import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/models/asset_class_model.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
@@ -21,8 +21,8 @@ class AssetClassRepositoryImpl implements AssetClassRepository {
   Future<Either<Failure, List<AssetClassEntity>>> getAssetClasses({
     required String userId,
     bool forceRefresh = false,
-  }) async {
-    try {
+  }) {
+    return guardServer(() async {
       if (forceRefresh) {
         final remote = await _remote.getAssetClasses(userId: userId);
         await _dao.deleteAllAssetClasses();
@@ -30,48 +30,41 @@ class AssetClassRepositoryImpl implements AssetClassRepository {
           await _dao.insertAllAssetClasses(remote);
         }
       }
-      return Right(await _dao.getAssetClasses(userId));
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return _dao.getAssetClasses(userId);
+    });
   }
 
   @override
   Future<Either<Failure, AssetClassEntity>> createAssetClass(
     AssetClassEntity assetClass,
-  ) async {
-    try {
-      final model = AssetClassModel.fromEntity(assetClass);
-      final result = await _remote.createAssetClass(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.createAssetClass(
+        AssetClassModel.fromEntity(assetClass),
+      );
       await _dao.upsertAssetClass(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
   Future<Either<Failure, AssetClassEntity>> updateAssetClass(
     AssetClassEntity assetClass,
-  ) async {
-    try {
-      final model = AssetClassModel.fromEntity(assetClass);
-      final result = await _remote.updateAssetClass(model);
+  ) {
+    return guardServer(() async {
+      final result = await _remote.updateAssetClass(
+        AssetClassModel.fromEntity(assetClass),
+      );
       await _dao.upsertAssetClass(result);
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+      return result;
+    });
   }
 
   @override
-  Future<Either<Failure, void>> deleteAssetClass(String id) async {
-    try {
+  Future<Either<Failure, void>> deleteAssetClass(String id) {
+    return guardServerVoid(() async {
       await _remote.deleteAssetClass(id);
       await _dao.deleteAssetClass(id);
-      return const Right(null);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
+    });
   }
 }
