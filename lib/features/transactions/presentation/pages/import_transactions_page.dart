@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
+import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
@@ -66,8 +67,7 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
     return _Tab.expense;
   }
 
-  int _countFor(_Tab tab) =>
-      _rows.where((r) => _tabFor(r) == tab).length;
+  int _countFor(_Tab tab) => _rows.where((r) => _tabFor(r) == tab).length;
 
   void _removeRow(int index) {
     setState(() => _rows.removeAt(index));
@@ -114,8 +114,7 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
   Widget build(BuildContext context) {
     final colors = context.appColors;
 
-    final categories =
-        context.watch<CategoriesCubit>().state.categoriesOrEmpty;
+    final categories = context.watch<CategoriesCubit>().state.categoriesOrEmpty;
     final accounts = context.watch<AccountsCubit>().state.accountsOrEmpty;
 
     final missingAccounts = _missingAccounts(_rows, accounts);
@@ -211,7 +210,14 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
                 if (state is! TransactionsImporting) {
                   return const SizedBox.shrink();
                 }
-                return _ImportProgressOverlay(state: state);
+                return ImportProgressOverlay(
+                  title: t.transactions.importInProgressTitle,
+                  counterLabel: t.transactions.importProgressCounter(
+                    processed: state.processed,
+                    total: state.total,
+                  ),
+                  progress: state.progress,
+                );
               },
             ),
           ],
@@ -221,8 +227,8 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
             label: _rows.isEmpty
                 ? t.transactions.importNothingLeft
                 : t.transactions.importSubmit(count: _rows.length),
-            isLoading: state is TransactionsLoading ||
-                state is TransactionsImporting,
+            isLoading:
+                state is TransactionsLoading || state is TransactionsImporting,
             isEnabled: canImport,
             onSubmit: _onSubmit,
           ),
@@ -262,9 +268,10 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
     for (final c in categories.where((c) => c.parentId != null)) {
       final parent = byId[c.parentId];
       if (parent == null) continue;
-      lookup
-          .putIfAbsent(parent.name.toLowerCase(), () => {})[c.name
-              .toLowerCase()] = true;
+      lookup.putIfAbsent(
+        parent.name.toLowerCase(),
+        () => {},
+      )[c.name.toLowerCase()] = true;
     }
 
     final missing = <String>{};
@@ -290,8 +297,8 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
 
   String _categoryDisplay(TransactionImportRow row) =>
       row.subcategoryName != null
-          ? '${row.categoryName}/${row.subcategoryName}'
-          : row.categoryName!;
+      ? '${row.categoryName}/${row.subcategoryName}'
+      : row.categoryName!;
 }
 
 /// Modal-style overlay rendered on top of the import preview while the
@@ -299,78 +306,6 @@ class _ImportTransactionsPageState extends State<ImportTransactionsPage> {
 /// the list (an in-flight import shouldn't be edited) and shows a
 /// determinate progress bar with a `processed of total` counter so the
 /// user knows how long the operation still has to run.
-class _ImportProgressOverlay extends StatelessWidget {
-  const _ImportProgressOverlay({required this.state});
-
-  final TransactionsImporting state;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
-
-    return ColoredBox(
-      color: Colors.black.withValues(alpha: 0.45),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  t.transactions.importInProgressTitle,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: state.progress,
-                    minHeight: 8,
-                    backgroundColor: colors.surfaceVariant,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      t.transactions.importProgressCounter(
-                        processed: state.processed,
-                        total: state.total,
-                      ),
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    Text(
-                      '$percent%',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _RowsList extends StatelessWidget {
   const _RowsList({
@@ -399,7 +334,9 @@ class _RowsList extends StatelessWidget {
     }
     indexed.sort((a, b) => b.row.date.compareTo(a.row.date));
 
-    if (indexed.isEmpty) return _EmptyTab();
+    if (indexed.isEmpty) {
+      return ImportEmptyTab(message: t.transactions.importEmptyTab);
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
@@ -523,7 +460,7 @@ class _RowTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _RemoveButton(onPressed: onRemove),
+                  ImportRemoveButton(onPressed: onRemove),
                 ],
               ),
             ),
@@ -533,40 +470,9 @@ class _RowTile extends StatelessWidget {
     );
   }
 
-  String _categoryShort(TransactionImportRow row) =>
-      row.subcategoryName != null
-          ? '${row.categoryName} › ${row.subcategoryName}'
-          : row.categoryName!;
-}
-
-class _RemoveButton extends StatelessWidget {
-  const _RemoveButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.error.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Center(
-            child: FaIcon(
-              FontAwesomeIcons.trash,
-              size: 13,
-              color: colors.error,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  String _categoryShort(TransactionImportRow row) => row.subcategoryName != null
+      ? '${row.categoryName} › ${row.subcategoryName}'
+      : row.categoryName!;
 }
 
 class _MissingBanner extends StatelessWidget {
@@ -631,24 +537,6 @@ class _MissingBanner extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          t.transactions.importEmptyTab,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackgroundLight,
-          ),
-        ),
       ),
     );
   }
@@ -757,8 +645,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
     final excludeId = destination
         ? accounts
               .where(
-                (a) =>
-                    a.name.toLowerCase() == _draft.accountName.toLowerCase(),
+                (a) => a.name.toLowerCase() == _draft.accountName.toLowerCase(),
               )
               .map((a) => a.id)
               .firstOrNull
@@ -787,8 +674,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
   }
 
   Future<void> _pickCategory() async {
-    final categories =
-        context.read<CategoriesCubit>().state.categoriesOrEmpty;
+    final categories = context.read<CategoriesCubit>().state.categoriesOrEmpty;
     final byId = {for (final c in categories) c.id: c};
 
     final type = _draft.csvType == CsvTransactionType.receita
@@ -805,10 +691,8 @@ class _EditRowSheetState extends State<_EditRowSheet> {
         if (_draft.subcategoryName != null) {
           final parent = c.parentId == null ? null : byId[c.parentId];
           if (parent != null &&
-              parent.name.toLowerCase() ==
-                  _draft.categoryName!.toLowerCase() &&
-              c.name.toLowerCase() ==
-                  _draft.subcategoryName!.toLowerCase()) {
+              parent.name.toLowerCase() == _draft.categoryName!.toLowerCase() &&
+              c.name.toLowerCase() == _draft.subcategoryName!.toLowerCase()) {
             selectedId = c.id;
             break;
           }
@@ -860,9 +744,11 @@ class _EditRowSheetState extends State<_EditRowSheet> {
       missing.add(t.transactions.amountLabel);
     }
     if (_draft.accountName.isEmpty) {
-      missing.add(_draft.isTransfer
-          ? t.transactions.sourceAccount
-          : t.transactions.account);
+      missing.add(
+        _draft.isTransfer
+            ? t.transactions.sourceAccount
+            : t.transactions.account,
+      );
     }
     if (_draft.isTransfer) {
       final dest = _draft.destinationAccountName;
@@ -1024,8 +910,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                           value:
                               _draft.destinationAccountName ??
                               t.transactions.destinationAccount,
-                          isPlaceholder:
-                              _draft.destinationAccountName == null,
+                          isPlaceholder: _draft.destinationAccountName == null,
                           onTap: () => _pickAccount(destination: true),
                         ),
                       ] else ...[

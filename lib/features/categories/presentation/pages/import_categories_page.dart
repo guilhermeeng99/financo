@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
+import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -116,8 +117,10 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
       context,
       icon: FontAwesomeIcons.trashCan,
       title: t.general.delete,
-      message:
-          t.categories.importDeleteRoot(name: item.name, count: childCount),
+      message: t.categories.importDeleteRoot(
+        name: item.name,
+        count: childCount,
+      ),
       confirmLabel: t.categories.importDeleteRootConfirm,
       destructive: true,
     );
@@ -217,7 +220,14 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
                 if (state is! CategoriesImporting) {
                   return const SizedBox.shrink();
                 }
-                return _ImportProgressOverlay(state: state);
+                return ImportProgressOverlay(
+                  title: t.categories.importInProgressTitle,
+                  counterLabel: t.categories.importProgressCounter(
+                    processed: state.processed,
+                    total: state.total,
+                  ),
+                  progress: state.progress,
+                );
               },
             ),
           ],
@@ -243,78 +253,6 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
 /// (an in-flight import shouldn't be edited) and shows a determinate
 /// progress bar with a `processed of total` counter so the user knows how
 /// long the operation still has to run.
-class _ImportProgressOverlay extends StatelessWidget {
-  const _ImportProgressOverlay({required this.state});
-
-  final CategoriesImporting state;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
-
-    return ColoredBox(
-      color: Colors.black.withValues(alpha: 0.45),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  t.categories.importInProgressTitle,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: state.progress,
-                    minHeight: 8,
-                    backgroundColor: colors.surfaceVariant,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      t.categories.importProgressCounter(
-                        processed: state.processed,
-                        total: state.total,
-                      ),
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    Text(
-                      '$percent%',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _ImportList extends StatelessWidget {
   const _ImportList({
@@ -339,7 +277,7 @@ class _ImportList extends StatelessWidget {
         .toList();
 
     if (ordered.isEmpty && filteredDuplicates.isEmpty) {
-      return _EmptyTab();
+      return ImportEmptyTab(message: t.categories.importEmptyTab);
     }
 
     final colors = context.appColors;
@@ -416,8 +354,7 @@ class _ImportList extends StatelessWidget {
       );
     }
     orphans.sort(
-      (a, b) =>
-          a.item.name.toLowerCase().compareTo(b.item.name.toLowerCase()),
+      (a, b) => a.item.name.toLowerCase().compareTo(b.item.name.toLowerCase()),
     );
 
     final out = <_OrderedItem>[];
@@ -505,7 +442,7 @@ class _ImportRow extends StatelessWidget {
                         Text(
                           isSub
                               ? '${item.parentName} · '
-                                  '${t.categories.subcategoryLabel}'
+                                    '${t.categories.subcategoryLabel}'
                               : (item.type == CategoryType.income
                                     ? t.categories.incomeType
                                     : t.categories.expenseType),
@@ -520,59 +457,11 @@ class _ImportRow extends StatelessWidget {
                   ),
                   if (onRemove != null) ...[
                     const SizedBox(width: 4),
-                    _RemoveButton(onPressed: onRemove!),
+                    ImportRemoveButton(onPressed: onRemove!),
                   ],
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RemoveButton extends StatelessWidget {
-  const _RemoveButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.error.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Center(
-            child: FaIcon(
-              FontAwesomeIcons.trash,
-              size: 13,
-              color: colors.error,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          t.categories.importEmptyTab,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackgroundLight,
           ),
         ),
       ),

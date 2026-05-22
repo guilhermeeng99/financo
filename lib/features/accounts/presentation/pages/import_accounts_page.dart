@@ -8,6 +8,7 @@ import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
+import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
@@ -224,13 +225,19 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
             ),
             BlocBuilder<AccountsCubit, AccountsState>(
               buildWhen: (previous, current) =>
-                  previous is AccountsImporting ||
-                  current is AccountsImporting,
+                  previous is AccountsImporting || current is AccountsImporting,
               builder: (context, state) {
                 if (state is! AccountsImporting) {
                   return const SizedBox.shrink();
                 }
-                return _ImportProgressOverlay(state: state);
+                return ImportProgressOverlay(
+                  title: t.accounts.importInProgressTitle,
+                  counterLabel: t.accounts.importProgressCounter(
+                    processed: state.processed,
+                    total: state.total,
+                  ),
+                  progress: state.progress,
+                );
               },
             ),
           ],
@@ -240,8 +247,7 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
             label: _items.isEmpty
                 ? t.accounts.importNothingLeft
                 : t.accounts.importSubmit(count: _items.length),
-            isLoading:
-                state is AccountsLoading || state is AccountsImporting,
+            isLoading: state is AccountsLoading || state is AccountsImporting,
             isEnabled: canImport,
             onSubmit: _onSubmit,
           ),
@@ -256,78 +262,6 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
 /// list (an in-flight import shouldn't be edited) and shows a determinate
 /// progress bar with a `processed of total` counter so the user knows how
 /// long the operation still has to run.
-class _ImportProgressOverlay extends StatelessWidget {
-  const _ImportProgressOverlay({required this.state});
-
-  final AccountsImporting state;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final percent = (state.progress * 100).clamp(0, 100).toStringAsFixed(0);
-
-    return ColoredBox(
-      color: Colors.black.withValues(alpha: 0.45),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  t.accounts.importInProgressTitle,
-                  style: context.textTheme.titleMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: state.progress,
-                    minHeight: 8,
-                    backgroundColor: colors.surfaceVariant,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      t.accounts.importProgressCounter(
-                        processed: state.processed,
-                        total: state.total,
-                      ),
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    Text(
-                      '$percent%',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _ImportList extends StatelessWidget {
   const _ImportList({
@@ -353,15 +287,16 @@ class _ImportList extends StatelessWidget {
       }
     }
     indexed.sort(
-      (a, b) =>
-          a.item.name.toLowerCase().compareTo(b.item.name.toLowerCase()),
+      (a, b) => a.item.name.toLowerCase().compareTo(b.item.name.toLowerCase()),
     );
 
     final filteredDuplicates = duplicates
         .where((it) => it.type == filter)
         .toList();
 
-    if (indexed.isEmpty && filteredDuplicates.isEmpty) return _EmptyTab();
+    if (indexed.isEmpty && filteredDuplicates.isEmpty) {
+      return ImportEmptyTab(message: t.accounts.importEmptyTab);
+    }
 
     final colors = context.appColors;
     return ListView(
@@ -473,7 +408,7 @@ class _ImportRow extends StatelessWidget {
                   ),
                   if (onRemove != null) ...[
                     const SizedBox(width: 4),
-                    _RemoveButton(onPressed: onRemove!),
+                    ImportRemoveButton(onPressed: onRemove!),
                   ],
                 ],
               ),
@@ -496,36 +431,6 @@ class _ImportRow extends StatelessWidget {
     }
     if (parts.isEmpty) return t.accounts.creditCard;
     return parts.join(' · ');
-  }
-}
-
-class _RemoveButton extends StatelessWidget {
-  const _RemoveButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.error.withValues(alpha: 0.1),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Center(
-            child: FaIcon(
-              FontAwesomeIcons.trash,
-              size: 13,
-              color: colors.error,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -572,24 +477,6 @@ class _MissingLinkBanner extends StatelessWidget {
             style: context.textTheme.bodySmall?.copyWith(color: colors.error),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          t.accounts.importEmptyTab,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackgroundLight,
-          ),
-        ),
       ),
     );
   }
@@ -698,8 +585,10 @@ class _EditItemSheetState extends State<_EditItemSheet> {
         .map((a) => a.name)
         .toList();
 
-    final candidates = <String>{...existing, ...widget.otherCheckingNames}
-        .toList();
+    final candidates = <String>{
+      ...existing,
+      ...widget.otherCheckingNames,
+    }.toList();
     if (candidates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.accounts.noLinkedCandidates)),
@@ -873,7 +762,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                               child: _PickerRow(
                                 icon: FontAwesomeIcons.calendar,
                                 label: t.accounts.closingDay,
-                                value: _draft.closingDay?.toString() ??
+                                value:
+                                    _draft.closingDay?.toString() ??
                                     t.accounts.pickClosingDay,
                                 isPlaceholder: _draft.closingDay == null,
                                 onTap: _pickClosingDay,
@@ -884,7 +774,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                               child: _PickerRow(
                                 icon: FontAwesomeIcons.calendarCheck,
                                 label: t.accounts.dueDay,
-                                value: _draft.dueDay?.toString() ??
+                                value:
+                                    _draft.dueDay?.toString() ??
                                     t.accounts.pickDueDay,
                                 isPlaceholder: _draft.dueDay == null,
                                 onTap: _pickDueDay,
@@ -896,7 +787,8 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                         _PickerRow(
                           icon: FontAwesomeIcons.link,
                           label: t.accounts.linkedAccount,
-                          value: _draft.linkedAccountName ??
+                          value:
+                              _draft.linkedAccountName ??
                               t.accounts.pickLinkedAccount,
                           isPlaceholder: _draft.linkedAccountName == null,
                           onTap: _pickLinkedAccount,
