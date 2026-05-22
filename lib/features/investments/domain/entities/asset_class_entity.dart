@@ -11,7 +11,7 @@ import 'package:equatable/equatable.dart';
 /// a root class (e.g. "Apple" under "Stocks"), inherit the parent's
 /// `icon` + `color` at write time, and persist `targetPercent: 0` —
 /// the root carries the group's target. See
-/// `specs/investments.md` §1 subclass rules.
+/// `docs/specs/investments.md` §1 subclass rules.
 class AssetClassEntity extends Equatable {
   const AssetClassEntity({
     required this.id,

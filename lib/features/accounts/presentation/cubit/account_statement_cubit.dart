@@ -85,7 +85,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
 
     // Delegate the running-balance math to the shared calculator so
     // checking/investment vs credit-card sign conventions stay in one
-    // place (specs/accounts.md "Live balance semantics").
+    // place (docs/specs/accounts.md "Live balance semantics").
     final runningBalance = applyTransactionsToAccounts(
       [account],
       allTransactions,

@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 /// derived from existing `transactions` records — budgets only carry the
 /// cap and metadata, never the spend itself.
 ///
-/// See `specs/budgets.md` for the business rules. Quick recap:
+/// See `docs/specs/budgets.md` for the business rules. Quick recap:
 /// - One budget per `(userId, categoryId)`.
 /// - `categoryId` must reference a root expense category.
 /// - `amount` must be `> 0`.

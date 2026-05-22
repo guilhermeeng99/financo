@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/constants/access_control.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -55,7 +57,7 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
           listener: (context, state) {
             if (state is MasterPanelError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.failure.message)),
+                SnackBar(content: Text(localizedFailure(state.failure))),
               );
             }
           },
@@ -65,7 +67,7 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
             }
             if (state is MasterPanelError) {
               return ErrorView(
-                message: state.failure.message,
+                failure: state.failure,
                 onRetry: () => context.read<MasterPanelCubit>().load(),
               );
             }
@@ -117,7 +119,7 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
     if (!context.mounted) return;
     outcome.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.masterPanel.addEmailSuccess)),
@@ -248,7 +250,7 @@ class _UserTile extends StatelessWidget {
     if (!context.mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.masterPanel.deleteUserSuccess)),
@@ -376,35 +378,21 @@ class _AllowedEmailTile extends StatelessWidget {
   }
 
   Future<void> _confirmRemove(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.masterPanel.removeEmailTitle),
-        content: Text(
-          t.masterPanel.removeEmailBody(email: entry.email),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.appColors.error,
-            ),
-            child: Text(t.masterPanel.removeEmailConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.userXmark,
+      title: t.masterPanel.removeEmailTitle,
+      message: t.masterPanel.removeEmailBody(email: entry.email),
+      confirmLabel: t.masterPanel.removeEmailConfirm,
+      destructive: true,
     );
-    if (confirmed != true || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
     final result =
         await context.read<MasterPanelCubit>().removeEmail(entry.email);
     if (!context.mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t.masterPanel.removeEmailSuccess)),

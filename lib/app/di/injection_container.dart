@@ -75,6 +75,7 @@ import 'package:financo/features/categories/data/repositories/category_repositor
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/delete_category_with_reassignment_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
@@ -394,6 +395,14 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => ImportCategoriesCsvUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => DeleteCategoryWithReassignmentUseCase(
+        transactionRepository: sl(),
+        getBudgets: sl(),
+        deleteBudget: sl(),
+        deleteCategory: sl(),
+      ),
     )
     ..registerLazySingleton(() => GetBillsUseCase(sl()))
     ..registerLazySingleton(() => CreateBillUseCase(sl()))

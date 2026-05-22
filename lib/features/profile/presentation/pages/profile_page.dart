@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
@@ -25,6 +26,7 @@ import 'package:financo/features/profile/presentation/widgets/profile_palette_pi
 import 'package:financo/features/profile/presentation/widgets/profile_row.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_section.dart';
 import 'package:financo/features/profile/presentation/widgets/profile_theme_row.dart';
+import 'package:financo/features/profile/presentation/widgets/sign_out_dialog.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:financo/features/transactions/presentation/widgets/transactions_csv_import_dialog.dart';
@@ -51,24 +53,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _confirmSignOut() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.auth.signOut),
-        content: Text(t.profile.signOutConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.auth.signOut),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
+    final confirmed = await showSignOutDialog(context);
+    if (confirmed && mounted) {
       context.read<AuthBloc>().add(const AuthSignOutRequested());
     }
   }
@@ -86,7 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) {
         unawaited(
@@ -137,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     if (state is TransactionsError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure.message)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }
@@ -153,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
             if (state is ProfileLoading) return const LoadingShimmer();
             if (state is ProfileError) {
               return ErrorView(
-                message: state.failure.message,
+                failure: state.failure,
                 onRetry: () => context.read<ProfileCubit>().loadProfile(
                   forceRefresh: true,
                 ),

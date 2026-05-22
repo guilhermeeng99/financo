@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoryFormCubit extends Cubit<CategoryFormState> {
@@ -31,7 +32,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   void updateType(CategoryType type) {
     // Switching type clears anything that doesn't apply to the new
-    // type. The bucket is income-meaningless (see specs/categories.md
+    // type. The bucket is income-meaningless (see docs/specs/categories.md
     // rule 21) and the parent picker is type-scoped.
     final clearBucket = type == CategoryType.income;
     emit(
@@ -49,7 +50,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
   void updateParentId(String? parentId, {CategoryEntity? parent}) {
     // Choosing a parent flips the category into a subcategory, which
-    // inherits the parent's 50/30/20 bucket (see specs/categories.md
+    // inherits the parent's 50/30/20 bucket (see docs/specs/categories.md
     // rule 20). Clear any previously-picked bucket so we don't write a
     // dangling value that the overview will ignore anyway.
     //
@@ -90,7 +91,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
   /// Toggles whether transactions on this category should feed the
   /// 50/30/20 base income (the "100%"). Only meaningful on **root**
   /// income categories — subcategories inherit from the parent (see
-  /// specs/categories.md rule 22). Input is silently ignored on
+  /// docs/specs/categories.md rule 22). Input is silently ignored on
   /// expense or sub-income categories.
   void updateCountsIn50_30_20({required bool value}) {
     if (state.type != CategoryType.income) return;
@@ -111,17 +112,14 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     // Demote guardrails: root → sub conversion is blocked when the
     // root either owns subcategories (rule 14: only 1 level allowed)
     // or has a budget attached (budgets only bind to root expense
-    // categories, see specs/budgets.md). Emitting `failure` keeps the
+    // categories, see docs/specs/budgets.md). Emitting `failure` keeps the
     // form state and surfaces the message via the page listener.
     if (state.isDemoting) {
       if (state.hasChildren) {
         emit(
           state.copyWith(
             status: FormStatus.failure,
-            failure: const ValidationFailure(
-              'Esta categoria tem subcategorias. Promova ou remova as '
-              'subcategorias antes de transformá-la em subcategoria.',
-            ),
+            failure: ValidationFailure(t.categories.demoteBlockedChildren),
           ),
         );
         return;
@@ -130,10 +128,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
         emit(
           state.copyWith(
             status: FormStatus.failure,
-            failure: const ValidationFailure(
-              'Esta categoria tem um orçamento. Exclua o orçamento '
-              'antes de transformá-la em subcategoria.',
-            ),
+            failure: ValidationFailure(t.categories.demoteBlockedBudget),
           ),
         );
         return;
@@ -144,7 +139,7 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
 
     // bucket is meaningful only for root expense categories. Income
     // categories don't have one; subcategories inherit from the parent
-    // (see specs/categories.md rule 20).
+    // (see docs/specs/categories.md rule 20).
     final isRootExpense = state.type == CategoryType.expense &&
         state.parentId == null;
     final category = CategoryEntity(

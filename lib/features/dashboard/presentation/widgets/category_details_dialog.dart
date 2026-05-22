@@ -9,6 +9,7 @@ import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/domain/services/compute_category_drill_down.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -99,11 +100,11 @@ class _CategoryDetailsDialogState extends State<_CategoryDetailsDialog>
         a.id: a,
     };
 
-    final categoryTransactions =
-        widget.periodTransactions
-            .where((t) => _belongsToParent(t, categoryMap))
-            .toList()
-          ..sort((a, b) => b.date.compareTo(a.date));
+    final categoryTransactions = filterTransactionsForCategory(
+      parentCategoryId: widget.parent.categoryId,
+      periodTransactions: widget.periodTransactions,
+      categoryMap: categoryMap,
+    );
 
     final percentage = widget.totalExpenses > 0
         ? widget.parent.amount / widget.totalExpenses * 100
@@ -182,16 +183,6 @@ class _CategoryDetailsDialogState extends State<_CategoryDetailsDialog>
     );
   }
 
-  bool _belongsToParent(
-    TransactionEntity tx,
-    Map<String, CategoryEntity> categoryMap,
-  ) {
-    if (tx.isTransfer) return false;
-    if (tx.type != TransactionType.expense) return false;
-    if (tx.categoryId == widget.parent.categoryId) return true;
-    final cat = categoryMap[tx.categoryId];
-    return cat?.parentId == widget.parent.categoryId;
-  }
 }
 
 class _CategoryTransactionsTab extends StatelessWidget {
@@ -372,23 +363,12 @@ class _SubcategoriesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Aggregate by categoryId — only true subcategories (skip transactions
-    // booked directly on the parent).
-    final amounts = <String, double>{};
-    for (final tx in transactions) {
-      if (tx.categoryId == parent.categoryId) continue;
-      amounts[tx.categoryId] = (amounts[tx.categoryId] ?? 0) + tx.amount;
-    }
-
-    final data = amounts.entries.map((e) {
-      final cat = categoryMap[e.key];
-      return CategoryAmount(
-        categoryId: e.key,
-        categoryName: cat?.name ?? 'Sem categoria',
-        categoryColor: cat?.color ?? 0xFF9E9E9E,
-        amount: e.value,
-      );
-    }).toList()..sort((a, b) => b.amount.compareTo(a.amount));
+    final data = aggregateSubcategorySpend(
+      parentCategoryId: parent.categoryId,
+      transactions: transactions,
+      categoryMap: categoryMap,
+      fallbackName: t.categories.uncategorized,
+    );
 
     if (data.isEmpty) {
       return Center(

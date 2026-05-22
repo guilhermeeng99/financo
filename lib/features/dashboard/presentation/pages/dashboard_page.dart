@@ -142,7 +142,7 @@ class _DashboardPageState extends State<DashboardPage> {
             if (state is DashboardLoading) return const LoadingShimmer();
             if (state is DashboardError) {
               return ErrorView(
-                message: state.failure.message,
+                failure: state.failure,
                 onRetry: () => context.read<DashboardBloc>().add(
                   DashboardLoadRequested(forceRefresh: true),
                 ),

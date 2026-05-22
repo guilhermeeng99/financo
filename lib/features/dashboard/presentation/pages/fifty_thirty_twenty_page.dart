@@ -147,7 +147,7 @@ class _FiftyThirtyTwentyViewState extends State<_FiftyThirtyTwentyView> {
             }
             if (state.status == FiftyThirtyTwentyDetailStatus.error) {
               return ErrorView(
-                message: state.failure?.message ?? t.general.error,
+                failure: state.failure,
                 onRetry: _reload,
               );
             }

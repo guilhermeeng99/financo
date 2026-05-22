@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/app/widgets/csv_import_dialog.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_example_downloader.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
@@ -13,39 +14,21 @@ import 'package:go_router/go_router.dart';
 
 const _exampleAssetPath = 'lib/app/assets/samples/categories_example.csv';
 
-enum _CsvImportAction { downloadExample, selectFile }
-
 Future<void> showCategoriesCsvImportDialog(BuildContext context) async {
-  final action = await showDialog<_CsvImportAction>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(t.categories.importCsvIntroTitle),
-      content: Text(t.categories.importCsvIntroBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(t.general.cancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext)
-              .pop(_CsvImportAction.downloadExample),
-          child: Text(t.categories.importCsvDownloadExample),
-        ),
-        FilledButton(
-          onPressed: () =>
-              Navigator.of(dialogContext).pop(_CsvImportAction.selectFile),
-          child: Text(t.categories.importCsvSelectFile),
-        ),
-      ],
-    ),
+  final choice = await showCsvImportIntroDialog(
+    context,
+    title: t.categories.importCsvIntroTitle,
+    body: t.categories.importCsvIntroBody,
+    downloadLabel: t.categories.importCsvDownloadExample,
+    selectLabel: t.categories.importCsvSelectFile,
   );
 
-  if (action == null || !context.mounted) return;
+  if (choice == null || !context.mounted) return;
 
-  switch (action) {
-    case _CsvImportAction.downloadExample:
+  switch (choice) {
+    case CsvImportIntroChoice.downloadExample:
       await _downloadExample(context);
-    case _CsvImportAction.selectFile:
+    case CsvImportIntroChoice.selectFile:
       await _pickAndImport(context);
   }
 }
@@ -107,18 +90,10 @@ Future<void> _pickAndImport(BuildContext context) async {
 Future<void> _showImportErrorDialog(
   BuildContext context,
   String message,
-) async {
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(t.categories.importCsvErrorTitle),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(t.general.ok),
-        ),
-      ],
-    ),
+) {
+  return showCsvImportErrorDialog(
+    context,
+    title: t.categories.importCsvErrorTitle,
+    message: message,
   );
 }

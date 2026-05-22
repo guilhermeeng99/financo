@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
@@ -271,8 +272,6 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     );
   }
 }
-
-enum FormStatus { initial, submitting, success, failure }
 
 class TransactionFormState extends Equatable {
   const TransactionFormState({

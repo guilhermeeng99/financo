@@ -112,7 +112,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
             // 50/30/20 reuses the period transactions, categories and
             // accounts we already have on hand — no extra IO. See
-            // specs/fifty_thirty_twenty.md §3.
+            // docs/specs/fifty_thirty_twenty.md §3.
             final fiftyThirtyTwenty = compute50_30_20Overview(
               periodTransactions: transactions,
               categories: categories,

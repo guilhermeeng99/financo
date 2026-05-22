@@ -23,7 +23,7 @@ class UpdateAssetClassUseCase {
         ValidationFailure('Target percent must be between 0 and 100.'),
       );
     }
-    // Same one-nesting-level rule as create (specs/investments.md §1).
+    // Same one-nesting-level rule as create (docs/specs/investments.md §1).
     // Also blocks demoting a root that already owns subclasses, since
     // that would create a 2-level chain.
     final result = await _repository.getAssetClasses(userId: assetClass.userId);

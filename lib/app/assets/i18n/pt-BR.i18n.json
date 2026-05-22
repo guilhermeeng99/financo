@@ -21,6 +21,13 @@
     "all": "Todos",
     "defaultLabel": "Padrão"
   },
+  "errors": {
+    "unexpected": "Algo deu errado. Tente novamente.",
+    "server": "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+    "auth": "Falha na autenticação. Entre novamente.",
+    "ai": "O assistente encontrou um problema. Tente novamente.",
+    "accessDenied": "O acesso é restrito para esta conta."
+  },
   "validators": {
     "required": "Este campo é obrigatório.",
     "emailRequired": "O e-mail é obrigatório.",
@@ -354,7 +361,10 @@
     "searchNoResults": "Nenhuma categoria corresponde à busca.",
     "noParentChosen": "Nenhuma",
     "addFirst": "Adicionar primeira categoria",
-    "emptyTitle": "Nenhuma categoria ainda"
+    "emptyTitle": "Nenhuma categoria ainda",
+    "uncategorized": "Sem categoria",
+    "demoteBlockedChildren": "Esta categoria tem subcategorias. Promova ou remova as subcategorias antes de transformá-la em subcategoria.",
+    "demoteBlockedBudget": "Esta categoria tem um orçamento. Exclua o orçamento antes de transformá-la em subcategoria."
   },
   "chat": {
     "title": "Assistente IA",
@@ -791,6 +801,9 @@
     "fabAddHoldingSubtitle": "Indique onde uma parte do saldo está investida.",
     "fabAddHoldingNoAccount": "Crie uma conta de investimento primeiro.",
     "fabAddHoldingNoClass": "Crie uma classe primeiro.",
-    "fabAddHoldingNoSubclass": "Crie uma subclasse antes de alocar — classes são apenas organizadoras."
+    "fabAddHoldingNoSubclass": "Crie uma subclasse antes de alocar — classes são apenas organizadoras.",
+    "allocationExceedsBalance": "A alocação excede o saldo disponível nesta conta ($available).",
+    "targetSumExceedsRoot": "A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: $available.",
+    "targetSumExceedsSub": "A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: $available."
   }
 }

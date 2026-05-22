@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/financo_section_header.dart';
@@ -12,11 +15,11 @@ import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/entities/bill_match_candidate.dart';
+import 'package:financo/features/bills/presentation/bills_view.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
 import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_match_banner.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_match_sheet.dart';
-import 'package:financo/features/bills/presentation/widgets/bill_status_dot.dart';
 import 'package:financo/features/bills/presentation/widgets/bill_tile.dart';
 import 'package:financo/features/bills/presentation/widgets/bills_csv_import_dialog.dart';
 import 'package:financo/features/bills/presentation/widgets/bills_empty_state.dart';
@@ -66,25 +69,16 @@ class _BillsPageState extends State<BillsPage> {
   }
 
   Future<void> _confirmDelete(BillEntity bill) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.general.delete),
-        content: Text(t.bills.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.general.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.general.delete,
+      message: t.bills.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
 
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       context.read<BillsBloc>().add(BillDeleteRequested(bill.id));
     }
   }
@@ -191,7 +185,7 @@ class _BillsPageState extends State<BillsPage> {
                 actions: [
                   Padding(
                     padding: const EdgeInsets.only(right: 16, top: 4),
-                    child: _BillsAppBarIconButton(
+                    child: FinancoAppBarIconButton(
                       icon: FontAwesomeIcons.fileArrowUp,
                       tooltip: t.bills.importCsv,
                       color: context.appColors.primary,
@@ -237,7 +231,7 @@ class _BillsPageState extends State<BillsPage> {
             }
             if (state is BillsError) {
               return ErrorView(
-                message: state.failure.message,
+                failure: state.failure,
                 onRetry: () => context.read<BillsBloc>().add(
                   const BillsLoadRequested(forceRefresh: true),
                 ),
@@ -267,7 +261,7 @@ class _BillsPageState extends State<BillsPage> {
   void _onBillsStateChanged(BuildContext context, BillsState state) {
     if (state is BillsError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure.message)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
     if (state is BillPaid) {
@@ -338,10 +332,10 @@ class _BillsContent extends StatelessWidget {
     }
 
     // Scope to the selected month + carry-over of pending bills from
-    // earlier months. See specs/bills.md → "Bills List Display".
+    // earlier months. See docs/specs/bills.md → "Bills List Display".
     final dateFilter = context.watch<DateFilterCubit>().state;
     final merged = [...bills, ...virtualBills];
-    final monthFiltered = _applyMonthFilter(
+    final monthFiltered = filterBillsForMonth(
       merged,
       year: dateFilter.year,
       month: dateFilter.month,
@@ -356,21 +350,11 @@ class _BillsContent extends StatelessWidget {
       return category?.displayPath(categoryMap.values);
     }
 
-    // A bill is settleable if it's a real (non-virtual) pending bill
-    // due in the current real-calendar month or earlier. The navigated
-    // month doesn't relax this — paying a future bill never makes sense.
-    final firstOfNextRealMonth = _firstOfNextRealMonth();
-    bool isPayable(BillEntity bill) {
-      if (bill.isVirtual) return false;
-      if (!bill.isPending) return false;
-      return bill.dueDate.isBefore(firstOfNextRealMonth);
-    }
-
-    final filtered = _applyTypeFilter(monthFiltered, typeFilter);
+    final filtered = filterBillsByType(monthFiltered, typeFilter);
     final summary = BillsSummary.from(filtered);
-    final groups = _BillGroups.fromBills(filtered);
+    final groups = BillGroups.fromBills(filtered);
     // Match candidates only consider real bills (virtuals have no id).
-    final visibleCandidates = _candidatesForFilter(
+    final visibleCandidates = filterMatchCandidates(
       matchCandidates,
       typeFilter,
       monthFiltered.where((b) => !b.isVirtual).map((b) => b.id).toSet(),
@@ -441,7 +425,7 @@ class _BillsContent extends StatelessWidget {
               onPay: onPayBill,
               onDelete: onDeleteBill,
               labelFor: labelFor,
-              isPayable: isPayable,
+              isPayable: isBillPayable,
             ),
           if (groups.today.isNotEmpty)
             _BillsSliverSection(
@@ -452,7 +436,7 @@ class _BillsContent extends StatelessWidget {
               onPay: onPayBill,
               onDelete: onDeleteBill,
               labelFor: labelFor,
-              isPayable: isPayable,
+              isPayable: isBillPayable,
             ),
           if (groups.upcoming.isNotEmpty)
             _BillsSliverSection(
@@ -463,7 +447,7 @@ class _BillsContent extends StatelessWidget {
               onPay: onPayBill,
               onDelete: onDeleteBill,
               labelFor: labelFor,
-              isPayable: isPayable,
+              isPayable: isBillPayable,
             ),
           if (groups.paid.isNotEmpty)
             _BillsSliverSection(
@@ -474,7 +458,7 @@ class _BillsContent extends StatelessWidget {
               onPay: onPayBill,
               onDelete: onDeleteBill,
               labelFor: labelFor,
-              isPayable: isPayable,
+              isPayable: isBillPayable,
             ),
           // Bottom breathing room so the lifted FAB doesn't crop the last
           // tile (bottom bar 96 + FAB 56 + spacing).
@@ -484,115 +468,6 @@ class _BillsContent extends StatelessWidget {
     );
   }
 
-  /// First day of the month *after* the current real-calendar month.
-  /// Used as the upper bound for "payable" — bills due strictly before
-  /// this point are settleable; bills with dueDate at or after it are
-  /// future and pay is hidden.
-  static DateTime _firstOfNextRealMonth() {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month + 1);
-  }
-
-  /// Keeps a bill iff its dueDate is in the selected month, or it's a
-  /// real pending bill with dueDate before the first day of the
-  /// selected month (overdue carry-over). Virtuals never carry over —
-  /// a projected jun occurrence shown in jul would just echo the
-  /// overdue mai bill that anchors the same chain.
-  List<BillEntity> _applyMonthFilter(
-    List<BillEntity> all, {
-    required int year,
-    required int month,
-  }) {
-    final firstOfMonth = DateTime(year, month);
-    return all.where((b) {
-      final inMonth = b.dueDate.year == year && b.dueDate.month == month;
-      final isCarryOver = b.isPending &&
-          !b.isVirtual &&
-          b.dueDate.isBefore(firstOfMonth);
-      return inMonth || isCarryOver;
-    }).toList();
-  }
-
-  List<BillEntity> _applyTypeFilter(
-    List<BillEntity> all,
-    BillsTypeFilter filter,
-  ) {
-    return switch (filter) {
-      BillsTypeFilter.all => all,
-      BillsTypeFilter.payable =>
-        all.where((b) => b.type == BillType.payable).toList(),
-      BillsTypeFilter.receivable =>
-        all.where((b) => b.type == BillType.receivable).toList(),
-    };
-  }
-
-  /// Mirror the pill filter onto match suggestions — if the user is
-  /// looking only at "Receivables", payable suggestions shouldn't keep
-  /// showing on the banner above. Also drops candidates whose bill is
-  /// outside the visible month set.
-  List<BillMatchCandidate> _candidatesForFilter(
-    List<BillMatchCandidate> all,
-    BillsTypeFilter filter,
-    Set<String> visibleBillIds,
-  ) {
-    final byMonth =
-        all.where((c) => visibleBillIds.contains(c.bill.id)).toList();
-    return switch (filter) {
-      BillsTypeFilter.all => byMonth,
-      BillsTypeFilter.payable =>
-        byMonth.where((c) => c.bill.type == BillType.payable).toList(),
-      BillsTypeFilter.receivable =>
-        byMonth.where((c) => c.bill.type == BillType.receivable).toList(),
-    };
-  }
-}
-
-class _BillGroups {
-  const _BillGroups({
-    required this.overdue,
-    required this.today,
-    required this.upcoming,
-    required this.paid,
-  });
-
-  factory _BillGroups.fromBills(List<BillEntity> bills) {
-    final overdue = <BillEntity>[];
-    final today = <BillEntity>[];
-    final upcoming = <BillEntity>[];
-    final paid = <BillEntity>[];
-
-    for (final b in bills) {
-      switch (b.statusKind) {
-        case BillStatusKind.overdue:
-          overdue.add(b);
-        case BillStatusKind.today:
-          today.add(b);
-        case BillStatusKind.upcoming:
-          upcoming.add(b);
-        case BillStatusKind.paid:
-          paid.add(b);
-      }
-    }
-
-    paid.sort(
-      (a, b) => (b.paidAt ?? b.updatedAt).compareTo(a.paidAt ?? a.updatedAt),
-    );
-
-    return _BillGroups(
-      overdue: overdue,
-      today: today,
-      upcoming: upcoming,
-      paid: paid,
-    );
-  }
-
-  final List<BillEntity> overdue;
-  final List<BillEntity> today;
-  final List<BillEntity> upcoming;
-  final List<BillEntity> paid;
-
-  bool get isFullyEmpty =>
-      overdue.isEmpty && today.isEmpty && upcoming.isEmpty && paid.isEmpty;
 }
 
 class _BillsSliverSection extends StatelessWidget {
@@ -686,40 +561,6 @@ class _NoMatchingFilter extends StatelessWidget {
           t.general.noResults,
           style: context.textTheme.bodyMedium?.copyWith(
             color: colors.onBackgroundLight,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BillsAppBarIconButton extends StatelessWidget {
-  const _BillsAppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
           ),
         ),
       ),

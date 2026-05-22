@@ -166,7 +166,7 @@ class BillFormState extends Equatable {
   bool get isValid {
     // Description is intentionally not validated — matches transactions
     // (the bills list / match sheet show a type-based fallback when
-    // empty). See `specs/bills.md` → Business Rules.
+    // empty). See `docs/specs/bills.md` → Business Rules.
     if (amount <= 0) return false;
     if (categoryId == null) return false;
     if (isEditing && isPaid) return false;

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
@@ -137,7 +138,7 @@ class _ImportAccountsPageState extends State<ImportAccountsPage> {
       context.pop(true);
     } else if (state is AccountsError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure.message)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }

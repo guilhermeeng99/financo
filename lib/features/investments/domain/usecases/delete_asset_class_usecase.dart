@@ -4,7 +4,7 @@ import 'package:financo/features/investments/domain/entities/asset_holding_entit
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
 import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
 
-/// Deletes an asset class. Rule 5 of `specs/investments.md`: refuses
+/// Deletes an asset class. Rule 5 of `docs/specs/investments.md`: refuses
 /// to delete when holdings still reference the class. The user must
 /// either reassign or delete the holdings first. We return the
 /// blocking holding count in the failure message so the UI can build
@@ -24,7 +24,7 @@ class DeleteAssetClassUseCase {
     required String userId,
   }) async {
     // Block when subclasses still point at this class — the user must
-    // remove or re-parent them first (specs/investments.md §1 rule 5).
+    // remove or re-parent them first (docs/specs/investments.md §1 rule 5).
     final classesResult = await _classRepository.getAssetClasses(
       userId: userId,
     );

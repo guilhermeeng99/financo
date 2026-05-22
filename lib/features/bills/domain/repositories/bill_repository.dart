@@ -21,7 +21,7 @@ abstract class BillRepository {
   /// after the edited bill's `dueDate`. Paid descendants are walked to
   /// find further descendants but their own fields are not mutated.
   ///
-  /// See `specs/bills.md` → "Editing Recurrent Bills".
+  /// See `docs/specs/bills.md` → "Editing Recurrent Bills".
   Future<Either<Failure, BillEntity>> updateBillAndSubsequents(
     BillEntity bill,
   );

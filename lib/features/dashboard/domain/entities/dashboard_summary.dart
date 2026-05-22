@@ -41,7 +41,7 @@ class DashboardSummary extends Equatable {
 
   /// Per-period 50/30/20 split. Computed by `compute50_30_20Overview`
   /// inside the repository so callers don't need to compose it. See
-  /// `specs/fifty_thirty_twenty.md`.
+  /// `docs/specs/fifty_thirty_twenty.md`.
   final FiftyThirtyTwentyOverview fiftyThirtyTwenty;
 
   @override

@@ -14,7 +14,7 @@ import 'package:financo/features/transactions/domain/repositories/transaction_re
 /// by `DashboardRepositoryImpl.getDashboardSummary` — three sequential
 /// fetches, fold short-circuits on first failure.
 ///
-/// Spending semantics (per `specs/budgets.md` rule 5):
+/// Spending semantics (per `docs/specs/budgets.md` rule 5):
 /// - Filter to `type == expense`, exclude transfers, scope to `[start, end]`
 ///   of the requested month.
 /// - Sub-category transactions roll up into their parent's total.

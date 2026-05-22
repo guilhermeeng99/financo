@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/routes/app_routes.dart';
+import 'package:financo/app/state/form_status.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_date_field.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
@@ -121,15 +125,12 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     final bill = widget.prefillFromBill;
     if (bill != null) {
       _descriptionController.text = bill.description;
-      _amountController.text =
-          BrlCurrencyInputFormatter.format(bill.amount);
+      _amountController.text = BrlCurrencyInputFormatter.format(bill.amount);
       cubit
         ..updateDescription(bill.description)
         ..updateAmount(bill.amount.toString())
         ..updateType(
-          bill.isReceivable
-              ? TransactionType.income
-              : TransactionType.expense,
+          bill.isReceivable ? TransactionType.income : TransactionType.expense,
         );
       final categoryId = bill.categoryId;
       if (categoryId != null) cubit.updateCategoryId(categoryId);
@@ -145,27 +146,15 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   }
 
   Future<void> _confirmDelete(String id) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.transactions.deleteTransaction),
-        content: Text(t.transactions.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t.general.delete,
-              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.transactions.deleteTransaction,
+      message: t.transactions.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     // Await the actual delete *before* popping so callers that reload on
     // return (e.g. AccountStatementPage) don't refresh against stale data.
@@ -178,7 +167,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
+          SnackBar(content: Text(localizedFailure(failure))),
         );
       },
       (_) {
@@ -283,14 +272,12 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         SnackBar(
           content: Text(
             bill != null
-                ? (bill.isReceivable
-                    ? t.bills.billReceived
-                    : t.bills.billPaid)
+                ? (bill.isReceivable ? t.bills.billReceived : t.bills.billPaid)
                 : state.isTransfer && !state.isEditing
-                    ? t.transactions.transferCreated
-                    : state.isEditing
-                        ? t.transactions.transactionUpdated
-                        : t.transactions.transactionCreated,
+                ? t.transactions.transferCreated
+                : state.isEditing
+                ? t.transactions.transactionUpdated
+                : t.transactions.transactionCreated,
           ),
         ),
       );
@@ -306,7 +293,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
       _navigateBack();
     } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }
@@ -338,8 +325,8 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                           // switching to Transfer (or flipping
                           // income↔expense) would invalidate the bill
                           // link the page is about to dispatch.
-                          disabled: state.isEditing ||
-                              widget.prefillFromBill != null,
+                          disabled:
+                              state.isEditing || widget.prefillFromBill != null,
                           onChanged: (mode) {
                             if (mode == _Mode.transfer) {
                               cubit.setTransferMode(enabled: true);
@@ -450,8 +437,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                   isLoading: state.status == FormStatus.submitting,
                   isEnabled: state.isValid,
                   onSubmit: _onSubmit,
-                  onSecondarySubmit:
-                      canContinue ? _onSubmitAndContinue : null,
+                  onSecondarySubmit: canContinue ? _onSubmitAndContinue : null,
                   secondaryIcon: canContinue ? Icons.add : null,
                   secondaryTooltip: canContinue
                       ? t.transactions.saveAndAddAnother
@@ -529,10 +515,10 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
           final label = state.isEditing
               ? t.transactions.editTransaction
               : bill != null
-                  ? (bill.isReceivable
-                      ? t.transactions.confirmReceiptTitle
-                      : t.transactions.confirmPaymentTitle)
-                  : t.transactions.addTransaction;
+              ? (bill.isReceivable
+                    ? t.transactions.confirmReceiptTitle
+                    : t.transactions.confirmPaymentTitle)
+              : t.transactions.addTransaction;
           return Text(
             label,
             style: context.textTheme.titleMedium?.copyWith(
@@ -548,12 +534,11 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
             if (!state.isEditing) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: _AppBarIconButton(
+              child: FinancoAppBarIconButton(
                 icon: FontAwesomeIcons.trash,
                 color: colors.error,
                 tooltip: t.general.delete,
-                onPressed: () =>
-                    unawaited(_confirmDelete(state.existingId!)),
+                onPressed: () => unawaited(_confirmDelete(state.existingId!)),
               ),
             );
           },
@@ -615,8 +600,7 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final categories =
-        context.watch<CategoriesCubit>().state.categoriesOrEmpty;
+    final categories = context.watch<CategoriesCubit>().state.categoriesOrEmpty;
     final selected = selectedId.isEmpty
         ? null
         : categories.where((c) => c.id == selectedId).firstOrNull;
@@ -634,40 +618,6 @@ class _CategoryRow extends StatelessWidget {
               color: colors.onBackgroundLight,
             ),
       onTap: onTap,
-    );
-  }
-}
-
-class _AppBarIconButton extends StatelessWidget {
-  const _AppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
-          ),
-        ),
-      ),
     );
   }
 }

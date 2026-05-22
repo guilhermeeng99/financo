@@ -38,6 +38,7 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 
 	// Translations
 	@override late final _TranslationsGeneralPtBr general = _TranslationsGeneralPtBr._(_root);
+	@override late final _TranslationsErrorsPtBr errors = _TranslationsErrorsPtBr._(_root);
 	@override late final _TranslationsValidatorsPtBr validators = _TranslationsValidatorsPtBr._(_root);
 	@override late final _TranslationsAuthPtBr auth = _TranslationsAuthPtBr._(_root);
 	@override late final _TranslationsAccessControlPtBr accessControl = _TranslationsAccessControlPtBr._(_root);
@@ -84,6 +85,20 @@ class _TranslationsGeneralPtBr implements TranslationsGeneralEn {
 	@override String get no => 'Não';
 	@override String get all => 'Todos';
 	@override String get defaultLabel => 'Padrão';
+}
+
+// Path: errors
+class _TranslationsErrorsPtBr implements TranslationsErrorsEn {
+	_TranslationsErrorsPtBr._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get unexpected => 'Algo deu errado. Tente novamente.';
+	@override String get server => 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.';
+	@override String get auth => 'Falha na autenticação. Entre novamente.';
+	@override String get ai => 'O assistente encontrou um problema. Tente novamente.';
+	@override String get accessDenied => 'O acesso é restrito para esta conta.';
 }
 
 // Path: validators
@@ -496,6 +511,9 @@ class _TranslationsCategoriesPtBr implements TranslationsCategoriesEn {
 	@override String get noParentChosen => 'Nenhuma';
 	@override String get addFirst => 'Adicionar primeira categoria';
 	@override String get emptyTitle => 'Nenhuma categoria ainda';
+	@override String get uncategorized => 'Sem categoria';
+	@override String get demoteBlockedChildren => 'Esta categoria tem subcategorias. Promova ou remova as subcategorias antes de transformá-la em subcategoria.';
+	@override String get demoteBlockedBudget => 'Esta categoria tem um orçamento. Exclua o orçamento antes de transformá-la em subcategoria.';
 }
 
 // Path: chat
@@ -827,6 +845,9 @@ class _TranslationsInvestmentsPtBr implements TranslationsInvestmentsEn {
 	@override String get fabAddHoldingNoAccount => 'Crie uma conta de investimento primeiro.';
 	@override String get fabAddHoldingNoClass => 'Crie uma classe primeiro.';
 	@override String get fabAddHoldingNoSubclass => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.';
+	@override String allocationExceedsBalance({required Object available}) => 'A alocação excede o saldo disponível nesta conta (${available}).';
+	@override String targetSumExceedsRoot({required Object available}) => 'A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: ${available}.';
+	@override String targetSumExceedsSub({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.';
 }
 
 // Path: chat.action
@@ -1053,6 +1074,11 @@ extension on TranslationsPtBr {
 			'general.no' => 'Não',
 			'general.all' => 'Todos',
 			'general.defaultLabel' => 'Padrão',
+			'errors.unexpected' => 'Algo deu errado. Tente novamente.',
+			'errors.server' => 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+			'errors.auth' => 'Falha na autenticação. Entre novamente.',
+			'errors.ai' => 'O assistente encontrou um problema. Tente novamente.',
+			'errors.accessDenied' => 'O acesso é restrito para esta conta.',
 			'validators.required' => 'Este campo é obrigatório.',
 			'validators.emailRequired' => 'O e-mail é obrigatório.',
 			'validators.emailInvalid' => 'Informe um e-mail válido.',
@@ -1366,6 +1392,9 @@ extension on TranslationsPtBr {
 			'categories.noParentChosen' => 'Nenhuma',
 			'categories.addFirst' => 'Adicionar primeira categoria',
 			'categories.emptyTitle' => 'Nenhuma categoria ainda',
+			'categories.uncategorized' => 'Sem categoria',
+			'categories.demoteBlockedChildren' => 'Esta categoria tem subcategorias. Promova ou remova as subcategorias antes de transformá-la em subcategoria.',
+			'categories.demoteBlockedBudget' => 'Esta categoria tem um orçamento. Exclua o orçamento antes de transformá-la em subcategoria.',
 			'chat.title' => 'Assistente IA',
 			'chat.placeholder' => 'Digite uma mensagem...',
 			'chat.welcomeTitle' => 'Olá! Sou seu assistente financeiro.',
@@ -1537,6 +1566,8 @@ extension on TranslationsPtBr {
 			'bills.overdueGroup' => 'Atrasadas',
 			'bills.todayGroup' => 'Hoje',
 			'bills.upcomingGroup' => 'Próximas',
+			_ => null,
+		} ?? switch (path) {
 			'bills.paidGroup' => 'Quitadas',
 			'bills.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
 			'bills.billCreated' => 'Conta criada',
@@ -1545,8 +1576,6 @@ extension on TranslationsPtBr {
 			'bills.billPaid' => 'Conta paga — transação criada',
 			'bills.billReceived' => 'Pagamento recebido — transação criada',
 			'bills.nextOccurrenceCreated' => 'Conta do próximo mês agendada',
-			_ => null,
-		} ?? switch (path) {
 			'bills.alreadyPaid' => 'Esta conta já está quitada',
 			'bills.cannotEditPaid' => 'Contas quitadas não podem ser editadas',
 			'bills.payDialogTitle' => 'Pagar conta',
@@ -1781,6 +1810,9 @@ extension on TranslationsPtBr {
 			'investments.fabAddHoldingNoAccount' => 'Crie uma conta de investimento primeiro.',
 			'investments.fabAddHoldingNoClass' => 'Crie uma classe primeiro.',
 			'investments.fabAddHoldingNoSubclass' => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.',
+			'investments.allocationExceedsBalance' => ({required Object available}) => 'A alocação excede o saldo disponível nesta conta (${available}).',
+			'investments.targetSumExceedsRoot' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: ${available}.',
+			'investments.targetSumExceedsSub' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.',
 			_ => null,
 		};
 	}

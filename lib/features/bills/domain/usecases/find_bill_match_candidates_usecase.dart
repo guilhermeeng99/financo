@@ -7,7 +7,7 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 /// settled a bill via a manually recorded transaction. The BillsPage
 /// shows these as suggestions and lets the user confirm or reject each.
 ///
-/// See `specs/bills.md` → "Match Suggestions" for the full rule set.
+/// See `docs/specs/bills.md` → "Match Suggestions" for the full rule set.
 class FindBillMatchCandidatesUseCase {
   const FindBillMatchCandidatesUseCase();
 

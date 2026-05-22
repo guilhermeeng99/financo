@@ -11,7 +11,7 @@ import 'package:financo/features/investments/domain/services/compute_investment_
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 
 /// Creates a holding after enforcing the V1 invariants from
-/// `specs/investments.md` §2:
+/// `docs/specs/investments.md` §2:
 ///
 /// 1. `accountId` must point at an `AccountType.investment` account.
 /// 2. `amount >= 0`.
@@ -92,10 +92,7 @@ class CreateAssetHoldingUseCase {
           holdings: holdings,
         );
         if (holding.amount > available + 0.005) {
-          return ValidationFailure(
-            'Allocation exceeds the available balance on this account '
-            '(${available.toStringAsFixed(2)}).',
-          );
+          return AllocationExceedsBalanceFailure(available);
         }
         return null;
       },

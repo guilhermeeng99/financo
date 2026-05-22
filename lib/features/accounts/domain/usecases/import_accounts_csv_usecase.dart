@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/csv_parsing.dart';
 import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
@@ -49,9 +50,7 @@ class AccountImportPreviewItem extends Equatable {
       type: type ?? this.type,
       bank: bank ?? this.bank,
       initialBalance: initialBalance ?? this.initialBalance,
-      creditLimit: clearCreditLimit
-          ? null
-          : (creditLimit ?? this.creditLimit),
+      creditLimit: clearCreditLimit ? null : (creditLimit ?? this.creditLimit),
       closingDay: clearClosingDay ? null : (closingDay ?? this.closingDay),
       dueDay: clearDueDay ? null : (dueDay ?? this.dueDay),
       linkedAccountName: clearLinkedAccountName
@@ -273,28 +272,28 @@ class ImportAccountsCsvUseCase {
     var rowNumber = 1; // header
     for (final row in rows.skip(1)) {
       rowNumber++;
-      final name = _readCell(row, colIndex['name']);
+      final name = readCsvCell(row, colIndex['name']);
       if (name.isEmpty) continue;
 
       final key = name.toLowerCase();
       if (!seenNames.add(key)) continue;
 
-      final balanceStr = _readCell(row, colIndex['balance']);
-      final typeStr = _readCell(row, colIndex['type']);
-      final bankStr = _readCell(row, colIndex['bank']);
-      final limitStr = _readCell(row, colIndex['limit']);
-      final dueStr = _readCell(row, colIndex['due']);
-      final closingStr = _readCell(row, colIndex['closing']);
+      final balanceStr = readCsvCell(row, colIndex['balance']);
+      final typeStr = readCsvCell(row, colIndex['type']);
+      final bankStr = readCsvCell(row, colIndex['bank']);
+      final limitStr = readCsvCell(row, colIndex['limit']);
+      final dueStr = readCsvCell(row, colIndex['due']);
+      final closingStr = readCsvCell(row, colIndex['closing']);
 
       final type = _parseType(typeStr, rowNumber);
       final bank = _parseBank(bankStr);
-      final balance = _parseAmount(balanceStr);
+      final balance = parseCsvAmount(balanceStr);
 
       double? creditLimit;
       int? closingDay;
       int? dueDay;
       if (type == AccountType.creditCard) {
-        creditLimit = limitStr.isEmpty ? null : _parseAmount(limitStr);
+        creditLimit = limitStr.isEmpty ? null : parseCsvAmount(limitStr);
         closingDay = _parseDay(closingStr);
         dueDay = _parseDueDay(dueStr);
       }
@@ -360,11 +359,6 @@ class ImportAccountsCsvUseCase {
     return out;
   }
 
-  String _readCell(List<dynamic> row, int? index) {
-    if (index == null || index >= row.length) return '';
-    return '${row[index] ?? ''}'.trim();
-  }
-
   AccountImportPreview _buildPreview(
     List<AccountImportPreviewItem> parsed,
     List<AccountEntity> existing,
@@ -393,7 +387,7 @@ class ImportAccountsCsvUseCase {
   /// offending [csvRow] so the UI can point the user to the exact row.
   ///
   /// Investment accounts are intentionally **not** importable via CSV in
-  /// V1 (see specs/accounts.md rule 13 and specs/fifty_thirty_twenty.md).
+  /// V1 (see docs/specs/accounts.md rule 13 and docs/specs/fifty_thirty_twenty.md).
   /// They must be created through the add-account form so the user sees
   /// the inline disclaimer about principal-only tracking.
   AccountType _parseType(String raw, int csvRow) {
@@ -434,31 +428,6 @@ class ImportAccountsCsvUseCase {
   // ("421.95" / "1,234.56") number formats. The rightmost separator is
   // assumed to be the decimal point; the other one is treated as a
   // thousands grouper and stripped.
-  double _parseAmount(String raw) {
-    var cleaned = raw.replaceAll('"', '').trim();
-    if (cleaned.isEmpty) return 0;
-
-    final hasComma = cleaned.contains(',');
-    final hasDot = cleaned.contains('.');
-
-    if (hasComma && hasDot) {
-      final lastComma = cleaned.lastIndexOf(',');
-      final lastDot = cleaned.lastIndexOf('.');
-      if (lastComma > lastDot) {
-        // BR: 1.234,56 — `.` is the thousands grouper.
-        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
-      } else {
-        // EN: 1,234.56 — `,` is the thousands grouper.
-        cleaned = cleaned.replaceAll(',', '');
-      }
-    } else if (hasComma) {
-      // BR-only: "421,95" — comma is the decimal point.
-      cleaned = cleaned.replaceAll(',', '.');
-    }
-    // hasDot-only ("421.95") and integer cases parse directly.
-
-    return double.tryParse(cleaned) ?? 0;
-  }
 
   int? _parseDay(String raw) {
     if (raw.isEmpty) return null;
@@ -475,5 +444,4 @@ class ImportAccountsCsvUseCase {
     if (parts.length != 3) return null;
     return _parseDay(parts[0]);
   }
-
 }

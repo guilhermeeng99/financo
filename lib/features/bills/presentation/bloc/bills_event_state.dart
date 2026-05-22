@@ -127,7 +127,7 @@ final class BillsLoaded extends BillsState {
 
   /// Virtual previews of upcoming monthly occurrences — each carries
   /// `id == ''` and is purely informational. See
-  /// `specs/bills.md` → "Future Occurrence Preview".
+  /// `docs/specs/bills.md` → "Future Occurrence Preview".
   final List<BillEntity> virtualBills;
 
   final BillStatus? statusFilter;

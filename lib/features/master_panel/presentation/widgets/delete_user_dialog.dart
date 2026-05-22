@@ -1,6 +1,8 @@
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Type-to-confirm dialog for cascading user delete. Resolves to `true`
 /// when the master typed the target email exactly (case-insensitive)
@@ -58,28 +60,24 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return AlertDialog(
-      title: Text(t.masterPanel.deleteUserTitle),
+    return FinancoDialog(
+      icon: FontAwesomeIcons.userXmark,
+      iconColor: colors.error,
+      title: t.masterPanel.deleteUserTitle,
+      message: t.masterPanel.deleteUserBody(name: widget.targetName),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            t.masterPanel.deleteUserBody(name: widget.targetName),
-            style: context.textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: colors.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               widget.targetEmail,
+              textAlign: TextAlign.center,
               style: context.textTheme.bodyMedium?.copyWith(
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w600,
@@ -90,23 +88,24 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
           TextField(
             controller: _controller,
             autofocus: true,
+            autocorrect: false,
+            enableSuggestions: false,
             decoration: InputDecoration(
               labelText: t.masterPanel.deleteUserConfirmField,
               hintText: widget.targetEmail,
-              border: const OutlineInputBorder(),
             ),
           ),
         ],
       ),
       actions: [
-        TextButton(
+        FinancoDialogAction(
+          label: t.general.cancel,
           onPressed: () => Navigator.pop(context, false),
-          child: Text(t.general.cancel),
         ),
-        FilledButton(
+        FinancoDialogAction(
+          label: t.general.delete,
+          kind: FinancoDialogActionKind.destructive,
           onPressed: _matches ? () => Navigator.pop(context, true) : null,
-          style: FilledButton.styleFrom(backgroundColor: colors.error),
-          child: Text(t.general.delete),
         ),
       ],
     );

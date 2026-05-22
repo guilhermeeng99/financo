@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:financo/app/widgets/csv_import_dialog.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_example_downloader.dart';
 import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
@@ -11,44 +12,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 const _exampleAssetPath = 'lib/app/assets/samples/bills_example.csv';
 
-enum _CsvImportAction { downloadExample, selectFile }
-
-/// Three-button entry dialog (Cancel / Download example / Select file)
+/// Three-button entry dialog (Select file / Download example / Cancel)
 /// mirroring the categories/accounts/transactions import dialogs. We
 /// intentionally skip the multi-step preview page here — bills don't
 /// reference accounts and category resolution is best-effort, so a
 /// straight "import → toast result" flow keeps the UX simple.
 Future<void> showBillsCsvImportDialog(BuildContext context) async {
-  final action = await showDialog<_CsvImportAction>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(t.bills.importCsvIntroTitle),
-      content: Text(t.bills.importCsvIntroBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(t.general.cancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext)
-              .pop(_CsvImportAction.downloadExample),
-          child: Text(t.bills.importCsvDownloadExample),
-        ),
-        FilledButton(
-          onPressed: () =>
-              Navigator.of(dialogContext).pop(_CsvImportAction.selectFile),
-          child: Text(t.bills.importCsvSelectFile),
-        ),
-      ],
-    ),
+  final choice = await showCsvImportIntroDialog(
+    context,
+    title: t.bills.importCsvIntroTitle,
+    body: t.bills.importCsvIntroBody,
+    downloadLabel: t.bills.importCsvDownloadExample,
+    selectLabel: t.bills.importCsvSelectFile,
   );
 
-  if (action == null || !context.mounted) return;
+  if (choice == null || !context.mounted) return;
 
-  switch (action) {
-    case _CsvImportAction.downloadExample:
+  switch (choice) {
+    case CsvImportIntroChoice.downloadExample:
       await _downloadExample(context);
-    case _CsvImportAction.selectFile:
+    case CsvImportIntroChoice.selectFile:
       await _pickAndImport(context);
   }
 }
@@ -117,18 +100,10 @@ Future<void> _pickAndImport(BuildContext context) async {
 Future<void> _showImportErrorDialog(
   BuildContext context,
   String message,
-) async {
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(t.bills.importCsvErrorTitle),
-      content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: Text(t.general.ok),
-        ),
-      ],
-    ),
+) {
+  return showCsvImportErrorDialog(
+    context,
+    title: t.bills.importCsvErrorTitle,
+    message: message,
   );
 }

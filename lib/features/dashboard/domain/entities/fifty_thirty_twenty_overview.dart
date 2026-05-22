@@ -9,7 +9,7 @@ import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_t
 /// - `under`   — savings fell short of its target.
 enum BucketStatus { onTrack, over, under }
 
-/// Headline state for the whole card. See `specs/fifty_thirty_twenty.md`
+/// Headline state for the whole card. See `docs/specs/fifty_thirty_twenty.md`
 /// §1 for the aggregation rules.
 enum FiftyThirtyTwentyStatus {
   /// No income recorded in the period — percentages can't be drawn.
@@ -66,7 +66,7 @@ class FiftyThirtyTwentyOverview extends Equatable {
 
   /// Net contribution to investment accounts in the period — i.e.
   /// `Σ(checking → investment)` minus `Σ(investment → checking)`, clamped
-  /// at 0. See `specs/fifty_thirty_twenty.md` §2 rule 4.
+  /// at 0. See `docs/specs/fifty_thirty_twenty.md` §2 rule 4.
   final double savingsAmount;
 
   /// Sum of expense transactions whose resolved root category lacks a

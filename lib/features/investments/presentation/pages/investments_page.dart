@@ -191,7 +191,7 @@ class _InvestmentsPageState extends State<InvestmentsPage> {
           }
           if (state is InvestmentsError) {
             return ErrorView(
-              message: state.failure.message,
+              failure: state.failure,
               onRetry: () => unawaited(
                 context.read<InvestmentsCubit>().refresh(forceRefresh: true),
               ),

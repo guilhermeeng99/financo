@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
@@ -68,7 +69,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16, top: 4),
-            child: _AppBarIconButton(
+            child: FinancoAppBarIconButton(
               icon: FontAwesomeIcons.fileArrowUp,
               tooltip: t.categories.importCsv,
               color: colors.primary,
@@ -91,10 +92,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
           }
           if (state is CategoriesError) {
             return ErrorView(
-              message: state.failure.message,
-              onRetry: () => context
-                  .read<CategoriesCubit>()
-                  .loadCategories(forceRefresh: true),
+              failure: state.failure,
+              onRetry: () => context.read<CategoriesCubit>().loadCategories(
+                forceRefresh: true,
+              ),
             );
           }
           final categories = switch (state) {
@@ -173,9 +174,7 @@ class _CategoriesBody extends StatelessWidget {
                   itemCount: filtered.length,
                   itemBuilder: (_, i) {
                     final c = filtered[i];
-                    final parent = c.parentId == null
-                        ? null
-                        : byId[c.parentId];
+                    final parent = c.parentId == null ? null : byId[c.parentId];
                     return CategoryTile(
                       category: c,
                       parent: parent,
@@ -200,40 +199,6 @@ class _NoFilterResults extends StatelessWidget {
           t.general.noResults,
           style: context.textTheme.bodyMedium?.copyWith(
             color: context.appColors.onBackgroundLight,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppBarIconButton extends StatelessWidget {
-  const _AppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
           ),
         ),
       ),

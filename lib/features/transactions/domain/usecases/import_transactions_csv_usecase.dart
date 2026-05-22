@@ -2,6 +2,8 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -370,13 +372,13 @@ class ImportTransactionsCsvUseCase {
         continue;
       }
 
-      final tipoStr = _readCell(row, colIndex['type']);
-      final dataStr = _readCell(row, colIndex['date']);
-      final valorStr = _readCell(row, colIndex['amount']);
-      final descricao = _readCell(row, colIndex['description']);
-      final categoriaStr = _readCell(row, colIndex['category']);
-      final contaStr = _readCell(row, colIndex['account']);
-      final contaTransfStr = _readCell(row, colIndex['destination']);
+      final tipoStr = readCsvCell(row, colIndex['type']);
+      final dataStr = readCsvCell(row, colIndex['date']);
+      final valorStr = readCsvCell(row, colIndex['amount']);
+      final descricao = readCsvCell(row, colIndex['description']);
+      final categoriaStr = readCsvCell(row, colIndex['category']);
+      final contaStr = readCsvCell(row, colIndex['account']);
+      final contaTransfStr = readCsvCell(row, colIndex['destination']);
 
       final csvType = _parseTipo(tipoStr, rowNumber);
 
@@ -386,7 +388,7 @@ class ImportTransactionsCsvUseCase {
         );
       }
 
-      final amount = _parseAmount(valorStr);
+      final amount = parseCsvAmount(valorStr, absolute: true);
       if (amount <= 0) {
         throw FormatException(
           'Row $rowNumber: invalid or zero amount "$valorStr".',
@@ -394,7 +396,7 @@ class ImportTransactionsCsvUseCase {
       }
       final wasNegative = valorStr.replaceAll('"', '').trim().startsWith('-');
 
-      final date = _parseDate(dataStr);
+      final date = parseDmyDate(dataStr);
       if (date == null) {
         throw FormatException(
           'Row $rowNumber: invalid date "$dataStr". Use DD/MM/YYYY.',
@@ -497,7 +499,8 @@ class ImportTransactionsCsvUseCase {
     required String source,
     required String destination,
   }) {
-    final dateKey = '${date.year.toString().padLeft(4, '0')}-'
+    final dateKey =
+        '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
         '${date.day.toString().padLeft(2, '0')}';
     final accounts = [source.toLowerCase(), destination.toLowerCase()]..sort();
@@ -508,7 +511,7 @@ class ImportTransactionsCsvUseCase {
   /// Resolves header columns to logical field keys so the parser tolerates
   /// extra columns (e.g. an `Observações` column added by another finance
   /// app) and reordered/English layouts. Matching is accent- and
-  /// case-insensitive via [_normalize].
+  /// case-insensitive via [normalizeForMatch].
   Map<String, int> _mapHeaderColumns(List<dynamic> header) {
     const synonyms = <String, List<String>>{
       'type': ['tipo', 'type', 'kind'],
@@ -535,7 +538,7 @@ class ImportTransactionsCsvUseCase {
 
     final out = <String, int>{};
     for (var i = 0; i < header.length; i++) {
-      final norm = _normalize('${header[i] ?? ''}');
+      final norm = normalizeForMatch('${header[i] ?? ''}');
       if (norm.isEmpty) continue;
       for (final entry in synonyms.entries) {
         if (out.containsKey(entry.key)) continue;
@@ -548,11 +551,6 @@ class ImportTransactionsCsvUseCase {
     return out;
   }
 
-  String _readCell(List<dynamic> row, int? index) {
-    if (index == null || index >= row.length) return '';
-    return '${row[index] ?? ''}'.trim();
-  }
-
   /// Maps the `Tipo` column to a [CsvTransactionType]. Accepts PT-BR
   /// (`Despesa`, `Receita`, `Transferência`, `Pagamento`) and EN
   /// (`Expense`, `Income`, `Transfer`, `Payment`) via accent- and
@@ -560,7 +558,7 @@ class ImportTransactionsCsvUseCase {
   /// [FormatException] tagged with [csvRow] so the UI can point the user
   /// to the exact offending row.
   CsvTransactionType _parseTipo(String tipo, int csvRow) {
-    final normalized = _normalize(tipo);
+    final normalized = normalizeForMatch(tipo);
     switch (normalized) {
       case 'despesa':
       case 'expense':
@@ -595,73 +593,9 @@ class ImportTransactionsCsvUseCase {
   // ("421.95" / "1,234.56") number formats. The rightmost separator is
   // assumed to be the decimal point; the other one is a thousands grouper
   // and stripped. Returns `abs()` since the type column carries the sign.
-  double _parseAmount(String raw) {
-    var cleaned = raw.replaceAll('"', '').trim();
-    if (cleaned.isEmpty) return 0;
-    final negative = cleaned.startsWith('-');
-    if (negative) cleaned = cleaned.substring(1);
-
-    final hasComma = cleaned.contains(',');
-    final hasDot = cleaned.contains('.');
-
-    if (hasComma && hasDot) {
-      final lastComma = cleaned.lastIndexOf(',');
-      final lastDot = cleaned.lastIndexOf('.');
-      if (lastComma > lastDot) {
-        // BR: 1.234,56
-        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
-      } else {
-        // EN: 1,234.56
-        cleaned = cleaned.replaceAll(',', '');
-      }
-    } else if (hasComma) {
-      cleaned = cleaned.replaceAll(',', '.');
-    }
-    // hasDot-only or integer falls through unchanged.
-
-    final value = double.tryParse(cleaned) ?? 0;
-    return value.abs();
-  }
-
-  DateTime? _parseDate(String raw) {
-    final parts = raw.split('/');
-    if (parts.length != 3) return null;
-
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-
-    if (day == null || month == null || year == null) return null;
-    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-
-    return DateTime(year, month, day);
-  }
 
   // Lowercase + strip Portuguese accents so "Cartão de Crédito" matches
   // "cartao de credito" etc. without keeping a brittle synonym list.
-  String _normalize(String raw) {
-    final lower = raw.trim().toLowerCase();
-    const map = {
-      'á': 'a',
-      'à': 'a',
-      'â': 'a',
-      'ã': 'a',
-      'é': 'e',
-      'ê': 'e',
-      'í': 'i',
-      'ó': 'o',
-      'ô': 'o',
-      'õ': 'o',
-      'ú': 'u',
-      'ü': 'u',
-      'ç': 'c',
-    };
-    final buf = StringBuffer();
-    for (final c in lower.split('')) {
-      buf.write(map[c] ?? c);
-    }
-    return buf.toString();
-  }
 
   TransactionImportPreview _buildPreview({
     required List<TransactionImportRow> rows,

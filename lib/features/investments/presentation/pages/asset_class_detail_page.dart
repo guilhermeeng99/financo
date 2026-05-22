@@ -53,7 +53,7 @@ class AssetClassDetailPage extends StatelessWidget {
               showBack: true,
             ),
             body: ErrorView(
-              message: state.failure.message,
+              failure: state.failure,
               onRetry: () => unawaited(
                 context.read<InvestmentsCubit>().refresh(forceRefresh: true),
               ),

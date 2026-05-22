@@ -134,7 +134,7 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
               }
               if (state is AccountStatementError) {
                 return ErrorView(
-                  message: state.failure.message,
+                  failure: state.failure,
                   onRetry: () {
                     if (_account != null) _triggerLoad(_account!);
                   },

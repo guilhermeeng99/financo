@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
@@ -18,7 +22,6 @@ import 'package:financo/features/investments/domain/usecases/get_asset_classes_u
 import 'package:financo/features/investments/domain/usecases/update_asset_class_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/asset_class_form_cubit.dart';
 import 'package:financo/features/investments/presentation/widgets/parent_class_picker_sheet.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -153,24 +156,15 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
   Future<void> _handleDelete() async {
     final existing = widget.existing;
     if (existing == null) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.investments.deleteClassTitle),
-        content: Text(t.investments.deleteClassConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(t.general.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(t.general.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.investments.deleteClassTitle,
+      message: t.investments.deleteClassConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final useCase = GetIt.I<DeleteAssetClassUseCase>();
     final state = context.read<AssetClassFormCubit>().state;
@@ -178,7 +172,7 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
     if (!mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +236,7 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
         } else if (state.status == FormStatus.failure &&
             state.failure != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.failure!.message)),
+            SnackBar(content: Text(localizedFailure(state.failure))),
           );
         }
       },
@@ -252,11 +246,11 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
         final parentEntity = _resolveParentEntity(state.parentId);
         final title = state.isEditing
             ? (state.isSubclass
-                ? t.investments.editSubclassTitle
-                : t.investments.editClassTitle)
+                  ? t.investments.editSubclassTitle
+                  : t.investments.editClassTitle)
             : (state.isSubclass
-                ? t.investments.newSubclassTitle
-                : t.investments.newClassTitle);
+                  ? t.investments.newSubclassTitle
+                  : t.investments.newClassTitle);
         return Scaffold(
           backgroundColor: colors.background,
           appBar: FinancoLargeAppBar(
@@ -266,7 +260,9 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
                 ? [
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
-                      child: _DeleteChip(
+                      child: FinancoAppBarIconButton(
+                        icon: FontAwesomeIcons.trash,
+                        tooltip: t.general.delete,
                         color: colors.error,
                         onPressed: () => unawaited(_handleDelete()),
                       ),
@@ -380,8 +376,8 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
             label: state.isEditing
                 ? t.investments.saveClass
                 : (state.isSubclass
-                    ? t.investments.createSubclass
-                    : t.investments.createClass),
+                      ? t.investments.createSubclass
+                      : t.investments.createClass),
             isEnabled: state.isValid && !isSubmitting,
             isLoading: isSubmitting,
             onSubmit: () {
@@ -392,39 +388,6 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
           ),
         );
       },
-    );
-  }
-}
-
-/// Circular delete pill for the form's app bar. Mirrors the
-/// `_AppBarIconButton` shape used by the categories form so both
-/// flows read identically. Background is a 12%-alpha tint of [color]
-/// (typically `colors.error`) with the icon filled on top.
-class _DeleteChip extends StatelessWidget {
-  const _DeleteChip({required this.color, required this.onPressed});
-
-  final Color color;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: t.general.delete,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(
-              child: FaIcon(FontAwesomeIcons.trash, size: 14, color: color),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

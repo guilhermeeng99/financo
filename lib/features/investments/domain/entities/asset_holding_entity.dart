@@ -11,7 +11,7 @@ import 'package:equatable/equatable.dart';
 /// * `Σ(holdings.amount where accountId == X) <= account.effectiveBalance(X)`.
 /// * `accountId` must point to an `AccountType.investment` account.
 ///
-/// See `specs/investments.md` for the full feature contract.
+/// See `docs/specs/investments.md` for the full feature contract.
 class AssetHoldingEntity extends Equatable {
   const AssetHoldingEntity({
     required this.id,

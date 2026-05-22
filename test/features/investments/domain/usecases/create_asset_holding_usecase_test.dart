@@ -143,8 +143,14 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) {
+          expect(failure, isA<AllocationExceedsBalanceFailure>());
+          expect(
+            (failure as AllocationExceedsBalanceFailure).available,
+            1000,
+          );
+        },
+        (_) => fail('Expected AllocationExceedsBalanceFailure'),
       );
       verifyNever(() => holdingRepository.createAssetHolding(any()));
     });

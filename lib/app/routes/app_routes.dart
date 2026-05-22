@@ -26,7 +26,7 @@ class AppRoutes {
   // Budgets keeps its standalone routes so deep-links and existing
   // navigation pushes continue to work. The shell tab points at
   // [planning] which hosts both budgets and the 50/30/20 detail view as
-  // sub-tabs (see specs/fifty_thirty_twenty.md).
+  // sub-tabs (see docs/specs/fifty_thirty_twenty.md).
   static const budgets = '/budgets';
   static const addBudget = '/budget/add';
   static const editBudget = '/budget/edit';

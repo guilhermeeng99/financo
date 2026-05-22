@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
@@ -107,7 +108,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text(state.failure.message),
+            content: Text(localizedFailure(state.failure)),
             backgroundColor: context.appColors.error,
             behavior: SnackBarBehavior.floating,
           ),

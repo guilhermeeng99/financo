@@ -1,6 +1,10 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
@@ -21,7 +25,6 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -82,8 +85,9 @@ class _AddAccountViewState extends State<_AddAccountView> {
       // on every subsequent keystroke ("65.679,36" not "65679.36").
       _balanceController.text = BrlCurrencyInputFormatter.format(state.balance);
       if (state.creditLimit > 0) {
-        _creditLimitController.text =
-            BrlCurrencyInputFormatter.format(state.creditLimit);
+        _creditLimitController.text = BrlCurrencyInputFormatter.format(
+          state.creditLimit,
+        );
       }
       if (state.linkedAccountId.isNotEmpty) {
         unawaited(_loadLinkedAccountName(state.userId, state.linkedAccountId));
@@ -111,27 +115,15 @@ class _AddAccountViewState extends State<_AddAccountView> {
   }
 
   Future<void> _confirmDelete(String accountId, String userId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.general.delete),
-        content: Text(t.accounts.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t.general.delete,
-              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.general.delete,
+      message: t.accounts.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final getTransactions = GetIt.I<GetTransactionsUseCase>();
     final deleteTransaction = GetIt.I<DeleteTransactionUseCase>();
@@ -153,7 +145,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
     await deleteAccount(accountId);
     if (!mounted) return;
     // Cascade-delete any investment holdings still pointing at this
-    // account (rule 6 of specs/investments.md). Best-effort — the
+    // account (rule 6 of docs/specs/investments.md). Best-effort — the
     // account delete already succeeded, so a failure here only leaves
     // orphan holdings that the overview filters out.
     unawaited(
@@ -215,7 +207,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
       context.pop(true);
     } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }
@@ -387,7 +379,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
             if (!state.isEditing) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: _AppBarIconButton(
+              child: FinancoAppBarIconButton(
                 icon: FontAwesomeIcons.trash,
                 color: colors.error,
                 onPressed: () => unawaited(
@@ -401,7 +393,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
       ],
     );
   }
-
 }
 
 class _RowSelector extends StatelessWidget {
@@ -517,40 +508,6 @@ class _InvestmentHint extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AppBarIconButton extends StatelessWidget {
-  const _AppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.onPressed,
-    required this.tooltip,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final VoidCallback onPressed;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
-          ),
-        ),
       ),
     );
   }

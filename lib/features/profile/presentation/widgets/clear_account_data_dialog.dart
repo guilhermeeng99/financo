@@ -1,4 +1,5 @@
 import 'package:financo/app/theme/app_colors.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -57,110 +58,44 @@ class _ClearAccountDataDialogState extends State<_ClearAccountDataDialog> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Dialog(
-      backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _WarningHeader(colors: colors),
-              const SizedBox(height: 16),
-              Text(
-                t.profile.clearDataConfirmHeadline,
-                textAlign: TextAlign.center,
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                t.profile.clearDataConfirmBody,
-                textAlign: TextAlign.center,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: colors.onBackgroundLight,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 20),
-              _EmailChip(email: widget.email, colors: colors),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                autocorrect: false,
-                enableSuggestions: false,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  labelText: t.profile.clearDataConfirmField,
-                ),
-                onSubmitted: (_) {
-                  if (_matches) Navigator.pop(context, true);
-                },
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(t.general.cancel),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _matches
-                          ? () => Navigator.pop(context, true)
-                          : null,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colors.error,
-                        disabledBackgroundColor: colors.error.withValues(
-                          alpha: 0.3,
-                        ),
-                      ),
-                      child: Text(t.general.delete),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    return FinancoDialog(
+      icon: FontAwesomeIcons.triangleExclamation,
+      iconColor: colors.error,
+      title: t.profile.clearDataConfirmHeadline,
+      message: t.profile.clearDataConfirmBody,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _EmailChip(email: widget.email, colors: colors),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              labelText: t.profile.clearDataConfirmField,
+            ),
+            onSubmitted: (_) {
+              if (_matches) Navigator.pop(context, true);
+            },
           ),
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _WarningHeader extends StatelessWidget {
-  const _WarningHeader({required this.colors});
-
-  final AppColorsData colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          color: colors.error.withValues(alpha: 0.14),
-          shape: BoxShape.circle,
+      actions: [
+        FinancoDialogAction(
+          label: t.general.cancel,
+          onPressed: () => Navigator.pop(context, false),
         ),
-        child: Center(
-          child: FaIcon(
-            FontAwesomeIcons.triangleExclamation,
-            size: 24,
-            color: colors.error,
-          ),
+        FinancoDialogAction(
+          label: t.general.delete,
+          kind: FinancoDialogActionKind.destructive,
+          onPressed: _matches ? () => Navigator.pop(context, true) : null,
         ),
-      ),
+      ],
     );
   }
 }

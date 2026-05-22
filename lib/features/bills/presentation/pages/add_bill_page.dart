@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_date_field.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
@@ -85,30 +88,21 @@ class _AddBillViewState extends State<_AddBillView> {
   }
 
   Future<void> _confirmDelete(String billId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.general.delete),
-        content: Text(t.bills.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t.general.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.general.delete,
+      message: t.bills.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     final deleteBill = GetIt.I<DeleteBillUseCase>();
     final result = await deleteBill(billId);
     if (!mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) => context.pop(true),
     );
@@ -155,18 +149,19 @@ class _AddBillViewState extends State<_AddBillView> {
   Future<BillEditScope?> _askEditScope() {
     return showDialog<BillEditScope>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.bills.editScopeTitle),
-        content: Text(t.bills.editScopeDescription),
+      builder: (ctx) => FinancoDialog(
+        icon: FontAwesomeIcons.calendarCheck,
+        title: t.bills.editScopeTitle,
+        message: t.bills.editScopeDescription,
         actions: [
-          TextButton(
+          FinancoDialogAction(
+            label: t.bills.editScopeOnlyThis,
             onPressed: () => Navigator.pop(ctx, BillEditScope.onlyThis),
-            child: Text(t.bills.editScopeOnlyThis),
           ),
-          TextButton(
-            onPressed: () =>
-                Navigator.pop(ctx, BillEditScope.alsoSubsequents),
-            child: Text(t.bills.editScopeAlsoSubsequents),
+          FinancoDialogAction(
+            label: t.bills.editScopeAlsoSubsequents,
+            kind: FinancoDialogActionKind.primary,
+            onPressed: () => Navigator.pop(ctx, BillEditScope.alsoSubsequents),
           ),
         ],
       ),
@@ -185,7 +180,7 @@ class _AddBillViewState extends State<_AddBillView> {
       context.pop(true);
     } else if (state.status == BillFormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }
@@ -251,7 +246,7 @@ class _AddBillViewState extends State<_AddBillView> {
             if (!state.isEditing) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: _AppBarIconButton(
+              child: FinancoAppBarIconButton(
                 icon: FontAwesomeIcons.trash,
                 color: colors.error,
                 onPressed: () => _confirmDelete(state.existingId!),
@@ -435,41 +430,6 @@ class _CategoryRowField extends StatelessWidget {
           ? null
           : FinancoCategoryAvatar(category: selected),
       onTap: onTap,
-    );
-  }
-}
-
-
-class _AppBarIconButton extends StatelessWidget {
-  const _AppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.onPressed,
-    required this.tooltip,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final VoidCallback onPressed;
-  final String tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
-          ),
-        ),
-      ),
     );
   }
 }

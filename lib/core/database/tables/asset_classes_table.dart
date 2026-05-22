@@ -11,7 +11,7 @@ class LocalAssetClasses extends Table {
   IntColumn get color => integer()();
   RealColumn get targetPercent => real().withDefault(const Constant(0))();
   // Nullable — `null` marks a root class. Subclasses reference a root
-  // by id. See specs/investments.md §1.
+  // by id. See docs/specs/investments.md §1.
   TextColumn get parentId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
 

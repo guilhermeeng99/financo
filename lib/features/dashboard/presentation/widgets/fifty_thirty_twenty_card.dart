@@ -18,7 +18,7 @@ import 'package:go_router/go_router.dart';
 /// - any other state: full layout with three bucket rows + footer
 ///   advice line.
 ///
-/// See `specs/fifty_thirty_twenty.md` §6 for design rationale.
+/// See `docs/specs/fifty_thirty_twenty.md` §6 for design rationale.
 class FiftyThirtyTwentyCard extends StatelessWidget {
   const FiftyThirtyTwentyCard({required this.overview, super.key});
 

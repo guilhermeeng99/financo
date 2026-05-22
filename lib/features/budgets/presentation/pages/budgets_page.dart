@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_month_filter_pill.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
@@ -79,27 +80,15 @@ class _BudgetsPageState extends State<BudgetsPage> {
   }
 
   Future<void> _confirmDelete(BudgetOverview overview) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.general.delete),
-        content: Text(t.budgets.deleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t.general.delete,
-              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.general.delete,
+      message: t.budgets.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     await context.read<BudgetsCubit>().deleteBudget(overview.budget.id);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -181,7 +170,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
             }
             if (state is BudgetsError) {
               return ErrorView(
-                message: state.failure.message,
+                failure: state.failure,
                 onRetry: () => context
                     .read<BudgetsCubit>()
                     .loadBudgets(forceRefresh: true),

@@ -2,6 +2,8 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -135,8 +137,8 @@ class ImportBudgetsCsvUseCase {
       rowNumber++;
       if (row.length <= maxRequiredIdx) continue;
 
-      final categoryName = _readCell(row, colIndex['category']);
-      final amountStr = _readCell(row, colIndex['amount']);
+      final categoryName = readCsvCell(row, colIndex['category']);
+      final amountStr = readCsvCell(row, colIndex['amount']);
 
       if (categoryName.isEmpty) continue;
 
@@ -145,7 +147,7 @@ class ImportBudgetsCsvUseCase {
       final key = categoryName.toLowerCase();
       if (!seen.add(key)) continue;
 
-      final amount = _parseAmount(amountStr);
+      final amount = parseCsvAmount(amountStr, absolute: true);
       if (amount <= 0) {
         throw FormatException(
           'Row $rowNumber: invalid or zero amount "$amountStr".',
@@ -179,7 +181,7 @@ class ImportBudgetsCsvUseCase {
 
     final out = <String, int>{};
     for (var i = 0; i < header.length; i++) {
-      final norm = _normalize('${header[i] ?? ''}');
+      final norm = normalizeForMatch('${header[i] ?? ''}');
       if (norm.isEmpty) continue;
       for (final entry in synonyms.entries) {
         if (out.containsKey(entry.key)) continue;
@@ -190,58 +192,6 @@ class ImportBudgetsCsvUseCase {
       }
     }
     return out;
-  }
-
-  String _readCell(List<dynamic> row, int? index) {
-    if (index == null || index >= row.length) return '';
-    return '${row[index] ?? ''}'.trim();
-  }
-
-  double _parseAmount(String raw) {
-    var cleaned = raw.replaceAll('"', '').trim();
-    if (cleaned.isEmpty) return 0;
-    if (cleaned.startsWith('-')) cleaned = cleaned.substring(1);
-
-    final hasComma = cleaned.contains(',');
-    final hasDot = cleaned.contains('.');
-
-    if (hasComma && hasDot) {
-      final lastComma = cleaned.lastIndexOf(',');
-      final lastDot = cleaned.lastIndexOf('.');
-      if (lastComma > lastDot) {
-        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
-      } else {
-        cleaned = cleaned.replaceAll(',', '');
-      }
-    } else if (hasComma) {
-      cleaned = cleaned.replaceAll(',', '.');
-    }
-
-    return (double.tryParse(cleaned) ?? 0).abs();
-  }
-
-  String _normalize(String raw) {
-    final lower = raw.trim().toLowerCase();
-    const map = {
-      'á': 'a',
-      'à': 'a',
-      'â': 'a',
-      'ã': 'a',
-      'é': 'e',
-      'ê': 'e',
-      'í': 'i',
-      'ó': 'o',
-      'ô': 'o',
-      'õ': 'o',
-      'ú': 'u',
-      'ü': 'u',
-      'ç': 'c',
-    };
-    final buf = StringBuffer();
-    for (final c in lower.split('')) {
-      buf.write(map[c] ?? c);
-    }
-    return buf.toString();
   }
 }
 

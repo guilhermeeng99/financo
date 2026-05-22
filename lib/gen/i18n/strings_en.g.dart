@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
 	// Translations
 	late final TranslationsGeneralEn general = TranslationsGeneralEn._(_root);
+	late final TranslationsErrorsEn errors = TranslationsErrorsEn._(_root);
 	late final TranslationsValidatorsEn validators = TranslationsValidatorsEn._(_root);
 	late final TranslationsAuthEn auth = TranslationsAuthEn._(_root);
 	late final TranslationsAccessControlEn accessControl = TranslationsAccessControlEn._(_root);
@@ -127,6 +128,30 @@ class TranslationsGeneralEn {
 
 	/// en: 'Default'
 	String get defaultLabel => 'Default';
+}
+
+// Path: errors
+class TranslationsErrorsEn {
+	TranslationsErrorsEn._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Something went wrong. Please try again.'
+	String get unexpected => 'Something went wrong. Please try again.';
+
+	/// en: 'Couldn't reach the server. Check your connection and try again.'
+	String get server => 'Couldn\'t reach the server. Check your connection and try again.';
+
+	/// en: 'Authentication failed. Please sign in again.'
+	String get auth => 'Authentication failed. Please sign in again.';
+
+	/// en: 'The assistant ran into a problem. Please try again.'
+	String get ai => 'The assistant ran into a problem. Please try again.';
+
+	/// en: 'Access is restricted for this account.'
+	String get accessDenied => 'Access is restricted for this account.';
 }
 
 // Path: validators
@@ -1165,6 +1190,15 @@ class TranslationsCategoriesEn {
 
 	/// en: 'No categories yet'
 	String get emptyTitle => 'No categories yet';
+
+	/// en: 'Uncategorized'
+	String get uncategorized => 'Uncategorized';
+
+	/// en: 'This category has subcategories. Promote or remove them before turning it into a subcategory.'
+	String get demoteBlockedChildren => 'This category has subcategories. Promote or remove them before turning it into a subcategory.';
+
+	/// en: 'This category has a budget. Delete the budget before turning it into a subcategory.'
+	String get demoteBlockedBudget => 'This category has a budget. Delete the budget before turning it into a subcategory.';
 }
 
 // Path: chat
@@ -2040,6 +2074,15 @@ class TranslationsInvestmentsEn {
 
 	/// en: 'Add a subclass before allocating — classes are organisers only.'
 	String get fabAddHoldingNoSubclass => 'Add a subclass before allocating — classes are organisers only.';
+
+	/// en: 'Allocation exceeds the available balance on this account ($available).'
+	String allocationExceedsBalance({required Object available}) => 'Allocation exceeds the available balance on this account (${available}).';
+
+	/// en: 'Target percent sum exceeds 100% for root classes. Available: $available.'
+	String targetSumExceedsRoot({required Object available}) => 'Target percent sum exceeds 100% for root classes. Available: ${available}.';
+
+	/// en: 'Target percent sum exceeds 100% for subclasses of this class. Available: $available.'
+	String targetSumExceedsSub({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.';
 }
 
 // Path: chat.action
@@ -2550,6 +2593,11 @@ extension on Translations {
 			'general.no' => 'No',
 			'general.all' => 'All',
 			'general.defaultLabel' => 'Default',
+			'errors.unexpected' => 'Something went wrong. Please try again.',
+			'errors.server' => 'Couldn\'t reach the server. Check your connection and try again.',
+			'errors.auth' => 'Authentication failed. Please sign in again.',
+			'errors.ai' => 'The assistant ran into a problem. Please try again.',
+			'errors.accessDenied' => 'Access is restricted for this account.',
 			'validators.required' => 'This field is required.',
 			'validators.emailRequired' => 'Email is required.',
 			'validators.emailInvalid' => 'Enter a valid email.',
@@ -2863,6 +2911,9 @@ extension on Translations {
 			'categories.noParentChosen' => 'None',
 			'categories.addFirst' => 'Add your first category',
 			'categories.emptyTitle' => 'No categories yet',
+			'categories.uncategorized' => 'Uncategorized',
+			'categories.demoteBlockedChildren' => 'This category has subcategories. Promote or remove them before turning it into a subcategory.',
+			'categories.demoteBlockedBudget' => 'This category has a budget. Delete the budget before turning it into a subcategory.',
 			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
@@ -3034,6 +3085,8 @@ extension on Translations {
 			'bills.overdueGroup' => 'Overdue',
 			'bills.todayGroup' => 'Today',
 			'bills.upcomingGroup' => 'Upcoming',
+			_ => null,
+		} ?? switch (path) {
 			'bills.paidGroup' => 'Settled',
 			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
 			'bills.billCreated' => 'Bill created',
@@ -3042,8 +3095,6 @@ extension on Translations {
 			'bills.billPaid' => 'Bill paid — transaction created',
 			'bills.billReceived' => 'Payment received — transaction created',
 			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
-			_ => null,
-		} ?? switch (path) {
 			'bills.alreadyPaid' => 'This bill is already settled',
 			'bills.cannotEditPaid' => 'Settled bills can\'t be edited',
 			'bills.payDialogTitle' => 'Pay bill',
@@ -3278,6 +3329,9 @@ extension on Translations {
 			'investments.fabAddHoldingNoAccount' => 'Create an investment account first.',
 			'investments.fabAddHoldingNoClass' => 'Create a class first.',
 			'investments.fabAddHoldingNoSubclass' => 'Add a subclass before allocating — classes are organisers only.',
+			'investments.allocationExceedsBalance' => ({required Object available}) => 'Allocation exceeds the available balance on this account (${available}).',
+			'investments.targetSumExceedsRoot' => ({required Object available}) => 'Target percent sum exceeds 100% for root classes. Available: ${available}.',
+			'investments.targetSumExceedsSub' => ({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.',
 			_ => null,
 		};
 	}

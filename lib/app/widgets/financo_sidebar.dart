@@ -100,7 +100,7 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 onTap: () => context.go(AppRoutes.planning),
                 // Planning tab stays active for every sub-tab and any
                 // legacy direct deep-link — bills moved into the shell
-                // (see specs/investments.md §10) so /bills sits here too.
+                // (see docs/specs/investments.md §10) so /bills sits here too.
                 isActive: location.startsWith(AppRoutes.planning) ||
                     location.startsWith(AppRoutes.bills) ||
                     location.startsWith(AppRoutes.budgets) ||

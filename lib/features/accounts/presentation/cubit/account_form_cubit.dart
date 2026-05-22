@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AccountFormCubit extends Cubit<AccountFormState> {

@@ -38,7 +38,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         // Upsert (not replace-all): transactions are paged by date range,
         // so wiping the local table here would discard rows outside the
         // current window. Diverges from accounts/categories on purpose —
-        // see specs/transactions.md cache strategy.
+        // see docs/specs/transactions.md cache strategy.
         await _dao.insertAllTransactions(remote);
       }
       final local = await _dao.getTransactions(
@@ -139,7 +139,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   /// left stale on purpose because rewriting hundreds of rows locally
   /// would block the UI thread. Callers (e.g. `delete_category_cubit`)
   /// MUST follow this up with `getTransactions(forceRefresh: true)` so
-  /// the cache catches up. See specs/transactions.md.
+  /// the cache catches up. See docs/specs/transactions.md.
   @override
   Future<Either<Failure, void>> reassignTransactions({
     required String fromCategoryId,

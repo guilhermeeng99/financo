@@ -6,7 +6,7 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 
 /// Pure compose of `FiftyThirtyTwentyOverview` from the data the dashboard
 /// already fetches. Stateless, synchronous, no IO. The full algorithm
-/// lives in `specs/fifty_thirty_twenty.md` §4 — keep this implementation
+/// lives in `docs/specs/fifty_thirty_twenty.md` §4 — keep this implementation
 /// aligned.
 ///
 /// **Why a top-level function and not a use case**: every input is
@@ -84,7 +84,7 @@ double _sumIncome(
     // otherwise distort the monthly percentage breakdown.
     //
     // Sub-income categories inherit the flag from their parent
-    // (specs/categories.md rule 22); the persisted value on a sub is
+    // (docs/specs/categories.md rule 22); the persisted value on a sub is
     // always `true` (neutral), so we must resolve to the root here.
     final cat = categoriesById[t.categoryId];
     if (cat != null) {
@@ -100,7 +100,7 @@ double _sumIncome(
 
 /// Walks expenses once, binning by the transaction's category bucket.
 /// Subcategories **inherit the parent's bucket** (see
-/// `specs/categories.md` rule 20) — the subcategory's own bucket field
+/// `docs/specs/categories.md` rule 20) — the subcategory's own bucket field
 /// is ignored. Orphans (deleted parent or deleted category) charge to
 /// `unclassifiedSpent` so the bar still reflects the spend, even though
 /// they can't be "classified" through the categories form.
@@ -157,7 +157,7 @@ double _sumIncome(
 
 /// Pairs transfer legs by `linkedTransactionId` and tallies the net flow
 /// `checking → investment`. Every other source/destination combination
-/// is ignored (see `specs/fifty_thirty_twenty.md` §2 rule 4).
+/// is ignored (see `docs/specs/fifty_thirty_twenty.md` §2 rule 4).
 ///
 /// **Pairing detail**: the expense leg carries the source account; the
 /// income leg carries the destination. The pair is established by

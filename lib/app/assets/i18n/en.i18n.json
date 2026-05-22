@@ -21,6 +21,13 @@
     "all": "All",
     "defaultLabel": "Default"
   },
+  "errors": {
+    "unexpected": "Something went wrong. Please try again.",
+    "server": "Couldn't reach the server. Check your connection and try again.",
+    "auth": "Authentication failed. Please sign in again.",
+    "ai": "The assistant ran into a problem. Please try again.",
+    "accessDenied": "Access is restricted for this account."
+  },
   "validators": {
     "required": "This field is required.",
     "emailRequired": "Email is required.",
@@ -354,7 +361,10 @@
     "searchNoResults": "No categories match your search.",
     "noParentChosen": "None",
     "addFirst": "Add your first category",
-    "emptyTitle": "No categories yet"
+    "emptyTitle": "No categories yet",
+    "uncategorized": "Uncategorized",
+    "demoteBlockedChildren": "This category has subcategories. Promote or remove them before turning it into a subcategory.",
+    "demoteBlockedBudget": "This category has a budget. Delete the budget before turning it into a subcategory."
   },
   "chat": {
     "title": "AI Assistant",
@@ -791,6 +801,9 @@
     "fabAddHoldingSubtitle": "Tell us how a slice of the balance is invested.",
     "fabAddHoldingNoAccount": "Create an investment account first.",
     "fabAddHoldingNoClass": "Create a class first.",
-    "fabAddHoldingNoSubclass": "Add a subclass before allocating — classes are organisers only."
+    "fabAddHoldingNoSubclass": "Add a subclass before allocating — classes are organisers only.",
+    "allocationExceedsBalance": "Allocation exceeds the available balance on this account ($available).",
+    "targetSumExceedsRoot": "Target percent sum exceeds 100% for root classes. Available: $available.",
+    "targetSumExceedsSub": "Target percent sum exceeds 100% for subclasses of this class. Available: $available."
   }
 }

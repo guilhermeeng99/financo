@@ -448,7 +448,9 @@ class _ActionPreview {
           (label: t.chat.action.fieldBank, value: '${meta['bank']}'),
         (
           label: t.chat.action.fieldType,
-          value: isCreditCard ? 'Credit card' : 'Checking',
+          value: isCreditCard
+              ? t.accounts.creditCard
+              : t.accounts.checkingShort,
         ),
         if (balance != null && balance != 0)
           (label: t.chat.action.fieldBalance, value: formatCurrency(balance)),
@@ -501,7 +503,7 @@ class _ActionPreview {
       fields: [
         (
           label: t.chat.action.fieldType,
-          value: isIncome ? 'Income' : 'Expense',
+          value: isIncome ? t.transactions.income : t.transactions.expense,
         ),
       ],
     );
@@ -541,7 +543,7 @@ class _ActionPreview {
         ),
         (
           label: t.chat.action.fieldRecurrence,
-          value: isMonthly ? 'Monthly' : 'One-time',
+          value: isMonthly ? t.bills.monthly : t.bills.oneShot,
         ),
         if (meta['category'] != null)
           (label: t.chat.action.fieldCategory, value: '${meta['category']}'),

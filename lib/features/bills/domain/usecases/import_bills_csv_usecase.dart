@@ -2,6 +2,8 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -135,14 +137,14 @@ class ImportBillsCsvUseCase {
       rowNumber++;
       if (row.length <= maxRequiredIdx) continue;
 
-      final typeStr = _readCell(row, colIndex['type']);
-      final description = _readCell(row, colIndex['description']);
-      final amountStr = _readCell(row, colIndex['amount']);
-      final dateStr = _readCell(row, colIndex['date']);
-      final statusStr = _readCell(row, colIndex['status']);
-      final recurrenceStr = _readCell(row, colIndex['recurrence']);
-      final categoryStr = _readCell(row, colIndex['category']);
-      final notesStr = _readCell(row, colIndex['notes']);
+      final typeStr = readCsvCell(row, colIndex['type']);
+      final description = readCsvCell(row, colIndex['description']);
+      final amountStr = readCsvCell(row, colIndex['amount']);
+      final dateStr = readCsvCell(row, colIndex['date']);
+      final statusStr = readCsvCell(row, colIndex['status']);
+      final recurrenceStr = readCsvCell(row, colIndex['recurrence']);
+      final categoryStr = readCsvCell(row, colIndex['category']);
+      final notesStr = readCsvCell(row, colIndex['notes']);
 
       if (description.isEmpty) {
         throw FormatException(
@@ -151,13 +153,13 @@ class ImportBillsCsvUseCase {
       }
 
       final type = _parseType(typeStr, rowNumber);
-      final amount = _parseAmount(amountStr);
+      final amount = parseCsvAmount(amountStr, absolute: true);
       if (amount <= 0) {
         throw FormatException(
           'Row $rowNumber: invalid or zero amount "$amountStr".',
         );
       }
-      final date = _parseDate(dateStr);
+      final date = parseDmyDate(dateStr);
       if (date == null) {
         throw FormatException(
           'Row $rowNumber: invalid date "$dateStr". Use DD/MM/YYYY.',
@@ -229,7 +231,7 @@ class ImportBillsCsvUseCase {
 
     final out = <String, int>{};
     for (var i = 0; i < header.length; i++) {
-      final norm = _normalize('${header[i] ?? ''}');
+      final norm = normalizeForMatch('${header[i] ?? ''}');
       if (norm.isEmpty) continue;
       for (final entry in synonyms.entries) {
         if (out.containsKey(entry.key)) continue;
@@ -242,13 +244,8 @@ class ImportBillsCsvUseCase {
     return out;
   }
 
-  String _readCell(List<dynamic> row, int? index) {
-    if (index == null || index >= row.length) return '';
-    return '${row[index] ?? ''}'.trim();
-  }
-
   BillType _parseType(String raw, int csvRow) {
-    final normalized = _normalize(raw);
+    final normalized = normalizeForMatch(raw);
     if (normalized.isEmpty) {
       throw FormatException(
         'Row $csvRow: type column is empty. Use Payable or Receivable.',
@@ -280,7 +277,7 @@ class ImportBillsCsvUseCase {
   /// receivable side ("Received"/"Recebida") since both end up at the
   /// same enum value.
   BillStatus _parseStatus(String raw, int csvRow) {
-    final normalized = _normalize(raw);
+    final normalized = normalizeForMatch(raw);
     if (normalized.isEmpty) return BillStatus.pending;
     if (normalized == 'pending' ||
         normalized == 'pendente' ||
@@ -302,7 +299,7 @@ class ImportBillsCsvUseCase {
   }
 
   BillRecurrence _parseRecurrence(String raw, int csvRow) {
-    final normalized = _normalize(raw);
+    final normalized = normalizeForMatch(raw);
     if (normalized.isEmpty) return BillRecurrence.oneShot;
     if (normalized == 'monthly' ||
         normalized == 'mensal' ||
@@ -327,42 +324,6 @@ class ImportBillsCsvUseCase {
 
   // Same BR/EN-friendly amount parser used by the other import use cases:
   // the rightmost separator is the decimal point.
-  double _parseAmount(String raw) {
-    var cleaned = raw.replaceAll('"', '').trim();
-    if (cleaned.isEmpty) return 0;
-    if (cleaned.startsWith('-')) cleaned = cleaned.substring(1);
-
-    final hasComma = cleaned.contains(',');
-    final hasDot = cleaned.contains('.');
-
-    if (hasComma && hasDot) {
-      final lastComma = cleaned.lastIndexOf(',');
-      final lastDot = cleaned.lastIndexOf('.');
-      if (lastComma > lastDot) {
-        cleaned = cleaned.replaceAll('.', '').replaceAll(',', '.');
-      } else {
-        cleaned = cleaned.replaceAll(',', '');
-      }
-    } else if (hasComma) {
-      cleaned = cleaned.replaceAll(',', '.');
-    }
-
-    return (double.tryParse(cleaned) ?? 0).abs();
-  }
-
-  DateTime? _parseDate(String raw) {
-    final parts = raw.split('/');
-    if (parts.length != 3) return null;
-
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-
-    if (day == null || month == null || year == null) return null;
-    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-
-    return DateTime(year, month, day);
-  }
 
   /// Same nested "parent → {null: rootId, sub: subId}" lookup the
   /// transactions CSV uses, so a `Housing/Internet` cell can resolve
@@ -403,30 +364,6 @@ class ImportBillsCsvUseCase {
       return parentMap[subcategoryName.toLowerCase()];
     }
     return parentMap[null];
-  }
-
-  String _normalize(String raw) {
-    final lower = raw.trim().toLowerCase();
-    const map = {
-      'á': 'a',
-      'à': 'a',
-      'â': 'a',
-      'ã': 'a',
-      'é': 'e',
-      'ê': 'e',
-      'í': 'i',
-      'ó': 'o',
-      'ô': 'o',
-      'õ': 'o',
-      'ú': 'u',
-      'ü': 'u',
-      'ç': 'c',
-    };
-    final buf = StringBuffer();
-    for (final c in lower.split('')) {
-      buf.write(map[c] ?? c);
-    }
-    return buf.toString();
   }
 }
 

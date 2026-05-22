@@ -30,7 +30,7 @@ const double _minRebalanceAmount = 1;
 ///   separately in `orphanHoldingIds`.
 ///
 /// Output: a fully-formed [InvestmentOverview]. See
-/// `specs/investments.md` §4 for the algorithm reference.
+/// `docs/specs/investments.md` §4 for the algorithm reference.
 InvestmentOverview computeInvestmentOverview({
   required List<AccountEntity> accounts,
   required List<AssetClassEntity> classes,

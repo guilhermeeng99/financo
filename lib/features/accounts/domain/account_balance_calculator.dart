@@ -8,7 +8,7 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 /// - **Checking / Investment**: `seed + Σincome - Σexpense` — positive
 ///   means money in the account. Investment accounts track principal
 ///   only (deposits − withdrawals); market yield is intentionally not
-///   modelled here. See specs/fifty_thirty_twenty.md.
+///   modelled here. See docs/specs/fifty_thirty_twenty.md.
 /// - **Credit card**: `seed + Σexpense - Σincome` — positive means the
 ///   amount currently owed. Spending on the card raises the bill;
 ///   payments (transfers from a checking account, refunds) reduce it.

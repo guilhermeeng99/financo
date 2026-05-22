@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
@@ -17,7 +20,6 @@ import 'package:financo/features/investments/domain/usecases/create_asset_holdin
 import 'package:financo/features/investments/domain/usecases/delete_asset_holding_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/update_asset_holding_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/asset_holding_form_cubit.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -191,7 +193,7 @@ class _AssetHoldingSheetViewState extends State<_AssetHoldingSheetView> {
   Future<void> _pickClass() async {
     final cubit = context.read<AssetHoldingFormCubit>();
     // Holdings only attach to subclasses — root classes are
-    // organisational containers (specs/investments.md §2 rule 4).
+    // organisational containers (docs/specs/investments.md §2 rule 4).
     // The picker shows subclasses grouped by parent in the subtitle.
     final parentById = {for (final c in widget.classes) c.id: c};
     final subclasses = widget.classes
@@ -223,29 +225,20 @@ class _AssetHoldingSheetViewState extends State<_AssetHoldingSheetView> {
   Future<void> _handleDelete() async {
     final existing = widget.existing;
     if (existing == null) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.investments.deleteHoldingTitle),
-        content: Text(t.investments.deleteHoldingConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(t.general.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(t.general.delete),
-          ),
-        ],
-      ),
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.investments.deleteHoldingTitle,
+      message: t.investments.deleteHoldingConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
     );
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
     final result = await GetIt.I<DeleteAssetHoldingUseCase>()(existing.id);
     if (!mounted) return;
     result.fold(
       (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(failure.message)),
+        SnackBar(content: Text(localizedFailure(failure))),
       ),
       (_) => Navigator.of(context).pop(true),
     );
@@ -262,7 +255,7 @@ class _AssetHoldingSheetViewState extends State<_AssetHoldingSheetView> {
         } else if (state.status == FormStatus.failure &&
             state.failure != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.failure!.message)),
+            SnackBar(content: Text(localizedFailure(state.failure))),
           );
         }
       },

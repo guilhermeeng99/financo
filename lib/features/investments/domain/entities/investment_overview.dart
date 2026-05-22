@@ -10,7 +10,7 @@ enum RebalanceDirection { buy, sell }
 /// `lib/features/investments/domain/services/compute_investment_overview.dart`
 /// from the live account balances + asset classes + asset holdings.
 ///
-/// Never persisted, always rebuilt. See `specs/investments.md` §1.
+/// Never persisted, always rebuilt. See `docs/specs/investments.md` §1.
 class InvestmentOverview extends Equatable {
   const InvestmentOverview({
     required this.totalInvested,
@@ -41,7 +41,7 @@ class InvestmentOverview extends Equatable {
 
   /// Sum of every class's `targetPercent`. The UI warns the user to
   /// adjust to 100 when this differs from 100 by more than 0.1 — see
-  /// rule 7 in `specs/investments.md`.
+  /// rule 7 in `docs/specs/investments.md`.
   final double targetSumPercent;
 
   /// Holdings that point at a missing account or class. Surfaced in
@@ -142,7 +142,7 @@ class InvestmentClassSlice extends Equatable {
   final double deltaAmount;
 
   /// Direct subclasses of this root, in stable name order. Empty when
-  /// the class has no children. See `specs/investments.md` §1.
+  /// the class has no children. See `docs/specs/investments.md` §1.
   final List<InvestmentSubclassSlice> subclasses;
 
   bool get isUnderTarget => deltaAmount > 0;

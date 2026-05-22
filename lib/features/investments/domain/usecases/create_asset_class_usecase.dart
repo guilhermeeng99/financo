@@ -93,12 +93,9 @@ Failure? validateSiblingTargetSum({
       .fold<double>(0, (sum, c) => sum + c.targetPercent);
   final newSum = siblingSum + candidate.targetPercent;
   if (newSum <= 100 + 0.01) return null;
-  final scope = candidate.parentId == null
-      ? 'root classes'
-      : 'subclasses of this class';
   final available = (100 - siblingSum).clamp(0.0, 100.0);
-  return ValidationFailure(
-    'Target percent sum exceeds 100% for $scope. '
-    'Available: ${available.toStringAsFixed(0)}%.',
+  return TargetSumExceededFailure(
+    availablePercent: available,
+    isRoot: candidate.parentId == null,
   );
 }

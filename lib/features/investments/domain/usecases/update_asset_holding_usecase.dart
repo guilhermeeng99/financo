@@ -33,7 +33,7 @@ class UpdateAssetHoldingUseCase {
       return const Left(ValidationFailure('Amount must be at least zero.'));
     }
 
-    // Holdings must point at a subclass — see specs/investments.md §2.
+    // Holdings must point at a subclass — see docs/specs/investments.md §2.
     final classGuard = await _verifyClass(
       userId: holding.userId,
       classId: holding.assetClassId,
@@ -81,10 +81,7 @@ class UpdateAssetHoldingUseCase {
           excludeHoldingId: holding.id,
         );
         if (holding.amount > available + 0.005) {
-          return ValidationFailure(
-            'Allocation exceeds the available balance on this account '
-            '(${available.toStringAsFixed(2)}).',
-          );
+          return AllocationExceedsBalanceFailure(available);
         }
         return null;
       },

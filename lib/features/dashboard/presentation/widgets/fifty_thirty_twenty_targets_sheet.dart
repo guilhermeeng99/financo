@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
@@ -88,7 +89,7 @@ class _FiftyThirtyTwentyTargetsSheetState
     final state = cubit.state;
     if (state.failure != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure!.message)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
       return;
     }

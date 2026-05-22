@@ -1,6 +1,8 @@
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AddAllowedEmailResult {
   AddAllowedEmailResult({required this.email, this.note});
@@ -53,8 +55,9 @@ class _AddAllowedEmailDialogState extends State<_AddAllowedEmailDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(t.masterPanel.addEmailTitle),
+    return FinancoDialog(
+      icon: FontAwesomeIcons.userPlus,
+      title: t.masterPanel.addEmailTitle,
       content: Form(
         key: _formKey,
         child: Column(
@@ -67,7 +70,6 @@ class _AddAllowedEmailDialogState extends State<_AddAllowedEmailDialog> {
               decoration: InputDecoration(
                 labelText: t.auth.email,
                 hintText: t.auth.emailHint,
-                border: const OutlineInputBorder(),
               ),
               validator: Validators.email,
             ),
@@ -77,20 +79,20 @@ class _AddAllowedEmailDialogState extends State<_AddAllowedEmailDialog> {
               decoration: InputDecoration(
                 labelText: t.masterPanel.addEmailNoteLabel,
                 hintText: t.masterPanel.addEmailNoteHint,
-                border: const OutlineInputBorder(),
               ),
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
+        FinancoDialogAction(
+          label: t.general.cancel,
           onPressed: () => Navigator.pop(context),
-          child: Text(t.general.cancel),
         ),
-        FilledButton(
+        FinancoDialogAction(
+          label: t.general.add,
+          kind: FinancoDialogActionKind.primary,
           onPressed: _submit,
-          child: Text(t.general.add),
         ),
       ],
     );

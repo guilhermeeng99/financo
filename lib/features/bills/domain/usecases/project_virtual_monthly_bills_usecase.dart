@@ -17,7 +17,7 @@ import 'package:financo/features/bills/domain/utils/monthly_due_date.dart';
 /// recent bill is already in (or past) the target month, no virtuals
 /// are needed.
 ///
-/// See `specs/bills.md` → "Future Occurrence Preview".
+/// See `docs/specs/bills.md` → "Future Occurrence Preview".
 class ProjectVirtualMonthlyBillsUseCase {
   const ProjectVirtualMonthlyBillsUseCase();
 

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
@@ -110,29 +112,16 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(t.general.delete),
-        content: Text(
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.general.delete,
+      message:
           t.categories.importDeleteRoot(name: item.name, count: childCount),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t.general.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t.categories.importDeleteRootConfirm,
-              style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+      confirmLabel: t.categories.importDeleteRootConfirm,
+      destructive: true,
     );
-    if (confirmed == true) _removeItem(globalIndex);
+    if (confirmed) _removeItem(globalIndex);
   }
 
   void _onSubmit() {
@@ -159,7 +148,7 @@ class _ImportCategoriesPageState extends State<ImportCategoriesPage> {
       context.pop(true);
     } else if (state is CategoriesError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure.message)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }

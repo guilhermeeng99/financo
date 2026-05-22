@@ -1,16 +1,21 @@
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+/// Full-screen error state with a retry action. Takes the domain [Failure]
+/// directly and localises it at render time via [localizedFailure], so call
+/// sites never hand-build (or forget to translate) the message.
 class ErrorView extends StatelessWidget {
   const ErrorView({
-    required this.message,
+    required this.failure,
     required this.onRetry,
     super.key,
   });
 
-  final String message;
+  final Failure? failure;
   final VoidCallback onRetry;
 
   @override
@@ -30,7 +35,7 @@ class ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              message,
+              localizedFailure(failure),
               textAlign: TextAlign.center,
               style: context.textTheme.bodyLarge,
             ),

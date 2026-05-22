@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
@@ -141,7 +142,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
       context.pop(true);
     } else if (state.status == BudgetFormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }

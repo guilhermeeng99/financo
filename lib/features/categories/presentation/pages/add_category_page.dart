@@ -1,6 +1,9 @@
 import 'dart:async';
-import 'dart:developer';
 
+import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
+import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
@@ -10,20 +13,16 @@ import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
-import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
-import 'package:financo/features/categories/domain/usecases/delete_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/delete_category_with_reassignment_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/categories/presentation/cubit/category_form_cubit.dart';
 import 'package:financo/features/categories/presentation/widgets/category_color_picker.dart';
 import 'package:financo/features/categories/presentation/widgets/category_icon_picker.dart';
 import 'package:financo/features/categories/presentation/widgets/parent_category_picker_sheet.dart';
-import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -131,9 +130,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     // into the visual family on save.
     final parentId = cubitState.parentId;
     if (parentId != null) {
-      final parent = _rootCategories
-          .where((c) => c.id == parentId)
-          .firstOrNull;
+      final parent = _rootCategories.where((c) => c.id == parentId).firstOrNull;
       if (parent != null) {
         cubit.updateParentId(parentId, parent: parent);
       }
@@ -171,8 +168,6 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
 
   Future<void> _confirmDelete(String categoryId) async {
     final getCategories = GetIt.I<GetCategoriesUseCase>();
-    final deleteCategory = GetIt.I<DeleteCategoryUseCase>();
-    final transactionRepo = GetIt.I<TransactionRepository>();
     final cubitState = context.read<CategoryFormCubit>().state;
 
     final categoriesResult = await getCategories(userId: cubitState.userId);
@@ -194,91 +189,52 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(t.general.delete),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(t.categories.reassignPrompt),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: targetId,
-                items: others
-                    .map(
-                      (c) => DropdownMenuItem(
-                        value: c.id,
-                        child: Text(c.name),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() => targetId = v),
-              ),
-            ],
+        builder: (ctx, setDialogState) => FinancoDialog(
+          icon: FontAwesomeIcons.trashCan,
+          iconColor: ctx.appColors.error,
+          title: t.general.delete,
+          message: t.categories.reassignPrompt,
+          content: DropdownButtonFormField<String>(
+            initialValue: targetId,
+            items: others
+                .map(
+                  (c) => DropdownMenuItem(
+                    value: c.id,
+                    child: Text(c.name),
+                  ),
+                )
+                .toList(),
+            onChanged: (v) => setDialogState(() => targetId = v),
           ),
           actions: [
-            TextButton(
+            FinancoDialogAction(
+              label: t.general.cancel,
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(t.general.cancel),
             ),
-            TextButton(
+            FinancoDialogAction(
+              label: t.general.delete,
+              kind: FinancoDialogActionKind.destructive,
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                t.general.delete,
-                style: TextStyle(color: Theme.of(ctx).colorScheme.error),
-              ),
             ),
           ],
         ),
       ),
     );
 
-    if (confirmed == true && targetId != null && mounted) {
-      await transactionRepo.reassignTransactions(
-        fromCategoryId: categoryId,
-        toCategoryId: targetId!,
-      );
-      await _deleteBudgetsForCategory(
-        userId: cubitState.userId,
-        categoryId: categoryId,
-      );
-      await deleteCategory(categoryId);
-      if (mounted) context.pop(true);
-    }
-  }
+    if (confirmed != true || targetId == null || !mounted) return;
 
-  /// Cascade-delete every budget that referenced [categoryId]. Failures
-  /// are logged but not surfaced: the category deletion is the user's
-  /// primary intent, and orphan budgets are tolerated by the overview
-  /// pipeline (see specs/budgets.md rule 7-8).
-  Future<void> _deleteBudgetsForCategory({
-    required String userId,
-    required String categoryId,
-  }) async {
-    final getBudgets = GetIt.I<GetBudgetsUseCase>();
-    final deleteBudget = GetIt.I<DeleteBudgetUseCase>();
-    final budgetsResult = await getBudgets(userId: userId);
-    final budgets = budgetsResult.fold<List<BudgetEntity>>(
-      (failure) {
-        log(
-          'Budget cascade lookup failed; orphan budgets may remain. '
-          '${failure.message}',
-          name: 'CategoryDelete',
-        );
-        return const [];
-      },
-      (list) => list,
+    final result = await GetIt.I<DeleteCategoryWithReassignmentUseCase>()(
+      userId: cubitState.userId,
+      fromCategoryId: categoryId,
+      toCategoryId: targetId!,
     );
-    for (final b in budgets) {
-      if (b.categoryId != categoryId) continue;
-      final result = await deleteBudget(b.id);
-      result.fold(
-        (failure) => log(
-          'Budget cascade delete failed for ${b.id}. ${failure.message}',
-          name: 'CategoryDelete',
-        ),
-        (_) {},
-      );
-    }
+    if (!mounted) return;
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizedFailure(failure))),
+      ),
+      (_) => context.pop(true),
+    );
   }
 
   Future<void> _pickParent() async {
@@ -299,9 +255,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
       cubit.updateParentId(null);
       return;
     }
-    final parent = _rootCategories
-        .where((c) => c.id == picked)
-        .firstOrNull;
+    final parent = _rootCategories.where((c) => c.id == picked).firstOrNull;
     cubit.updateParentId(picked, parent: parent);
   }
 
@@ -325,7 +279,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
       context.pop(true);
     } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.failure?.message ?? t.general.error)),
+        SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
   }
@@ -395,7 +349,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
                     ),
                     // 50/30/20 only applies to root expense categories.
                     // Subcategories inherit their parent's bucket
-                    // (specs/categories.md rule 20), so the picker is
+                    // (docs/specs/categories.md rule 20), so the picker is
                     // hidden when a parent is set.
                     if (state.type == CategoryType.expense &&
                         state.parentId == null) ...[
@@ -550,12 +504,11 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
             if (!state.isEditing) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: _AppBarIconButton(
+              child: FinancoAppBarIconButton(
                 icon: FontAwesomeIcons.trash,
                 color: colors.error,
                 tooltip: t.general.delete,
-                onPressed: () =>
-                    unawaited(_confirmDelete(state.existingId!)),
+                onPressed: () => unawaited(_confirmDelete(state.existingId!)),
               ),
             );
           },
@@ -566,9 +519,7 @@ class _AddCategoryViewState extends State<_AddCategoryView> {
 
   String? _resolveParentName(String? parentId) {
     if (parentId == null) return null;
-    final match = _rootCategories
-        .where((c) => c.id == parentId)
-        .firstOrNull;
+    final match = _rootCategories.where((c) => c.id == parentId).firstOrNull;
     return match?.name;
   }
 }
@@ -875,40 +826,6 @@ class _PreviewTile extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AppBarIconButton extends StatelessWidget {
-  const _AppBarIconButton({
-    required this.icon,
-    required this.color,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final FaIconData icon;
-  final Color color;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(child: FaIcon(icon, size: 14, color: color)),
-          ),
-        ),
       ),
     );
   }
