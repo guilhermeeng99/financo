@@ -71,7 +71,7 @@ Computed getters:
 ### Subclass rules
 
 1. **One nesting level only.** A subclass cannot itself own subclasses. The parent picker filters to root classes; saving a subclass with a `parentId` pointing at another subclass is blocked at the use-case layer.
-2. **Subclasses inherit `icon` + `color` from the parent at write time** — the form mirrors the parent's appearance and the persisted row carries that snapshot. If the parent's appearance changes later, existing subclasses keep the old visuals; users can re-save the subclass to re-sync. (Mirrors the explicit-on-write trade-off used by categories — see `specs/categories.md` rule 17.)
+2. **Subclasses inherit `icon` + `color` from the parent at write time** — the form mirrors the parent's appearance and the persisted row carries that snapshot. If the parent's appearance changes later, existing subclasses keep the old visuals; users can re-save the subclass to re-sync. (Mirrors the explicit-on-write trade-off used by categories — see `docs/specs/categories.md` rule 17.)
 3. **Subclasses carry their own `targetPercent`** — the share of the parent class they should represent. The root's target sizes the whole group against the portfolio; each subclass's target splits that group internally. The form shows the target slider for subclasses too. `0` means "no target set yet", in which case the detail page shows share-of-class only and offers no suggestion. Sibling subclass targets should sum to 100 (not hard-enforced — see rule 7).
 4. **Holdings only reference subclasses.** Root classes are pure
    organisational containers — the user never writes a holding
@@ -546,9 +546,11 @@ asset_classes/{id}     → userId, name, icon, color, targetPercent, createdAt
 asset_holdings/{id}    → userId, accountId, assetClassId, amount, notes, updatedAt
 ```
 
-**Indexes:**
-- `asset_classes`: `userId + name`
-- `asset_holdings`: `userId + accountId`
+**Indexes:** none. Both collections are queried with a single-field
+`where('userId', isEqualTo: userId)` only — the remote datasources
+deliberately skip server-side ordering (and the composite index it would
+require) and sort in memory instead. See the comment in
+`asset_class_remote_datasource.dart`.
 
 Queries are always scoped by `userId`.
 

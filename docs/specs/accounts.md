@@ -262,6 +262,7 @@ confirmImport({
 **Collection:** `accounts/{id}`
 
 **Indexes:**
-- `userId` + `isActive` + `createdAt` (existing query pattern — note: isActive will be removed)
+- `userId` + `createdAt`
 
-After isActive removal, query becomes: `where('userId', isEqualTo: userId).orderBy('createdAt')`
+Query: `where('userId', isEqualTo: userId).orderBy('createdAt')`. (The
+historical `isActive` flag has been removed from the entity and queries.)

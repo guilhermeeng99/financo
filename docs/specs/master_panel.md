@@ -89,8 +89,8 @@ The master panel orchestrates two existing repositories — there is no
 
 ```dart
 abstract class MasterUsersRepository {
-  Future<Either<Failure, List<UserEntity>>> listAll();
-  Future<Either<Failure, void>> deleteUser(String userId);
+  Future<Either<Failure, List<UserEntity>>> listAllUsers();
+  Future<Either<Failure, void>> deleteUserAsAdmin(String targetUid);
 }
 
 abstract class AccessControlRepository {
@@ -112,21 +112,25 @@ the audit trail — the function logs each invocation with the caller UID.
 
 ## 4. State Machine — `MasterPanelCubit`
 
-The cubit holds three independent slices in one state:
+The cubit exposes a sealed state hierarchy
+(`MasterPanelInitial` / `MasterPanelLoading` / `MasterPanelLoaded` /
+`MasterPanelError`). `MasterPanelLoaded` carries both slices plus a `busy`
+flag for in-place mutations (add/remove email, delete user) that should not
+collapse the screen back to a spinner:
 
 ```dart
-class MasterPanelState {
+sealed class MasterPanelState {}
+class MasterPanelLoaded extends MasterPanelState {
   final List<UserEntity> users;
   final List<AllowedEmail> allowlist;
-  final bool isLoading;
-  final Failure? error;
+  final bool busy;
 }
 ```
 
 Transitions:
 
-- `loadAll()` → `isLoading: true` → fetch users + allowlist in parallel
-  → `isLoading: false` + populated lists, or `error` set on failure
+- `load()` → `MasterPanelLoading` → fetch users + allowlist in parallel
+  → `MasterPanelLoaded`, or `MasterPanelError` on failure
 - `addEmail(email, note)` → optimistic append → call repository →
   rollback on failure
 - `removeEmail(email)` → optimistic remove → rollback on failure

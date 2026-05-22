@@ -10,9 +10,11 @@ allocate up to 50% to **needs** (essentials), up to 30% to **wants**
 surfaces the user's actual split against these targets on the Dashboard so
 the user knows, at a glance, whether the current month is on track.
 
-The targets are fixed at 50/30/20 in V1. Customisable targets, per-bucket
-month navigation, and pay-down-debt accounting are deliberate non-goals
-(see §11).
+Targets default to 50/30/20 but are **customisable** as of V1.1 (see §12):
+`FiftyThirtyTwentyTargetsCubit` + `UpdateFiftyThirtyTwentyTargetsUseCase`
+persist per-user overrides on `users/{id}.fiftyThirtyTwentyTargets`.
+Per-bucket month navigation and pay-down-debt accounting remain deliberate
+non-goals (see §11).
 
 ## 0. Scope decisions (locked at design time)
 

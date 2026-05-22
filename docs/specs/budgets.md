@@ -19,8 +19,10 @@ budgets do not duplicate that data — they only carry the cap and metadata.
 - **Monthly period only**: weekly/yearly are out of scope for MVP.
 - **No push alerts**: progress is visible in-app; FCM notifications come later.
 
-The feature is reachable from the main navigation as a top-level tab
-(`Orçamento`), positioned alongside Dashboard / Transactions / Bills / Chat.
+Budgets live inside the **Planning** shell (`Planejamento` in the main
+navigation) as its second tab, alongside the 50/30/20 and Accounts/Bills
+tabs. See docs/specs/fifty_thirty_twenty.md and docs/specs/investments.md
+for the Planning shell layout.
 
 ---
 

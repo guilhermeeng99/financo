@@ -10,7 +10,7 @@ The **Profile** feature surfaces the signed-in user's read-only identity
 every user-scoped document on the backend plus the entire local cache.
 
 The page is reachable from the main navigation as a top-level tab
-(`Perfil`), positioned alongside Dashboard / Chat / Bills / Budgets.
+(`Perfil`), positioned alongside Dashboard, Planning, Investments and Chat.
 
 ---
 

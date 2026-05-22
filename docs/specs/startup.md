@@ -91,7 +91,7 @@ The cubit never returns to `StartupInitial` once `initialize()` has run. Retry f
 
 ## Lifecycle & DI
 
-- Registered as `registerFactory<StartupCubit>` (per-route lifecycle): a fresh cubit is built every time the user lands on `/startup`. The router provides it via `BlocProvider` at the route level — see `lib/app/routes/app_router.dart` and `lib/app/di/injection_container.dart`.
+- Registered as `registerLazySingleton<StartupCubit>` (session-independent): a single instance is resolved from the service locator and provided app-wide via `FinancoApp`'s `MultiBlocProvider` — see `lib/app/di/injection_container.dart` and `lib/app/app_widget.dart`.
 - The cubit holds no resources beyond a single transient stream subscription inside `_waitForAuth` (cancelled before the future resolves).
 
 ## i18n

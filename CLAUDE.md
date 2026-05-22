@@ -66,8 +66,8 @@ Each feature follows:
 | **Routing**          | go_router (declarative, path-based, shell route)                  |
 | **Database**         | Drift (local SQLite cache) + Firebase Firestore (remote)          |
 | **Auth**             | Firebase Auth + Google Sign-In                                    |
-| **AI Chat**          | Firebase AI Logic (`firebase_ai`, Vertex AI backend)              |
-| **Error handling**   | dartz Either<Failure, T> pattern                                  |
+| **AI Chat**          | Firebase Cloud Functions (`cloud_functions`) → Vertex AI Gemini server-side (callables `chatSend`, `transcribeChatAudio`) |
+| **Error handling**   | dartz Either<Failure, T> pattern (UI localises via `localizedFailure`) |
 | **Linting**          | very_good_analysis (strict)                                       |
 | **i18n**             | slang (generated in `lib/gen/`)                                   |
 | **Theme**            | Light + Dark Material 3, custom AppColors / AppTheme              |
@@ -102,7 +102,7 @@ After every code change:
 
 ## Spec-Driven Development
 
-Every feature MUST have a spec at `specs/<feature>.md` before writing new code or tests.
+Every feature MUST have a spec at `docs/specs/<feature>.md` before writing new code or tests.
 
 ### Workflow
 
@@ -198,11 +198,14 @@ Test infrastructure lives in `test/harness/`:
   `DarkPaletteCubit`, `AppLocaleCubit`, `DateFilterCubit`, `NotificationService`.
 * Session-scoped blocs/cubits that take `userId` (`DashboardBloc`,
   `TransactionsBloc`, `BillsBloc`, `BudgetsCubit`, `AccountsCubit`,
-  `CategoriesCubit`, `ProfileCubit`, `ChatBloc`) are created by the shell
-  route via `BlocProvider` — the `userId` is resolved from `AuthBloc.state`
-  at mount time and never changes during the shell's lifetime.
+  `CategoriesCubit`, `ProfileCubit`, `InvestmentsCubit`,
+  `FiftyThirtyTwentyTargetsCubit`, `DashboardAccountSelectionCubit`) are
+  created by the shell route via `BlocProvider` — the `userId` is resolved
+  from `AuthBloc.state` at mount time and never changes during the shell's
+  lifetime.
 * Form cubits and page-scoped cubits are created per use (`BlocProvider`
-  or `registerFactory`).
+  or `registerFactory`). `ChatBloc` is page-scoped: created per visit by
+  `ChatPage`, not by the shell.
 
 ---
 
@@ -224,6 +227,9 @@ accounts/{id}
 categories/{id}
 transactions/{id}
 bills/{id}
+budgets/{id}
+asset_classes/{id}
+asset_holdings/{id}
 chat_messages/{id}
 ```
 
@@ -239,12 +245,15 @@ chat_messages/{id}
 ## Firebase — Firestore Collections
 
 ```
-users/{userId}                       → name, email, photoUrl, createdAt
+users/{userId}                       → name, email, photoUrl, createdAt, fiftyThirtyTwentyTargets? { needs, wants, savings }
 users/{userId}/fcmTokens/{tokenId}   → token, platform, updatedAt
-accounts/{id}                        → userId, name, type, bank, initialBalance, creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
-categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?
+accounts/{id}                        → userId, name, type, bank, balance (Dart: initialBalance), creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
+categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?, bucket? (needs | wants), countsIn50_30_20
 transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, notes, linkedTransactionId?, createdAt, updatedAt
-bills/{id}                           → userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, createdAt, updatedAt
+bills/{id}                           → userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
+budgets/{id}                         → userId, categoryId, amount, createdAt, updatedAt
+asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt
+asset_holdings/{id}                  → userId, accountId, assetClassId, amount, notes?, updatedAt
 chat_messages/{id}                   → userId, role, content, metadata, createdAt
 ```
 
