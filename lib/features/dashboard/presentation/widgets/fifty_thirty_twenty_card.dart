@@ -1,8 +1,8 @@
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
+import 'package:financo/features/dashboard/presentation/widgets/dashboard_section.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,15 +31,25 @@ class FiftyThirtyTwentyCard extends StatelessWidget {
     // on desktop, bottom bar on mobile), so a redundant card-tap target
     // was removed. Footer CTA chips still capture their own taps for
     // category / account flows.
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
+    //
+    // Wrapped in [DashboardSection] so the title renders *above* the
+    // surface, matching the Balances / Credit Card / Expenses sections.
+    // The "100% = R$ X" baseline pill rides in the section's trailing
+    // slot — the same position those sections use for their count badge.
+    return DashboardSection(
+      label: t.fiftyThirtyTwenty.title,
+      accent: colors.primary,
+      trailing: overview.hasData && overview.income > 0
+          ? _BaselinePill(income: overview.income)
+          : null,
+      // Top the section's 8px inset up to the 16/16/16/14 the bucket rows
+      // were designed against, preserving their original spacing.
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+        child: overview.hasData
+            ? _FullLayout(overview: overview)
+            : _EmptyLayout(overview: overview),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-      child: overview.hasData
-          ? _FullLayout(overview: overview)
-          : _EmptyLayout(overview: overview),
     );
   }
 }
@@ -53,39 +63,32 @@ class _EmptyLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        const _CardHeader(),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: FaIcon(
-                  FontAwesomeIcons.chartPie,
-                  size: 14,
-                  color: colors.primary,
-                ),
-              ),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: colors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: FaIcon(
+              FontAwesomeIcons.chartPie,
+              size: 14,
+              color: colors.primary,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                t.fiftyThirtyTwenty.noIncomeHeadline,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: colors.onBackground,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            t.fiftyThirtyTwenty.noIncomeHeadline,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: colors.onBackground,
+              fontWeight: FontWeight.w500,
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -104,8 +107,6 @@ class _FullLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CardHeader(income: overview.income),
-        const SizedBox(height: 14),
         _BucketRow(
           label: t.fiftyThirtyTwenty.needsLabel,
           icon: FontAwesomeIcons.house,
@@ -144,46 +145,6 @@ class _FullLayout extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _FooterAdvice(overview: overview),
-      ],
-    );
-  }
-}
-
-class _CardHeader extends StatelessWidget {
-  const _CardHeader({this.income});
-
-  /// Period income that backs the 100% baseline. Null hides the trailing
-  /// pill — used by the empty layout where there's nothing to anchor
-  /// against.
-  final double? income;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Row(
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: colors.primary,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          t.fiftyThirtyTwenty.title.toUpperCase(),
-          style: context.textTheme.labelSmall?.copyWith(
-            color: colors.onBackgroundLight,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const Spacer(),
-        if (income != null && income! > 0) ...[
-          const SizedBox(width: 8),
-          _BaselinePill(income: income!),
-        ],
       ],
     );
   }
@@ -513,18 +474,4 @@ class _CtaChip extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Kept exported so widget tests can drive the same colour resolution
-/// the production card uses, without re-implementing the switch.
-Color resolveBucketStatusColor(
-  AppColorsData colors,
-  BucketStatus status, {
-  required Color baseColor,
-}) {
-  return switch (status) {
-    BucketStatus.onTrack => baseColor,
-    BucketStatus.over => colors.expense,
-    BucketStatus.under => colors.warning,
-  };
 }

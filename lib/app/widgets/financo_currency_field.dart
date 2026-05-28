@@ -16,6 +16,7 @@ class FinancoCurrencyField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.hintText,
+    this.autofocus = false,
     super.key,
   });
 
@@ -25,12 +26,19 @@ class FinancoCurrencyField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final String? hintText;
 
+  /// Grabs focus the moment the field mounts. Used on web so the user can
+  /// start typing the amount the instant the new-transaction form opens,
+  /// without an extra click. Off by default to avoid popping the mobile
+  /// soft keyboard on screens where the amount isn't the primary action.
+  final bool autofocus;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       validator: validator,
       onChanged: onChanged,
+      autofocus: autofocus,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [BrlCurrencyInputFormatter()],
       decoration: InputDecoration(

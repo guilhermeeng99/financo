@@ -10,7 +10,6 @@ class AppRoutes {
   static const profile = '/profile';
   static const addTransaction = '/transaction/add';
   static const importTransactions = '/transactions/import';
-  static const transactionDetail = '/transaction/:id';
   static const accounts = '/accounts';
   static const addAccount = '/accounts/add';
   static const importAccounts = '/accounts/import';
@@ -37,6 +36,5 @@ class AppRoutes {
 
   static String assetClassDetailById(String id) => '/investments/class/$id';
 
-  static String transactionById(String id) => '/transaction/$id';
   static String accountById(String id) => '/account/$id';
 }

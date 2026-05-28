@@ -290,7 +290,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
 
     if (result.isLeft()) {
-      final failure = result.fold((f) => f, (_) => throw StateError('left'));
+      final failure = result.fold((f) => f, (_) => null)!;
       log(
         'ChatBloc: AI call failed — ${failure.message}',
         name: 'ChatBloc',
@@ -321,10 +321,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       return;
     }
 
-    final response = result.fold(
-      (_) => throw StateError('right'),
-      (r) => r,
-    );
+    final response = result.fold((_) => null, (r) => r)!;
     var afterResponse = [...afterUser, response];
 
     // Preflight: validate the action against current data before showing

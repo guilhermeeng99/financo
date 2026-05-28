@@ -701,6 +701,7 @@
     "stepSyncingData": "Syncing your data",
     "stepReady": "Almost there",
     "errorTitle": "Something went wrong",
+    "errorBody": "We couldn't finish setting things up. Please try again.",
     "errorRetry": "Try again"
   },
   "investments": {

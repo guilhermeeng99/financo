@@ -62,11 +62,13 @@ export const isMasterEmail = (email?: string | null): boolean =>
     3. `categories` where `userId == targetUid`
     4. `bills` where `userId == targetUid`
     5. `budgets` where `userId == targetUid`
-    6. `chat_messages` where `userId == targetUid`
-    7. `users/{targetUid}/fcmTokens/*`
-    8. `users/{targetUid}` itself
-    9. `allowed_emails/{targetEmail}` (if present)
-    10. Firebase Auth user via `admin.auth().deleteUser(targetUid)`
+    6. `asset_classes` where `userId == targetUid`
+    7. `asset_holdings` where `userId == targetUid`
+    8. `chat_messages` where `userId == targetUid`
+    9. `users/{targetUid}/fcmTokens/*`
+    10. `users/{targetUid}` itself
+    11. `allowed_emails/{targetEmail}` (if present)
+    12. Firebase Auth user via `admin.auth().deleteUser(targetUid)`
     Each Firestore step uses batched writes of 500 (Firestore limit). All 9 Firestore steps run before the Auth delete — so a partial failure leaves the Auth user alive and a re-run cleans up. Idempotent: re-running on a partially-deleted user finishes the job without error.
 12. **Type-to-confirm** — UI requires master to type the target's email exactly (case-insensitive comparison) before the delete button enables.
 
@@ -120,7 +122,7 @@ abstract class MasterUsersRepository {
 ```
 Input:  { targetUid: string }
 Auth:   request.auth.token.email == MASTER_EMAIL  (else permission-denied)
-Output: { deletedCounts: { accounts, transactions, categories, bills, budgets, chat_messages, fcm_tokens } }
+Output: { deletedCounts: { accounts, transactions, categories, bills, budgets, asset_classes, asset_holdings, chat_messages, fcm_tokens } }
 ```
 
 Errors:
@@ -230,7 +232,7 @@ function ownsResource() {
 }
 ```
 
-Per collection (`accounts`, `transactions`, `categories`, `bills`, `budgets`, `chat_messages`):
+Per collection (`accounts`, `transactions`, `categories`, `bills`, `budgets`, `asset_classes`, `asset_holdings`, `chat_messages`):
 - `create`: `isAllowed() && request.resource.data.userId == request.auth.uid`
 - `read, update, delete`: `(isAllowed() && ownsResource()) || isMaster()`
 

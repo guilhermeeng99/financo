@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-interface PendingBill {
+export interface PendingBill {
   id: string;
   userId: string;
   description: string;
@@ -61,7 +61,7 @@ const brCurrency = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
-const buildMessage = (
+export const buildMessage = (
   bills: PendingBill[],
 ): { title: string; body: string } => {
   const today = startOfToday();

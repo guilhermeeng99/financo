@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
@@ -169,7 +170,7 @@ class _AddBillViewState extends State<_AddBillView> {
   }
 
   void _onFormStateChanged(BuildContext context, BillFormState state) {
-    if (state.status == BillFormStatus.success) {
+    if (state.status == FormStatus.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -178,7 +179,7 @@ class _AddBillViewState extends State<_AddBillView> {
         ),
       );
       context.pop(true);
-    } else if (state.status == BillFormStatus.failure) {
+    } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(localizedFailure(state.failure))),
       );
@@ -213,7 +214,7 @@ class _AddBillViewState extends State<_AddBillView> {
             }
             return FinancoSubmitBar(
               label: state.isEditing ? t.general.update : t.general.create,
-              isLoading: state.status == BillFormStatus.submitting,
+              isLoading: state.status == FormStatus.submitting,
               isEnabled: state.isValid,
               onSubmit: () => unawaited(_onSubmit()),
             );

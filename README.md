@@ -10,7 +10,7 @@ Personal finance manager for Android and Web. Natural-language data entry powere
 - **Transactions** — single-account or **transfers** (linked expense/income across two own accounts), with running balance per account.
 - **Bills** — payable or receivable, one-shot or monthly recurring; "Mark as paid" generates the corresponding transaction automatically.
 - **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories, bills) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
-- **CSV import** — bulk-create accounts, categories, and transactions from CSV files (samples shipped in `lib/app/assets/samples/`).
+- **CSV import** — bulk-create accounts, categories, transactions, bills, and budgets from CSV files (samples shipped in `lib/app/assets/samples/`).
 - **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today bills.
 
 ## Architecture

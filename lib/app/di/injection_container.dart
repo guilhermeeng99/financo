@@ -33,6 +33,7 @@ import 'package:financo/features/accounts/data/repositories/account_repository_i
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_with_dependents_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
@@ -377,6 +378,13 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => DeleteAccountUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => DeleteAccountWithDependentsUseCase(
+        transactionRepository: sl(),
+        accountRepository: sl(),
+        assetHoldingRepository: sl(),
+      ),
     )
     ..registerLazySingleton(
       () => ImportAccountsCsvUseCase(sl()),

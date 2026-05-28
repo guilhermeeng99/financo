@@ -1,5 +1,7 @@
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
+import 'package:financo/core/database/daos/asset_classes_dao.dart';
+import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
@@ -326,6 +328,10 @@ class MockAssetClassRemoteDataSource extends Mock
 
 class MockAssetHoldingRemoteDataSource extends Mock
     implements AssetHoldingRemoteDataSource {}
+
+class MockAssetClassesDao extends Mock implements AssetClassesDao {}
+
+class MockAssetHoldingsDao extends Mock implements AssetHoldingsDao {}
 
 class MockGetAssetClassesUseCase extends Mock
     implements GetAssetClassesUseCase {}

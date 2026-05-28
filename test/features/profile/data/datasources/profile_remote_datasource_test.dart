@@ -39,6 +39,10 @@ void main() {
       await seed('categories', userId);
       await seed('accounts', userId);
       await seed('budgets', userId, count: 3);
+      // Regression: asset_classes/asset_holdings were missing from the wipe
+      // list, leaving orphaned investment data live after "clear account".
+      await seed('asset_classes', userId, count: 2);
+      await seed('asset_holdings', userId, count: 4);
 
       await datasource.wipeUserData(userId);
 
@@ -48,6 +52,8 @@ void main() {
       expect(await docsFor('categories', userId), 0);
       expect(await docsFor('accounts', userId), 0);
       expect(await docsFor('budgets', userId), 0);
+      expect(await docsFor('asset_classes', userId), 0);
+      expect(await docsFor('asset_holdings', userId), 0);
     });
 
     test('does not touch documents owned by other users', () async {

@@ -100,14 +100,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<Either<Failure, void>> deleteTransaction(String id) async {
     try {
-      // Check if this is part of a transfer — delete both sides.
+      // Transfers are two linked docs — delete both legs atomically so a
+      // mid-delete failure can't leave a dangling half-transfer.
       final local = await _dao.getTransactionById(id);
-      if (local != null && local.linkedTransactionId != null) {
-        final linkedId = local.linkedTransactionId!;
-        await _remote.deleteTransaction(linkedId);
+      final linkedId = local?.linkedTransactionId;
+      if (linkedId != null) {
+        await _remote.deleteTransfer(id, linkedId);
         await _dao.deleteTransaction(linkedId);
+      } else {
+        await _remote.deleteTransaction(id);
       }
-      await _remote.deleteTransaction(id);
       await _dao.deleteTransaction(id);
       return const Right(null);
     } on ServerException catch (e) {

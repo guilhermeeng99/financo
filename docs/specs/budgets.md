@@ -491,7 +491,32 @@ a budget for an already-budgeted category.
 listens and triggers `BudgetsCubit.loadBudgets(forceRefresh: true)` so the
 budgets tab reflects the change without a manual reload.
 
-## 11. Out of Scope (V1)
+## 11. CSV Import
+
+Bulk-creates budgets from a 2-column CSV via `ImportBudgetsCsvUseCase` (wired
+through `BudgetsCubit`). Sample: `lib/app/assets/samples/budgets_example.csv`
+(`Category,Amount`).
+
+Fields are located by **header name** (accent- and case-insensitive), not by
+column position; extra/reordered columns are tolerated.
+
+| Logical field | Accepted headers (any of) | Format |
+|---|---|---|
+| category (required) | `Categoria`, `Category` | Must match an existing **root expense** category by name (case-insensitive). |
+| amount (required) | `Valor`, `Amount`, `Value`, `Cap`, `Limite`, `Monthly cap`, `Valor mensal` | Number (BR `1.234,56` or EN `1,234.56` style); must be `> 0`. |
+
+Resolution is **tolerant** — a row is *skipped* (counted in `skippedCount`, not
+fatal) when its category does not match a root expense category, already has a
+budget (uniqueness is `(userId, categoryId)`), or is duplicated earlier in the
+same file.
+
+**Strict failures** raise `ValidationFailure` and abort the whole import: a
+missing `category`/`amount` header, an invalid or zero amount, or a file with no
+valid rows.
+
+Result: `BudgetImportResult { importedCount, skippedCount }`.
+
+## 12. Out of Scope (V1)
 
 These are deliberately deferred — not because they're hard, but because each
 adds modeling complexity that's better tackled once V1 has shipped and we have

@@ -37,30 +37,30 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	TranslationsPtBr $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => TranslationsPtBr(meta: meta ?? this.$meta);
 
 	// Translations
-	@override late final _TranslationsGeneralPtBr general = _TranslationsGeneralPtBr._(_root);
-	@override late final _TranslationsErrorsPtBr errors = _TranslationsErrorsPtBr._(_root);
-	@override late final _TranslationsValidatorsPtBr validators = _TranslationsValidatorsPtBr._(_root);
-	@override late final _TranslationsAuthPtBr auth = _TranslationsAuthPtBr._(_root);
-	@override late final _TranslationsAccessControlPtBr accessControl = _TranslationsAccessControlPtBr._(_root);
-	@override late final _TranslationsMasterPanelPtBr masterPanel = _TranslationsMasterPanelPtBr._(_root);
-	@override late final _TranslationsOnboardingPtBr onboarding = _TranslationsOnboardingPtBr._(_root);
-	@override late final _TranslationsNavPtBr nav = _TranslationsNavPtBr._(_root);
-	@override late final _TranslationsDashboardPtBr dashboard = _TranslationsDashboardPtBr._(_root);
-	@override late final _TranslationsFiftyThirtyTwentyPtBr fiftyThirtyTwenty = _TranslationsFiftyThirtyTwentyPtBr._(_root);
-	@override late final _TranslationsTransactionsPtBr transactions = _TranslationsTransactionsPtBr._(_root);
-	@override late final _TranslationsAccountsPtBr accounts = _TranslationsAccountsPtBr._(_root);
-	@override late final _TranslationsCategoriesPtBr categories = _TranslationsCategoriesPtBr._(_root);
-	@override late final _TranslationsChatPtBr chat = _TranslationsChatPtBr._(_root);
-	@override late final _TranslationsBillsPtBr bills = _TranslationsBillsPtBr._(_root);
-	@override late final _TranslationsBudgetsPtBr budgets = _TranslationsBudgetsPtBr._(_root);
-	@override late final _TranslationsProfilePtBr profile = _TranslationsProfilePtBr._(_root);
-	@override late final _TranslationsStartupPtBr startup = _TranslationsStartupPtBr._(_root);
-	@override late final _TranslationsInvestmentsPtBr investments = _TranslationsInvestmentsPtBr._(_root);
+	@override late final _Translations$general$pt_BR general = _Translations$general$pt_BR._(_root);
+	@override late final _Translations$errors$pt_BR errors = _Translations$errors$pt_BR._(_root);
+	@override late final _Translations$validators$pt_BR validators = _Translations$validators$pt_BR._(_root);
+	@override late final _Translations$auth$pt_BR auth = _Translations$auth$pt_BR._(_root);
+	@override late final _Translations$accessControl$pt_BR accessControl = _Translations$accessControl$pt_BR._(_root);
+	@override late final _Translations$masterPanel$pt_BR masterPanel = _Translations$masterPanel$pt_BR._(_root);
+	@override late final _Translations$onboarding$pt_BR onboarding = _Translations$onboarding$pt_BR._(_root);
+	@override late final _Translations$nav$pt_BR nav = _Translations$nav$pt_BR._(_root);
+	@override late final _Translations$dashboard$pt_BR dashboard = _Translations$dashboard$pt_BR._(_root);
+	@override late final _Translations$fiftyThirtyTwenty$pt_BR fiftyThirtyTwenty = _Translations$fiftyThirtyTwenty$pt_BR._(_root);
+	@override late final _Translations$transactions$pt_BR transactions = _Translations$transactions$pt_BR._(_root);
+	@override late final _Translations$accounts$pt_BR accounts = _Translations$accounts$pt_BR._(_root);
+	@override late final _Translations$categories$pt_BR categories = _Translations$categories$pt_BR._(_root);
+	@override late final _Translations$chat$pt_BR chat = _Translations$chat$pt_BR._(_root);
+	@override late final _Translations$bills$pt_BR bills = _Translations$bills$pt_BR._(_root);
+	@override late final _Translations$budgets$pt_BR budgets = _Translations$budgets$pt_BR._(_root);
+	@override late final _Translations$profile$pt_BR profile = _Translations$profile$pt_BR._(_root);
+	@override late final _Translations$startup$pt_BR startup = _Translations$startup$pt_BR._(_root);
+	@override late final _Translations$investments$pt_BR investments = _Translations$investments$pt_BR._(_root);
 }
 
 // Path: general
-class _TranslationsGeneralPtBr implements TranslationsGeneralEn {
-	_TranslationsGeneralPtBr._(this._root);
+class _Translations$general$pt_BR implements Translations$general$en {
+	_Translations$general$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -88,8 +88,8 @@ class _TranslationsGeneralPtBr implements TranslationsGeneralEn {
 }
 
 // Path: errors
-class _TranslationsErrorsPtBr implements TranslationsErrorsEn {
-	_TranslationsErrorsPtBr._(this._root);
+class _Translations$errors$pt_BR implements Translations$errors$en {
+	_Translations$errors$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -102,8 +102,8 @@ class _TranslationsErrorsPtBr implements TranslationsErrorsEn {
 }
 
 // Path: validators
-class _TranslationsValidatorsPtBr implements TranslationsValidatorsEn {
-	_TranslationsValidatorsPtBr._(this._root);
+class _Translations$validators$pt_BR implements Translations$validators$en {
+	_Translations$validators$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -118,8 +118,8 @@ class _TranslationsValidatorsPtBr implements TranslationsValidatorsEn {
 }
 
 // Path: auth
-class _TranslationsAuthPtBr implements TranslationsAuthEn {
-	_TranslationsAuthPtBr._(this._root);
+class _Translations$auth$pt_BR implements Translations$auth$en {
+	_Translations$auth$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -132,8 +132,8 @@ class _TranslationsAuthPtBr implements TranslationsAuthEn {
 }
 
 // Path: accessControl
-class _TranslationsAccessControlPtBr implements TranslationsAccessControlEn {
-	_TranslationsAccessControlPtBr._(this._root);
+class _Translations$accessControl$pt_BR implements Translations$accessControl$en {
+	_Translations$accessControl$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -144,8 +144,8 @@ class _TranslationsAccessControlPtBr implements TranslationsAccessControlEn {
 }
 
 // Path: masterPanel
-class _TranslationsMasterPanelPtBr implements TranslationsMasterPanelEn {
-	_TranslationsMasterPanelPtBr._(this._root);
+class _Translations$masterPanel$pt_BR implements Translations$masterPanel$en {
+	_Translations$masterPanel$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -171,8 +171,8 @@ class _TranslationsMasterPanelPtBr implements TranslationsMasterPanelEn {
 }
 
 // Path: onboarding
-class _TranslationsOnboardingPtBr implements TranslationsOnboardingEn {
-	_TranslationsOnboardingPtBr._(this._root);
+class _Translations$onboarding$pt_BR implements Translations$onboarding$en {
+	_Translations$onboarding$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -189,8 +189,8 @@ class _TranslationsOnboardingPtBr implements TranslationsOnboardingEn {
 }
 
 // Path: nav
-class _TranslationsNavPtBr implements TranslationsNavEn {
-	_TranslationsNavPtBr._(this._root);
+class _Translations$nav$pt_BR implements Translations$nav$en {
+	_Translations$nav$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -203,8 +203,8 @@ class _TranslationsNavPtBr implements TranslationsNavEn {
 }
 
 // Path: dashboard
-class _TranslationsDashboardPtBr implements TranslationsDashboardEn {
-	_TranslationsDashboardPtBr._(this._root);
+class _Translations$dashboard$pt_BR implements Translations$dashboard$en {
+	_Translations$dashboard$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -239,8 +239,8 @@ class _TranslationsDashboardPtBr implements TranslationsDashboardEn {
 }
 
 // Path: fiftyThirtyTwenty
-class _TranslationsFiftyThirtyTwentyPtBr implements TranslationsFiftyThirtyTwentyEn {
-	_TranslationsFiftyThirtyTwentyPtBr._(this._root);
+class _Translations$fiftyThirtyTwenty$pt_BR implements Translations$fiftyThirtyTwenty$en {
+	_Translations$fiftyThirtyTwenty$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -277,8 +277,8 @@ class _TranslationsFiftyThirtyTwentyPtBr implements TranslationsFiftyThirtyTwent
 }
 
 // Path: transactions
-class _TranslationsTransactionsPtBr implements TranslationsTransactionsEn {
-	_TranslationsTransactionsPtBr._(this._root);
+class _Translations$transactions$pt_BR implements Translations$transactions$en {
+	_Translations$transactions$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -352,8 +352,8 @@ class _TranslationsTransactionsPtBr implements TranslationsTransactionsEn {
 }
 
 // Path: accounts
-class _TranslationsAccountsPtBr implements TranslationsAccountsEn {
-	_TranslationsAccountsPtBr._(this._root);
+class _Translations$accounts$pt_BR implements Translations$accounts$en {
+	_Translations$accounts$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -437,8 +437,8 @@ class _TranslationsAccountsPtBr implements TranslationsAccountsEn {
 }
 
 // Path: categories
-class _TranslationsCategoriesPtBr implements TranslationsCategoriesEn {
-	_TranslationsCategoriesPtBr._(this._root);
+class _Translations$categories$pt_BR implements Translations$categories$en {
+	_Translations$categories$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -517,8 +517,8 @@ class _TranslationsCategoriesPtBr implements TranslationsCategoriesEn {
 }
 
 // Path: chat
-class _TranslationsChatPtBr implements TranslationsChatEn {
-	_TranslationsChatPtBr._(this._root);
+class _Translations$chat$pt_BR implements Translations$chat$en {
+	_Translations$chat$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -540,15 +540,15 @@ class _TranslationsChatPtBr implements TranslationsChatEn {
 	@override String get suggestion2 => 'Quanto tenho na conta Nubank?';
 	@override String get suggestion3 => 'Mostrar minhas contas atrasadas';
 	@override String get suggestion4 => 'Criar uma categoria chamada Lazer';
-	@override late final _TranslationsChatActionPtBr action = _TranslationsChatActionPtBr._(_root);
-	@override late final _TranslationsChatAudioPtBr audio = _TranslationsChatAudioPtBr._(_root);
-	@override late final _TranslationsChatImagePtBr image = _TranslationsChatImagePtBr._(_root);
-	@override late final _TranslationsChatHandlersPtBr handlers = _TranslationsChatHandlersPtBr._(_root);
+	@override late final _Translations$chat$action$pt_BR action = _Translations$chat$action$pt_BR._(_root);
+	@override late final _Translations$chat$audio$pt_BR audio = _Translations$chat$audio$pt_BR._(_root);
+	@override late final _Translations$chat$image$pt_BR image = _Translations$chat$image$pt_BR._(_root);
+	@override late final _Translations$chat$handlers$pt_BR handlers = _Translations$chat$handlers$pt_BR._(_root);
 }
 
 // Path: bills
-class _TranslationsBillsPtBr implements TranslationsBillsEn {
-	_TranslationsBillsPtBr._(this._root);
+class _Translations$bills$pt_BR implements Translations$bills$en {
+	_Translations$bills$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -612,8 +612,8 @@ class _TranslationsBillsPtBr implements TranslationsBillsEn {
 	@override String get formDetails => 'Detalhes';
 	@override String get formClassification => 'Classificação';
 	@override String get pickCategory => 'Escolha uma categoria';
-	@override late final _TranslationsBillsNotificationPtBr notification = _TranslationsBillsNotificationPtBr._(_root);
-	@override late final _TranslationsBillsMatchPtBr match = _TranslationsBillsMatchPtBr._(_root);
+	@override late final _Translations$bills$notification$pt_BR notification = _Translations$bills$notification$pt_BR._(_root);
+	@override late final _Translations$bills$match$pt_BR match = _Translations$bills$match$pt_BR._(_root);
 	@override String get virtualBlocked => 'Pague a ocorrência atual primeiro';
 	@override String get preview => 'Pré-visualização';
 	@override String get editScopeTitle => 'Aplicar a quais ocorrências?';
@@ -632,8 +632,8 @@ class _TranslationsBillsPtBr implements TranslationsBillsEn {
 }
 
 // Path: budgets
-class _TranslationsBudgetsPtBr implements TranslationsBudgetsEn {
-	_TranslationsBudgetsPtBr._(this._root);
+class _Translations$budgets$pt_BR implements Translations$budgets$en {
+	_Translations$budgets$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -682,8 +682,8 @@ class _TranslationsBudgetsPtBr implements TranslationsBudgetsEn {
 }
 
 // Path: profile
-class _TranslationsProfilePtBr implements TranslationsProfileEn {
-	_TranslationsProfilePtBr._(this._root);
+class _Translations$profile$pt_BR implements Translations$profile$en {
+	_Translations$profile$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -726,8 +726,8 @@ class _TranslationsProfilePtBr implements TranslationsProfileEn {
 }
 
 // Path: startup
-class _TranslationsStartupPtBr implements TranslationsStartupEn {
-	_TranslationsStartupPtBr._(this._root);
+class _Translations$startup$pt_BR implements Translations$startup$en {
+	_Translations$startup$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -737,12 +737,13 @@ class _TranslationsStartupPtBr implements TranslationsStartupEn {
 	@override String get stepSyncingData => 'Sincronizando seus dados';
 	@override String get stepReady => 'Quase lá';
 	@override String get errorTitle => 'Algo deu errado';
+	@override String get errorBody => 'Não conseguimos concluir a configuração. Tente novamente.';
 	@override String get errorRetry => 'Tentar novamente';
 }
 
 // Path: investments
-class _TranslationsInvestmentsPtBr implements TranslationsInvestmentsEn {
-	_TranslationsInvestmentsPtBr._(this._root);
+class _Translations$investments$pt_BR implements Translations$investments$en {
+	_Translations$investments$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -851,8 +852,8 @@ class _TranslationsInvestmentsPtBr implements TranslationsInvestmentsEn {
 }
 
 // Path: chat.action
-class _TranslationsChatActionPtBr implements TranslationsChatActionEn {
-	_TranslationsChatActionPtBr._(this._root);
+class _Translations$chat$action$pt_BR implements Translations$chat$action$en {
+	_Translations$chat$action$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -896,8 +897,8 @@ class _TranslationsChatActionPtBr implements TranslationsChatActionEn {
 }
 
 // Path: chat.audio
-class _TranslationsChatAudioPtBr implements TranslationsChatAudioEn {
-	_TranslationsChatAudioPtBr._(this._root);
+class _Translations$chat$audio$pt_BR implements Translations$chat$audio$en {
+	_Translations$chat$audio$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -912,8 +913,8 @@ class _TranslationsChatAudioPtBr implements TranslationsChatAudioEn {
 }
 
 // Path: chat.image
-class _TranslationsChatImagePtBr implements TranslationsChatImageEn {
-	_TranslationsChatImagePtBr._(this._root);
+class _Translations$chat$image$pt_BR implements Translations$chat$image$en {
+	_Translations$chat$image$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -927,8 +928,8 @@ class _TranslationsChatImagePtBr implements TranslationsChatImageEn {
 }
 
 // Path: chat.handlers
-class _TranslationsChatHandlersPtBr implements TranslationsChatHandlersEn {
-	_TranslationsChatHandlersPtBr._(this._root);
+class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en {
+	_Translations$chat$handlers$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -1010,8 +1011,8 @@ class _TranslationsChatHandlersPtBr implements TranslationsChatHandlersEn {
 }
 
 // Path: bills.notification
-class _TranslationsBillsNotificationPtBr implements TranslationsBillsNotificationEn {
-	_TranslationsBillsNotificationPtBr._(this._root);
+class _Translations$bills$notification$pt_BR implements Translations$bills$notification$en {
+	_Translations$bills$notification$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -1022,8 +1023,8 @@ class _TranslationsBillsNotificationPtBr implements TranslationsBillsNotificatio
 }
 
 // Path: bills.match
-class _TranslationsBillsMatchPtBr implements TranslationsBillsMatchEn {
-	_TranslationsBillsMatchPtBr._(this._root);
+class _Translations$bills$match$pt_BR implements Translations$bills$match$en {
+	_Translations$bills$match$pt_BR._(this._root);
 
 	final TranslationsPtBr _root; // ignore: unused_field
 
@@ -1711,6 +1712,7 @@ extension on TranslationsPtBr {
 			'startup.stepSyncingData' => 'Sincronizando seus dados',
 			'startup.stepReady' => 'Quase lá',
 			'startup.errorTitle' => 'Algo deu errado',
+			'startup.errorBody' => 'Não conseguimos concluir a configuração. Tente novamente.',
 			'startup.errorRetry' => 'Tentar novamente',
 			'investments.title' => 'Investimentos',
 			'investments.heroTitle' => 'PATRIMÔNIO INVESTIDO',

@@ -27,9 +27,6 @@ String formatMonthYear(DateTime date, {String? locale}) =>
 String formatDayMonth(DateTime date, {String? locale}) =>
     DateFormat.Md(locale ?? _currentLocaleTag()).format(date);
 
-/// Time-of-day in 24-hour notation (locale-independent in this app).
-String formatTime(DateTime date) => DateFormat('HH:mm').format(date);
-
 DateTime startOfMonth(DateTime date) => DateTime(date.year, date.month);
 
 DateTime endOfMonth(DateTime date) =>

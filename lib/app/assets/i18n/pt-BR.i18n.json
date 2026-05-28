@@ -701,6 +701,7 @@
     "stepSyncingData": "Sincronizando seus dados",
     "stepReady": "Quase lá",
     "errorTitle": "Algo deu errado",
+    "errorBody": "Não conseguimos concluir a configuração. Tente novamente.",
     "errorRetry": "Tentar novamente"
   },
   "investments": {

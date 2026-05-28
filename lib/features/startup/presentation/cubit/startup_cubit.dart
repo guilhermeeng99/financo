@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/sync/sync_service.dart';
@@ -18,12 +19,7 @@ class StartupCubit extends Cubit<StartupState> {
   final SyncService _syncService;
 
   Future<void> initialize() async {
-    emit(
-      const StartupLoading(
-        step: 'Checking authentication...',
-        progress: 0,
-      ),
-    );
+    emit(const StartupLoading(progress: 0));
 
     final isAuthenticated = await _waitForAuth();
 
@@ -34,12 +30,7 @@ class StartupCubit extends Cubit<StartupState> {
 
     final authState = _authBloc.state as Authenticated;
 
-    emit(
-      const StartupLoading(
-        step: 'Syncing data...',
-        progress: 0.3,
-      ),
-    );
+    emit(const StartupLoading(progress: 0.3));
 
     try {
       await _syncService.fullSync(
@@ -47,8 +38,16 @@ class StartupCubit extends Cubit<StartupState> {
         user: authState.user,
       );
       emit(StartupAuthenticated(userId: authState.user.id));
-    } on Exception catch (e) {
-      emit(StartupError(e.toString()));
+    } on Exception catch (e, st) {
+      // Log the raw cause for diagnostics, but never surface the exception
+      // string to the user — the page renders a localized message instead.
+      log(
+        'startup sync failed',
+        name: 'StartupCubit',
+        error: e,
+        stackTrace: st,
+      );
+      emit(const StartupError());
     }
   }
 
@@ -83,16 +82,12 @@ final class StartupInitial extends StartupState {
 }
 
 final class StartupLoading extends StartupState {
-  const StartupLoading({
-    required this.step,
-    required this.progress,
-  });
+  const StartupLoading({required this.progress});
 
-  final String step;
   final double progress;
 
   @override
-  List<Object> get props => [step, progress];
+  List<Object> get props => [progress];
 }
 
 final class StartupAuthenticated extends StartupState {
@@ -109,10 +104,5 @@ final class StartupUnauthenticated extends StartupState {
 }
 
 final class StartupError extends StartupState {
-  const StartupError(this.message);
-
-  final String message;
-
-  @override
-  List<Object> get props => [message];
+  const StartupError();
 }

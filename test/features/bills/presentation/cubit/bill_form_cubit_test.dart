@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
@@ -125,7 +126,7 @@ void main() {
         await cubit.submit();
       },
       verify: (cubit) {
-        expect(cubit.state.status, BillFormStatus.success);
+        expect(cubit.state.status, FormStatus.success);
         verify(() => createBill(any())).called(1);
       },
     );

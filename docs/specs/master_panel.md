@@ -65,7 +65,7 @@ The master identity is **derived from `email`**, not persisted as a flag on
    NOT sign the existing user out — it only blocks future sign-ins.
 3. **Deleting a user is irreversible.** Triggers the
    `deleteUserAsAdmin` Cloud Function which:
-   - Removes every document owned by that `userId` across the six
+   - Removes every document owned by that `userId` across the eight
      user-scoped collections (mirrors `clearAccountData`)
    - Deletes the `users/{id}` document itself
    - Deletes the Firebase Auth account
