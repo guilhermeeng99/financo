@@ -13,7 +13,7 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
-import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/delete_account_with_dependents_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
@@ -23,8 +23,6 @@ import 'package:financo/features/accounts/presentation/widgets/linked_account_pi
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
-import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
-import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -125,33 +123,25 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
     if (!confirmed || !mounted) return;
 
-    final getTransactions = GetIt.I<GetTransactionsUseCase>();
-    final deleteTransaction = GetIt.I<DeleteTransactionUseCase>();
-    final deleteAccount = GetIt.I<DeleteAccountUseCase>();
-
-    final txResult = await getTransactions(
+    final result = await GetIt.I<DeleteAccountWithDependentsUseCase>()(
       userId: userId,
       accountId: accountId,
     );
-    await txResult.fold(
-      (_) async {},
-      (transactions) async {
-        await Future.wait(
-          transactions.map((tx) => deleteTransaction(tx.id)),
+    if (!mounted) return;
+    result.fold(
+      (failure) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizedFailure(failure))),
+      ),
+      (_) {
+        // Refresh the shell-scoped investments state so a deleted account's
+        // holdings drop out of the overview. Fire-and-forget — the cubit
+        // outlives this page.
+        unawaited(
+          context.read<InvestmentsCubit>().refresh(forceRefresh: true),
         );
+        context.pop(true);
       },
     );
-
-    await deleteAccount(accountId);
-    if (!mounted) return;
-    // Cascade-delete any investment holdings still pointing at this
-    // account (rule 6 of docs/specs/investments.md). Best-effort — the
-    // account delete already succeeded, so a failure here only leaves
-    // orphan holdings that the overview filters out.
-    unawaited(
-      context.read<InvestmentsCubit>().removeHoldingsForAccount(accountId),
-    );
-    context.pop(true);
   }
 
   Future<void> _pickClosingDay() async {

@@ -197,7 +197,13 @@ actual < target.
    - The result is clamped to `≥ 0` in the overview (negative net flow
      means the user took out more than they put in this month — we
      surface savings as `0` so the percentage doesn't go negative).
-5. **Targets are fixed**: 50 / 30 / 20. No customisation in V1.
+5. **Targets are customisable**: defaults are 50 / 30 / 20, but the user can
+   set custom needs/wants/savings splits via `FiftyThirtyTwentyTargets`
+   (persisted under `users/{id}.fiftyThirtyTwentyTargets`). The split must be
+   non-negative and sum to ~1.0 (`FiftyThirtyTwentyTargets.isValid`, enforced
+   by `UpdateFiftyThirtyTwentyTargetsUseCase` before any write). Bucket
+   status (under / over) is computed against the active targets, not a fixed
+   50 / 30 / 20.
 6. **A transaction with `categoryId` pointing to an income category but
    typed as expense is data drift** — excluded from any bucket
    (filtered out at rule 2).
@@ -247,7 +253,10 @@ Inputs:
     accountTypeById : Map<String, AccountType>
 
   Steps:
-    1. income = sum(t.amount where t.type == income && !t.isTransfer)
+    1. income = sum(t.amount where t.type == income && !t.isTransfer
+                    && rootCategoryOf(t).countsIn50_30_20)
+       # income categories (resolved to their root parent) may opt out of the
+       # 50/30/20 base via countsIn50_30_20 == false — see rule 1 / _sumIncome
 
     2. needsSpent, wantsSpent, unclassifiedSpent, unclassifiedCatIds : initialise to 0 / {}
        for each t in periodTransactions where t.type == expense && !t.isTransfer:
@@ -522,7 +531,6 @@ explicit verification, see §10).
 Deferred — each adds complexity that's better tackled after V1 ships
 and we have real usage signal:
 
-- **Custom targets** (e.g., 60/20/20 or 70/20/10).
 - **Per-month history** ("how did I do in March?"). The dashboard's
   month stepper already controls the period, so this works passively —
   but a dedicated trend view (last 6 months at a glance) is V2.

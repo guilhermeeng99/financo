@@ -17,6 +17,8 @@ interface DeletedCounts {
   categories: number;
   bills: number;
   budgets: number;
+  asset_classes: number;
+  asset_holdings: number;
   chat_messages: number;
   fcm_tokens: number;
 }
@@ -26,12 +28,19 @@ interface DeleteUserAsAdminResponse {
 }
 
 const FIRESTORE_BATCH_LIMIT = 500;
-const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
+
+// Every top-level collection scoped by `userId` that a full user delete must
+// sweep. Exported so a test can assert none are forgotten (a missing entry
+// orphans that collection's docs after a delete). Keep in sync with the
+// Flutter clear-account-data path and firestore.rules.
+export const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
   'accounts',
   'transactions',
   'categories',
   'bills',
   'budgets',
+  'asset_classes',
+  'asset_holdings',
   'chat_messages',
 ];
 
@@ -45,11 +54,13 @@ const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
  *   3. categories where userId == targetUid
  *   4. bills where userId == targetUid
  *   5. budgets where userId == targetUid
- *   6. chat_messages where userId == targetUid
- *   7. users/{targetUid}/fcmTokens/* (subcollection)
- *   8. users/{targetUid}
- *   9. allowed_emails/{targetEmail} if present
- *  10. Firebase Auth user (admin.auth().deleteUser)
+ *   6. asset_classes where userId == targetUid
+ *   7. asset_holdings where userId == targetUid
+ *   8. chat_messages where userId == targetUid
+ *   9. users/{targetUid}/fcmTokens/* (subcollection)
+ *  10. users/{targetUid}
+ *  11. allowed_emails/{targetEmail} if present
+ *  12. Firebase Auth user (admin.auth().deleteUser)
  */
 export async function deleteUserAsAdmin(
   data: DeleteUserAsAdminRequest,
@@ -94,6 +105,8 @@ export async function deleteUserAsAdmin(
     categories: 0,
     bills: 0,
     budgets: 0,
+    asset_classes: 0,
+    asset_holdings: 0,
     chat_messages: 0,
     fcm_tokens: 0,
   };

@@ -1,12 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/bills/domain/entities/bill_entity.dart';
 import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
 import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-enum BillFormStatus { initial, submitting, success, failure }
 
 class BillFormCubit extends Cubit<BillFormState> {
   BillFormCubit({
@@ -62,7 +61,7 @@ class BillFormCubit extends Cubit<BillFormState> {
     BillEditScope scope = BillEditScope.onlyThis,
   }) async {
     if (!state.isValid) return;
-    emit(state.copyWith(status: BillFormStatus.submitting));
+    emit(state.copyWith(status: FormStatus.submitting));
 
     final now = DateTime.now();
     final bill = BillEntity(
@@ -89,11 +88,11 @@ class BillFormCubit extends Cubit<BillFormState> {
         .fold(
           (failure) => emit(
             state.copyWith(
-              status: BillFormStatus.failure,
+              status: FormStatus.failure,
               failure: failure,
             ),
           ),
-          (_) => emit(state.copyWith(status: BillFormStatus.success)),
+          (_) => emit(state.copyWith(status: FormStatus.success)),
         );
   }
 }
@@ -133,7 +132,7 @@ class BillFormState extends Equatable {
       recurrence: existing?.recurrence ?? BillRecurrence.oneShot,
       notes: existing?.notes ?? '',
       categoryId: existing?.categoryId,
-      status: BillFormStatus.initial,
+      status: FormStatus.initial,
       existingId: existing?.id,
       existingStatus: existing?.status,
       existingPaidAt: existing?.paidAt,
@@ -151,7 +150,7 @@ class BillFormState extends Equatable {
   final BillRecurrence recurrence;
   final String? categoryId;
   final String notes;
-  final BillFormStatus status;
+  final FormStatus status;
   final String? existingId;
   final BillStatus? existingStatus;
   final DateTime? existingPaidAt;
@@ -182,7 +181,7 @@ class BillFormState extends Equatable {
     String? categoryId,
     bool clearCategory = false,
     String? notes,
-    BillFormStatus? status,
+    FormStatus? status,
     Failure? failure,
   }) {
     return BillFormState(

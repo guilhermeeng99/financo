@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/bills/data/models/bill_model.dart';
 import 'package:financo/features/bills/data/repositories/bill_repository_impl.dart';
@@ -86,6 +87,33 @@ void main() {
       expect(captured.accountId, 'acc-checking');
       expect(captured.categoryId, 'cat-bills');
       expect(captured.type, TransactionType.expense);
+    });
+
+    test('rolls back the created transaction when settling fails', () async {
+      // Regression: payBill created the tx before settling the bill, so a
+      // settle failure left an orphan transaction while the bill stayed
+      // pending — the user retries and double-pays. The orphan must be
+      // deleted so a retry starts clean.
+      when(() => dao.getBillById('bill-1')).thenAnswer((_) async => bill);
+
+      final orphan = TransactionFactory.expense(id: 'tx-orphan', amount: 200);
+      when(() => transactionRepo.createTransaction(any())).thenAnswer(
+        (_) async => Right<Failure, TransactionEntity>(orphan),
+      );
+      // Settle fails: remote.updateBill throws → updateBill returns Left.
+      when(() => remote.updateBill(any())).thenThrow(const ServerException());
+      when(() => transactionRepo.deleteTransaction(any())).thenAnswer(
+        (_) async => const Right<Failure, void>(null),
+      );
+
+      final result = await repository.payBill(
+        billId: 'bill-1',
+        accountId: 'acc-checking',
+        categoryId: 'cat-bills',
+      );
+
+      expect(result.isLeft(), isTrue);
+      verify(() => transactionRepo.deleteTransaction('tx-orphan')).called(1);
     });
 
     test('rejects when bill is already paid', () async {

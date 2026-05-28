@@ -204,9 +204,7 @@ class _ProgressBlock extends StatelessWidget {
     return BlocBuilder<StartupCubit, StartupState>(
       builder: (context, state) {
         if (state is StartupError) {
-          return _ErrorBlock(message: state.message)
-              .animate()
-              .fadeIn(duration: 300.ms);
+          return const _ErrorBlock().animate().fadeIn(duration: 300.ms);
         }
         final progress = switch (state) {
           StartupLoading() => state.progress,
@@ -242,9 +240,9 @@ class _ProgressBlock extends StatelessWidget {
 
   static String _stepLabelFor(StartupState state) {
     if (state is StartupLoading) {
-      // The cubit emits two specific step strings; we map them to localized
-      // labels here so the UI stays decoupled from copy in the cubit (which
-      // is asserted by tests).
+      // Label is derived from the cubit's progress value, keeping all
+      // user-facing copy localized in the UI layer (the cubit carries no
+      // strings).
       if (state.progress >= 0.3) return t.startup.stepSyncingData;
       return t.startup.stepCheckingAuth;
     }
@@ -306,9 +304,7 @@ class _ProgressBar extends StatelessWidget {
 }
 
 class _ErrorBlock extends StatelessWidget {
-  const _ErrorBlock({required this.message});
-
-  final String message;
+  const _ErrorBlock();
 
   @override
   Widget build(BuildContext context) {
@@ -343,7 +339,7 @@ class _ErrorBlock extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            message,
+            t.startup.errorBody,
             textAlign: TextAlign.center,
             style: context.textTheme.bodySmall?.copyWith(
               color: colors.onBackgroundLight,

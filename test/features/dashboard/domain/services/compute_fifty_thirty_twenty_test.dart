@@ -458,6 +458,23 @@ void main() {
       expect(out.savingsAmount, 1000);
     });
 
+    test('half-pair (linked leg outside the window) is ignored', () {
+      // Only the checking → investment expense leg falls in the period; its
+      // linked income leg is outside the window, so the pair can't be
+      // resolved and must NOT be counted as savings (mate == null branch).
+      final transfer = TransactionFactory.transfer(
+        sourceAccountId: checking.id,
+        destinationAccountId: investment.id,
+        amount: 1000,
+      );
+      final out = compute50_30_20Overview(
+        periodTransactions: [transfer.expense],
+        categories: const [],
+        accounts: [checking, investment],
+      );
+      expect(out.savingsAmount, 0);
+    });
+
     test('resgate (investment → checking) subtracts', () {
       final deposit = TransactionFactory.transfer(
         expenseId: 'tx-dep-exp',

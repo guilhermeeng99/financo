@@ -61,7 +61,13 @@
       "Bash(grep -E \"\\\\.\\(env|key|pem|p12|keystore|json\\)$\")",
       "Bash(npm --prefix functions run build)",
       "Bash(npm --prefix functions run lint)",
-      "Bash(npm --prefix functions test)"
+      "Bash(npm --prefix functions test)",
+      "Bash(rtk git *)",
+      "Bash(flutter --version)",
+      "Bash(flutter devices *)",
+      "Bash(flutter run *)",
+      "Bash(flutter run)",
+      "Bash(rtk read *)"
     ]
   }
 }

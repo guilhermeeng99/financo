@@ -177,7 +177,7 @@ void main() {
     });
 
     test(
-      'initialize emits StartupLoading with checking auth step first',
+      'initialize emits StartupLoading at progress 0 first',
       () async {
         final user = UserFactory.entity();
         final states = <StartupState>[];
@@ -204,18 +204,14 @@ void main() {
         expect(states.length, greaterThanOrEqualTo(2));
         final checkingState = states.first;
         expect(checkingState, isA<StartupLoading>());
-        expect(
-          (checkingState as StartupLoading).step,
-          'Checking authentication...',
-        );
-        expect(checkingState.progress, 0);
+        expect((checkingState as StartupLoading).progress, 0);
 
         addTearDown(cubit.close);
       },
     );
 
     test(
-      'emits StartupLoading with syncing step before completing',
+      'emits StartupLoading at progress 0.3 before completing',
       () async {
         final user = UserFactory.entity();
         final states = <StartupState>[];
@@ -240,7 +236,7 @@ void main() {
         await cubit.initialize();
 
         final syncState = states.whereType<StartupLoading>().where(
-          (s) => s.step == 'Syncing data...',
+          (s) => s.progress == 0.3,
         );
         expect(syncState, isNotEmpty);
         expect(syncState.first.progress, 0.3);

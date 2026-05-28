@@ -258,26 +258,28 @@ void main() {
       verify(() => mockDao.deleteTransaction(txId)).called(1);
     });
 
-    test('should cascade delete both sides of a transfer', () async {
+    test('should cascade delete both sides of a transfer atomically',
+        () async {
       final pair = TransactionFactory.transfer();
       when(
         () => mockDao.getTransactionById(pair.expense.id),
       ).thenAnswer((_) async => pair.expense);
-      when(() => mockRemote.deleteTransaction(any())).thenAnswer((_) async {});
+      when(
+        () => mockRemote.deleteTransfer(any(), any()),
+      ).thenAnswer((_) async {});
       when(() => mockDao.deleteTransaction(any())).thenAnswer((_) async {});
 
       final result = await repository.deleteTransaction(pair.expense.id);
 
       expect(result, const Right<Failure, void>(null));
-      // Deletes linked (income) first, then the requested (expense).
+      // Both remote legs go in a single atomic deleteTransfer call — never
+      // two separate deleteTransaction round-trips that could half-fail.
       verify(
-        () => mockRemote.deleteTransaction(pair.income.id),
+        () => mockRemote.deleteTransfer(pair.expense.id, pair.income.id),
       ).called(1);
+      verifyNever(() => mockRemote.deleteTransaction(any()));
       verify(
         () => mockDao.deleteTransaction(pair.income.id),
-      ).called(1);
-      verify(
-        () => mockRemote.deleteTransaction(pair.expense.id),
       ).called(1);
       verify(
         () => mockDao.deleteTransaction(pair.expense.id),

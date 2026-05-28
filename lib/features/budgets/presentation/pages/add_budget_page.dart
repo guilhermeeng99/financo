@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
@@ -129,7 +130,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
   }
 
   void _onFormStateChanged(BuildContext context, BudgetFormState state) {
-    if (state.status == BudgetFormStatus.success) {
+    if (state.status == FormStatus.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -140,7 +141,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
         ),
       );
       context.pop(true);
-    } else if (state.status == BudgetFormStatus.failure) {
+    } else if (state.status == FormStatus.failure) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(localizedFailure(state.failure))),
       );
@@ -216,7 +217,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
         bottomNavigationBar: BlocBuilder<BudgetFormCubit, BudgetFormState>(
           builder: (context, state) => FinancoSubmitBar(
             label: state.isEditing ? t.general.update : t.general.create,
-            isLoading: state.status == BudgetFormStatus.submitting,
+            isLoading: state.status == FormStatus.submitting,
             isEnabled: state.isValid,
             onSubmit: _onSubmit,
           ),

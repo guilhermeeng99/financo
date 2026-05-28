@@ -214,10 +214,21 @@ class BillRepositoryImpl implements BillRepository {
         updatedAt: now,
       );
       final txResult = await _transactionRepository.createTransaction(tx);
-      return txResult.fold(
-        Left.new,
-        (createdTx) => _settleBillAgainstTransaction(bill: bill, tx: createdTx),
-      );
+      return txResult.fold(Left.new, (createdTx) async {
+        final settleResult = await _settleBillAgainstTransaction(
+          bill: bill,
+          tx: createdTx,
+        );
+        // Compensating action: if the bill failed to flip to paid, the
+        // transaction we just created is an orphan. Without rollback the
+        // user sees "payment failed", retries, and pays twice (two tx, one
+        // bill) — the status==paid idempotency guard never trips because
+        // the bill stayed pending. Best-effort delete keeps a retry clean.
+        if (settleResult.isLeft()) {
+          await _transactionRepository.deleteTransaction(createdTx.id);
+        }
+        return settleResult;
+      });
     });
   }
 

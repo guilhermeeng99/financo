@@ -1,12 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-enum BudgetFormStatus { initial, submitting, success, failure }
 
 /// Form state for creating or editing a budget. The `categoryId` selector is
 /// hidden in edit mode (immutable post-creation per spec rule 3).
@@ -35,7 +34,7 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
 
   Future<void> submit() async {
     if (!state.isValid) return;
-    emit(state.copyWith(status: BudgetFormStatus.submitting));
+    emit(state.copyWith(status: FormStatus.submitting));
 
     final now = DateTime.now();
     final budget = BudgetEntity(
@@ -53,11 +52,11 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
         .fold(
           (failure) => emit(
             state.copyWith(
-              status: BudgetFormStatus.failure,
+              status: FormStatus.failure,
               failure: failure,
             ),
           ),
-          (_) => emit(state.copyWith(status: BudgetFormStatus.success)),
+          (_) => emit(state.copyWith(status: FormStatus.success)),
         );
   }
 }
@@ -80,7 +79,7 @@ class BudgetFormState extends Equatable {
     return BudgetFormState(
       userId: userId,
       amount: existing?.amount ?? 0,
-      status: BudgetFormStatus.initial,
+      status: FormStatus.initial,
       categoryId: existing?.categoryId,
       existingId: existing?.id,
       existingCreatedAt: existing?.createdAt,
@@ -90,7 +89,7 @@ class BudgetFormState extends Equatable {
   final String userId;
   final String? categoryId;
   final double amount;
-  final BudgetFormStatus status;
+  final FormStatus status;
   final String? existingId;
   final DateTime? existingCreatedAt;
   final Failure? failure;
@@ -107,7 +106,7 @@ class BudgetFormState extends Equatable {
     String? categoryId,
     bool clearCategory = false,
     double? amount,
-    BudgetFormStatus? status,
+    FormStatus? status,
     Failure? failure,
   }) {
     return BudgetFormState(

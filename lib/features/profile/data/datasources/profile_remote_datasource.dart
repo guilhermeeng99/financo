@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/core/database/firestore_batch.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
@@ -28,6 +29,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     'categories',
     'accounts',
     'budgets',
+    'asset_classes',
+    'asset_holdings',
   ];
 
   @override
@@ -69,10 +72,12 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
     if (snapshot.docs.isEmpty) return;
 
-    final batch = _firestore.batch();
-    for (final doc in snapshot.docs) {
-      batch.delete(doc.reference);
-    }
-    await batch.commit();
+    // Chunked: a user with >500 docs in one collection would otherwise blow
+    // the Firestore 500-op batch cap, leaving the wipe partial.
+    await commitInBatches(
+      firestore: _firestore,
+      docs: snapshot.docs,
+      operation: (batch, doc) => batch.delete(doc.reference),
+    );
   }
 }

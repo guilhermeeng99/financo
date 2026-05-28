@@ -255,6 +255,34 @@ submit():
 - **Filter `status: paid`** — Drift query restricts; sorted by `paidAt` desc when set, else by `updatedAt` desc.
 - **Offline create** — same as transactions: write fails, returns `ServerFailure`. Sync layer doesn't queue (out of scope).
 
+## CSV Import
+
+Bulk-creates bills from a CSV via `ImportBillsCsvUseCase` (wired through
+`BillsBloc`). Sample: `lib/app/assets/samples/bills_example.csv`
+(`Type,Description,Amount,Due Date,Status,Recurrence,Category,Notes`).
+
+Fields are located by **header name** (accent- and case-insensitive), not by
+column position; extra/reordered columns are tolerated.
+
+| Logical field | Accepted headers (any of) | Format / accepted values |
+|---|---|---|
+| type (required) | `Tipo`, `Type`, `Kind` | `Payable`/`A pagar`/`Pagável` → `payable`; `Receivable`/`A receber` → `receivable`. Empty or unrecognized **aborts** the import. |
+| description (required) | `Descrição`, `Description`, `Memo` | Free text; an empty cell aborts the import. |
+| amount (required) | `Valor`, `Amount`, `Value` | Number (BR or EN decimal style); must be `> 0`. |
+| due date (required) | `Data`, `Date`, `Vencimento`, `Due date`, `Due` | `DD/MM/YYYY`. |
+| status (optional) | `Status`, `Situação`, `State` | `Pending`/`Pendente`/`Open` → pending (default when empty); `Paid`/`Paga`/`Received`/`Recebida`/`Settled` → paid. |
+| recurrence (optional) | `Recorrência`, `Recurrence`, `Mensal`, `Recorrente` | `Monthly`/`Mensal`/`Recurring` → monthly; `One-time`/`Única`/`Single` → oneShot (default when empty). |
+| category (optional) | `Categoria`, `Category` | Name; supports `Parent/Sub` (the `/` split ignores spaced slashes like `P/L`). A row whose category can't be resolved is **skipped** (`skippedCount`), not fatal. |
+| notes (optional) | `Observações`, `Notes`, `Note` | Free text. |
+
+**Strict failures** raise `ValidationFailure` and abort the import: a missing
+required header (`type`/`description`/`amount`/`date`), an invalid
+type/status/recurrence value, a zero/negative amount, a bad date, or a file with
+no valid rows. Unresolved categories are tolerant (skipped, surfaced via
+`skippedCount`).
+
+Result: `BillImportResult { importedCount, skippedCount }`.
+
 ## Firestore
 
 **Collection:** `bills/{id}`

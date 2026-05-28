@@ -40,30 +40,30 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	Translations $copyWith({TranslationMetadata<AppLocale, Translations>? meta}) => Translations(meta: meta ?? this.$meta);
 
 	// Translations
-	late final TranslationsGeneralEn general = TranslationsGeneralEn._(_root);
-	late final TranslationsErrorsEn errors = TranslationsErrorsEn._(_root);
-	late final TranslationsValidatorsEn validators = TranslationsValidatorsEn._(_root);
-	late final TranslationsAuthEn auth = TranslationsAuthEn._(_root);
-	late final TranslationsAccessControlEn accessControl = TranslationsAccessControlEn._(_root);
-	late final TranslationsMasterPanelEn masterPanel = TranslationsMasterPanelEn._(_root);
-	late final TranslationsOnboardingEn onboarding = TranslationsOnboardingEn._(_root);
-	late final TranslationsNavEn nav = TranslationsNavEn._(_root);
-	late final TranslationsDashboardEn dashboard = TranslationsDashboardEn._(_root);
-	late final TranslationsFiftyThirtyTwentyEn fiftyThirtyTwenty = TranslationsFiftyThirtyTwentyEn._(_root);
-	late final TranslationsTransactionsEn transactions = TranslationsTransactionsEn._(_root);
-	late final TranslationsAccountsEn accounts = TranslationsAccountsEn._(_root);
-	late final TranslationsCategoriesEn categories = TranslationsCategoriesEn._(_root);
-	late final TranslationsChatEn chat = TranslationsChatEn._(_root);
-	late final TranslationsBillsEn bills = TranslationsBillsEn._(_root);
-	late final TranslationsBudgetsEn budgets = TranslationsBudgetsEn._(_root);
-	late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
-	late final TranslationsStartupEn startup = TranslationsStartupEn._(_root);
-	late final TranslationsInvestmentsEn investments = TranslationsInvestmentsEn._(_root);
+	late final Translations$general$en general = Translations$general$en._(_root);
+	late final Translations$errors$en errors = Translations$errors$en._(_root);
+	late final Translations$validators$en validators = Translations$validators$en._(_root);
+	late final Translations$auth$en auth = Translations$auth$en._(_root);
+	late final Translations$accessControl$en accessControl = Translations$accessControl$en._(_root);
+	late final Translations$masterPanel$en masterPanel = Translations$masterPanel$en._(_root);
+	late final Translations$onboarding$en onboarding = Translations$onboarding$en._(_root);
+	late final Translations$nav$en nav = Translations$nav$en._(_root);
+	late final Translations$dashboard$en dashboard = Translations$dashboard$en._(_root);
+	late final Translations$fiftyThirtyTwenty$en fiftyThirtyTwenty = Translations$fiftyThirtyTwenty$en._(_root);
+	late final Translations$transactions$en transactions = Translations$transactions$en._(_root);
+	late final Translations$accounts$en accounts = Translations$accounts$en._(_root);
+	late final Translations$categories$en categories = Translations$categories$en._(_root);
+	late final Translations$chat$en chat = Translations$chat$en._(_root);
+	late final Translations$bills$en bills = Translations$bills$en._(_root);
+	late final Translations$budgets$en budgets = Translations$budgets$en._(_root);
+	late final Translations$profile$en profile = Translations$profile$en._(_root);
+	late final Translations$startup$en startup = Translations$startup$en._(_root);
+	late final Translations$investments$en investments = Translations$investments$en._(_root);
 }
 
 // Path: general
-class TranslationsGeneralEn {
-	TranslationsGeneralEn._(this._root);
+class Translations$general$en {
+	Translations$general$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -131,8 +131,8 @@ class TranslationsGeneralEn {
 }
 
 // Path: errors
-class TranslationsErrorsEn {
-	TranslationsErrorsEn._(this._root);
+class Translations$errors$en {
+	Translations$errors$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -155,8 +155,8 @@ class TranslationsErrorsEn {
 }
 
 // Path: validators
-class TranslationsValidatorsEn {
-	TranslationsValidatorsEn._(this._root);
+class Translations$validators$en {
+	Translations$validators$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -185,8 +185,8 @@ class TranslationsValidatorsEn {
 }
 
 // Path: auth
-class TranslationsAuthEn {
-	TranslationsAuthEn._(this._root);
+class Translations$auth$en {
+	Translations$auth$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -209,8 +209,8 @@ class TranslationsAuthEn {
 }
 
 // Path: accessControl
-class TranslationsAccessControlEn {
-	TranslationsAccessControlEn._(this._root);
+class Translations$accessControl$en {
+	Translations$accessControl$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -227,8 +227,8 @@ class TranslationsAccessControlEn {
 }
 
 // Path: masterPanel
-class TranslationsMasterPanelEn {
-	TranslationsMasterPanelEn._(this._root);
+class Translations$masterPanel$en {
+	Translations$masterPanel$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -290,8 +290,8 @@ class TranslationsMasterPanelEn {
 }
 
 // Path: onboarding
-class TranslationsOnboardingEn {
-	TranslationsOnboardingEn._(this._root);
+class Translations$onboarding$en {
+	Translations$onboarding$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -326,8 +326,8 @@ class TranslationsOnboardingEn {
 }
 
 // Path: nav
-class TranslationsNavEn {
-	TranslationsNavEn._(this._root);
+class Translations$nav$en {
+	Translations$nav$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -350,8 +350,8 @@ class TranslationsNavEn {
 }
 
 // Path: dashboard
-class TranslationsDashboardEn {
-	TranslationsDashboardEn._(this._root);
+class Translations$dashboard$en {
+	Translations$dashboard$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -440,8 +440,8 @@ class TranslationsDashboardEn {
 }
 
 // Path: fiftyThirtyTwenty
-class TranslationsFiftyThirtyTwentyEn {
-	TranslationsFiftyThirtyTwentyEn._(this._root);
+class Translations$fiftyThirtyTwenty$en {
+	Translations$fiftyThirtyTwenty$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -536,8 +536,8 @@ class TranslationsFiftyThirtyTwentyEn {
 }
 
 // Path: transactions
-class TranslationsTransactionsEn {
-	TranslationsTransactionsEn._(this._root);
+class Translations$transactions$en {
+	Translations$transactions$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -743,8 +743,8 @@ class TranslationsTransactionsEn {
 }
 
 // Path: accounts
-class TranslationsAccountsEn {
-	TranslationsAccountsEn._(this._root);
+class Translations$accounts$en {
+	Translations$accounts$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -980,8 +980,8 @@ class TranslationsAccountsEn {
 }
 
 // Path: categories
-class TranslationsCategoriesEn {
-	TranslationsCategoriesEn._(this._root);
+class Translations$categories$en {
+	Translations$categories$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1202,8 +1202,8 @@ class TranslationsCategoriesEn {
 }
 
 // Path: chat
-class TranslationsChatEn {
-	TranslationsChatEn._(this._root);
+class Translations$chat$en {
+	Translations$chat$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1260,15 +1260,15 @@ class TranslationsChatEn {
 	/// en: 'Create a category called Leisure'
 	String get suggestion4 => 'Create a category called Leisure';
 
-	late final TranslationsChatActionEn action = TranslationsChatActionEn._(_root);
-	late final TranslationsChatAudioEn audio = TranslationsChatAudioEn._(_root);
-	late final TranslationsChatImageEn image = TranslationsChatImageEn._(_root);
-	late final TranslationsChatHandlersEn handlers = TranslationsChatHandlersEn._(_root);
+	late final Translations$chat$action$en action = Translations$chat$action$en._(_root);
+	late final Translations$chat$audio$en audio = Translations$chat$audio$en._(_root);
+	late final Translations$chat$image$en image = Translations$chat$image$en._(_root);
+	late final Translations$chat$handlers$en handlers = Translations$chat$handlers$en._(_root);
 }
 
 // Path: bills
-class TranslationsBillsEn {
-	TranslationsBillsEn._(this._root);
+class Translations$bills$en {
+	Translations$bills$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1451,8 +1451,8 @@ class TranslationsBillsEn {
 	/// en: 'Choose a category'
 	String get pickCategory => 'Choose a category';
 
-	late final TranslationsBillsNotificationEn notification = TranslationsBillsNotificationEn._(_root);
-	late final TranslationsBillsMatchEn match = TranslationsBillsMatchEn._(_root);
+	late final Translations$bills$notification$en notification = Translations$bills$notification$en._(_root);
+	late final Translations$bills$match$en match = Translations$bills$match$en._(_root);
 
 	/// en: 'Pay the current occurrence first'
 	String get virtualBlocked => 'Pay the current occurrence first';
@@ -1501,8 +1501,8 @@ class TranslationsBillsEn {
 }
 
 // Path: budgets
-class TranslationsBudgetsEn {
-	TranslationsBudgetsEn._(this._root);
+class Translations$budgets$en {
+	Translations$budgets$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1633,8 +1633,8 @@ class TranslationsBudgetsEn {
 }
 
 // Path: profile
-class TranslationsProfileEn {
-	TranslationsProfileEn._(this._root);
+class Translations$profile$en {
+	Translations$profile$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1747,8 +1747,8 @@ class TranslationsProfileEn {
 }
 
 // Path: startup
-class TranslationsStartupEn {
-	TranslationsStartupEn._(this._root);
+class Translations$startup$en {
+	Translations$startup$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -1769,13 +1769,16 @@ class TranslationsStartupEn {
 	/// en: 'Something went wrong'
 	String get errorTitle => 'Something went wrong';
 
+	/// en: 'We couldn't finish setting things up. Please try again.'
+	String get errorBody => 'We couldn\'t finish setting things up. Please try again.';
+
 	/// en: 'Try again'
 	String get errorRetry => 'Try again';
 }
 
 // Path: investments
-class TranslationsInvestmentsEn {
-	TranslationsInvestmentsEn._(this._root);
+class Translations$investments$en {
+	Translations$investments$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2086,8 +2089,8 @@ class TranslationsInvestmentsEn {
 }
 
 // Path: chat.action
-class TranslationsChatActionEn {
-	TranslationsChatActionEn._(this._root);
+class Translations$chat$action$en {
+	Translations$chat$action$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2203,8 +2206,8 @@ class TranslationsChatActionEn {
 }
 
 // Path: chat.audio
-class TranslationsChatAudioEn {
-	TranslationsChatAudioEn._(this._root);
+class Translations$chat$audio$en {
+	Translations$chat$audio$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2233,8 +2236,8 @@ class TranslationsChatAudioEn {
 }
 
 // Path: chat.image
-class TranslationsChatImageEn {
-	TranslationsChatImageEn._(this._root);
+class Translations$chat$image$en {
+	Translations$chat$image$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2260,8 +2263,8 @@ class TranslationsChatImageEn {
 }
 
 // Path: chat.handlers
-class TranslationsChatHandlersEn {
-	TranslationsChatHandlersEn._(this._root);
+class Translations$chat$handlers$en {
+	Translations$chat$handlers$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2491,8 +2494,8 @@ class TranslationsChatHandlersEn {
 }
 
 // Path: bills.notification
-class TranslationsBillsNotificationEn {
-	TranslationsBillsNotificationEn._(this._root);
+class Translations$bills$notification$en {
+	Translations$bills$notification$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -2509,8 +2512,8 @@ class TranslationsBillsNotificationEn {
 }
 
 // Path: bills.match
-class TranslationsBillsMatchEn {
-	TranslationsBillsMatchEn._(this._root);
+class Translations$bills$match$en {
+	Translations$bills$match$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
@@ -3230,6 +3233,7 @@ extension on Translations {
 			'startup.stepSyncingData' => 'Syncing your data',
 			'startup.stepReady' => 'Almost there',
 			'startup.errorTitle' => 'Something went wrong',
+			'startup.errorBody' => 'We couldn\'t finish setting things up. Please try again.',
 			'startup.errorRetry' => 'Try again',
 			'investments.title' => 'Investments',
 			'investments.heroTitle' => 'INVESTED CAPITAL',

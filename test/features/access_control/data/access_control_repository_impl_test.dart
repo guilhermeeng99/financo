@@ -40,6 +40,22 @@ void main() {
         (_) => fail('Expected Left'),
       );
     });
+
+    test('fails closed on an unexpected (non-Server) exception', () async {
+      // Security gate: any unexpected error must DENY, never accidentally
+      // allow. The generic `on Exception` branch maps to ServerFailure.
+      when(
+        () => mockRemote.isEmailAllowed(any()),
+      ).thenThrow(Exception('network down'));
+
+      final result = await repository.isEmailAllowed('friend@example.com');
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<ServerFailure>()),
+        (_) => fail('Expected Left — gate must fail closed'),
+      );
+    });
   });
 
   group('addAllowedEmail', () {

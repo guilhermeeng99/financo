@@ -417,7 +417,10 @@ class _TransactionsSide extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      // Bottom room so the FAB doesn't crop the last transaction. This is a
+      // sub-page, so the FAB isn't lifted and there's no bottom bar — 96
+      // matches the accounts/categories sub-pages (FAB 56 + margin + breath).
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       itemCount: state.transactions.length,
       separatorBuilder: (_, _) => const SizedBox(height: 4),
       itemBuilder: (context, index) {

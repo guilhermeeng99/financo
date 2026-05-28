@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
+import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/budgets/presentation/cubit/budget_form_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,12 +96,12 @@ void main() {
         isA<BudgetFormState>().having(
           (s) => s.status,
           'status',
-          BudgetFormStatus.submitting,
+          FormStatus.submitting,
         ),
         isA<BudgetFormState>().having(
           (s) => s.status,
           'status',
-          BudgetFormStatus.success,
+          FormStatus.success,
         ),
       ],
       verify: (_) {
@@ -126,12 +127,12 @@ void main() {
         isA<BudgetFormState>().having(
           (s) => s.status,
           'status',
-          BudgetFormStatus.submitting,
+          FormStatus.submitting,
         ),
         isA<BudgetFormState>().having(
           (s) => s.status,
           'status',
-          BudgetFormStatus.success,
+          FormStatus.success,
         ),
       ],
       verify: (_) {
@@ -160,10 +161,10 @@ void main() {
         isA<BudgetFormState>().having(
           (s) => s.status,
           'status',
-          BudgetFormStatus.submitting,
+          FormStatus.submitting,
         ),
         isA<BudgetFormState>()
-            .having((s) => s.status, 'status', BudgetFormStatus.failure)
+            .having((s) => s.status, 'status', FormStatus.failure)
             .having(
               (s) => s.failure,
               'failure',

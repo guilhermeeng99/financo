@@ -1,27 +1,14 @@
-import { VertexAI, type Content, type Part } from '@google-cloud/vertexai';
+import { type Content, type Part } from '@google-cloud/vertexai';
 import { logger } from 'firebase-functions/v2';
-import { GEMINI_LOCATION, GEMINI_MODEL } from '../config';
+import { GEMINI_MODEL } from '../config';
 import { GEMINI_SYSTEM_PROMPT } from './systemPrompt';
 import type { HistoryTurn } from './types';
+import { vertex } from './vertexClient';
 
 export interface ImagePayload {
   data: string;
   mimeType: string;
 }
-
-let cachedClient: VertexAI | null = null;
-
-const vertex = (): VertexAI => {
-  if (!cachedClient) {
-    const project =
-      process.env.GCLOUD_PROJECT ?? process.env.GCP_PROJECT ?? process.env.PROJECT_ID;
-    if (!project) {
-      throw new Error('GCLOUD_PROJECT env var is required to initialise Vertex AI');
-    }
-    cachedClient = new VertexAI({ project, location: GEMINI_LOCATION });
-  }
-  return cachedClient;
-};
 
 const buildModel = (userContext: string) =>
   vertex().getGenerativeModel({

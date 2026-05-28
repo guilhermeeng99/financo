@@ -47,11 +47,11 @@ profile-specific entity. The renderer reads:
    write fails, the local cache is left untouched.
 3. **Clear account data is irreversible.** Wipes every document owned by
    `userId` across **bills**, **transactions**, **chat_messages**,
-   **categories**, **accounts** and **budgets**, then calls
-   `AppDatabase.clearAllTables()` to drop the local cache. The user is
-   asked to type their email as confirmation before the wipe runs (see
-   `clear_account_data_dialog.dart`).
-4. **No partial wipe.** All six remote collections must be cleared. Adding
+   **categories**, **accounts**, **budgets**, **asset_classes** and
+   **asset_holdings**, then calls `AppDatabase.clearAllTables()` to drop the
+   local cache. The user is asked to type their email as confirmation before
+   the wipe runs (see `clear_account_data_dialog.dart`).
+4. **No partial wipe.** All eight remote collections must be cleared. Adding
    a new user-scoped collection requires updating
    `ProfileRemoteDataSourceImpl._userScopedCollections` — otherwise orphan
    rows remain after the wipe (regression covered by
@@ -145,7 +145,7 @@ doesn't leave a stale `Loaded` state hanging on a defunct user id.
    finish the job.
 4. **Master user wipes their own data.** Their `allowlist`/`isMaster`
    metadata lives under `users/{id}` and **survives** the wipe — only the
-   six user-scoped collections are touched (this is intentional: master
+   eight user-scoped collections are touched (this is intentional: master
    privileges must persist across personal wipes).
 5. **Concurrent updateProfile.** Last-write-wins (Firestore
    `update`). The local cache is overwritten with whatever shape the last

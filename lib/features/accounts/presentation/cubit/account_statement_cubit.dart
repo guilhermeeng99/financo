@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/accounts/domain/period_totals.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
@@ -95,15 +96,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
     final sorted = List<TransactionEntity>.from(periodTransactions)
       ..sort((a, b) => b.date.compareTo(a.date));
 
-    var totalIncome = 0.0;
-    var totalExpenses = 0.0;
-    for (final tx in sorted) {
-      if (tx.type == TransactionType.income) {
-        totalIncome += tx.amount;
-      } else {
-        totalExpenses += tx.amount;
-      }
-    }
+    final totals = sumPeriodTotals(sorted);
 
     // Resolve the other side of each transfer so the view can render
     // "SourceAccount → DestinationAccount" labels. A failed lookup is
@@ -130,8 +123,8 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
         account: account,
         runningBalance: runningBalance,
         transactions: sorted,
-        totalIncome: totalIncome,
-        totalExpenses: totalExpenses,
+        totalIncome: totals.income,
+        totalExpenses: totals.expenses,
         year: year,
         month: month,
         transferCounterpartAccountIds: transferCounterpartAccountIds,

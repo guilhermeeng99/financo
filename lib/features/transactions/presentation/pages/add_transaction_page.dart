@@ -35,6 +35,7 @@ import 'package:financo/features/transactions/presentation/cubit/transaction_for
 import 'package:financo/features/transactions/presentation/widgets/transaction_account_picker_sheet.dart';
 import 'package:financo/features/transactions/presentation/widgets/transaction_category_picker_sheet.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -128,7 +129,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
       _amountController.text = BrlCurrencyInputFormatter.format(bill.amount);
       cubit
         ..updateDescription(bill.description)
-        ..updateAmount(bill.amount.toString())
+        // Feed the cubit the same formatted string the field shows, so the
+        // form never round-trips money through a raw double.toString().
+        ..updateAmount(_amountController.text)
         ..updateType(
           bill.isReceivable ? TransactionType.income : TransactionType.expense,
         );
@@ -373,6 +376,14 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                                 label: t.transactions.amountLabel,
                                 hintText: t.transactions.amountHint,
                                 onChanged: cubit.updateAmount,
+                                // Web: land in the amount field ready to type
+                                // the instant the form opens. Skipped for
+                                // edit / bill-settle, where the amount is
+                                // prefilled and autofocus would prepend digits
+                                // to the existing value.
+                                autofocus: kIsWeb &&
+                                    !state.isEditing &&
+                                    widget.prefillFromBill == null,
                               ),
                             ),
                             const SizedBox(width: 12),
