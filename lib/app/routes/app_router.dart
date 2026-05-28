@@ -234,9 +234,8 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 userId: userId,
               ),
             ),
-            // Session-scoped so any tab can observe `totalPending` (the
-            // dashboard banner planned for V1.1 reads it directly).
-            // Refreshing on mount is the page's job.
+            // Session-scoped so any tab can observe `totalPending` directly
+            // without re-fetching. Refreshing on mount is the page's job.
             BlocProvider(
               create: (_) {
                 final cubit = InvestmentsCubit(

@@ -880,7 +880,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                         onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 12),
-                      _PickerRow(
+                      ImportPickerRow(
                         icon: FontAwesomeIcons.calendar,
                         label: t.transactions.date,
                         value: dateLabel,
@@ -894,7 +894,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                         ? t.transactions.transfer
                         : t.transactions.account,
                     children: [
-                      _PickerRow(
+                      ImportPickerRow(
                         icon: FontAwesomeIcons.buildingColumns,
                         label: _draft.isTransfer
                             ? t.transactions.sourceAccount
@@ -904,7 +904,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                       ),
                       if (_draft.isTransfer) ...[
                         const SizedBox(height: 12),
-                        _PickerRow(
+                        ImportPickerRow(
                           icon: FontAwesomeIcons.arrowRightArrowLeft,
                           label: t.transactions.destinationAccount,
                           value:
@@ -915,7 +915,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                         ),
                       ] else ...[
                         const SizedBox(height: 12),
-                        _PickerRow(
+                        ImportPickerRow(
                           icon: FontAwesomeIcons.tag,
                           label: t.transactions.category,
                           value: _draft.subcategoryName != null
@@ -940,75 +940,6 @@ class _EditRowSheetState extends State<_EditRowSheet> {
               // users into thinking the form had no problem.
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PickerRow extends StatelessWidget {
-  const _PickerRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.isPlaceholder = false,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-  final bool isPlaceholder;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.surfaceVariant,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              FaIcon(icon, size: 14, color: colors.onBackgroundLight),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: context.textTheme.labelSmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: isPlaceholder
-                            ? colors.onBackgroundLight
-                            : colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              FaIcon(
-                FontAwesomeIcons.chevronRight,
-                size: 11,
-                color: colors.onBackgroundLight,
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -759,7 +759,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                         Row(
                           children: [
                             Expanded(
-                              child: _PickerRow(
+                              child: ImportPickerRow(
                                 icon: FontAwesomeIcons.calendar,
                                 label: t.accounts.closingDay,
                                 value:
@@ -771,7 +771,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: _PickerRow(
+                              child: ImportPickerRow(
                                 icon: FontAwesomeIcons.calendarCheck,
                                 label: t.accounts.dueDay,
                                 value:
@@ -784,7 +784,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _PickerRow(
+                        ImportPickerRow(
                           icon: FontAwesomeIcons.link,
                           label: t.accounts.linkedAccount,
                           value:
@@ -807,75 +807,6 @@ class _EditItemSheetState extends State<_EditItemSheet> {
               // users into thinking the form had no problem.
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PickerRow extends StatelessWidget {
-  const _PickerRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-    this.isPlaceholder = false,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-  final bool isPlaceholder;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.surfaceVariant,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              FaIcon(icon, size: 14, color: colors.onBackgroundLight),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      label,
-                      style: context.textTheme.labelSmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: isPlaceholder
-                            ? colors.onBackgroundLight
-                            : colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              FaIcon(
-                FontAwesomeIcons.chevronRight,
-                size: 11,
-                color: colors.onBackgroundLight,
-              ),
-            ],
-          ),
         ),
       ),
     );

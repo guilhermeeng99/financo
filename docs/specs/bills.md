@@ -104,6 +104,14 @@ abstract class BillRepository {
 
   Future<Either<Failure, BillEntity>> updateBill(BillEntity bill);
 
+  /// Updates `bill` and propagates its non-temporal fields (`description`,
+  /// `amount`, `categoryId`, `notes`, `type`) plus `dueDate.day` to every
+  /// real bill in the monthly chain whose `dueDate` is strictly after the
+  /// edited bill's. See "Editing Recurrent Bills (Scope Dialog)" below.
+  Future<Either<Failure, BillEntity>> updateBillAndSubsequents(
+    BillEntity bill,
+  );
+
   Future<Either<Failure, void>> deleteBill(String id);
 
   Future<Either<Failure, BillPaymentResult>> payBill({

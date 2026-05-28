@@ -5,8 +5,9 @@
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases
 
 The **Master Panel** is a privileged administration screen reachable only
-when the signed-in user's `users/{id}.isMaster` flag is `true`. It lets
-the admin:
+when the signed-in user's email matches the master email constant
+(`isMasterEmail(auth.user.email)` — see rule 5; there is no `isMaster`
+flag on `users/{id}`). It lets the admin:
 
 1. **List every registered user** (and see who is master)
 2. **Add / remove emails from the access allowlist** (gates onboarding)
@@ -41,10 +42,9 @@ The master identity is **derived from `email`**, not persisted as a flag on
 
 | Field       | Type       | Notes                                    |
 | ----------- | ---------- | ---------------------------------------- |
-| `email`     | `String`   | Lower-cased; uniqueness is enforced      |
+| `email`     | `String`   | Lower-cased; the Firestore document id   |
+| `addedAt`   | `DateTime` | `serverTimestamp` on add                 |
 | `note`      | `String?`  | Free-form admin reminder                 |
-| `addedAt`   | `DateTime` |                                          |
-| `addedBy`   | `String?`  | UID of the master who added the entry    |
 
 ---
 
@@ -159,14 +159,14 @@ All copy lives under `t.masterPanel.*` in slang.
 
 ## 6. Edge Cases
 
-1. **Non-master opens the route directly.** The cubit detects an empty
-   `auth.user.isMaster` and refuses to load; the page renders the
-   restricted-access state. Backend rules block the queries regardless.
-2. **Removing the only master.** The master panel does not currently
-   prevent removing the only master's `isMaster` flag (out of scope of
-   this UI — only deletion is exposed, and `deleteUserAsAdmin` rejects
-   self-delete). Leaving the system with zero masters requires a manual
-   Firestore console edit.
+1. **Non-master opens the route directly.** `isMasterEmail(auth.user.email)`
+   is `false`, so the page short-circuits to the restricted-access state and
+   the cubit refuses to load. Backend rules block the queries regardless.
+2. **Removing the only master.** Master identity is a code constant, not a
+   per-user flag, so it cannot be "removed" from the UI — only deletion is
+   exposed, and `deleteUserAsAdmin` rejects self-delete. Changing who is
+   master requires editing the `kMasterEmail` / `MASTER_EMAIL` /
+   `firestore.rules` literals in lockstep and shipping a release.
 3. **Add an email that already exists.** `AddAllowedEmailUseCase`
    normalizes to lower-case and the Firestore document id is the email —
    so a duplicate `add` becomes a no-op overwrite of `note`/`addedAt`.

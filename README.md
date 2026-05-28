@@ -1,6 +1,6 @@
 # Financo
 
-Personal finance manager for Android, iOS, and Web. Natural-language data entry powered by an AI assistant inside the app.
+Personal finance manager for Android and Web. Natural-language data entry powered by an AI assistant inside the app.
 
 ## What it does
 
@@ -29,7 +29,7 @@ functions/
     ├── chat/     # Gemini pipeline, action extractor
     └── bills/    # Scheduled bill-due notifier
 
-specs/            # Per-feature contracts (entities, business rules, state machines)
+docs/specs/       # Per-feature contracts (entities, business rules, state machines)
 test/
 └── harness/      # Centralized mocks, factories, helpers
 ```
@@ -65,7 +65,7 @@ Backend (`functions/`):
 
 ## Spec-driven development
 
-Each feature has a contract at `specs/<feature>.md` covering entities, business rules, repository interfaces, state machines, and edge cases. Tests are written against the spec; code follows. See `CLAUDE.md` for the full project conventions.
+Each feature has a contract at `docs/specs/<feature>.md` covering entities, business rules, repository interfaces, state machines, and edge cases. Tests are written against the spec; code follows. See `CLAUDE.md` for the full project conventions.
 
 ## Running locally
 
@@ -106,7 +106,7 @@ npm run build
 firebase deploy --only functions
 ```
 
-The chat pipeline (`chatSend`), audio transcription (`transcribeChatAudio`), and bill notifier (`notifyBillsDue`) are all defined in `functions/src/index.ts`.
+The callables `chatSend`, `transcribeChatAudio`, and `deleteUserAsAdmin` are defined in `functions/src/index.ts`; the scheduled bill notifier `notifyBillsDue` lives in `functions/src/bills/notifyBillsDue.ts` and is re-exported from `index.ts`.
 
 ## Testing
 

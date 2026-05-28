@@ -138,3 +138,89 @@ class ImportEmptyTab extends StatelessWidget {
     );
   }
 }
+
+/// Tappable labelled-value row used inside an import-preview tile to surface
+/// an editable field (account, category, type, …).
+///
+/// Shows [icon] + [label] above [value] with a trailing chevron, calling
+/// [onTap] when pressed. Set [isPlaceholder] to render [value] in the muted
+/// "nothing picked yet" colour.
+///
+/// ```dart
+/// ImportPickerRow(
+///   icon: FontAwesomeIcons.tag,
+///   label: t.transactions.category,
+///   value: row.categoryName ?? t.general.none,
+///   isPlaceholder: row.categoryName == null,
+///   onTap: () => _pickCategory(row),
+/// )
+/// ```
+class ImportPickerRow extends StatelessWidget {
+  const ImportPickerRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onTap,
+    this.isPlaceholder = false,
+    super.key,
+  });
+
+  final FaIconData icon;
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+  final bool isPlaceholder;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Material(
+      color: colors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              FaIcon(icon, size: 14, color: colors.onBackgroundLight),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: context.textTheme.labelSmall?.copyWith(
+                        color: colors.onBackgroundLight,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: isPlaceholder
+                            ? colors.onBackgroundLight
+                            : colors.onBackground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              FaIcon(
+                FontAwesomeIcons.chevronRight,
+                size: 11,
+                color: colors.onBackgroundLight,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -231,6 +231,7 @@ budgets/{id}
 asset_classes/{id}
 asset_holdings/{id}
 chat_messages/{id}
+allowed_emails/{email}
 ```
 
 ### Guidelines
@@ -255,6 +256,7 @@ budgets/{id}                         → userId, categoryId, amount, createdAt, 
 asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt
 asset_holdings/{id}                  → userId, accountId, assetClassId, amount, notes?, updatedAt
 chat_messages/{id}                   → userId, role, content, metadata, createdAt
+allowed_emails/{email}               → addedAt, note?  (doc id is the lower-cased email; gates onboarding — see access_control)
 ```
 
 <!-- rtk-instructions v2 -->
