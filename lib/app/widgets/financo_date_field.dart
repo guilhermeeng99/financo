@@ -50,11 +50,20 @@ class FinancoDateField extends StatelessWidget {
             ),
           ),
         ),
-        child: Text(
-          DateFormat(format).format(value),
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: colors.onBackground,
-            fontWeight: FontWeight.w500,
+        child: SizedBox(
+          width: double.infinity,
+          child: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Text(
+              DateFormat(format).format(value),
+              maxLines: 1,
+              softWrap: false,
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: colors.onBackground,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ),

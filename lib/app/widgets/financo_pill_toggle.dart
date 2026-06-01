@@ -97,22 +97,32 @@ class _Segment<T> extends StatelessWidget {
             onTap: disabled ? null : onTap,
             borderRadius: BorderRadius.circular(10),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (option.icon != null) ...[
-                    FaIcon(option.icon, size: 13, color: foreground),
-                    const SizedBox(width: 6),
-                  ],
-                  Text(
-                    option.label,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 10,
+              ),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (option.icon != null) ...[
+                        FaIcon(option.icon, size: 13, color: foreground),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        option.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

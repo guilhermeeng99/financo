@@ -171,9 +171,9 @@ class _BudgetsPageState extends State<BudgetsPage> {
             if (state is BudgetsError) {
               return ErrorView(
                 failure: state.failure,
-                onRetry: () => context
-                    .read<BudgetsCubit>()
-                    .loadBudgets(forceRefresh: true),
+                onRetry: () => context.read<BudgetsCubit>().loadBudgets(
+                  forceRefresh: true,
+                ),
               );
             }
             if (state is BudgetsLoaded) {
@@ -182,6 +182,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
               }
               return _BudgetsBody(
                 state: state,
+                hasStackedFloatingActions: widget.embedded,
                 onTap: _openEdit,
                 onDelete: _confirmDelete,
               );
@@ -197,11 +198,13 @@ class _BudgetsPageState extends State<BudgetsPage> {
 class _BudgetsBody extends StatelessWidget {
   const _BudgetsBody({
     required this.state,
+    required this.hasStackedFloatingActions,
     required this.onTap,
     required this.onDelete,
   });
 
   final BudgetsLoaded state;
+  final bool hasStackedFloatingActions;
   final void Function(BudgetOverview) onTap;
   final void Function(BudgetOverview) onDelete;
 
@@ -211,11 +214,12 @@ class _BudgetsBody extends StatelessWidget {
     // hosts a month stepper. On mobile the sidebar is hidden, so the
     // body has to surface the pill itself — same rule the dashboard uses.
     final isMobile = ResponsiveLayout.isMobile(context);
+    final bottomPadding = floatingActionScrollEndPadding(
+      hasStackedActions: isMobile && hasStackedFloatingActions,
+    );
 
-    // 160px bottom padding clears the floating bottom nav (96) plus the
-    // lifted FAB (~56 + spacing) so the last tile doesn't tuck under it.
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 160),
+      padding: EdgeInsets.fromLTRB(16, 4, 16, bottomPadding),
       children: [
         if (isMobile) ...const [
           Center(child: FinancoMonthFilterPill()),

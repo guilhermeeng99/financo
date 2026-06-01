@@ -1,11 +1,13 @@
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
-import 'package:financo/app/widgets/nav_bills_badge.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
+import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/bills/presentation/pages/bills_page.dart';
 import 'package:financo/features/budgets/presentation/pages/budgets_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/fifty_thirty_twenty_page.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Shell tab container for budgeting tools. Hosts three sub-tabs:
 ///
@@ -96,14 +98,7 @@ class _PlanningPageState extends State<PlanningPage>
                       ),
                       tabs: [
                         Tab(text: t.fiftyThirtyTwenty.subTabFiftyThirtyTwenty),
-                        Tab(
-                          // Wrapping the label gives the bills overdue
-                          // badge somewhere to live now that the
-                          // bottom-bar slot is gone.
-                          child: NavBillsBadge(
-                            child: Text(t.fiftyThirtyTwenty.subTabBills),
-                          ),
-                        ),
+                        const Tab(child: _BillsTabLabel()),
                         Tab(text: t.fiftyThirtyTwenty.subTabBudgets),
                       ],
                     ),
@@ -124,6 +119,87 @@ class _PlanningPageState extends State<PlanningPage>
           BillsPage(embedded: true),
           BudgetsPage(embedded: true),
         ],
+      ),
+    );
+  }
+}
+
+class _BillsTabLabel extends StatelessWidget {
+  const _BillsTabLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final count = context.select<BillsBloc, int>((bloc) {
+      final state = bloc.state;
+      return state is BillsLoaded ? state.actionablePendingCount : 0;
+    });
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: count > 0 ? 10 : 0),
+              child: Text(
+                t.fiftyThirtyTwenty.subTabBills,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (count > 0)
+              Positioned(
+                right: -8,
+                top: -9,
+                child: _BillsTabCountBadge(
+                  count: count,
+                  borderColor: colors.surface,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _BillsTabCountBadge extends StatelessWidget {
+  const _BillsTabCountBadge({
+    required this.count,
+    required this.borderColor,
+  });
+
+  final int count;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : '$count';
+    return Container(
+      height: 16,
+      constraints: const BoxConstraints(minWidth: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: context.appColors.expense,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: Center(
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+            height: 1,
+          ),
+        ),
       ),
     );
   }

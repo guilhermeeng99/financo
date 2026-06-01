@@ -242,6 +242,7 @@ class _BillsPageState extends State<BillsPage> {
                 bills: state.bills,
                 virtualBills: state.virtualBills,
                 matchCandidates: state.matchCandidates,
+                hasStackedFloatingActions: widget.embedded,
                 typeFilter: _typeFilter,
                 onFilterChanged: (f) => setState(() => _typeFilter = f),
                 onTapBill: _onTapBill,
@@ -300,6 +301,7 @@ class _BillsContent extends StatelessWidget {
     required this.bills,
     required this.virtualBills,
     required this.matchCandidates,
+    required this.hasStackedFloatingActions,
     required this.typeFilter,
     required this.onFilterChanged,
     required this.onTapBill,
@@ -317,6 +319,7 @@ class _BillsContent extends StatelessWidget {
   /// regular pending bills (the tile itself dims them and hides pay).
   final List<BillEntity> virtualBills;
   final List<BillMatchCandidate> matchCandidates;
+  final bool hasStackedFloatingActions;
   final BillsTypeFilter typeFilter;
   final ValueChanged<BillsTypeFilter> onFilterChanged;
   final void Function(BillEntity) onTapBill;
@@ -364,6 +367,9 @@ class _BillsContent extends StatelessWidget {
     // hosts a month stepper. On mobile the sidebar is hidden, so the
     // body has to surface the pill itself — same rule the dashboard uses.
     final isMobile = ResponsiveLayout.isMobile(context);
+    final bottomSpacerHeight = floatingActionScrollEndPadding(
+      hasStackedActions: isMobile && hasStackedFloatingActions,
+    );
 
     return CustomScrollView(
       slivers: [
@@ -460,14 +466,13 @@ class _BillsContent extends StatelessWidget {
               labelFor: labelFor,
               isPayable: isBillPayable,
             ),
-          // Bottom breathing room so the lifted FAB doesn't crop the last
-          // tile (bottom bar 96 + FAB 56 + spacing).
-          const SliverToBoxAdapter(child: SizedBox(height: 160)),
+          // Bottom breathing room so the lifted FAB stack doesn't crop the
+          // last tile on mobile.
+          SliverToBoxAdapter(child: SizedBox(height: bottomSpacerHeight)),
         ],
       ],
     );
   }
-
 }
 
 class _BillsSliverSection extends StatelessWidget {

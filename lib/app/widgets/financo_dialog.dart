@@ -173,16 +173,17 @@ class _ActionButtons extends StatelessWidget {
   const _ActionButtons({required this.actions});
 
   final List<FinancoDialogAction> actions;
+  static const double _buttonHeight = 52;
 
   @override
   Widget build(BuildContext context) {
-    if (actions.length == 1) return _button(context, actions.first);
+    if (actions.length == 1) return _sizedButton(context, actions.first);
     if (actions.length == 2) {
       return Row(
         children: [
-          Expanded(child: _button(context, actions[0])),
+          Expanded(child: _sizedButton(context, actions[0])),
           const SizedBox(width: 12),
-          Expanded(child: _button(context, actions[1])),
+          Expanded(child: _sizedButton(context, actions[1])),
         ],
       );
     }
@@ -191,30 +192,82 @@ class _ActionButtons extends StatelessWidget {
       children: [
         for (var i = 0; i < actions.length; i++) ...[
           if (i > 0) const SizedBox(height: 8),
-          _button(context, actions[i]),
+          _sizedButton(context, actions[i]),
         ],
       ],
     );
   }
 
+  Widget _sizedButton(BuildContext context, FinancoDialogAction action) {
+    return SizedBox(
+      height: _buttonHeight,
+      child: _button(context, action),
+    );
+  }
+
   Widget _button(BuildContext context, FinancoDialogAction action) {
     final colors = context.appColors;
-    final label = Text(action.label);
+    final label = _ActionLabel(action.label);
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    );
+    const minimumSize = Size(double.infinity, _buttonHeight);
+    const padding = EdgeInsets.symmetric(horizontal: 12);
+
     switch (action.kind) {
       case FinancoDialogActionKind.primary:
-        return FilledButton(onPressed: action.onPressed, child: label);
+        return FilledButton(
+          onPressed: action.onPressed,
+          style: FilledButton.styleFrom(
+            minimumSize: minimumSize,
+            padding: padding,
+            shape: shape,
+          ),
+          child: label,
+        );
       case FinancoDialogActionKind.destructive:
         return FilledButton(
           onPressed: action.onPressed,
           style: FilledButton.styleFrom(
             backgroundColor: colors.error,
             disabledBackgroundColor: colors.error.withValues(alpha: 0.3),
+            minimumSize: minimumSize,
+            padding: padding,
+            shape: shape,
           ),
           child: label,
         );
       case FinancoDialogActionKind.secondary:
-        return OutlinedButton(onPressed: action.onPressed, child: label);
+        return OutlinedButton(
+          onPressed: action.onPressed,
+          style: OutlinedButton.styleFrom(
+            minimumSize: minimumSize,
+            padding: padding,
+            shape: shape,
+            side: BorderSide(color: colors.primary),
+          ),
+          child: label,
+        );
     }
+  }
+}
+
+class _ActionLabel extends StatelessWidget {
+  const _ActionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        label,
+        maxLines: 1,
+        softWrap: false,
+        textAlign: TextAlign.center,
+      ),
+    );
   }
 }
 

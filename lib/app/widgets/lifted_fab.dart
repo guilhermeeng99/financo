@@ -35,3 +35,20 @@ class LiftedFab extends StatelessWidget {
     );
   }
 }
+
+/// Returns the trailing padding a mobile scrollable needs when floating
+/// actions sit above the shell bottom bar.
+///
+/// Parameters:
+/// - [hasStackedActions]: whether the page shows a secondary small FAB above
+///   the primary action.
+///
+/// Example:
+/// ```dart
+/// final bottomPadding = floatingActionScrollEndPadding(
+///   hasStackedActions: true,
+/// );
+/// ```
+double floatingActionScrollEndPadding({required bool hasStackedActions}) {
+  return hasStackedActions ? 232 : 160;
+}
