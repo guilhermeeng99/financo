@@ -9,6 +9,11 @@ class LocalTransactions extends Table {
   RealColumn get amount => real()();
   TextColumn get description => text()();
   DateTimeColumn get date => dateTime()();
+  TextColumn get settlementStatus =>
+      text().withDefault(const Constant('paid'))();
+  DateTimeColumn get dueDate => dateTime().nullable()();
+  DateTimeColumn get settledAt => dateTime().nullable()();
+  TextColumn get recurrence => text().withDefault(const Constant('oneShot'))();
   TextColumn get notes => text().nullable()();
   TextColumn get linkedTransactionId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

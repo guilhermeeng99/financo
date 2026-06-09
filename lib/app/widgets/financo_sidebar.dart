@@ -48,6 +48,14 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
     final dateFilter = context.watch<DateFilterCubit>().state;
     final authState = context.watch<AuthBloc>().state;
     final user = authState is Authenticated ? authState.user : null;
+    final isDashboardSection =
+        location == AppRoutes.dashboard ||
+        location.startsWith(AppRoutes.payablesReceivables) ||
+        location.startsWith(AppRoutes.paidAndReceived) ||
+        location.startsWith(AppRoutes.payables) ||
+        location.startsWith(AppRoutes.receivables) ||
+        location.startsWith(AppRoutes.paidAccounts) ||
+        location.startsWith(AppRoutes.receivedAccounts);
 
     return AnimatedContainer(
       duration: _animDuration,
@@ -84,7 +92,27 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 expanded: _expanded,
                 label: t.nav.dashboard,
                 onTap: () => context.go(AppRoutes.dashboard),
-                isActive: location == AppRoutes.dashboard,
+                isActive: isDashboardSection,
+              ),
+              _SubNavItem(
+                icon: FontAwesomeIcons.receipt,
+                expanded: _expanded,
+                label: t.nav.payablesReceivables,
+                onTap: () => context.go(AppRoutes.payablesReceivables),
+                isActive:
+                    location.startsWith(AppRoutes.payablesReceivables) ||
+                    location.startsWith(AppRoutes.payables) ||
+                    location.startsWith(AppRoutes.receivables),
+              ),
+              _SubNavItem(
+                icon: FontAwesomeIcons.circleCheck,
+                expanded: _expanded,
+                label: t.nav.paidAndReceived,
+                onTap: () => context.go(AppRoutes.paidAndReceived),
+                isActive:
+                    location.startsWith(AppRoutes.paidAndReceived) ||
+                    location.startsWith(AppRoutes.paidAccounts) ||
+                    location.startsWith(AppRoutes.receivedAccounts),
               ),
               _NavItem(
                 icon: FontAwesomeIcons.chartPie,
@@ -101,8 +129,8 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 // Planning tab stays active for every sub-tab and any
                 // legacy direct deep-link — bills moved into the shell
                 // (see docs/specs/investments.md §10) so /bills sits here too.
-                isActive: location.startsWith(AppRoutes.planning) ||
-                    location.startsWith(AppRoutes.bills) ||
+                isActive:
+                    location.startsWith(AppRoutes.planning) ||
                     location.startsWith(AppRoutes.budgets) ||
                     location.startsWith(AppRoutes.fiftyThirtyTwenty),
               ),
@@ -271,6 +299,89 @@ class _NavItem extends StatelessWidget {
                                 : colors.onBackgroundLight,
                             fontWeight: isActive
                                 ? FontWeight.w600
+                                : FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SubNavItem extends StatelessWidget {
+  const _SubNavItem({
+    required this.icon,
+    required this.expanded,
+    required this.label,
+    required this.onTap,
+    required this.isActive,
+  });
+
+  final FaIconData icon;
+  final bool expanded;
+  final String label;
+  final VoidCallback onTap;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!expanded) return const SizedBox.shrink();
+
+    final colors = context.appColors;
+    final foreground = isActive ? colors.primary : colors.onBackgroundLight;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 18, top: 1, bottom: 1),
+      child: Stack(
+        children: [
+          if (expanded)
+            Positioned(
+              left: 8,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 1,
+                color: colors.surfaceVariant,
+              ),
+            ),
+          Material(
+            color: isActive
+                ? colors.primary.withValues(alpha: 0.08)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              onTap: () {
+                unawaited(HapticFeedback.selectionClick());
+                onTap();
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                height: 38,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 38,
+                      child: Center(
+                        child: FaIcon(icon, size: 15, color: foreground),
+                      ),
+                    ),
+                    if (expanded)
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: isActive
+                                ? colors.onBackground
+                                : colors.onBackgroundLight,
+                            fontWeight: isActive
+                                ? FontWeight.w700
                                 : FontWeight.w500,
                           ),
                           overflow: TextOverflow.ellipsis,

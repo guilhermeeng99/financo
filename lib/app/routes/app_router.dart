@@ -219,8 +219,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 deleteBill: GetIt.I<DeleteBillUseCase>(),
                 payBill: GetIt.I<PayBillUseCase>(),
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
-                linkBillToTransaction:
-                    GetIt.I<LinkBillToTransactionUseCase>(),
+                linkBillToTransaction: GetIt.I<LinkBillToTransactionUseCase>(),
                 rejectBillMatch: GetIt.I<RejectBillMatchUseCase>(),
                 importBillsCsv: GetIt.I<ImportBillsCsvUseCase>(),
                 userId: userId,
@@ -303,8 +302,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             //   - `BillEntity`        → creating a tx to settle a bill
             //   - null                → blank create flow
             final extra = state.extra;
-            final existing =
-                extra is TransactionEntity ? extra : null;
+            final existing = extra is TransactionEntity ? extra : null;
             final prefillFromBill = extra is BillEntity ? extra : null;
             // Optional `?accountId=` — used by the account-statement FAB
             // so a new transaction opens with the current account already
@@ -358,7 +356,42 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         ),
         GoRoute(
           path: AppRoutes.bills,
-          builder: (context, state) => const BillsPage(),
+          redirect: (context, state) => AppRoutes.payablesReceivables,
+        ),
+        GoRoute(
+          path: AppRoutes.payablesReceivables,
+          builder: (context, state) => const BillsPage(
+            availableViews: [
+              PayablesReceivablesView.payables,
+              PayablesReceivablesView.receivables,
+            ],
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.paidAndReceived,
+          builder: (context, state) => const BillsPage(
+            initialView: PayablesReceivablesView.paid,
+            availableViews: [
+              PayablesReceivablesView.paid,
+              PayablesReceivablesView.received,
+            ],
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.payables,
+          redirect: (context, state) => AppRoutes.payablesReceivables,
+        ),
+        GoRoute(
+          path: AppRoutes.receivables,
+          redirect: (context, state) => AppRoutes.payablesReceivables,
+        ),
+        GoRoute(
+          path: AppRoutes.paidAccounts,
+          redirect: (context, state) => AppRoutes.paidAndReceived,
+        ),
+        GoRoute(
+          path: AppRoutes.receivedAccounts,
+          redirect: (context, state) => AppRoutes.paidAndReceived,
         ),
         GoRoute(
           path: AppRoutes.addBill,
@@ -548,8 +581,9 @@ class _ShellWithSidebarState extends State<_ShellWithSidebar> {
             // body.
             extendBody: true,
             body: widget.child,
-            bottomNavigationBar:
-                showBottomBar ? const FinancoBottomBar() : null,
+            bottomNavigationBar: showBottomBar
+                ? const FinancoBottomBar()
+                : null,
           );
         },
       );

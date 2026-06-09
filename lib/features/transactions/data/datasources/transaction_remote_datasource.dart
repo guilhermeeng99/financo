@@ -4,14 +4,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/database/firestore_batch.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 
 abstract class TransactionRemoteDataSource {
   Future<List<TransactionModel>> getTransactions({
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
   });
   Future<TransactionModel> getTransaction(String id);
   Future<TransactionModel> createTransaction(TransactionModel model);
@@ -46,11 +50,17 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
   }) async {
     try {
       var query = _collection.where('userId', isEqualTo: userId);
+      final dateField = dueStartDate != null || dueEndDate != null
+          ? 'dueDate'
+          : 'date';
 
       if (startDate != null) {
         query = query.where(
@@ -64,14 +74,32 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
           isLessThanOrEqualTo: Timestamp.fromDate(endDate),
         );
       }
+      if (dueStartDate != null) {
+        query = query.where(
+          'dueDate',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(dueStartDate),
+        );
+      }
+      if (dueEndDate != null) {
+        query = query.where(
+          'dueDate',
+          isLessThanOrEqualTo: Timestamp.fromDate(dueEndDate),
+        );
+      }
       if (categoryId != null) {
         query = query.where('categoryId', isEqualTo: categoryId);
       }
       if (accountId != null) {
         query = query.where('accountId', isEqualTo: accountId);
       }
+      if (settlementStatus != null) {
+        query = query.where(
+          'settlementStatus',
+          isEqualTo: settlementStatus.name,
+        );
+      }
 
-      query = query.orderBy('date', descending: true);
+      query = query.orderBy(dateField, descending: true);
 
       final snapshot = await query.get();
       return snapshot.docs.map(TransactionModel.fromFirestore).toList();

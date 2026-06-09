@@ -51,9 +51,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
       Left.new,
       (accounts) => allTimeResult.fold(
         Left.new,
-        (allTransactions) => categoriesResult.fold(
+        (rawTransactions) => categoriesResult.fold(
           Left.new,
           (categories) {
+            final allTransactions = rawTransactions
+                .where((t) => t.isPaid)
+                .toList();
             // Filter locally for period transactions
             final periodStart = startOfMonth(month);
             final transactions = allTransactions

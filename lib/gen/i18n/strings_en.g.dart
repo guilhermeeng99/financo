@@ -99,6 +99,9 @@ class Translations$general$en {
 	/// en: 'Search'
 	String get search => 'Search';
 
+	/// en: 'Filter'
+	String get filter => 'Filter';
+
 	/// en: 'No results found'
 	String get noResults => 'No results found';
 
@@ -344,6 +347,24 @@ class Translations$nav$en {
 
 	/// en: 'Planning'
 	String get planning => 'Planning';
+
+	/// en: 'Payables and receivables'
+	String get payablesReceivables => 'Payables and receivables';
+
+	/// en: 'Paid and received'
+	String get paidAndReceived => 'Paid and received';
+
+	/// en: 'Payables'
+	String get payables => 'Payables';
+
+	/// en: 'Receivables'
+	String get receivables => 'Receivables';
+
+	/// en: 'Paid accounts'
+	String get paidAccounts => 'Paid accounts';
+
+	/// en: 'Received accounts'
+	String get receivedAccounts => 'Received accounts';
 
 	/// en: 'Investments'
 	String get investments => 'Investments';
@@ -600,6 +621,18 @@ class Translations$transactions$en {
 	/// en: 'Date'
 	String get date => 'Date';
 
+	/// en: 'Due date'
+	String get dueDate => 'Due date';
+
+	/// en: 'Paid now'
+	String get paidNow => 'Paid now';
+
+	/// en: 'Received now'
+	String get receivedNow => 'Received now';
+
+	/// en: 'Leave pending'
+	String get leavePending => 'Leave pending';
+
 	/// en: 'Category'
 	String get category => 'Category';
 
@@ -641,6 +674,9 @@ class Translations$transactions$en {
 
 	/// en: 'Transaction created'
 	String get transactionCreated => 'Transaction created';
+
+	/// en: 'Transaction scheduled'
+	String get transactionScheduled => 'Transaction scheduled';
 
 	/// en: 'Transaction saved!'
 	String get saved => 'Transaction saved!';
@@ -1274,11 +1310,11 @@ class Translations$bills$en {
 
 	// Translations
 
-	/// en: 'Bills'
-	String get title => 'Bills';
+	/// en: 'Payables and receivables'
+	String get title => 'Payables and receivables';
 
-	/// en: 'No bills. Add a bill to get reminders before it's due.'
-	String get empty => 'No bills. Add a bill to get reminders before it\'s due.';
+	/// en: 'No movements found in this period.'
+	String get empty => 'No movements found in this period.';
 
 	/// en: 'New Bill'
 	String get addBill => 'New Bill';
@@ -1346,8 +1382,23 @@ class Translations$bills$en {
 	/// en: 'Received'
 	String get received => 'Received';
 
+	/// en: 'Paid'
+	String get paidPlural => 'Paid';
+
+	/// en: 'Received'
+	String get receivedPlural => 'Received';
+
 	/// en: 'Pending'
 	String get pending => 'Pending';
+
+	/// en: 'Scheduled'
+	String get scheduled => 'Scheduled';
+
+	/// en: 'Confirmed'
+	String get confirmed => 'Confirmed';
+
+	/// en: 'Reconciled'
+	String get reconciled => 'Reconciled';
 
 	/// en: 'Overdue'
 	String get overdue => 'Overdue';
@@ -1387,6 +1438,12 @@ class Translations$bills$en {
 
 	/// en: 'Payment received — transaction created'
 	String get billReceived => 'Payment received — transaction created';
+
+	/// en: 'Bill marked as paid'
+	String get transactionPaid => 'Bill marked as paid';
+
+	/// en: 'Receipt marked as received'
+	String get transactionReceived => 'Receipt marked as received';
 
 	/// en: 'Next month's bill scheduled'
 	String get nextOccurrenceCreated => 'Next month\'s bill scheduled';
@@ -1436,8 +1493,8 @@ class Translations$bills$en {
 	/// en: '$count pending'
 	String pendingCount({required Object count}) => '${count} pending';
 
-	/// en: 'No bills yet'
-	String get emptyTitle => 'No bills yet';
+	/// en: 'No movements yet'
+	String get emptyTitle => 'No movements yet';
 
 	/// en: 'Add your first bill'
 	String get addFirst => 'Add your first bill';
@@ -2586,6 +2643,7 @@ extension on Translations {
 			'general.edit' => 'Edit',
 			'general.add' => 'Add',
 			'general.search' => 'Search',
+			'general.filter' => 'Filter',
 			'general.noResults' => 'No results found',
 			'general.success' => 'Success',
 			'general.or' => 'or',
@@ -2647,6 +2705,12 @@ extension on Translations {
 			'nav.chat' => 'Chat',
 			'nav.profile' => 'Profile',
 			'nav.planning' => 'Planning',
+			'nav.payablesReceivables' => 'Payables and receivables',
+			'nav.paidAndReceived' => 'Paid and received',
+			'nav.payables' => 'Payables',
+			'nav.receivables' => 'Receivables',
+			'nav.paidAccounts' => 'Paid accounts',
+			'nav.receivedAccounts' => 'Received accounts',
 			'nav.investments' => 'Investments',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
@@ -2723,6 +2787,10 @@ extension on Translations {
 			'transactions.descriptionOptional' => 'Description (optional)',
 			'transactions.descriptionHint' => 'e.g. Grocery shopping',
 			'transactions.date' => 'Date',
+			'transactions.dueDate' => 'Due date',
+			'transactions.paidNow' => 'Paid now',
+			'transactions.receivedNow' => 'Received now',
+			'transactions.leavePending' => 'Leave pending',
 			'transactions.category' => 'Category',
 			'transactions.account' => 'Account',
 			'transactions.notes' => 'Notes',
@@ -2737,6 +2805,7 @@ extension on Translations {
 			'transactions.deleteConfirm' => 'Are you sure you want to delete this transaction?',
 			'transactions.transactionUpdated' => 'Transaction updated',
 			'transactions.transactionCreated' => 'Transaction created',
+			'transactions.transactionScheduled' => 'Transaction scheduled',
 			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
 			'transactions.importCsv' => 'Import transactions',
@@ -3057,8 +3126,8 @@ extension on Translations {
 			'chat.handlers.resolveAccountMissing' => 'Which account should I use? Please tell me the account name.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Account "${query}" not found. Please create it first or use the exact name.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.',
-			'bills.title' => 'Bills',
-			'bills.empty' => 'No bills. Add a bill to get reminders before it\'s due.',
+			'bills.title' => 'Payables and receivables',
+			'bills.empty' => 'No movements found in this period.',
 			'bills.addBill' => 'New Bill',
 			'bills.editBill' => 'Edit Bill',
 			'bills.description' => 'Description',
@@ -3076,20 +3145,25 @@ extension on Translations {
 			'bills.category' => 'Category',
 			'bills.categoryRequired' => 'Pick a category',
 			'bills.notes' => 'Notes (optional)',
+			_ => null,
+		} ?? switch (path) {
 			'bills.notesHint' => 'Additional details...',
 			'bills.markAsPaid' => 'Mark as paid',
 			'bills.markAsReceived' => 'Mark as received',
 			'bills.paid' => 'Paid',
 			'bills.received' => 'Received',
+			'bills.paidPlural' => 'Paid',
+			'bills.receivedPlural' => 'Received',
 			'bills.pending' => 'Pending',
+			'bills.scheduled' => 'Scheduled',
+			'bills.confirmed' => 'Confirmed',
+			'bills.reconciled' => 'Reconciled',
 			'bills.overdue' => 'Overdue',
 			'bills.dueToday' => 'Due today',
 			'bills.upcoming' => 'Upcoming',
 			'bills.overdueGroup' => 'Overdue',
 			'bills.todayGroup' => 'Today',
 			'bills.upcomingGroup' => 'Upcoming',
-			_ => null,
-		} ?? switch (path) {
 			'bills.paidGroup' => 'Settled',
 			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
 			'bills.billCreated' => 'Bill created',
@@ -3097,6 +3171,8 @@ extension on Translations {
 			'bills.billDeleted' => 'Bill deleted',
 			'bills.billPaid' => 'Bill paid — transaction created',
 			'bills.billReceived' => 'Payment received — transaction created',
+			'bills.transactionPaid' => 'Bill marked as paid',
+			'bills.transactionReceived' => 'Receipt marked as received',
 			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
 			'bills.alreadyPaid' => 'This bill is already settled',
 			'bills.cannotEditPaid' => 'Settled bills can\'t be edited',
@@ -3113,7 +3189,7 @@ extension on Translations {
 			'bills.summaryAllCaughtUp' => 'Nothing due — you\'re all caught up',
 			'bills.overdueChip' => ({required Object count}) => '${count} overdue',
 			'bills.pendingCount' => ({required Object count}) => '${count} pending',
-			'bills.emptyTitle' => 'No bills yet',
+			'bills.emptyTitle' => 'No movements yet',
 			'bills.addFirst' => 'Add your first bill',
 			'bills.formDetails' => 'Details',
 			'bills.formClassification' => 'Classification',

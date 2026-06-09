@@ -1319,6 +1319,52 @@ class $LocalTransactionsTable extends LocalTransactions
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _settlementStatusMeta = const VerificationMeta(
+    'settlementStatus',
+  );
+  @override
+  late final GeneratedColumn<String> settlementStatus = GeneratedColumn<String>(
+    'settlement_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('paid'),
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _settledAtMeta = const VerificationMeta(
+    'settledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> settledAt = GeneratedColumn<DateTime>(
+    'settled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recurrenceMeta = const VerificationMeta(
+    'recurrence',
+  );
+  @override
+  late final GeneratedColumn<String> recurrence = GeneratedColumn<String>(
+    'recurrence',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('oneShot'),
+  );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -1371,6 +1417,10 @@ class $LocalTransactionsTable extends LocalTransactions
     amount,
     description,
     date,
+    settlementStatus,
+    dueDate,
+    settledAt,
+    recurrence,
     notes,
     linkedTransactionId,
     createdAt,
@@ -1452,6 +1502,33 @@ class $LocalTransactionsTable extends LocalTransactions
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
+    if (data.containsKey('settlement_status')) {
+      context.handle(
+        _settlementStatusMeta,
+        settlementStatus.isAcceptableOrUnknown(
+          data['settlement_status']!,
+          _settlementStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    }
+    if (data.containsKey('settled_at')) {
+      context.handle(
+        _settledAtMeta,
+        settledAt.isAcceptableOrUnknown(data['settled_at']!, _settledAtMeta),
+      );
+    }
+    if (data.containsKey('recurrence')) {
+      context.handle(
+        _recurrenceMeta,
+        recurrence.isAcceptableOrUnknown(data['recurrence']!, _recurrenceMeta),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -1524,6 +1601,22 @@ class $LocalTransactionsTable extends LocalTransactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
       )!,
+      settlementStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}settlement_status'],
+      )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_date'],
+      ),
+      settledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}settled_at'],
+      ),
+      recurrence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence'],
+      )!,
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -1559,6 +1652,10 @@ class LocalTransaction extends DataClass
   final double amount;
   final String description;
   final DateTime date;
+  final String settlementStatus;
+  final DateTime? dueDate;
+  final DateTime? settledAt;
+  final String recurrence;
   final String? notes;
   final String? linkedTransactionId;
   final DateTime createdAt;
@@ -1572,6 +1669,10 @@ class LocalTransaction extends DataClass
     required this.amount,
     required this.description,
     required this.date,
+    required this.settlementStatus,
+    this.dueDate,
+    this.settledAt,
+    required this.recurrence,
     this.notes,
     this.linkedTransactionId,
     required this.createdAt,
@@ -1588,6 +1689,14 @@ class LocalTransaction extends DataClass
     map['amount'] = Variable<double>(amount);
     map['description'] = Variable<String>(description);
     map['date'] = Variable<DateTime>(date);
+    map['settlement_status'] = Variable<String>(settlementStatus);
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<DateTime>(dueDate);
+    }
+    if (!nullToAbsent || settledAt != null) {
+      map['settled_at'] = Variable<DateTime>(settledAt);
+    }
+    map['recurrence'] = Variable<String>(recurrence);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -1609,6 +1718,14 @@ class LocalTransaction extends DataClass
       amount: Value(amount),
       description: Value(description),
       date: Value(date),
+      settlementStatus: Value(settlementStatus),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
+      settledAt: settledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settledAt),
+      recurrence: Value(recurrence),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -1634,6 +1751,10 @@ class LocalTransaction extends DataClass
       amount: serializer.fromJson<double>(json['amount']),
       description: serializer.fromJson<String>(json['description']),
       date: serializer.fromJson<DateTime>(json['date']),
+      settlementStatus: serializer.fromJson<String>(json['settlementStatus']),
+      dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
+      settledAt: serializer.fromJson<DateTime?>(json['settledAt']),
+      recurrence: serializer.fromJson<String>(json['recurrence']),
       notes: serializer.fromJson<String?>(json['notes']),
       linkedTransactionId: serializer.fromJson<String?>(
         json['linkedTransactionId'],
@@ -1654,6 +1775,10 @@ class LocalTransaction extends DataClass
       'amount': serializer.toJson<double>(amount),
       'description': serializer.toJson<String>(description),
       'date': serializer.toJson<DateTime>(date),
+      'settlementStatus': serializer.toJson<String>(settlementStatus),
+      'dueDate': serializer.toJson<DateTime?>(dueDate),
+      'settledAt': serializer.toJson<DateTime?>(settledAt),
+      'recurrence': serializer.toJson<String>(recurrence),
       'notes': serializer.toJson<String?>(notes),
       'linkedTransactionId': serializer.toJson<String?>(linkedTransactionId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1670,6 +1795,10 @@ class LocalTransaction extends DataClass
     double? amount,
     String? description,
     DateTime? date,
+    String? settlementStatus,
+    Value<DateTime?> dueDate = const Value.absent(),
+    Value<DateTime?> settledAt = const Value.absent(),
+    String? recurrence,
     Value<String?> notes = const Value.absent(),
     Value<String?> linkedTransactionId = const Value.absent(),
     DateTime? createdAt,
@@ -1683,6 +1812,10 @@ class LocalTransaction extends DataClass
     amount: amount ?? this.amount,
     description: description ?? this.description,
     date: date ?? this.date,
+    settlementStatus: settlementStatus ?? this.settlementStatus,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    settledAt: settledAt.present ? settledAt.value : this.settledAt,
+    recurrence: recurrence ?? this.recurrence,
     notes: notes.present ? notes.value : this.notes,
     linkedTransactionId: linkedTransactionId.present
         ? linkedTransactionId.value
@@ -1704,6 +1837,14 @@ class LocalTransaction extends DataClass
           ? data.description.value
           : this.description,
       date: data.date.present ? data.date.value : this.date,
+      settlementStatus: data.settlementStatus.present
+          ? data.settlementStatus.value
+          : this.settlementStatus,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      settledAt: data.settledAt.present ? data.settledAt.value : this.settledAt,
+      recurrence: data.recurrence.present
+          ? data.recurrence.value
+          : this.recurrence,
       notes: data.notes.present ? data.notes.value : this.notes,
       linkedTransactionId: data.linkedTransactionId.present
           ? data.linkedTransactionId.value
@@ -1724,6 +1865,10 @@ class LocalTransaction extends DataClass
           ..write('amount: $amount, ')
           ..write('description: $description, ')
           ..write('date: $date, ')
+          ..write('settlementStatus: $settlementStatus, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('recurrence: $recurrence, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
@@ -1742,6 +1887,10 @@ class LocalTransaction extends DataClass
     amount,
     description,
     date,
+    settlementStatus,
+    dueDate,
+    settledAt,
+    recurrence,
     notes,
     linkedTransactionId,
     createdAt,
@@ -1759,6 +1908,10 @@ class LocalTransaction extends DataClass
           other.amount == this.amount &&
           other.description == this.description &&
           other.date == this.date &&
+          other.settlementStatus == this.settlementStatus &&
+          other.dueDate == this.dueDate &&
+          other.settledAt == this.settledAt &&
+          other.recurrence == this.recurrence &&
           other.notes == this.notes &&
           other.linkedTransactionId == this.linkedTransactionId &&
           other.createdAt == this.createdAt &&
@@ -1774,6 +1927,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
   final Value<double> amount;
   final Value<String> description;
   final Value<DateTime> date;
+  final Value<String> settlementStatus;
+  final Value<DateTime?> dueDate;
+  final Value<DateTime?> settledAt;
+  final Value<String> recurrence;
   final Value<String?> notes;
   final Value<String?> linkedTransactionId;
   final Value<DateTime> createdAt;
@@ -1788,6 +1945,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.amount = const Value.absent(),
     this.description = const Value.absent(),
     this.date = const Value.absent(),
+    this.settlementStatus = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.recurrence = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1803,6 +1964,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     required double amount,
     required String description,
     required DateTime date,
+    this.settlementStatus = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.recurrence = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
     required DateTime createdAt,
@@ -1827,6 +1992,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Expression<double>? amount,
     Expression<String>? description,
     Expression<DateTime>? date,
+    Expression<String>? settlementStatus,
+    Expression<DateTime>? dueDate,
+    Expression<DateTime>? settledAt,
+    Expression<String>? recurrence,
     Expression<String>? notes,
     Expression<String>? linkedTransactionId,
     Expression<DateTime>? createdAt,
@@ -1842,6 +2011,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       if (amount != null) 'amount': amount,
       if (description != null) 'description': description,
       if (date != null) 'date': date,
+      if (settlementStatus != null) 'settlement_status': settlementStatus,
+      if (dueDate != null) 'due_date': dueDate,
+      if (settledAt != null) 'settled_at': settledAt,
+      if (recurrence != null) 'recurrence': recurrence,
       if (notes != null) 'notes': notes,
       if (linkedTransactionId != null)
         'linked_transaction_id': linkedTransactionId,
@@ -1860,6 +2033,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Value<double>? amount,
     Value<String>? description,
     Value<DateTime>? date,
+    Value<String>? settlementStatus,
+    Value<DateTime?>? dueDate,
+    Value<DateTime?>? settledAt,
+    Value<String>? recurrence,
     Value<String?>? notes,
     Value<String?>? linkedTransactionId,
     Value<DateTime>? createdAt,
@@ -1875,6 +2052,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       amount: amount ?? this.amount,
       description: description ?? this.description,
       date: date ?? this.date,
+      settlementStatus: settlementStatus ?? this.settlementStatus,
+      dueDate: dueDate ?? this.dueDate,
+      settledAt: settledAt ?? this.settledAt,
+      recurrence: recurrence ?? this.recurrence,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
@@ -1910,6 +2091,18 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
+    if (settlementStatus.present) {
+      map['settlement_status'] = Variable<String>(settlementStatus.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
+    if (settledAt.present) {
+      map['settled_at'] = Variable<DateTime>(settledAt.value);
+    }
+    if (recurrence.present) {
+      map['recurrence'] = Variable<String>(recurrence.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -1941,6 +2134,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
           ..write('amount: $amount, ')
           ..write('description: $description, ')
           ..write('date: $date, ')
+          ..write('settlementStatus: $settlementStatus, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('recurrence: $recurrence, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
@@ -5463,6 +5660,10 @@ typedef $$LocalTransactionsTableCreateCompanionBuilder =
       required double amount,
       required String description,
       required DateTime date,
+      Value<String> settlementStatus,
+      Value<DateTime?> dueDate,
+      Value<DateTime?> settledAt,
+      Value<String> recurrence,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
       required DateTime createdAt,
@@ -5479,6 +5680,10 @@ typedef $$LocalTransactionsTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<String> description,
       Value<DateTime> date,
+      Value<String> settlementStatus,
+      Value<DateTime?> dueDate,
+      Value<DateTime?> settledAt,
+      Value<String> recurrence,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
       Value<DateTime> createdAt,
@@ -5532,6 +5737,26 @@ class $$LocalTransactionsTableFilterComposer
 
   ColumnFilters<DateTime> get date => $composableBuilder(
     column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get settlementStatus => $composableBuilder(
+    column: $table.settlementStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5605,6 +5830,26 @@ class $$LocalTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get settlementStatus => $composableBuilder(
+    column: $table.settlementStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -5662,6 +5907,22 @@ class $$LocalTransactionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get settlementStatus => $composableBuilder(
+    column: $table.settlementStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get settledAt =>
+      $composableBuilder(column: $table.settledAt, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
@@ -5726,6 +5987,10 @@ class $$LocalTransactionsTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
+                Value<String> settlementStatus = const Value.absent(),
+                Value<DateTime?> dueDate = const Value.absent(),
+                Value<DateTime?> settledAt = const Value.absent(),
+                Value<String> recurrence = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -5740,6 +6005,10 @@ class $$LocalTransactionsTableTableManager
                 amount: amount,
                 description: description,
                 date: date,
+                settlementStatus: settlementStatus,
+                dueDate: dueDate,
+                settledAt: settledAt,
+                recurrence: recurrence,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,
@@ -5756,6 +6025,10 @@ class $$LocalTransactionsTableTableManager
                 required double amount,
                 required String description,
                 required DateTime date,
+                Value<String> settlementStatus = const Value.absent(),
+                Value<DateTime?> dueDate = const Value.absent(),
+                Value<DateTime?> settledAt = const Value.absent(),
+                Value<String> recurrence = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
                 required DateTime createdAt,
@@ -5770,6 +6043,10 @@ class $$LocalTransactionsTableTableManager
                 amount: amount,
                 description: description,
                 date: date,
+                settlementStatus: settlementStatus,
+                dueDate: dueDate,
+                settledAt: settledAt,
+                recurrence: recurrence,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,

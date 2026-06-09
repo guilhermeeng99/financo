@@ -42,8 +42,9 @@ class TransactionChatActionHandler implements ChatActionHandler {
       (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
     );
     if (!hasCategory) {
-      return strings.chat.handlers
-          .categoryNotFoundCreateFirst(name: categoryName);
+      return strings.chat.handlers.categoryNotFoundCreateFirst(
+        name: categoryName,
+      );
     }
 
     final accResult = await _getAccounts(userId: userId);
@@ -78,6 +79,13 @@ class TransactionChatActionHandler implements ChatActionHandler {
     final date = dateStr != null
         ? DateTime.tryParse(dateStr) ?? DateTime.now()
         : DateTime.now();
+    final now = DateTime.now();
+    final isFuture = date.isAfter(
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
+    final settlementStatus = isFuture
+        ? TransactionSettlementStatus.pending
+        : TransactionSettlementStatus.paid;
 
     final categoryName = meta['category'] as String? ?? '';
     final catResult = await _getCategories(userId: userId);
@@ -89,8 +97,9 @@ class TransactionChatActionHandler implements ChatActionHandler {
         .where((c) => c.name.toLowerCase() == categoryName.toLowerCase())
         .toList();
     if (matchedCat.isEmpty) {
-      return strings.chat.handlers
-          .categoryNotFoundCreateFirst(name: categoryName);
+      return strings.chat.handlers.categoryNotFoundCreateFirst(
+        name: categoryName,
+      );
     }
 
     final accountName = meta['account'] as String? ?? '';
@@ -118,8 +127,11 @@ class TransactionChatActionHandler implements ChatActionHandler {
       amount: amount,
       description: description,
       date: date,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+      settlementStatus: settlementStatus,
+      dueDate: date,
+      settledAt: isFuture ? null : date,
+      createdAt: now,
+      updatedAt: now,
     );
 
     final result = await _createTransaction(transaction);

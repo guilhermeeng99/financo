@@ -141,6 +141,7 @@ import 'package:financo/features/transactions/domain/usecases/delete_transaction
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/settle_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -359,6 +360,9 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => UpdateTransactionUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => SettleTransactionUseCase(sl()),
     )
     ..registerLazySingleton(
       () => DeleteTransactionUseCase(sl()),

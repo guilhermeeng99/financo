@@ -74,6 +74,7 @@ FiftyThirtyTwentyBreakdown compute50_30_20Breakdown({
   final unclassifiedAmounts = <String, double>{};
 
   for (final t in periodTransactions) {
+    if (!t.isPaid) continue;
     if (t.type != TransactionType.expense) continue;
     if (t.isTransfer) continue;
 

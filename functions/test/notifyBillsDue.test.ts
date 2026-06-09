@@ -1,4 +1,4 @@
-import { buildMessage, PendingBill } from '../src/bills/notifyBillsDue';
+import { buildMessage, PendingTransaction } from '../src/bills/notifyBillsDue';
 
 // `buildMessage` is pure: it derives notification copy from a list of pending
 // bills with no I/O, so we test it directly (no firebase-admin mock needed).
@@ -10,9 +10,12 @@ const startOfToday = (): Date => {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 };
 
-const makeBill = (overrides: Partial<PendingBill> = {}): PendingBill => ({
+const makeBill = (
+  overrides: Partial<PendingTransaction> = {},
+): PendingTransaction => ({
   id: 'bill-1',
   userId: 'user-1',
+  type: 'expense',
   description: 'Internet',
   amount: 2000,
   dueDate: startOfToday(),

@@ -19,6 +19,12 @@ class AppRoutes {
   static const editCategory = '/category/edit';
   static const importCategories = '/categories/import';
   static const bills = '/bills';
+  static const payablesReceivables = '/payables-receivables';
+  static const paidAndReceived = '/paid-and-received';
+  static const payables = '/payables';
+  static const receivables = '/receivables';
+  static const paidAccounts = '/paid-accounts';
+  static const receivedAccounts = '/received-accounts';
   static const addBill = '/bill/add';
   static const editBill = '/bill/edit';
   static const planning = '/planning';

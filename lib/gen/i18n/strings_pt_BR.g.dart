@@ -75,6 +75,7 @@ class _Translations$general$pt_BR implements Translations$general$en {
 	@override String get edit => 'Editar';
 	@override String get add => 'Adicionar';
 	@override String get search => 'Buscar';
+	@override String get filter => 'Filtrar';
 	@override String get noResults => 'Nenhum resultado encontrado';
 	@override String get success => 'Sucesso';
 	@override String get or => 'ou';
@@ -199,6 +200,12 @@ class _Translations$nav$pt_BR implements Translations$nav$en {
 	@override String get chat => 'Chat';
 	@override String get profile => 'Perfil';
 	@override String get planning => 'Planejamento';
+	@override String get payablesReceivables => 'A pagar e receber';
+	@override String get paidAndReceived => 'Pagas e recebidas';
+	@override String get payables => 'Contas a pagar';
+	@override String get receivables => 'Contas a receber';
+	@override String get paidAccounts => 'Contas pagas';
+	@override String get receivedAccounts => 'Contas recebidas';
 	@override String get investments => 'Investimentos';
 }
 
@@ -302,6 +309,10 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get descriptionOptional => 'Descrição (opcional)';
 	@override String get descriptionHint => 'ex.: Compras no mercado';
 	@override String get date => 'Data';
+	@override String get dueDate => 'Vencimento';
+	@override String get paidNow => 'Pago agora';
+	@override String get receivedNow => 'Recebido agora';
+	@override String get leavePending => 'Deixar pendente';
 	@override String get category => 'Categoria';
 	@override String get account => 'Conta';
 	@override String get notes => 'Observações';
@@ -316,6 +327,7 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta transação?';
 	@override String get transactionUpdated => 'Transação atualizada';
 	@override String get transactionCreated => 'Transação criada';
+	@override String get transactionScheduled => 'Lançamento agendado';
 	@override String get saved => 'Transação salva!';
 	@override String get deleted => 'Transação excluída.';
 	@override String get importCsv => 'Importar transações';
@@ -553,8 +565,8 @@ class _Translations$bills$pt_BR implements Translations$bills$en {
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Contas';
-	@override String get empty => 'Nenhuma conta. Adicione uma conta para receber lembretes antes do vencimento.';
+	@override String get title => 'Contas a pagar e receber';
+	@override String get empty => 'Nenhuma movimentação encontrada neste período.';
 	@override String get addBill => 'Nova conta';
 	@override String get editBill => 'Editar conta';
 	@override String get description => 'Descrição';
@@ -577,7 +589,12 @@ class _Translations$bills$pt_BR implements Translations$bills$en {
 	@override String get markAsReceived => 'Marcar como recebida';
 	@override String get paid => 'Paga';
 	@override String get received => 'Recebida';
+	@override String get paidPlural => 'Pagas';
+	@override String get receivedPlural => 'Recebidas';
 	@override String get pending => 'Pendente';
+	@override String get scheduled => 'Agendada';
+	@override String get confirmed => 'Confirmadas';
+	@override String get reconciled => 'Conciliadas';
 	@override String get overdue => 'Atrasada';
 	@override String get dueToday => 'Vence hoje';
 	@override String get upcoming => 'Próximas';
@@ -591,6 +608,8 @@ class _Translations$bills$pt_BR implements Translations$bills$en {
 	@override String get billDeleted => 'Conta excluída';
 	@override String get billPaid => 'Conta paga — transação criada';
 	@override String get billReceived => 'Pagamento recebido — transação criada';
+	@override String get transactionPaid => 'Conta marcada como paga';
+	@override String get transactionReceived => 'Recebimento marcado como recebido';
 	@override String get nextOccurrenceCreated => 'Conta do próximo mês agendada';
 	@override String get alreadyPaid => 'Esta conta já está quitada';
 	@override String get cannotEditPaid => 'Contas quitadas não podem ser editadas';
@@ -607,7 +626,7 @@ class _Translations$bills$pt_BR implements Translations$bills$en {
 	@override String get summaryAllCaughtUp => 'Nada vencendo — você está em dia';
 	@override String overdueChip({required Object count}) => '${count} em atraso';
 	@override String pendingCount({required Object count}) => '${count} pendentes';
-	@override String get emptyTitle => 'Nenhuma conta ainda';
+	@override String get emptyTitle => 'Nenhuma movimentação ainda';
 	@override String get addFirst => 'Adicionar primeira conta';
 	@override String get formDetails => 'Detalhes';
 	@override String get formClassification => 'Classificação';
@@ -1065,6 +1084,7 @@ extension on TranslationsPtBr {
 			'general.edit' => 'Editar',
 			'general.add' => 'Adicionar',
 			'general.search' => 'Buscar',
+			'general.filter' => 'Filtrar',
 			'general.noResults' => 'Nenhum resultado encontrado',
 			'general.success' => 'Sucesso',
 			'general.or' => 'ou',
@@ -1126,6 +1146,12 @@ extension on TranslationsPtBr {
 			'nav.chat' => 'Chat',
 			'nav.profile' => 'Perfil',
 			'nav.planning' => 'Planejamento',
+			'nav.payablesReceivables' => 'A pagar e receber',
+			'nav.paidAndReceived' => 'Pagas e recebidas',
+			'nav.payables' => 'Contas a pagar',
+			'nav.receivables' => 'Contas a receber',
+			'nav.paidAccounts' => 'Contas pagas',
+			'nav.receivedAccounts' => 'Contas recebidas',
 			'nav.investments' => 'Investimentos',
 			'dashboard.title' => 'Início',
 			'dashboard.totalBalance' => 'Saldo total',
@@ -1202,6 +1228,10 @@ extension on TranslationsPtBr {
 			'transactions.descriptionOptional' => 'Descrição (opcional)',
 			'transactions.descriptionHint' => 'ex.: Compras no mercado',
 			'transactions.date' => 'Data',
+			'transactions.dueDate' => 'Vencimento',
+			'transactions.paidNow' => 'Pago agora',
+			'transactions.receivedNow' => 'Recebido agora',
+			'transactions.leavePending' => 'Deixar pendente',
 			'transactions.category' => 'Categoria',
 			'transactions.account' => 'Conta',
 			'transactions.notes' => 'Observações',
@@ -1216,6 +1246,7 @@ extension on TranslationsPtBr {
 			'transactions.deleteConfirm' => 'Tem certeza que deseja excluir esta transação?',
 			'transactions.transactionUpdated' => 'Transação atualizada',
 			'transactions.transactionCreated' => 'Transação criada',
+			'transactions.transactionScheduled' => 'Lançamento agendado',
 			'transactions.saved' => 'Transação salva!',
 			'transactions.deleted' => 'Transação excluída.',
 			'transactions.importCsv' => 'Importar transações',
@@ -1536,8 +1567,8 @@ extension on TranslationsPtBr {
 			'chat.handlers.resolveAccountMissing' => 'Qual conta devo usar? Me diga o nome da conta.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.',
-			'bills.title' => 'Contas',
-			'bills.empty' => 'Nenhuma conta. Adicione uma conta para receber lembretes antes do vencimento.',
+			'bills.title' => 'Contas a pagar e receber',
+			'bills.empty' => 'Nenhuma movimentação encontrada neste período.',
 			'bills.addBill' => 'Nova conta',
 			'bills.editBill' => 'Editar conta',
 			'bills.description' => 'Descrição',
@@ -1555,20 +1586,25 @@ extension on TranslationsPtBr {
 			'bills.category' => 'Categoria',
 			'bills.categoryRequired' => 'Selecione uma categoria',
 			'bills.notes' => 'Observações (opcional)',
+			_ => null,
+		} ?? switch (path) {
 			'bills.notesHint' => 'Detalhes adicionais...',
 			'bills.markAsPaid' => 'Marcar como paga',
 			'bills.markAsReceived' => 'Marcar como recebida',
 			'bills.paid' => 'Paga',
 			'bills.received' => 'Recebida',
+			'bills.paidPlural' => 'Pagas',
+			'bills.receivedPlural' => 'Recebidas',
 			'bills.pending' => 'Pendente',
+			'bills.scheduled' => 'Agendada',
+			'bills.confirmed' => 'Confirmadas',
+			'bills.reconciled' => 'Conciliadas',
 			'bills.overdue' => 'Atrasada',
 			'bills.dueToday' => 'Vence hoje',
 			'bills.upcoming' => 'Próximas',
 			'bills.overdueGroup' => 'Atrasadas',
 			'bills.todayGroup' => 'Hoje',
 			'bills.upcomingGroup' => 'Próximas',
-			_ => null,
-		} ?? switch (path) {
 			'bills.paidGroup' => 'Quitadas',
 			'bills.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
 			'bills.billCreated' => 'Conta criada',
@@ -1576,6 +1612,8 @@ extension on TranslationsPtBr {
 			'bills.billDeleted' => 'Conta excluída',
 			'bills.billPaid' => 'Conta paga — transação criada',
 			'bills.billReceived' => 'Pagamento recebido — transação criada',
+			'bills.transactionPaid' => 'Conta marcada como paga',
+			'bills.transactionReceived' => 'Recebimento marcado como recebido',
 			'bills.nextOccurrenceCreated' => 'Conta do próximo mês agendada',
 			'bills.alreadyPaid' => 'Esta conta já está quitada',
 			'bills.cannotEditPaid' => 'Contas quitadas não podem ser editadas',
@@ -1592,7 +1630,7 @@ extension on TranslationsPtBr {
 			'bills.summaryAllCaughtUp' => 'Nada vencendo — você está em dia',
 			'bills.overdueChip' => ({required Object count}) => '${count} em atraso',
 			'bills.pendingCount' => ({required Object count}) => '${count} pendentes',
-			'bills.emptyTitle' => 'Nenhuma conta ainda',
+			'bills.emptyTitle' => 'Nenhuma movimentação ainda',
 			'bills.addFirst' => 'Adicionar primeira conta',
 			'bills.formDetails' => 'Detalhes',
 			'bills.formClassification' => 'Classificação',

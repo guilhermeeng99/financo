@@ -22,8 +22,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
     bool forceRefresh = false,
   }) async {
     try {
@@ -32,8 +35,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
           userId: userId,
           startDate: startDate,
           endDate: endDate,
+          dueStartDate: dueStartDate,
+          dueEndDate: dueEndDate,
           categoryId: categoryId,
           accountId: accountId,
+          settlementStatus: settlementStatus,
         );
         // Upsert (not replace-all): transactions are paged by date range,
         // so wiping the local table here would discard rows outside the
@@ -45,8 +51,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         userId: userId,
         startDate: startDate,
         endDate: endDate,
+        dueStartDate: dueStartDate,
+        dueEndDate: dueEndDate,
         accountId: accountId,
         categoryId: categoryId,
+        settlementStatus: settlementStatus,
       );
       return Right(local);
     } on ServerException catch (e) {

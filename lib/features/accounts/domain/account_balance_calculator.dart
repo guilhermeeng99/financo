@@ -24,6 +24,7 @@ List<AccountEntity> applyTransactionsToAccounts(
   final byId = {for (final a in accounts) a.id: a};
   final deltas = <String, double>{};
   for (final tx in transactions) {
+    if (!tx.isPaid) continue;
     final account = byId[tx.accountId];
     if (account == null) continue;
     deltas[tx.accountId] =

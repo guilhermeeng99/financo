@@ -2,9 +2,10 @@ import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v2';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-export interface PendingBill {
+export interface PendingTransaction {
   id: string;
   userId: string;
+  type: 'income' | 'expense' | string;
   description: string;
   amount: number;
   dueDate: Date;
@@ -19,27 +20,40 @@ const startOfToday = (): Date => {
 
 const endOfToday = (): Date => {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
 };
 
-const fetchDueBills = async (): Promise<PendingBill[]> => {
-  // Pending bills with dueDate <= end of today (overdue + due today).
+const toDate = (value: unknown): Date => {
+  if (value && typeof (value as { toDate?: unknown }).toDate === 'function') {
+    return (value as admin.firestore.Timestamp).toDate();
+  }
+  return new Date(value as string | number | Date);
+};
+
+const fetchDueTransactions = async (): Promise<PendingTransaction[]> => {
   const snap = await db()
-    .collection('bills')
-    .where('status', '==', 'pending')
+    .collection('transactions')
+    .where('settlementStatus', '==', 'pending')
     .where('dueDate', '<=', admin.firestore.Timestamp.fromDate(endOfToday()))
     .get();
 
   return snap.docs.map((d) => {
     const data = d.data();
-    const due = data.dueDate;
     return {
       id: d.id,
       userId: String(data.userId ?? ''),
+      type: String(data.type ?? 'expense'),
       description: String(data.description ?? ''),
       amount: Number(data.amount ?? 0),
-      dueDate:
-        due && typeof due.toDate === 'function' ? due.toDate() : new Date(due),
+      dueDate: toDate(data.dueDate ?? data.date),
     };
   });
 };
@@ -53,41 +67,63 @@ const fetchUserTokens = async (userId: string): Promise<string[]> => {
   return snap.docs.map((d) => String(d.data().token ?? d.id)).filter(Boolean);
 };
 
-// BR currency formatter — yields strings like `R$ 2.000,00` instead of
-// the old `R$ 2000.00` produced by `toFixed`. The notification body is
-// user-facing in pt-BR, so locale-correct number formatting matters.
 const brCurrency = new Intl.NumberFormat('pt-BR', {
   style: 'currency',
   currency: 'BRL',
 });
 
 export const buildMessage = (
-  bills: PendingBill[],
+  transactions: PendingTransaction[],
 ): { title: string; body: string } => {
   const today = startOfToday();
-  const overdue = bills.filter((b) => b.dueDate < today);
+  const overdue = transactions.filter((t) => t.dueDate < today);
+  const payableCount = transactions.filter((t) => t.type !== 'income').length;
+  const receivableCount = transactions.length - payableCount;
 
-  if (bills.length === 1) {
-    const bill = bills[0];
-    const isOverdue = bill.dueDate < today;
-    const amount = brCurrency.format(bill.amount);
-    // Description can be empty (now optional in the bill spec) — fall
-    // back to a generic noun so the body stays readable.
-    const desc = bill.description.trim() || 'Sua conta';
+  if (transactions.length === 1) {
+    const transaction = transactions[0];
+    const isOverdue = transaction.dueDate < today;
+    const isReceivable = transaction.type === 'income';
+    const amount = brCurrency.format(transaction.amount);
+    const desc = transaction.description.trim() || 'Sua conta';
     return {
-      title: isOverdue ? 'Conta atrasada' : 'Conta vence hoje',
+      title: isOverdue
+        ? isReceivable
+          ? 'Recebimento atrasado'
+          : 'Conta atrasada'
+        : isReceivable
+          ? 'Recebimento vence hoje'
+          : 'Conta vence hoje',
       body: isOverdue
         ? `${desc} (${amount}) está atrasada.`
         : `${desc} (${amount}) vence hoje.`,
     };
   }
 
+  const payableLabel = payableCount === 1 ? 'conta' : 'contas';
+  const receivableLabel = receivableCount === 1
+    ? 'recebimento'
+    : 'recebimentos';
+  const titleParts = [
+    payableCount > 0 ? `${payableCount} ${payableLabel} a pagar` : '',
+    receivableCount > 0
+      ? `${receivableCount} ${receivableLabel} a receber`
+      : '',
+  ].filter(Boolean);
+  const dueTodayCount = transactions.length - overdue.length;
+  const dueTodayLabel =
+    payableCount === transactions.length
+      ? 'contas'
+      : receivableCount === transactions.length
+        ? 'recebimentos'
+        : 'itens';
+
   return {
-    title: `Você tem ${bills.length} contas a pagar`,
+    title: `Você tem ${titleParts.join(' e ')}`,
     body:
       overdue.length > 0
-        ? `${overdue.length} atrasada(s) e ${bills.length - overdue.length} vencendo hoje.`
-        : `${bills.length} contas vencem hoje.`,
+        ? `${overdue.length} atrasada(s) e ${dueTodayCount} vencendo hoje.`
+        : `${transactions.length} ${dueTodayLabel} vencem hoje.`,
   };
 };
 
@@ -128,19 +164,18 @@ export const notifyBillsDue = onSchedule(
     timeoutSeconds: 120,
   },
   async () => {
-    const allBills = await fetchDueBills();
-    if (allBills.length === 0) {
-      logger.info('notifyBillsDue: no due/overdue bills');
+    const allTransactions = await fetchDueTransactions();
+    if (allTransactions.length === 0) {
+      logger.info('notifyBillsDue: no due/overdue transactions');
       return;
     }
 
-    // Group by user.
-    const byUser = new Map<string, PendingBill[]>();
-    for (const bill of allBills) {
-      if (!bill.userId) continue;
-      const list = byUser.get(bill.userId) ?? [];
-      list.push(bill);
-      byUser.set(bill.userId, list);
+    const byUser = new Map<string, PendingTransaction[]>();
+    for (const transaction of allTransactions) {
+      if (!transaction.userId) continue;
+      const list = byUser.get(transaction.userId) ?? [];
+      list.push(transaction);
+      byUser.set(transaction.userId, list);
     }
 
     const messaging = admin.messaging();
@@ -148,23 +183,16 @@ export const notifyBillsDue = onSchedule(
     let totalFailed = 0;
 
     await Promise.all(
-      Array.from(byUser.entries()).map(async ([userId, bills]) => {
+      Array.from(byUser.entries()).map(async ([userId, transactions]) => {
         const tokens = await fetchUserTokens(userId);
         if (tokens.length === 0) return;
 
-        const { title, body } = buildMessage(bills);
-        // DATA-ONLY message on purpose. With a `notification` block the
-        // Android system tray displays the push *before* the app's
-        // background handler has a chance to filter by recipient uid —
-        // which means a device that ever logged into a different account
-        // still on FCM kept receiving the wrong account's reminders.
-        // Now the client renders via `flutter_local_notifications` after
-        // confirming `data.userId == currentUser.uid`.
+        const { title, body } = buildMessage(transactions);
         const response = await messaging.sendEachForMulticast({
           tokens,
           data: {
             route: '/bills',
-            count: String(bills.length),
+            count: String(transactions.length),
             type: 'bills_due',
             userId,
             title,
@@ -175,14 +203,10 @@ export const notifyBillsDue = onSchedule(
           },
           apns: {
             payload: {
-              // `content-available: 1` wakes iOS so the background handler
-              // runs and can display the local notification after the uid
-              // check. Without it, data-only messages are silently dropped
-              // by APNs on iOS.
               aps: {
                 'content-available': 1,
                 'sound': 'default',
-                'badge': bills.length,
+                'badge': transactions.length,
               },
             },
             headers: {
@@ -202,7 +226,7 @@ export const notifyBillsDue = onSchedule(
 
     logger.info('notifyBillsDue completed', {
       users: byUser.size,
-      bills: allBills.length,
+      transactions: allTransactions.length,
       sent: totalSent,
       failed: totalFailed,
     });

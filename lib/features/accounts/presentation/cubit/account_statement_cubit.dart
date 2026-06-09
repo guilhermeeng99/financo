@@ -77,11 +77,11 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
 
     final allTransactions = allTimeResult.fold(
       (_) => <TransactionEntity>[],
-      (t) => t,
+      (t) => t.where((tx) => tx.isPaid).toList(),
     );
     final periodTransactions = periodResult.fold(
       (_) => <TransactionEntity>[],
-      (t) => t,
+      (t) => t.where((tx) => tx.isPaid).toList(),
     );
 
     // Delegate the running-balance math to the shared calculator so

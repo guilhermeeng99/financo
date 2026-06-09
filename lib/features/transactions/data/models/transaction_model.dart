@@ -13,6 +13,10 @@ class TransactionModel extends TransactionEntity {
     required super.date,
     required super.createdAt,
     required super.updatedAt,
+    super.settlementStatus,
+    super.dueDate,
+    super.settledAt,
+    super.recurrence,
     super.notes,
     super.linkedTransactionId,
   });
@@ -37,6 +41,11 @@ class TransactionModel extends TransactionEntity {
       amount: (data['amount'] as num).toDouble(),
       description: data['description'] as String,
       date: (data['date'] as Timestamp).toDate(),
+      settlementStatus: _parseSettlementStatus(data['settlementStatus']),
+      dueDate:
+          _readDate(data['dueDate']) ?? (data['date'] as Timestamp).toDate(),
+      settledAt: _readDate(data['settledAt']),
+      recurrence: _parseRecurrence(data['recurrence']),
       notes: data['notes'] as String?,
       linkedTransactionId: data['linkedTransactionId'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -54,6 +63,10 @@ class TransactionModel extends TransactionEntity {
       amount: entity.amount,
       description: entity.description,
       date: entity.date,
+      settlementStatus: entity.settlementStatus,
+      dueDate: entity.dueDate,
+      settledAt: entity.settledAt,
+      recurrence: entity.recurrence,
       notes: entity.notes,
       linkedTransactionId: entity.linkedTransactionId,
       createdAt: entity.createdAt,
@@ -70,10 +83,36 @@ class TransactionModel extends TransactionEntity {
       'amount': amount,
       'description': description,
       'date': Timestamp.fromDate(date),
+      'settlementStatus': settlementStatus.name,
+      'dueDate': Timestamp.fromDate(dueDate),
+      'settledAt': settledAt == null ? null : Timestamp.fromDate(settledAt!),
+      'recurrence': recurrence.name,
       'notes': notes,
       'linkedTransactionId': linkedTransactionId,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
+}
+
+DateTime? _readDate(Object? value) {
+  if (value is Timestamp) return value.toDate();
+  if (value is DateTime) return value;
+  return null;
+}
+
+TransactionSettlementStatus _parseSettlementStatus(Object? value) {
+  if (value is! String) return TransactionSettlementStatus.paid;
+  return TransactionSettlementStatus.values.firstWhere(
+    (status) => status.name == value,
+    orElse: () => TransactionSettlementStatus.paid,
+  );
+}
+
+TransactionRecurrence _parseRecurrence(Object? value) {
+  if (value is! String) return TransactionRecurrence.oneShot;
+  return TransactionRecurrence.values.firstWhere(
+    (recurrence) => recurrence.name == value,
+    orElse: () => TransactionRecurrence.oneShot,
+  );
 }

@@ -106,10 +106,7 @@ class FinancoBottomBar extends StatelessWidget {
 
   static int _resolveCurrentIndex(String location) {
     if (location.startsWith(AppRoutes.investments)) return 1;
-    // Bills moved into the Planning shell as a sub-tab; legacy
-    // `/bills` deep links still resolve, so route them to slot 2.
     if (location.startsWith(AppRoutes.planning) ||
-        location.startsWith(AppRoutes.bills) ||
         location.startsWith(AppRoutes.budgets) ||
         location.startsWith(AppRoutes.fiftyThirtyTwenty)) {
       return 2;

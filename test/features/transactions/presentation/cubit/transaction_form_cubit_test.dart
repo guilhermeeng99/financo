@@ -150,21 +150,23 @@ void main() {
         addTearDown(cubit.close);
       });
 
-      test('counterpart fetch failure leaves the unknown account empty',
-          () async {
-        final pair = TransactionFactory.transfer();
-        when(
-          () => mockGet(any()),
-        ).thenAnswer((_) async => const Left(ServerFailure('offline')));
+      test(
+        'counterpart fetch failure leaves the unknown account empty',
+        () async {
+          final pair = TransactionFactory.transfer();
+          when(
+            () => mockGet(any()),
+          ).thenAnswer((_) async => const Left(ServerFailure('offline')));
 
-        final cubit = buildCubit(existing: pair.income);
-        await pumpEventQueue();
+          final cubit = buildCubit(existing: pair.income);
+          await pumpEventQueue();
 
-        // Source stays empty so the form is invalid rather than guessing.
-        expect(cubit.state.accountId, '');
-        expect(cubit.state.isValid, false);
-        addTearDown(cubit.close);
-      });
+          // Source stays empty so the form is invalid rather than guessing.
+          expect(cubit.state.accountId, '');
+          expect(cubit.state.isValid, false);
+          addTearDown(cubit.close);
+        },
+      );
     });
 
     group('field updates', () {
@@ -341,7 +343,7 @@ void main() {
         addTearDown(cubit.close);
       });
 
-      test('isValid returns false when date is in the future', () {
+      test('future date switches to pending and remains valid', () {
         final futureDate = DateTime.now().add(const Duration(days: 30));
         final cubit = buildCubit()
           ..updateAmount('100')
@@ -349,7 +351,11 @@ void main() {
           ..updateCategoryId('cat-1')
           ..updateDate(futureDate);
 
-        expect(cubit.state.isValid, false);
+        expect(
+          cubit.state.settlementStatus,
+          TransactionSettlementStatus.pending,
+        );
+        expect(cubit.state.isValid, true);
         addTearDown(cubit.close);
       });
     });
@@ -681,8 +687,9 @@ void main() {
         ],
         verify: (_) {
           // Both legs (source/expense + destination/income) are written.
-          final updated = verify(() => mockUpdate(captureAny())).captured
-              .cast<TransactionEntity>();
+          final updated = verify(
+            () => mockUpdate(captureAny()),
+          ).captured.cast<TransactionEntity>();
           expect(updated, hasLength(2));
           final expenseLeg = updated.firstWhere(
             (t) => t.type == TransactionType.expense,
@@ -867,14 +874,36 @@ void main() {
     });
 
     group('date validation', () {
-      test('future date makes form invalid', () {
+      test('future date becomes a valid pending transaction', () {
         final cubit = buildCubit()
           ..updateAmount('100')
           ..updateAccountId('acc-1')
           ..updateCategoryId('cat-1')
           ..updateDate(DateTime.now().add(const Duration(days: 2)));
-        expect(cubit.state.isValid, isFalse);
+        expect(
+          cubit.state.settlementStatus,
+          TransactionSettlementStatus.pending,
+        );
+        expect(cubit.state.isValid, isTrue);
         addTearDown(cubit.close);
+      });
+
+      test('paid transaction with future date is invalid', () {
+        final futureDate = DateTime.now().add(const Duration(days: 2));
+        final state = TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 100,
+          description: '',
+          date: futureDate,
+          accountId: 'acc-1',
+          categoryId: 'cat-1',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: false,
+        );
+
+        expect(state.isValid, isFalse);
       });
 
       test('today date is valid', () {

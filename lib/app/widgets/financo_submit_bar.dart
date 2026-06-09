@@ -17,6 +17,7 @@ class FinancoSubmitBar extends StatelessWidget {
     required this.onSubmit,
     this.isLoading = false,
     this.isEnabled = true,
+    this.leading,
     this.onSecondarySubmit,
     this.secondaryIcon,
     this.secondaryTooltip,
@@ -27,6 +28,7 @@ class FinancoSubmitBar extends StatelessWidget {
   final VoidCallback onSubmit;
   final bool isLoading;
   final bool isEnabled;
+  final Widget? leading;
 
   /// When non-null (together with [secondaryIcon]), a small square button
   /// appears to the right of the primary one. Shares enabled/loading
@@ -38,6 +40,7 @@ class FinancoSubmitBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final hasLeading = leading != null;
     final hasSecondary = onSecondarySubmit != null && secondaryIcon != null;
     final canPress = isEnabled && !isLoading;
     return Container(
@@ -61,6 +64,10 @@ class FinancoSubmitBar extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (hasLeading) ...[
+              SizedBox(width: 52, height: 52, child: leading),
+              const SizedBox(width: 12),
+            ],
             Expanded(child: _buildPrimary(colors, canPress: canPress)),
             if (hasSecondary) ...[
               const SizedBox(width: 12),

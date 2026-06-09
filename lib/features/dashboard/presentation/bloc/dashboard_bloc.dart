@@ -89,10 +89,13 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       (summary) => transactionsResult.fold(
         (failure) => emit(DashboardError(failure)),
         (transactions) {
+          final settledTransactions = transactions
+              .where((transaction) => transaction.isPaid)
+              .toList();
           emit(
             DashboardLoaded(
               summary: summary,
-              periodTransactions: transactions,
+              periodTransactions: settledTransactions,
               selectedYear: year,
               selectedMonth: month,
             ),

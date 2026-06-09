@@ -62,23 +62,23 @@ const formatCategoryLine = (c: CategoryContext): string =>
 
 const fetchPendingBills = async (userId: string): Promise<BillContext[]> => {
   const snap = await db()
-    .collection('bills')
+    .collection('transactions')
     .where('userId', '==', userId)
-    .where('status', '==', 'pending')
+    .where('settlementStatus', '==', 'pending')
     .get();
   return snap.docs.map((d) => {
     const data = d.data();
-    const due = data.dueDate;
+    const due = data.dueDate ?? data.date;
     const rawType = data.type;
     return {
       id: d.id,
       // Legacy bills stored before BillType existed are payable by default.
-      type: rawType === 'receivable' ? 'receivable' : 'payable',
+      type: rawType === 'income' ? 'receivable' : 'payable',
       description: String(data.description ?? ''),
       amount: Number(data.amount ?? 0),
       // Firestore Timestamp → Date.
       dueDate: due && typeof due.toDate === 'function' ? due.toDate() : new Date(due),
-      status: String(data.status ?? 'pending'),
+      status: String(data.settlementStatus ?? 'pending'),
     };
   });
 };

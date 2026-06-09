@@ -2,6 +2,10 @@ import 'package:equatable/equatable.dart';
 
 enum TransactionType { income, expense }
 
+enum TransactionSettlementStatus { pending, paid }
+
+enum TransactionRecurrence { oneShot, monthly }
+
 class TransactionEntity extends Equatable {
   const TransactionEntity({
     required this.id,
@@ -14,9 +18,13 @@ class TransactionEntity extends Equatable {
     required this.date,
     required this.createdAt,
     required this.updatedAt,
+    this.settlementStatus = TransactionSettlementStatus.paid,
+    DateTime? dueDate,
+    this.settledAt,
+    this.recurrence = TransactionRecurrence.oneShot,
     this.notes,
     this.linkedTransactionId,
-  });
+  }) : dueDate = dueDate ?? date;
 
   final String id;
   final String userId;
@@ -26,12 +34,32 @@ class TransactionEntity extends Equatable {
   final double amount;
   final String description;
   final DateTime date;
+  final TransactionSettlementStatus settlementStatus;
+  final DateTime dueDate;
+  final DateTime? settledAt;
+  final TransactionRecurrence recurrence;
   final String? notes;
   final String? linkedTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   bool get isTransfer => linkedTransactionId != null;
+  bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
+  bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;
+  bool get isPayable => type == TransactionType.expense;
+  bool get isReceivable => type == TransactionType.income;
+
+  bool get isOverdue {
+    if (!isPending) return false;
+    final today = _startOfDay(DateTime.now());
+    return _startOfDay(dueDate).isBefore(today);
+  }
+
+  bool get isDueToday {
+    if (!isPending) return false;
+    final today = _startOfDay(DateTime.now());
+    return _startOfDay(dueDate).isAtSameMomentAs(today);
+  }
 
   TransactionEntity copyWith({
     String? id,
@@ -42,6 +70,10 @@ class TransactionEntity extends Equatable {
     double? amount,
     String? description,
     DateTime? date,
+    TransactionSettlementStatus? settlementStatus,
+    DateTime? dueDate,
+    DateTime? settledAt,
+    TransactionRecurrence? recurrence,
     String? notes,
     String? linkedTransactionId,
     DateTime? createdAt,
@@ -56,6 +88,10 @@ class TransactionEntity extends Equatable {
       amount: amount ?? this.amount,
       description: description ?? this.description,
       date: date ?? this.date,
+      settlementStatus: settlementStatus ?? this.settlementStatus,
+      dueDate: dueDate ?? this.dueDate,
+      settledAt: settledAt ?? this.settledAt,
+      recurrence: recurrence ?? this.recurrence,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
@@ -73,9 +109,16 @@ class TransactionEntity extends Equatable {
     amount,
     description,
     date,
+    settlementStatus,
+    dueDate,
+    settledAt,
+    recurrence,
     notes,
     linkedTransactionId,
     createdAt,
     updatedAt,
   ];
 }
+
+DateTime _startOfDay(DateTime date) =>
+    DateTime(date.year, date.month, date.day);

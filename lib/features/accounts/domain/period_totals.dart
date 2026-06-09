@@ -19,6 +19,7 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
   var income = 0.0;
   var expenses = 0.0;
   for (final tx in transactions) {
+    if (!tx.isPaid) continue;
     if (tx.type == TransactionType.income) {
       income += tx.amount;
     } else {

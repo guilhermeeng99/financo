@@ -194,6 +194,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     final cubit = context.read<TransactionFormCubit>();
     final currentDate = cubit.state.date;
     final now = DateTime.now();
+    final allowsFutureDate =
+        !cubit.state.isTransfer &&
+        cubit.state.settlementStatus == TransactionSettlementStatus.pending;
     // `lastDate` must always be ≥ `initialDate` or `showDatePicker`
     // hits an assertion and the tap silently no-ops. Transactions
     // with future dates (imported, or created when "now" was later)
@@ -201,7 +204,11 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     // bound but expand to the existing date if it's already in the
     // future. The cubit's `isValid` still rejects future dates on
     // submit, so the constraint isn't lost.
-    final lastDate = currentDate.isAfter(now) ? currentDate : now;
+    final lastDate = allowsFutureDate
+        ? DateTime(now.year + 10, now.month, now.day)
+        : currentDate.isAfter(now)
+        ? currentDate
+        : now;
     final picked = await showDatePicker(
       context: context,
       initialDate: currentDate,
@@ -278,6 +285,8 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                 ? (bill.isReceivable ? t.bills.billReceived : t.bills.billPaid)
                 : state.isTransfer && !state.isEditing
                 ? t.transactions.transferCreated
+                : state.settlementStatus == TransactionSettlementStatus.pending
+                ? t.transactions.transactionScheduled
                 : state.isEditing
                 ? t.transactions.transactionUpdated
                 : t.transactions.transactionCreated,
@@ -381,7 +390,8 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                                 // edit / bill-settle, where the amount is
                                 // prefilled and autofocus would prepend digits
                                 // to the existing value.
-                                autofocus: kIsWeb &&
+                                autofocus:
+                                    kIsWeb &&
                                     !state.isEditing &&
                                     widget.prefillFromBill == null,
                               ),
@@ -389,7 +399,11 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: FinancoDateField(
-                                label: t.transactions.date,
+                                label:
+                                    state.settlementStatus ==
+                                        TransactionSettlementStatus.pending
+                                    ? t.transactions.dueDate
+                                    : t.transactions.date,
                                 value: state.date,
                                 onTap: _pickDate,
                               ),
@@ -436,6 +450,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         bottomNavigationBar:
             BlocBuilder<TransactionFormCubit, TransactionFormState>(
               builder: (context, state) {
+                final cubit = context.read<TransactionFormCubit>();
                 // "Save and add another" only makes sense for fresh
                 // create flows. In edit mode there's no "next one" to
                 // queue up; in bill-settlement mode the page is single-
@@ -447,6 +462,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                   label: state.isEditing ? t.general.update : t.general.save,
                   isLoading: state.status == FormStatus.submitting,
                   isEnabled: state.isValid,
+                  leading: state.isTransfer
+                      ? null
+                      : _SettlementActionButton(state: state, cubit: cubit),
                   onSubmit: _onSubmit,
                   onSecondarySubmit: canContinue ? _onSubmitAndContinue : null,
                   secondaryIcon: canContinue ? Icons.add : null,
@@ -629,6 +647,60 @@ class _CategoryRow extends StatelessWidget {
               color: colors.onBackgroundLight,
             ),
       onTap: onTap,
+    );
+  }
+}
+
+class _SettlementActionButton extends StatelessWidget {
+  const _SettlementActionButton({
+    required this.state,
+    required this.cubit,
+  });
+
+  final TransactionFormState state;
+  final TransactionFormCubit cubit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final isPaid = state.settlementStatus == TransactionSettlementStatus.paid;
+    final isSubmitting = state.status == FormStatus.submitting;
+    final paidLabel = state.type == TransactionType.income
+        ? t.transactions.receivedNow
+        : t.transactions.paidNow;
+    final nextStatus = isPaid
+        ? TransactionSettlementStatus.pending
+        : TransactionSettlementStatus.paid;
+    final tooltip = isPaid ? paidLabel : t.transactions.leavePending;
+    final foreground = isPaid ? Colors.white : colors.onBackgroundLight;
+    final background = isPaid
+        ? colors.income
+        : colors.surfaceVariant.withValues(alpha: 0.9);
+
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        selected: isPaid,
+        label: tooltip,
+        child: Material(
+          color: background,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            onTap: isSubmitting
+                ? null
+                : () => cubit.updateSettlementStatus(nextStatus),
+            borderRadius: BorderRadius.circular(14),
+            child: Center(
+              child: FaIcon(
+                isPaid ? FontAwesomeIcons.check : FontAwesomeIcons.clock,
+                size: 18,
+                color: foreground,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

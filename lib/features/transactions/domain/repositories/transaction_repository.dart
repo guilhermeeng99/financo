@@ -7,8 +7,11 @@ abstract class TransactionRepository {
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
     bool forceRefresh = false,
   });
 

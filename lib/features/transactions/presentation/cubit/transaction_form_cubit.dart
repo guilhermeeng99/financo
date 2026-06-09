@@ -57,7 +57,31 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void updateDescription(String value) =>
       emit(state.copyWith(description: value));
 
-  void updateDate(DateTime date) => emit(state.copyWith(date: date));
+  void updateDate(DateTime date) {
+    final settlementStatus = !state.isTransfer && _isAfterToday(date)
+        ? TransactionSettlementStatus.pending
+        : state.settlementStatus;
+    emit(
+      state.copyWith(
+        date: date,
+        settlementStatus: settlementStatus,
+      ),
+    );
+  }
+
+  void updateSettlementStatus(TransactionSettlementStatus settlementStatus) {
+    final nextDate =
+        settlementStatus == TransactionSettlementStatus.paid &&
+            _isAfterToday(state.date)
+        ? DateTime.now()
+        : state.date;
+    emit(
+      state.copyWith(
+        date: nextDate,
+        settlementStatus: settlementStatus,
+      ),
+    );
+  }
 
   void updateAccountId(String id) => emit(state.copyWith(accountId: id));
 
@@ -68,8 +92,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   void updateNotes(String value) => emit(state.copyWith(notes: value));
 
-  void setTransferMode({required bool enabled}) =>
-      emit(state.copyWith(isTransfer: enabled));
+  void setTransferMode({required bool enabled}) => emit(
+    state.copyWith(
+      isTransfer: enabled,
+      settlementStatus: enabled
+          ? TransactionSettlementStatus.paid
+          : state.settlementStatus,
+    ),
+  );
 
   /// Submits the form. When [continueAfterSave] is true, the resulting
   /// `success` state carries the same flag so the page can keep the user
@@ -137,12 +167,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         isTransfer: state.isTransfer,
         existingId: state.existingId,
         linkedTransactionId: state.linkedTransactionId,
+        settlementStatus: state.settlementStatus,
+        recurrence: state.recurrence,
       ),
     );
   }
 
   Future<void> _submitTransaction() async {
     final now = DateTime.now();
+    final isPaid = state.settlementStatus == TransactionSettlementStatus.paid;
     final transaction = TransactionEntity(
       id: state.existingId ?? '',
       userId: state.userId,
@@ -152,6 +185,10 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       amount: state.amount,
       description: state.description,
       date: state.date,
+      settlementStatus: state.settlementStatus,
+      dueDate: state.date,
+      settledAt: isPaid ? state.date : null,
+      recurrence: state.recurrence,
       notes: state.notes,
       linkedTransactionId: state.linkedTransactionId,
       // Preserve original createdAt on edit — overwriting with `now`
@@ -194,6 +231,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       description: state.description,
       date: state.date,
       notes: state.notes,
+      dueDate: state.date,
+      settledAt: state.date,
       createdAt: now,
       updatedAt: now,
     );
@@ -207,6 +246,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       description: state.description,
       date: state.date,
       notes: state.notes,
+      dueDate: state.date,
+      settledAt: state.date,
       createdAt: now,
       updatedAt: now,
     );
@@ -240,6 +281,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       date: state.date,
       notes: state.notes,
       linkedTransactionId: state.linkedTransactionId,
+      dueDate: state.date,
+      settledAt: state.date,
       createdAt: state.originalCreatedAt ?? now,
       updatedAt: now,
     );
@@ -254,6 +297,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       date: state.date,
       notes: state.notes,
       linkedTransactionId: state.existingId,
+      dueDate: state.date,
+      settledAt: state.date,
       createdAt: state.destinationCreatedAt ?? now,
       updatedAt: now,
     );
@@ -285,6 +330,8 @@ class TransactionFormState extends Equatable {
     required this.notes,
     required this.status,
     required this.isTransfer,
+    this.settlementStatus = TransactionSettlementStatus.paid,
+    this.recurrence = TransactionRecurrence.oneShot,
     this.destinationAccountId = '',
     this.existingId,
     this.linkedTransactionId,
@@ -319,6 +366,9 @@ class TransactionFormState extends Equatable {
       notes: existing?.notes ?? '',
       status: FormStatus.initial,
       isTransfer: false,
+      settlementStatus:
+          existing?.settlementStatus ?? TransactionSettlementStatus.paid,
+      recurrence: existing?.recurrence ?? TransactionRecurrence.oneShot,
       existingId: existing?.id,
       linkedTransactionId: existing?.linkedTransactionId,
       originalCreatedAt: existing?.createdAt,
@@ -368,6 +418,8 @@ class TransactionFormState extends Equatable {
   final String notes;
   final FormStatus status;
   final bool isTransfer;
+  final TransactionSettlementStatus settlementStatus;
+  final TransactionRecurrence recurrence;
   final String destinationAccountId;
   final String? existingId;
   final String? linkedTransactionId;
@@ -398,9 +450,11 @@ class TransactionFormState extends Equatable {
   bool get isEditing => existingId != null;
 
   bool get _isDateValid {
-    final now = DateTime.now();
-    final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    return !date.isAfter(endOfToday);
+    if (!isTransfer &&
+        settlementStatus == TransactionSettlementStatus.pending) {
+      return true;
+    }
+    return !_isAfterToday(date);
   }
 
   bool get isValid {
@@ -425,6 +479,8 @@ class TransactionFormState extends Equatable {
     String? notes,
     FormStatus? status,
     bool? isTransfer,
+    TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
     DateTime? originalCreatedAt,
     DateTime? destinationCreatedAt,
     String? savedTransactionId,
@@ -443,6 +499,8 @@ class TransactionFormState extends Equatable {
       notes: notes ?? this.notes,
       status: status ?? this.status,
       isTransfer: isTransfer ?? this.isTransfer,
+      settlementStatus: settlementStatus ?? this.settlementStatus,
+      recurrence: recurrence ?? this.recurrence,
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
       // These are only ever assigned (filling in the counterpart leg on
@@ -468,6 +526,8 @@ class TransactionFormState extends Equatable {
     notes,
     status,
     isTransfer,
+    settlementStatus,
+    recurrence,
     existingId,
     linkedTransactionId,
     originalCreatedAt,
@@ -476,4 +536,10 @@ class TransactionFormState extends Equatable {
     continueAfterSave,
     failure,
   ];
+}
+
+bool _isAfterToday(DateTime date) {
+  final now = DateTime.now();
+  final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
+  return date.isAfter(endOfToday);
 }

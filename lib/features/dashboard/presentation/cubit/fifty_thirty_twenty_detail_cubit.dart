@@ -19,8 +19,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// month. Distinct from the dashboard pipeline so the detail page can
 /// evolve (different filters, larger windows) without dragging the
 /// dashboard along.
-class FiftyThirtyTwentyDetailCubit
-    extends Cubit<FiftyThirtyTwentyDetailState> {
+class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
   FiftyThirtyTwentyDetailCubit({
     required GetAccountsUseCase getAccounts,
     required GetCategoriesUseCase getCategories,
@@ -65,7 +64,10 @@ class FiftyThirtyTwentyDetailCubit
 
     final accounts = accountsResult.fold((_) => null, (a) => a);
     final categories = categoriesResult.fold((_) => null, (c) => c);
-    final txs = txResult.fold((_) => null, (t) => t);
+    final txs = txResult.fold(
+      (_) => null,
+      (t) => t.where((transaction) => transaction.isPaid).toList(),
+    );
     final history = historyResult.fold((_) => null, (h) => h);
 
     if (accounts == null ||

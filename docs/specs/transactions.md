@@ -11,7 +11,11 @@ TransactionEntity {
   type:                  TransactionType (required: income | expense)
   amount:                double          (required, > 0)
   description:           String          (required, may be empty)
-  date:                  DateTime        (required, not in the future)
+  date:                  DateTime        (required; future allowed only when pending)
+  settlementStatus:      TransactionSettlementStatus (pending | paid, default paid)
+  dueDate:               DateTime        (defaults to date)
+  settledAt:             DateTime?       (set when paid)
+  recurrence:            TransactionRecurrence (oneShot | monthly)
   notes:                 String?         (optional free-text)
   linkedTransactionId:   String?         (optional, non-null for transfers)
   createdAt:             DateTime        (required, set on creation)
@@ -19,6 +23,8 @@ TransactionEntity {
 }
 
 bool get isTransfer => linkedTransactionId != null
+bool get isPending => settlementStatus == pending
+bool get isPaid => settlementStatus == paid
 ```
 
 ## Business Rules
@@ -27,12 +33,14 @@ bool get isTransfer => linkedTransactionId != null
 2. **Amount must be positive** — `amount > 0`.
 3. **Account is required** — `accountId` must be non-empty.
 4. **Category is required for income/expense** — `categoryId` must be non-empty. Transfers have empty categoryId.
-5. **Date cannot be in the future** — validated as `!date.isAfter(endOfToday)`.
+5. **Paid date cannot be in the future** — pending transactions can use a future `dueDate`.
 6. **Transaction type (income/expense) is immutable after creation** — same pattern as categories/accounts.
 7. **Transactions are ordered by date descending** in both Firestore and local cache queries.
 8. **Transactions support filtering** by: date range (startDate/endDate), accountId, categoryId.
 9. **Default type is expense** for new transactions.
 10. **Reassign transactions** — bulk operation that moves all transactions from one category to another (used when deleting a category).
+11. **Pending transactions do not affect financial totals** — balances, dashboard, budgets, account statements, investments, and 50/30/20 use `tx.isPaid`.
+12. **Future dates auto-schedule** — the form switches to `pending` when the selected date is in the future.
 
 ### Transfer Rules
 
@@ -51,8 +59,11 @@ abstract class TransactionRepository {
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
     bool forceRefresh = false,
   });
 
@@ -181,7 +192,7 @@ submit():
 
 - **Empty transaction list** — Loaded with empty list, not error.
 - **Amount parsing** — `double.tryParse` with fallback to 0.
-- **Future date** — form validation blocks submit.
+- **Future date** — allowed only when `settlementStatus == pending`; paid future dates are blocked.
 - **Delete transfer** — deletes both linked transactions.
 - **Delete then reload** — after successful delete, bloc re-dispatches load for current month.
 - **Reassign with no matching transactions** — Firestore batch is empty, succeeds silently.

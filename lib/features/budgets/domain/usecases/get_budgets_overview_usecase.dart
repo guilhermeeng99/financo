@@ -77,6 +77,7 @@ class GetBudgetsOverviewUseCase {
     // single lookup covers both rule-5 paths (root and child).
     final spentByRoot = <String, double>{};
     for (final t in transactions) {
+      if (!t.isPaid) continue;
       if (t.type != TransactionType.expense) continue;
       if (t.isTransfer) continue;
       final cat = byId[t.categoryId];

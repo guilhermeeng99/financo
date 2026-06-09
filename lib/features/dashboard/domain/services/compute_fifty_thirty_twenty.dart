@@ -29,6 +29,9 @@ FiftyThirtyTwentyOverview compute50_30_20Overview({
   required List<AccountEntity> accounts,
   FiftyThirtyTwentyTargets targets = FiftyThirtyTwentyTargets.classic,
 }) {
+  final settledTransactions = periodTransactions
+      .where((transaction) => transaction.isPaid)
+      .toList();
   final categoriesById = <String, CategoryEntity>{
     for (final c in categories) c.id: c,
   };
@@ -36,9 +39,15 @@ FiftyThirtyTwentyOverview compute50_30_20Overview({
     for (final a in accounts) a.id: a.type,
   };
 
-  final income = _sumIncome(periodTransactions, categoriesById);
-  final expenseBuckets = _bucketExpenses(periodTransactions, categoriesById);
-  final savingsAmount = _netSavingsFlow(periodTransactions, accountTypeById);
+  final income = _sumIncome(settledTransactions, categoriesById);
+  final expenseBuckets = _bucketExpenses(
+    settledTransactions,
+    categoriesById,
+  );
+  final savingsAmount = _netSavingsFlow(
+    settledTransactions,
+    accountTypeById,
+  );
   final hasInvestmentAccount = accounts.any(
     (a) => a.type == AccountType.investment,
   );
@@ -108,7 +117,8 @@ double _sumIncome(
   double needs,
   double wants,
   double unclassifiedSpent,
-}) _bucketExpenses(
+})
+_bucketExpenses(
   List<TransactionEntity> txs,
   Map<String, CategoryEntity> categoriesById,
 ) {
@@ -129,9 +139,7 @@ double _sumIncome(
 
     // Resolve to the root category. Subcategory.bucket is ignored by
     // design — the user classifies once, at the root.
-    final rootCat = cat.parentId == null
-        ? cat
-        : categoriesById[cat.parentId];
+    final rootCat = cat.parentId == null ? cat : categoriesById[cat.parentId];
     if (rootCat == null) {
       // Subcategory whose parent was deleted (orphan parent).
       unclassifiedSpent += t.amount;

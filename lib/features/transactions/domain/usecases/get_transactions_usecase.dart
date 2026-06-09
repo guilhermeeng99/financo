@@ -12,15 +12,21 @@ class GetTransactionsUseCase {
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? categoryId,
     String? accountId,
+    TransactionSettlementStatus? settlementStatus,
     bool forceRefresh = false,
   }) => _repository.getTransactions(
     userId: userId,
     startDate: startDate,
     endDate: endDate,
+    dueStartDate: dueStartDate,
+    dueEndDate: dueEndDate,
     categoryId: categoryId,
     accountId: accountId,
+    settlementStatus: settlementStatus,
     forceRefresh: forceRefresh,
   );
 }

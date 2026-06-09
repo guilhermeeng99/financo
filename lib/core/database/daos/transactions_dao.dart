@@ -28,8 +28,11 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
+    DateTime? dueStartDate,
+    DateTime? dueEndDate,
     String? accountId,
     String? categoryId,
+    TransactionSettlementStatus? settlementStatus,
   }) async {
     final query = select(localTransactions)
       ..where((t) => t.userId.equals(userId));
@@ -44,11 +47,24 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         (t) => t.date.isSmallerOrEqualValue(endDate),
       );
     }
+    if (dueStartDate != null) {
+      query.where(
+        (t) => t.dueDate.isBiggerOrEqualValue(dueStartDate),
+      );
+    }
+    if (dueEndDate != null) {
+      query.where(
+        (t) => t.dueDate.isSmallerOrEqualValue(dueEndDate),
+      );
+    }
     if (accountId != null) {
       query.where((t) => t.accountId.equals(accountId));
     }
     if (categoryId != null) {
       query.where((t) => t.categoryId.equals(categoryId));
+    }
+    if (settlementStatus != null) {
+      query.where((t) => t.settlementStatus.equals(settlementStatus.name));
     }
 
     query.orderBy([(t) => OrderingTerm.desc(t.date)]);
@@ -99,6 +115,10 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         amount: e.amount,
         description: e.description,
         date: e.date,
+        settlementStatus: Value(e.settlementStatus.name),
+        dueDate: Value(e.dueDate),
+        settledAt: Value(e.settledAt),
+        recurrence: Value(e.recurrence.name),
         notes: Value(e.notes),
         linkedTransactionId: Value(e.linkedTransactionId),
         createdAt: e.createdAt,
@@ -114,9 +134,25 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     amount: row.amount,
     description: row.description,
     date: row.date,
+    settlementStatus: _parseSettlementStatus(row.settlementStatus),
+    dueDate: row.dueDate ?? row.date,
+    settledAt: row.settledAt,
+    recurrence: _parseRecurrence(row.recurrence),
     notes: row.notes,
     linkedTransactionId: row.linkedTransactionId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );
 }
+
+TransactionSettlementStatus _parseSettlementStatus(String value) =>
+    TransactionSettlementStatus.values.firstWhere(
+      (status) => status.name == value,
+      orElse: () => TransactionSettlementStatus.paid,
+    );
+
+TransactionRecurrence _parseRecurrence(String value) =>
+    TransactionRecurrence.values.firstWhere(
+      (recurrence) => recurrence.name == value,
+      orElse: () => TransactionRecurrence.oneShot,
+    );
