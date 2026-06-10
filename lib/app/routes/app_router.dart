@@ -70,6 +70,7 @@ import 'package:financo/features/profile/presentation/pages/profile_page.dart';
 import 'package:financo/features/startup/presentation/pages/startup_page.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recurrences_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
@@ -164,6 +165,8 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
                 targetsCubit: targetsCubit,
                 userId: userId,
+                ensureFixedRecurrences:
+                    GetIt.I<EnsureFixedRecurrencesUseCase>(),
               ),
             ),
             BlocProvider(
@@ -177,6 +180,8 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 getTransactions: GetIt.I<GetTransactionsUseCase>(),
                 deleteTransaction: GetIt.I<DeleteTransactionUseCase>(),
                 importTransactionsCsv: GetIt.I<ImportTransactionsCsvUseCase>(),
+                ensureFixedRecurrences:
+                    GetIt.I<EnsureFixedRecurrencesUseCase>(),
                 userId: userId,
               ),
             ),

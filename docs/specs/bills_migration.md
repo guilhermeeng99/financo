@@ -12,6 +12,21 @@ Move production data to the new source of truth:
   reads it.
 - The migration must be idempotent and dry-run by default.
 
+## Production Run
+
+Executed on 2026-06-10 against `financo-app-2026`.
+
+Result:
+
+- 22 legacy bills processed.
+- 12 pending transactions created with deterministic ids
+  `legacy_bill_<billId>`.
+- 10 existing paid transactions updated with settlement metadata and
+  `sourceBillId`.
+- 0 skipped, 0 errors.
+- Final dry-run confirmed idempotency: 0 creates, 0 updates, 22 already
+  migrated.
+
 ## Source Contract
 
 Legacy bill documents contain:

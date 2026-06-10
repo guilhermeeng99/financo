@@ -46,11 +46,17 @@ transaction. Creating a future payable/receivable creates one transaction row
 with `settlementStatus = pending`. Marking it as paid/received updates that same
 transaction to `settlementStatus = paid`.
 
+Production migration status: legacy `bills` data was migrated to
+transaction-backed records on 2026-06-10. The `bills` collection remains for
+rollback/audit only; new UI flows must use `transactions`.
+
 ## V1 Implementation Scope
 
-The first implementation ships the core transaction-based behavior:
+The implementation ships the core transaction-based behavior:
 
 - `settlementStatus`, `dueDate`, `settledAt`, and `recurrence` on transactions.
+- Recurrence modes are `single`, `installment`, and `fixed`; legacy
+  `oneShot`/`monthly` values are accepted only as migration-compatible input.
 - Future dates allowed through `AddTransactionPage` when the transaction is
   pending.
 - `BillsPage` reads transactions and renders `A pagar`, `A receber`, `Pagas`,
@@ -63,13 +69,16 @@ The first implementation ships the core transaction-based behavior:
 - Settlement updates the same transaction.
 - Financial calculations ignore pending transactions.
 - `notifyBillsDue` queries pending transactions.
+- Legacy `bills` production data has been migrated to `transactions`.
+- Fixed recurrence is materialized as a rolling 12-month window, filled
+  opportunistically when Dashboard/Transactions load.
+- Installments are created as multiple pending/paid transaction rows in one
+  batch.
 
-Deferred from V1:
+Deferred:
 
-- `parentTransactionId` and `sourceBillId`.
-- Automatic next occurrence creation for monthly recurrence.
 - Full `[BILL_ACTION]` chat migration.
-- One-time migration from the legacy `bills` collection.
+- Removing or archiving the legacy bills domain after rollback risk is closed.
 
 ## Entity Contract
 
@@ -77,7 +86,7 @@ Deferred from V1:
 
 ```dart
 enum TransactionSettlementStatus { pending, paid }
-enum TransactionRecurrence { oneShot, monthly }
+enum TransactionRecurrence { single, installment, fixed }
 
 TransactionEntity {
   id:                    String
@@ -94,11 +103,15 @@ TransactionEntity {
   date:                  DateTime
 
   settlementStatus:      TransactionSettlementStatus // pending | paid
-  dueDate:               DateTime?       // required when pending; defaults to date when paid
+  dueDate:               DateTime        // defaults to date for legacy paid rows
   settledAt:             DateTime?       // set when status becomes paid
-  recurrence:            TransactionRecurrence // oneShot | monthly
-  parentTransactionId:   String?         // previous occurrence for monthly chains
-  sourceBillId:          String?         // legacy migration trace only
+  recurrence:            TransactionRecurrence // single | installment | fixed
+  recurrenceGroupId:     String?
+  recurrenceIntervalMonths: int
+  recurrenceIndex:       int?
+  recurrenceTotal:       int?
+  recurrenceBaseDescription: String?
+  recurrenceEndDate:     DateTime?
 
   notes:                 String?
   linkedTransactionId:   String?         // existing transfer support
@@ -112,15 +125,14 @@ Computed properties:
 ```dart
 bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
 bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;
-bool get isPayable => type == TransactionType.expense && !isTransfer;
-bool get isReceivable => type == TransactionType.income && !isTransfer;
-DateTime get effectiveDueDate => dueDate ?? date;
+bool get isPayable => type == TransactionType.expense;
+bool get isReceivable => type == TransactionType.income;
 
 bool get isOverdue =>
-  isPending && startOfDay(effectiveDueDate).isBefore(startOfToday());
+  isPending && startOfDay(dueDate).isBefore(startOfToday());
 
 bool get isDueToday =>
-  isPending && isSameDay(effectiveDueDate, DateTime.now());
+  isPending && isSameDay(dueDate, DateTime.now());
 ```
 
 ## Business Rules
@@ -162,25 +174,31 @@ bool get isDueToday =>
 
 ## Recurrence
 
-Monthly recurrence moves from `BillEntity` to `TransactionEntity`.
+Recurring cash-flow now belongs to `TransactionEntity`.
 
-When a monthly pending transaction is settled:
+Modes:
 
-1. Update the current transaction to `paid`.
-2. Create the next pending transaction with:
-   - same `userId`, `accountId`, `categoryId`, `type`, `amount`,
-     `description`, `notes`
-   - `settlementStatus = pending`
-   - `recurrence = monthly`
-   - `parentTransactionId = paidTransaction.id`
-   - `dueDate = nextMonthlyDueDateAfter(paidTransaction.effectiveDueDate, today)`
-   - `date = dueDate`
-3. The monthly date helper should reuse the existing `monthly_due_date.dart`
-   rules from the bills feature.
+1. `single` — one transaction row.
+2. `installment` — creates one row per installment. The form amount is the
+   total purchase value; generated rows split cents so the row sum equals the
+   original amount. Descriptions append `1/N`, `2/N`, etc.
+3. `fixed` — represents a permanent recurring intent, but the app materializes
+   only a rolling 12-month window to avoid unbounded Firestore writes.
 
-Virtual projected monthly bills are not part of this refactor's V1. V1 should
-materialize the next occurrence only after settlement, matching the current
-practical behavior.
+Rules:
+
+- Recurrence is month-based only.
+- `recurrenceIntervalMonths` controls the cadence.
+- Generated future rows are always `settlementStatus = pending`; only the first
+  row follows the user's current paid/pending toggle.
+- Editing/deleting a sequence asks for scope: only the selected row, or the
+  selected row and following pending rows. Paid rows are not mutated by the
+  following scope.
+- Deleting "this and following" on a fixed sequence writes
+  `recurrenceEndDate` on earlier sequence rows so the rolling generator does
+  not recreate the removed future rows.
+- Fixed rows are topped up by `EnsureFixedRecurrencesUseCase` when Dashboard or
+  Transactions load.
 
 ## Repository Contract Changes
 
@@ -196,7 +214,8 @@ Future<Either<Failure, List<TransactionEntity>>> getTransactions({
   String? categoryId,
   String? accountId,
   TransactionSettlementStatus? settlementStatus,
-  bool includePending = true,
+  TransactionRecurrence? recurrence,
+  String? recurrenceGroupId,
   bool forceRefresh = false,
 });
 ```
@@ -204,27 +223,30 @@ Future<Either<Failure, List<TransactionEntity>>> getTransactions({
 New use cases:
 
 ```dart
-class MarkTransactionSettledUseCase {
+class SettleTransactionUseCase {
   Future<Either<Failure, TransactionEntity>> call({
-    required String transactionId,
-    required DateTime settlementDate,
+    required TransactionEntity transaction,
+    DateTime? settledAt,
   });
 }
 
-class GetPayablesReceivablesUseCase {
-  Future<Either<Failure, PayablesReceivablesOverview>> call({
-    required String userId,
-    required int year,
-    required int month,
-    required PayablesReceivablesMode mode,
-    required TransactionType type,
-    bool forceRefresh = false,
-  });
-}
+Future<Either<Failure, List<TransactionEntity>>> createTransactions(
+  List<TransactionEntity> transactions,
+);
+
+Future<Either<Failure, List<TransactionEntity>>> updateTransactions(
+  List<TransactionEntity> transactions,
+);
+
+Future<Either<Failure, void>> deleteTransactions(List<String> ids);
 ```
 
-`BillRepository` becomes legacy-only during migration and should not be used by
-new UI flows after the refactor lands.
+`BillsPage` currently builds the payables/receivables overview directly from
+`TransactionRepository.getTransactions`; there is no separate
+`GetPayablesReceivablesUseCase` in V1.
+
+`BillRepository` is legacy-only after migration and should not be used by new UI
+flows.
 
 ## Firestore
 
@@ -240,19 +262,31 @@ New fields:
 settlementStatus: "pending" | "paid"
 dueDate: Timestamp?
 settledAt: Timestamp?
-recurrence: "oneShot" | "monthly"
-parentTransactionId: string?
-sourceBillId: string?
+recurrence: "single" | "installment" | "fixed"
+recurrenceGroupId: string?
+recurrenceIntervalMonths: number?
+recurrenceIndex: number?
+recurrenceTotal: number?
+recurrenceBaseDescription: string?
+recurrenceEndDate: Timestamp?
 ```
+
+Migration-only Firestore fields may exist on migrated records:
+
+```text
+sourceBillId: string?
+parentTransactionId: string?
+```
+
+These are audit/rollback traces written by the migration script. They are not
+part of the Dart `TransactionEntity` or Drift cache in V1.
 
 Default when missing:
 
 - `settlementStatus = paid`
 - `dueDate = date`
 - `settledAt = null`
-- `recurrence = oneShot`
-- `parentTransactionId = null`
-- `sourceBillId = null`
+- `recurrence = single`
 
 Indexes:
 
@@ -263,8 +297,8 @@ transactions: userId + settlementStatus + date desc
 transactions: accountId + userId + settlementStatus + date desc
 ```
 
-The existing `bills/{id}` collection remains during migration, then becomes
-read-only / deprecated.
+The existing `bills/{id}` collection remains after migration as read-only /
+deprecated rollback/audit data.
 
 ## Drift
 
@@ -275,9 +309,14 @@ TextColumn get settlementStatus =>
     text().withDefault(const Constant('paid'))();
 DateTimeColumn get dueDate => dateTime().nullable()();
 DateTimeColumn get settledAt => dateTime().nullable()();
-TextColumn get recurrence => text().withDefault(const Constant('oneShot'))();
-TextColumn get parentTransactionId => text().nullable()();
-TextColumn get sourceBillId => text().nullable()();
+TextColumn get recurrence => text().withDefault(const Constant('single'))();
+TextColumn get recurrenceGroupId => text().nullable()();
+IntColumn get recurrenceIntervalMonths =>
+    integer().withDefault(const Constant(1))();
+IntColumn get recurrenceIndex => integer().nullable()();
+IntColumn get recurrenceTotal => integer().nullable()();
+TextColumn get recurrenceBaseDescription => text().nullable()();
+DateTimeColumn get recurrenceEndDate => dateTime().nullable()();
 ```
 
 Because local cache is disposable and the database migration already drops and
@@ -351,6 +390,9 @@ Reuse `AddTransactionPage`, but add a settlement control:
 
 - `Pago/Recebido agora`
 - `Agendar / deixar pendente`
+- Recurrence toggle: `Única`, `Parcelada`, `Fixa`
+- Recurrence settings: month-based cadence and installment count, capped by the
+  rolling 12-month window.
 
 Behavior:
 
@@ -359,6 +401,9 @@ Behavior:
 - If paid, label date field as transaction date.
 - Account and category remain required in V1.
 - Transfer mode disables scheduled/pending in V1.
+- Transfer mode disables recurrence.
+- Existing sequence rows keep recurrence immutable. Editing/deleting a recurring
+  row opens a scope dialog.
 
 ### Settlement Flow
 
@@ -391,8 +436,9 @@ Rule:
 final paidTransactions = transactions.where((tx) => tx.isPaid);
 ```
 
-Pending transactions may be used only in cash-flow forecast / payables
-receivables contexts.
+Pending transactions may be used in cash-flow forecast / payables receivables
+contexts and as visual rows in account statements. They must still be excluded
+from financial totals and running balances.
 
 ## Notifications
 
@@ -443,7 +489,7 @@ Transaction actions gain:
   "description": "Internet",
   "date": "2026-07-10",
   "settlementStatus": "pending",
-  "recurrence": "monthly",
+  "recurrence": "fixed",
   "category": "Moradia/Internet",
   "accountName": "Nubank"
 }
@@ -500,8 +546,8 @@ AI context should include:
    controls.
 2. Future date should automatically make the transaction pending.
 3. Marking a pending transaction paid should update the existing transaction.
-4. Monthly recurrence should create the next pending occurrence after
-   settlement.
+4. Installment/fixed recurrence should create generated pending occurrences in
+   one batch, limited by the 12-month window.
 
 ### Phase 5 - Notifications
 
@@ -514,15 +560,21 @@ AI context should include:
 
 ### Phase 6 - Legacy Bills Migration
 
-1. One-time migration script:
-   - Pending bill -> create pending transaction with `sourceBillId = bill.id`.
-   - Paid bill with `paidTransactionId` -> update existing transaction with
-     `settlementStatus = paid`, `dueDate = bill.dueDate`, `settledAt = bill.paidAt`.
-   - Paid bill without `paidTransactionId` -> create a paid transaction only if
-     manual review confirms it is not already duplicated.
-2. After migration, UI stops reading `bills`.
-3. Keep `bills` collection for rollback until verified.
-4. Remove or archive `BillRepository` only after production data is migrated.
+Status: completed on 2026-06-10.
+
+1. One-time migration script was added at
+   `scripts/migrate_bills_to_transactions.js`.
+2. Pending bills created pending transactions with deterministic ids
+   `legacy_bill_<billId>` and `sourceBillId = bill.id`.
+3. Paid bills with `paidTransactionId` updated existing transactions with
+   `settlementStatus = paid`, `dueDate = bill.dueDate`, and
+   `settledAt = bill.paidAt ?? bill.dueDate`.
+4. Production result: 22 bills processed, 12 transactions created, 10 existing
+   transactions updated, 0 skipped, 0 errors.
+5. A final dry-run confirmed idempotency: 0 creates, 0 updates, 22 already
+   migrated.
+6. The app UI no longer reads `bills`; keep the collection for rollback/audit
+   until explicitly archived.
 
 ### Phase 7 - Cleanup
 
@@ -543,7 +595,9 @@ AI context should include:
 - Pending rows do not affect budgets or 50/30/20.
 - Marking payable as paid updates the same transaction.
 - Marking receivable as received updates the same transaction.
-- Monthly pending transaction creates next occurrence after settlement.
+- Installment transaction splits the total amount across generated rows.
+- Fixed transaction keeps a rolling 12-month window without unbounded writes.
+- Sequence edit/delete scope does not mutate already paid rows.
 - Notification function sends only for pending due/overdue transactions.
 - Legacy transaction without `settlementStatus` loads as paid.
 - Legacy bill migration does not duplicate linked paid transactions.
@@ -553,9 +607,7 @@ AI context should include:
 1. Should pending transactions require an account, or should the user be able to
    schedule a payable before knowing which account will pay it?
 2. Should settlement allow partial payment, or is V1 strictly full amount only?
-3. Should `Pagas/Recebidas` live in the same page as `A pagar/A receber`, or be
-   a second sidebar item like the reference app?
-4. Should future pending transactions appear in the normal Transactions tab, or
+3. Should future pending transactions appear in the normal Transactions tab, or
    only in the payables/receivables page?
-5. Should overdue badges count receivables and payables together, or show
+4. Should overdue badges count receivables and payables together, or show
    separate counts?

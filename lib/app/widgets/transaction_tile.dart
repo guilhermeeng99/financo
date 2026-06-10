@@ -1,7 +1,9 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -18,6 +20,7 @@ class TransactionTile extends StatelessWidget {
     required this.transaction,
     this.categoryLabel,
     this.accountLabel,
+    this.showSettlementStatus = false,
     this.onTap,
     super.key,
   });
@@ -31,24 +34,18 @@ class TransactionTile extends StatelessWidget {
   /// Optional tertiary label for the account when available.
   final String? accountLabel;
 
+  /// Shows pending/paid status in icon and subtitle when the host page needs it.
+  final bool showSettlementStatus;
+
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final isIncome = transaction.type == TransactionType.income;
-    final isTransfer = transaction.isTransfer;
-
-    final accent = isTransfer
-        ? colors.primary
-        : isIncome
-            ? colors.income
-            : colors.expense;
-    final icon = isTransfer
-        ? FontAwesomeIcons.arrowRightArrowLeft
-        : isIncome
-            ? FontAwesomeIcons.arrowDown
-            : FontAwesomeIcons.arrowUp;
+    final visual = showSettlementStatus
+        ? _statementVisualFor(transaction, colors)
+        : _defaultVisualFor(transaction, colors);
 
     return Material(
       color: Colors.transparent,
@@ -59,7 +56,7 @@ class TransactionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Row(
             children: [
-              _IconDisc(icon: icon, color: accent),
+              _IconDisc(icon: visual.icon, color: visual.color),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -85,7 +82,13 @@ class TransactionTile extends StatelessWidget {
                     Text(
                       _subtitleFor(transaction),
                       style: context.textTheme.bodySmall?.copyWith(
-                        color: colors.onBackgroundLight,
+                        color: showSettlementStatus && transaction.isOverdue
+                            ? colors.expense
+                            : colors.onBackgroundLight,
+                        fontWeight:
+                            showSettlementStatus && transaction.isOverdue
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -106,7 +109,7 @@ class TransactionTile extends StatelessWidget {
   }
 
   String _subtitleFor(TransactionEntity tx) {
-    final date = formatDayMonth(tx.date);
+    final date = formatDayMonth(tx.isPending ? tx.dueDate : tx.date);
     final parts = <String>[date];
     if (categoryLabel != null && categoryLabel!.isNotEmpty) {
       parts.add(categoryLabel!);
@@ -114,8 +117,42 @@ class TransactionTile extends StatelessWidget {
     if (accountLabel != null && accountLabel!.isNotEmpty) {
       parts.add(accountLabel!);
     }
+    if (showSettlementStatus) {
+      parts.add(_settlementLabel(tx));
+    }
     return parts.join(' · ');
   }
+
+  String _settlementLabel(TransactionEntity tx) {
+    if (tx.isPaid) return tx.isReceivable ? t.bills.received : t.bills.paid;
+    if (tx.isOverdue) return t.bills.overdue;
+    if (tx.isDueToday) return t.bills.dueToday;
+    return t.bills.scheduled;
+  }
+}
+
+({FaIconData icon, Color color}) _defaultVisualFor(
+  TransactionEntity transaction,
+  AppColorsData colors,
+) {
+  if (transaction.isTransfer) {
+    return (icon: FontAwesomeIcons.arrowRightArrowLeft, color: colors.primary);
+  }
+  if (transaction.type == TransactionType.income) {
+    return (icon: FontAwesomeIcons.arrowDown, color: colors.income);
+  }
+  return (icon: FontAwesomeIcons.arrowUp, color: colors.expense);
+}
+
+({FaIconData icon, Color color}) _statementVisualFor(
+  TransactionEntity transaction,
+  AppColorsData colors,
+) {
+  if (transaction.isPaid) return _defaultVisualFor(transaction, colors);
+  if (transaction.isOverdue) {
+    return (icon: FontAwesomeIcons.triangleExclamation, color: colors.expense);
+  }
+  return (icon: FontAwesomeIcons.clock, color: colors.warning);
 }
 
 class _IconDisc extends StatelessWidget {

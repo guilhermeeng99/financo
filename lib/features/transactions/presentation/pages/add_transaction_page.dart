@@ -24,10 +24,14 @@ import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart'
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/delete_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
@@ -80,7 +84,9 @@ class AddTransactionPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => TransactionFormCubit(
         createTransaction: GetIt.I<CreateTransactionUseCase>(),
+        createTransactions: GetIt.I<CreateTransactionsUseCase>(),
         updateTransaction: GetIt.I<UpdateTransactionUseCase>(),
+        updateTransactionSequence: GetIt.I<UpdateTransactionSequenceUseCase>(),
         createTransfer: GetIt.I<CreateTransferUseCase>(),
         getTransaction: GetIt.I<GetTransactionUseCase>(),
         userId: userId,
@@ -149,22 +155,24 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   }
 
   Future<void> _confirmDelete(String id) async {
-    final confirmed = await showFinancoConfirmDialog(
-      context,
-      icon: FontAwesomeIcons.trashCan,
-      title: t.transactions.deleteTransaction,
-      message: t.transactions.deleteConfirm,
-      confirmLabel: t.general.delete,
-      destructive: true,
-    );
-    if (!confirmed || !mounted) return;
+    final cubit = context.read<TransactionFormCubit>();
+    final original = cubit.state.originalTransaction;
+    final scope = original != null && original.isRecurring
+        ? await _pickSequenceScope(deleting: true)
+        : await _confirmSingleDelete();
+    if (scope == null || !mounted) return;
 
     // Await the actual delete *before* popping so callers that reload on
     // return (e.g. AccountStatementPage) don't refresh against stale data.
     // We invoke the use case directly here and then ask the global
     // TransactionsBloc to refresh its cache — dispatching only the bloc
     // event would be fire-and-forget and lose the await guarantee.
-    final result = await GetIt.I<DeleteTransactionUseCase>().call(id);
+    final result = original != null && original.isRecurring
+        ? await GetIt.I<DeleteTransactionSequenceUseCase>().call(
+            transaction: original,
+            scope: scope,
+          )
+        : await GetIt.I<DeleteTransactionUseCase>().call(id);
     if (!mounted) return;
 
     result.fold(
@@ -179,6 +187,64 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         );
         _navigateBack();
       },
+    );
+  }
+
+  Future<TransactionSequenceScope?> _confirmSingleDelete() async {
+    final confirmed = await showFinancoConfirmDialog(
+      context,
+      icon: FontAwesomeIcons.trashCan,
+      title: t.transactions.deleteTransaction,
+      message: t.transactions.deleteConfirm,
+      confirmLabel: t.general.delete,
+      destructive: true,
+    );
+    return confirmed ? TransactionSequenceScope.onlyThis : null;
+  }
+
+  Future<TransactionSequenceScope?> _pickSequenceScope({
+    required bool deleting,
+  }) {
+    return showDialog<TransactionSequenceScope>(
+      context: context,
+      builder: (ctx) => FinancoDialog(
+        icon: deleting ? FontAwesomeIcons.trashCan : FontAwesomeIcons.pen,
+        iconColor: deleting ? ctx.appColors.error : ctx.appColors.primary,
+        title: deleting
+            ? t.transactions.sequenceDeleteTitle
+            : t.transactions.sequenceEditTitle,
+        message: deleting
+            ? t.transactions.sequenceDeleteMessage
+            : t.transactions.sequenceEditMessage,
+        actions: [
+          FinancoDialogAction(
+            label: t.general.cancel,
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          FinancoDialogAction(
+            label: deleting
+                ? t.transactions.sequenceDeleteOnlyThis
+                : t.transactions.sequenceEditOnlyThis,
+            kind: deleting
+                ? FinancoDialogActionKind.destructive
+                : FinancoDialogActionKind.secondary,
+            onPressed: () =>
+                Navigator.pop(ctx, TransactionSequenceScope.onlyThis),
+          ),
+          FinancoDialogAction(
+            label: deleting
+                ? t.transactions.sequenceDeleteThisAndFollowing
+                : t.transactions.sequenceEditThisAndFollowing,
+            kind: deleting
+                ? FinancoDialogActionKind.destructive
+                : FinancoDialogActionKind.primary,
+            onPressed: () => Navigator.pop(
+              ctx,
+              TransactionSequenceScope.thisAndFollowing,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -245,8 +311,25 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   }
 
   void _onSubmit() {
+    unawaited(_submit(continueAfterSave: false));
+  }
+
+  Future<void> _submit({required bool continueAfterSave}) async {
     if (_formKey.currentState?.validate() ?? false) {
-      unawaited(context.read<TransactionFormCubit>().submit());
+      final cubit = context.read<TransactionFormCubit>();
+      final state = cubit.state;
+      var scope = TransactionSequenceScope.onlyThis;
+      if (state.isEditing && state.isSequenceMember && !state.isTransfer) {
+        final picked = await _pickSequenceScope(deleting: false);
+        if (picked == null || !mounted) return;
+        scope = picked;
+      }
+      unawaited(
+        cubit.submit(
+          continueAfterSave: continueAfterSave,
+          sequenceScope: scope,
+        ),
+      );
     }
   }
 
@@ -255,11 +338,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   /// similar entries (e.g. several grocery purchases from the same
   /// account/category) without re-typing the shared bits.
   void _onSubmitAndContinue() {
-    if (_formKey.currentState?.validate() ?? false) {
-      unawaited(
-        context.read<TransactionFormCubit>().submit(continueAfterSave: true),
-      );
-    }
+    unawaited(_submit(continueAfterSave: true));
   }
 
   void _onFormStateChanged(
@@ -308,6 +387,54 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         SnackBar(content: Text(localizedFailure(state.failure))),
       );
     }
+  }
+
+  Future<void> _pickNumber({
+    required String title,
+    required int min,
+    required int max,
+    required int selected,
+    required ValueChanged<int> onPicked,
+  }) async {
+    final value = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: context.appColors.surface,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: Text(
+                title,
+                style: ctx.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: max - min + 1,
+                itemBuilder: (context, index) {
+                  final option = min + index;
+                  return ListTile(
+                    selected: option == selected,
+                    title: Text('$option'),
+                    trailing: option == selected
+                        ? const FaIcon(FontAwesomeIcons.check, size: 16)
+                        : null,
+                    onTap: () => Navigator.pop(ctx, option),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (value != null) onPicked(value);
   }
 
   @override
@@ -410,6 +537,57 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                             ),
                           ],
                         ),
+                        if (!state.isTransfer &&
+                            widget.prefillFromBill == null) ...[
+                          const SizedBox(height: 12),
+                          FinancoPillToggle<TransactionRecurrence>(
+                            selected: state.recurrence,
+                            disabled: state.isEditing,
+                            onChanged: cubit.updateRecurrence,
+                            options: [
+                              FinancoPillToggleOption(
+                                value: TransactionRecurrence.single,
+                                label: t.transactions.recurrenceSingle,
+                                icon: FontAwesomeIcons.circleDot,
+                              ),
+                              FinancoPillToggleOption(
+                                value: TransactionRecurrence.installment,
+                                label: t.transactions.recurrenceInstallment,
+                                icon: FontAwesomeIcons.layerGroup,
+                              ),
+                              FinancoPillToggleOption(
+                                value: TransactionRecurrence.fixed,
+                                label: t.transactions.recurrenceFixed,
+                                icon: FontAwesomeIcons.repeat,
+                              ),
+                            ],
+                          ),
+                          if (state.recurrence !=
+                              TransactionRecurrence.single) ...[
+                            const SizedBox(height: 12),
+                            _RecurrenceSettingsRow(
+                              state: state,
+                              onPickInterval: () => _pickNumber(
+                                title: t.transactions.recurrenceIntervalMonths,
+                                min: 1,
+                                max: kMaxRecurringWindowMonths,
+                                selected: state.recurrenceIntervalMonths,
+                                onPicked: (value) => cubit
+                                    .updateRecurrenceIntervalMonths('$value'),
+                              ),
+                              onPickInstallments: () => _pickNumber(
+                                title: t.transactions.installmentCount,
+                                min: 2,
+                                max: maxInstallmentsForInterval(
+                                  state.recurrenceIntervalMonths,
+                                ),
+                                selected: state.installmentCount,
+                                onPicked: (value) =>
+                                    cubit.updateInstallmentCount('$value'),
+                              ),
+                            ),
+                          ],
+                        ],
                       ],
                     ),
                     const SizedBox(height: 20),
@@ -609,6 +787,120 @@ class _AccountRow extends StatelessWidget {
             : FontAwesomeIcons.buildingColumns,
         size: 14,
         color: colors.onBackgroundLight,
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+class _RecurrenceSettingsRow extends StatelessWidget {
+  const _RecurrenceSettingsRow({
+    required this.state,
+    required this.onPickInterval,
+    required this.onPickInstallments,
+  });
+
+  final TransactionFormState state;
+  final VoidCallback onPickInterval;
+  final VoidCallback onPickInstallments;
+
+  @override
+  Widget build(BuildContext context) {
+    final periodicity = _StaticValueField(
+      label: t.transactions.periodicity,
+      value: t.transactions.periodicityMonthly,
+    );
+    final variableField = state.recurrence == TransactionRecurrence.installment
+        ? _NumberPickerField(
+            label: t.transactions.installmentCount,
+            value: '${state.installmentCount}',
+            onTap: onPickInstallments,
+          )
+        : _NumberPickerField(
+            label: t.transactions.recurrenceIntervalMonths,
+            value: '${state.recurrenceIntervalMonths}',
+            onTap: onPickInterval,
+          );
+
+    if (context.screenSize.width < 520) {
+      return Column(
+        children: [
+          periodicity,
+          const SizedBox(height: 12),
+          variableField,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: periodicity),
+        const SizedBox(width: 12),
+        Expanded(child: variableField),
+      ],
+    );
+  }
+}
+
+class _StaticValueField extends StatelessWidget {
+  const _StaticValueField({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: colors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: context.textTheme.labelSmall?.copyWith(
+              color: colors.onBackgroundLight,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: colors.onBackground,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NumberPickerField extends StatelessWidget {
+  const _NumberPickerField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return FinancoPickerField(
+      label: label,
+      value: value,
+      placeholder: value,
+      leading: FaIcon(
+        FontAwesomeIcons.hashtag,
+        size: 13,
+        color: context.appColors.onBackgroundLight,
       ),
       onTap: onTap,
     );

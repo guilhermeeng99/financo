@@ -81,7 +81,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
     );
     final periodTransactions = periodResult.fold(
       (_) => <TransactionEntity>[],
-      (t) => t.where((tx) => tx.isPaid).toList(),
+      (t) => t,
     );
 
     // Delegate the running-balance math to the shared calculator so
@@ -94,7 +94,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
 
     // Period summary
     final sorted = List<TransactionEntity>.from(periodTransactions)
-      ..sort((a, b) => b.date.compareTo(a.date));
+      ..sort((a, b) => _statementDate(b).compareTo(_statementDate(a)));
 
     final totals = sumPeriodTotals(sorted);
 
@@ -131,6 +131,10 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
       ),
     );
   }
+}
+
+DateTime _statementDate(TransactionEntity transaction) {
+  return transaction.isPending ? transaction.dueDate : transaction.date;
 }
 
 sealed class AccountStatementState extends Equatable {

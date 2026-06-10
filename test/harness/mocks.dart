@@ -87,11 +87,15 @@ import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dar
 import 'package:financo/features/transactions/data/datasources/transaction_remote_datasource.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/delete_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recurrences_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -202,13 +206,25 @@ class MockGetTransactionUseCase extends Mock implements GetTransactionUseCase {}
 class MockCreateTransactionUseCase extends Mock
     implements CreateTransactionUseCase {}
 
+class MockCreateTransactionsUseCase extends Mock
+    implements CreateTransactionsUseCase {}
+
 class MockUpdateTransactionUseCase extends Mock
     implements UpdateTransactionUseCase {}
+
+class MockUpdateTransactionSequenceUseCase extends Mock
+    implements UpdateTransactionSequenceUseCase {}
 
 class MockDeleteTransactionUseCase extends Mock
     implements DeleteTransactionUseCase {}
 
+class MockDeleteTransactionSequenceUseCase extends Mock
+    implements DeleteTransactionSequenceUseCase {}
+
 class MockCreateTransferUseCase extends Mock implements CreateTransferUseCase {}
+
+class MockEnsureFixedRecurrencesUseCase extends Mock
+    implements EnsureFixedRecurrencesUseCase {}
 
 class MockImportTransactionsCsvUseCase extends Mock
     implements ImportTransactionsCsvUseCase {}
@@ -261,8 +277,7 @@ class MockGetProfileUseCase extends Mock implements GetProfileUseCase {}
 class MockChatRepository extends Mock implements ChatRepository {}
 
 // ── Data Sources: Chat ──
-class MockChatBackendDataSource extends Mock
-    implements ChatBackendDataSource {}
+class MockChatBackendDataSource extends Mock implements ChatBackendDataSource {}
 
 class MockChatRemoteDataSource extends Mock implements ChatRemoteDataSource {}
 

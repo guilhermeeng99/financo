@@ -250,8 +250,8 @@ users/{userId}                       → name, email, photoUrl, createdAt, fifty
 users/{userId}/fcmTokens/{tokenId}   → token, platform, updatedAt
 accounts/{id}                        → userId, name, type, bank, balance (Dart: initialBalance), creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
 categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?, bucket? (needs | wants), countsIn50_30_20
-transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, notes, linkedTransactionId?, createdAt, updatedAt
-bills/{id}                           → userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
+transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, settlementStatus (pending | paid), dueDate, settledAt?, recurrence (single | installment | fixed), recurrenceGroupId?, recurrenceIntervalMonths?, recurrenceIndex?, recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?, notes?, linkedTransactionId?, sourceBillId? (legacy migration trace), parentTransactionId? (legacy migration trace), createdAt, updatedAt
+bills/{id}                           → legacy/read-only after the 2026-06-10 migration; retained for rollback/audit only. Previous shape: userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
 budgets/{id}                         → userId, categoryId, amount, createdAt, updatedAt
 asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt
 asset_holdings/{id}                  → userId, accountId, assetClassId, amount, notes?, updatedAt

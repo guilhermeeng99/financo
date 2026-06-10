@@ -290,24 +290,49 @@ class _BillsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allVisible = snapshot.visibleFor(view);
-    final visible = _filterByAccounts(allVisible, selectedAccountIds);
+    final visibleAccountIds = context
+        .watch<AccountsCubit>()
+        .state
+        .accountsOrEmpty
+        .where((account) => account.type != AccountType.investment)
+        .map((account) => account.id)
+        .toSet();
+    final effectiveSelectedAccountIds = visibleAccountIds.isEmpty
+        ? selectedAccountIds
+        : selectedAccountIds.intersection(visibleAccountIds);
+    final allVisible = _filterByAvailableAccounts(
+      snapshot.visibleFor(view),
+      visibleAccountIds,
+    );
+    final visible = _filterByAccounts(allVisible, effectiveSelectedAccountIds);
     final summary = _BillsSummary.from(
       _filterByAccounts(
-        snapshot.visibleFor(PayablesReceivablesView.payables),
-        selectedAccountIds,
+        _filterByAvailableAccounts(
+          snapshot.visibleFor(PayablesReceivablesView.payables),
+          visibleAccountIds,
+        ),
+        effectiveSelectedAccountIds,
       ),
       _filterByAccounts(
-        snapshot.visibleFor(PayablesReceivablesView.receivables),
-        selectedAccountIds,
+        _filterByAvailableAccounts(
+          snapshot.visibleFor(PayablesReceivablesView.receivables),
+          visibleAccountIds,
+        ),
+        effectiveSelectedAccountIds,
       ),
       _filterByAccounts(
-        snapshot.visibleFor(PayablesReceivablesView.paid),
-        selectedAccountIds,
+        _filterByAvailableAccounts(
+          snapshot.visibleFor(PayablesReceivablesView.paid),
+          visibleAccountIds,
+        ),
+        effectiveSelectedAccountIds,
       ),
       _filterByAccounts(
-        snapshot.visibleFor(PayablesReceivablesView.received),
-        selectedAccountIds,
+        _filterByAvailableAccounts(
+          snapshot.visibleFor(PayablesReceivablesView.received),
+          visibleAccountIds,
+        ),
+        effectiveSelectedAccountIds,
       ),
     );
     final groups = _TransactionGroups.from(visible, view);
@@ -327,7 +352,7 @@ class _BillsContent extends StatelessWidget {
         onSettle: onSettle,
         onDelete: onDelete,
         availableViews: availableViews,
-        selectedAccountIds: selectedAccountIds,
+        selectedAccountIds: effectiveSelectedAccountIds,
         onAccountToggled: onAccountToggled,
       );
     }
@@ -426,8 +451,6 @@ class _DesktopLedgerLayout extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const FinancoMonthFilterPill(),
-                  const SizedBox(height: 16),
                   _SummaryCard(summary: summary, view: view),
                   const SizedBox(height: 16),
                   _AccountsTotalsCard(
@@ -452,12 +475,6 @@ class _DesktopLedgerLayout extends StatelessWidget {
                       onViewChanged,
                       availableViews,
                     ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
-                  sliver: SliverToBoxAdapter(
-                    child: _LedgerStatusStrip(view: view),
                   ),
                 ),
                 if (groups.isEmpty)
@@ -491,89 +508,6 @@ class _DesktopLedgerLayout extends StatelessWidget {
   }
 }
 
-class _LedgerStatusStrip extends StatelessWidget {
-  const _LedgerStatusStrip({required this.view});
-
-  final PayablesReceivablesView view;
-
-  @override
-  Widget build(BuildContext context) {
-    final isPending =
-        view == PayablesReceivablesView.payables ||
-        view == PayablesReceivablesView.receivables;
-    return Row(
-      children: [
-        Text(
-          t.general.filter,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackground,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: 16),
-        if (isPending) ...[
-          _LegendChip(label: t.bills.pending, color: context.appColors.expense),
-          const SizedBox(width: 8),
-          _LegendChip(
-            label: t.bills.scheduled,
-            color: context.appColors.warning,
-          ),
-        ] else ...[
-          _LegendChip(
-            label: t.bills.confirmed,
-            color: context.appColors.income,
-          ),
-          const SizedBox(width: 8),
-          _LegendChip(
-            label: t.bills.reconciled,
-            color: context.appColors.primary,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _LegendChip extends StatelessWidget {
-  const _LegendChip({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceVariant.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: colors.surfaceVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: context.textTheme.labelSmall?.copyWith(
-                color: colors.onBackground,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _AccountsTotalsCard extends StatelessWidget {
   const _AccountsTotalsCard({
     required this.transactions,
@@ -591,7 +525,12 @@ class _AccountsTotalsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final accounts = context.watch<AccountsCubit>().state.accountsOrEmpty;
+    final accounts = context
+        .watch<AccountsCubit>()
+        .state
+        .accountsOrEmpty
+        .where((account) => account.type != AccountType.investment)
+        .toList();
     final accountIds = accounts.map((account) => account.id).toList();
     final rows = accounts
         .map(
@@ -855,6 +794,18 @@ List<TransactionEntity> _filterByAccounts(
       .toList();
 }
 
+List<TransactionEntity> _filterByAvailableAccounts(
+  List<TransactionEntity> transactions,
+  Set<String> availableAccountIds,
+) {
+  if (availableAccountIds.isEmpty) return transactions;
+  return transactions
+      .where(
+        (transaction) => availableAccountIds.contains(transaction.accountId),
+      )
+      .toList();
+}
+
 Color _readableTextColor(Color background, AppColorsData colors) {
   return background.computeLuminance() > 0.55
       ? colors.background
@@ -1096,7 +1047,10 @@ class _TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final accent = transaction.isReceivable ? colors.income : colors.expense;
+    final amountAccent = transaction.isReceivable
+        ? colors.income
+        : colors.expense;
+    final statusAccent = _statusAccent(context, transaction);
     final category = _categoryLabel(context, transaction.categoryId);
     final isPendingView =
         view == PayablesReceivablesView.payables ||
@@ -1117,7 +1071,7 @@ class _TransactionTile extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _StatusDisc(transaction: transaction, color: accent),
+                _StatusDisc(transaction: transaction, color: statusAccent),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1157,7 +1111,7 @@ class _TransactionTile extends StatelessWidget {
                   const SizedBox(width: 8),
                   _SettleButton(
                     transaction: transaction,
-                    color: accent,
+                    color: amountAccent,
                     onPressed: onSettle,
                   ),
                 ],
@@ -1376,9 +1330,9 @@ class _BillsSnapshot {
     final visible = transactions.where((tx) {
       return switch (view) {
         PayablesReceivablesView.payables =>
-          tx.isPending && tx.isPayable && !tx.dueDate.isAfter(end),
+          tx.isPending && tx.isPayable && _inRange(tx.dueDate, start, end),
         PayablesReceivablesView.receivables =>
-          tx.isPending && tx.isReceivable && !tx.dueDate.isAfter(end),
+          tx.isPending && tx.isReceivable && _inRange(tx.dueDate, start, end),
         PayablesReceivablesView.paid =>
           tx.isPaid && tx.isPayable && _inRange(tx.date, start, end),
         PayablesReceivablesView.received =>
@@ -1472,7 +1426,7 @@ class _TransactionGroups {
         _TransactionSectionData(
           title: t.bills.upcomingGroup,
           transactions: upcoming,
-          color: (context) => context.appColors.primary,
+          color: (context) => context.appColors.warning,
         ),
       ].where((section) => section.transactions.isNotEmpty).toList(),
     );
@@ -1511,4 +1465,13 @@ bool _isSettledMode(List<PayablesReceivablesView> views) {
 bool _isSettledModeForView(PayablesReceivablesView view) {
   return view == PayablesReceivablesView.paid ||
       view == PayablesReceivablesView.received;
+}
+
+Color _statusAccent(BuildContext context, TransactionEntity transaction) {
+  final colors = context.appColors;
+  if (transaction.isPaid) {
+    return transaction.isReceivable ? colors.income : colors.expense;
+  }
+  if (transaction.isOverdue) return colors.expense;
+  return colors.warning;
 }

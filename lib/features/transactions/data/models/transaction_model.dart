@@ -17,6 +17,12 @@ class TransactionModel extends TransactionEntity {
     super.dueDate,
     super.settledAt,
     super.recurrence,
+    super.recurrenceGroupId,
+    super.recurrenceIntervalMonths,
+    super.recurrenceIndex,
+    super.recurrenceTotal,
+    super.recurrenceBaseDescription,
+    super.recurrenceEndDate,
     super.notes,
     super.linkedTransactionId,
   });
@@ -46,6 +52,13 @@ class TransactionModel extends TransactionEntity {
           _readDate(data['dueDate']) ?? (data['date'] as Timestamp).toDate(),
       settledAt: _readDate(data['settledAt']),
       recurrence: _parseRecurrence(data['recurrence']),
+      recurrenceGroupId: data['recurrenceGroupId'] as String?,
+      recurrenceIntervalMonths:
+          (data['recurrenceIntervalMonths'] as num?)?.toInt() ?? 1,
+      recurrenceIndex: (data['recurrenceIndex'] as num?)?.toInt(),
+      recurrenceTotal: (data['recurrenceTotal'] as num?)?.toInt(),
+      recurrenceBaseDescription: data['recurrenceBaseDescription'] as String?,
+      recurrenceEndDate: _readDate(data['recurrenceEndDate']),
       notes: data['notes'] as String?,
       linkedTransactionId: data['linkedTransactionId'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
@@ -67,6 +80,12 @@ class TransactionModel extends TransactionEntity {
       dueDate: entity.dueDate,
       settledAt: entity.settledAt,
       recurrence: entity.recurrence,
+      recurrenceGroupId: entity.recurrenceGroupId,
+      recurrenceIntervalMonths: entity.recurrenceIntervalMonths,
+      recurrenceIndex: entity.recurrenceIndex,
+      recurrenceTotal: entity.recurrenceTotal,
+      recurrenceBaseDescription: entity.recurrenceBaseDescription,
+      recurrenceEndDate: entity.recurrenceEndDate,
       notes: entity.notes,
       linkedTransactionId: entity.linkedTransactionId,
       createdAt: entity.createdAt,
@@ -87,6 +106,14 @@ class TransactionModel extends TransactionEntity {
       'dueDate': Timestamp.fromDate(dueDate),
       'settledAt': settledAt == null ? null : Timestamp.fromDate(settledAt!),
       'recurrence': recurrence.name,
+      'recurrenceGroupId': recurrenceGroupId,
+      'recurrenceIntervalMonths': recurrenceIntervalMonths,
+      'recurrenceIndex': recurrenceIndex,
+      'recurrenceTotal': recurrenceTotal,
+      'recurrenceBaseDescription': recurrenceBaseDescription,
+      'recurrenceEndDate': recurrenceEndDate == null
+          ? null
+          : Timestamp.fromDate(recurrenceEndDate!),
       'notes': notes,
       'linkedTransactionId': linkedTransactionId,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -110,9 +137,11 @@ TransactionSettlementStatus _parseSettlementStatus(Object? value) {
 }
 
 TransactionRecurrence _parseRecurrence(Object? value) {
-  if (value is! String) return TransactionRecurrence.oneShot;
+  if (value == 'oneShot') return TransactionRecurrence.single;
+  if (value == 'monthly') return TransactionRecurrence.fixed;
+  if (value is! String) return TransactionRecurrence.single;
   return TransactionRecurrence.values.firstWhere(
     (recurrence) => recurrence.name == value,
-    orElse: () => TransactionRecurrence.oneShot,
+    orElse: () => TransactionRecurrence.single,
   );
 }

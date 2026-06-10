@@ -31,10 +31,13 @@ void main() {
     required TransactionType type,
     required double amount,
     DateTime? date,
+    DateTime? dueDate,
     String? id,
     String? txAccountId,
     String? linkedTransactionId,
     String? categoryId,
+    TransactionSettlementStatus settlementStatus =
+        TransactionSettlementStatus.paid,
   }) {
     return TransactionEntity(
       id: id ?? 'tx-${amount.toInt()}',
@@ -45,6 +48,8 @@ void main() {
       amount: amount,
       description: 'Test',
       date: date ?? DateTime(2024, 3, 15),
+      settlementStatus: settlementStatus,
+      dueDate: dueDate,
       linkedTransactionId: linkedTransactionId,
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
@@ -95,6 +100,14 @@ void main() {
               amount: 100,
               date: DateTime(2024, 3, 20),
             ),
+            makeTx(
+              id: 'pending-expense',
+              type: TransactionType.expense,
+              amount: 80,
+              date: DateTime(2024, 3, 30),
+              dueDate: DateTime(2024, 3, 30),
+              settlementStatus: TransactionSettlementStatus.pending,
+            ),
           ]),
         );
       },
@@ -120,13 +133,18 @@ void main() {
             .having(
               (s) => s.transactions.length,
               'transactions.length',
-              2,
+              3,
+            )
+            .having(
+              (s) => s.transactions.where((tx) => tx.isPending).length,
+              'pending transactions',
+              1,
             ),
       ],
     );
 
     blocTest<AccountStatementCubit, AccountStatementState>(
-      'transactions are sorted by date descending',
+      'transactions are sorted by statement date descending',
       setUp: () {
         when(
           () => mockGetTransactions(
@@ -146,14 +164,24 @@ void main() {
         ).thenAnswer(
           (_) async => Right([
             makeTx(
+              id: 'old-paid',
               type: TransactionType.expense,
               amount: 50,
               date: DateTime(2024, 3, 5),
             ),
             makeTx(
+              id: 'new-paid',
               type: TransactionType.expense,
               amount: 100,
               date: DateTime(2024, 3, 25),
+            ),
+            makeTx(
+              id: 'pending-by-due-date',
+              type: TransactionType.expense,
+              amount: 75,
+              date: DateTime(2024, 3),
+              dueDate: DateTime(2024, 3, 28),
+              settlementStatus: TransactionSettlementStatus.pending,
             ),
           ]),
         );
@@ -163,9 +191,9 @@ void main() {
       expect: () => [
         isA<AccountStatementLoading>(),
         isA<AccountStatementLoaded>().having(
-          (s) => s.transactions.first.date.isAfter(s.transactions.last.date),
-          'sorted desc',
-          isTrue,
+          (s) => s.transactions.map((tx) => tx.id),
+          'sorted transaction ids',
+          ['pending-by-due-date', 'new-paid', 'old-paid'],
         ),
       ],
     );

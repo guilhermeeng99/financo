@@ -33,6 +33,8 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     String? accountId,
     String? categoryId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
   }) async {
     final query = select(localTransactions)
       ..where((t) => t.userId.equals(userId));
@@ -65,6 +67,12 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     }
     if (settlementStatus != null) {
       query.where((t) => t.settlementStatus.equals(settlementStatus.name));
+    }
+    if (recurrence != null) {
+      query.where((t) => t.recurrence.equals(recurrence.name));
+    }
+    if (recurrenceGroupId != null) {
+      query.where((t) => t.recurrenceGroupId.equals(recurrenceGroupId));
     }
 
     query.orderBy([(t) => OrderingTerm.desc(t.date)]);
@@ -103,6 +111,13 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteTransaction(String id) =>
       (delete(localTransactions)..where((t) => t.id.equals(id))).go();
 
+  Future<void> deleteTransactions(List<String> ids) async {
+    if (ids.isEmpty) return;
+    await (delete(
+      localTransactions,
+    )..where((t) => t.id.isIn(ids))).go();
+  }
+
   Future<void> deleteAllTransactions() => delete(localTransactions).go();
 
   LocalTransactionsCompanion _toCompanion(TransactionEntity e) =>
@@ -119,6 +134,12 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         dueDate: Value(e.dueDate),
         settledAt: Value(e.settledAt),
         recurrence: Value(e.recurrence.name),
+        recurrenceGroupId: Value(e.recurrenceGroupId),
+        recurrenceIntervalMonths: Value(e.recurrenceIntervalMonths),
+        recurrenceIndex: Value(e.recurrenceIndex),
+        recurrenceTotal: Value(e.recurrenceTotal),
+        recurrenceBaseDescription: Value(e.recurrenceBaseDescription),
+        recurrenceEndDate: Value(e.recurrenceEndDate),
         notes: Value(e.notes),
         linkedTransactionId: Value(e.linkedTransactionId),
         createdAt: e.createdAt,
@@ -138,6 +159,12 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     dueDate: row.dueDate ?? row.date,
     settledAt: row.settledAt,
     recurrence: _parseRecurrence(row.recurrence),
+    recurrenceGroupId: row.recurrenceGroupId,
+    recurrenceIntervalMonths: row.recurrenceIntervalMonths,
+    recurrenceIndex: row.recurrenceIndex,
+    recurrenceTotal: row.recurrenceTotal,
+    recurrenceBaseDescription: row.recurrenceBaseDescription,
+    recurrenceEndDate: row.recurrenceEndDate,
     notes: row.notes,
     linkedTransactionId: row.linkedTransactionId,
     createdAt: row.createdAt,
@@ -151,8 +178,11 @@ TransactionSettlementStatus _parseSettlementStatus(String value) =>
       orElse: () => TransactionSettlementStatus.paid,
     );
 
-TransactionRecurrence _parseRecurrence(String value) =>
-    TransactionRecurrence.values.firstWhere(
-      (recurrence) => recurrence.name == value,
-      orElse: () => TransactionRecurrence.oneShot,
-    );
+TransactionRecurrence _parseRecurrence(String value) {
+  if (value == 'oneShot') return TransactionRecurrence.single;
+  if (value == 'monthly') return TransactionRecurrence.fixed;
+  return TransactionRecurrence.values.firstWhere(
+    (recurrence) => recurrence.name == value,
+    orElse: () => TransactionRecurrence.single,
+  );
+}

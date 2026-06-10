@@ -2,6 +2,7 @@ import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
+import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recurrences_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,9 +12,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     required GetTransactionsUseCase getTransactions,
     required FiftyThirtyTwentyTargetsCubit targetsCubit,
     required String userId,
+    EnsureFixedRecurrencesUseCase? ensureFixedRecurrences,
   }) : _getDashboardSummary = getDashboardSummary,
        _getTransactions = getTransactions,
        _targetsCubit = targetsCubit,
+       _ensureFixedRecurrences = ensureFixedRecurrences,
        _userId = userId,
        super(const DashboardInitial()) {
     on<DashboardLoadRequested>(_onLoadRequested);
@@ -23,6 +26,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final GetDashboardSummaryUseCase _getDashboardSummary;
   final GetTransactionsUseCase _getTransactions;
   final FiftyThirtyTwentyTargetsCubit _targetsCubit;
+  final EnsureFixedRecurrencesUseCase? _ensureFixedRecurrences;
   final String _userId;
 
   Future<void> _onLoadRequested(
@@ -66,6 +70,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     bool forceRefresh = false,
   }) async {
     final target = DateTime(year, month);
+    await _ensureFixedRecurrences?.call(userId: _userId);
 
     // Summary and period transactions are independent reads — fetching them
     // in parallel roughly halves the first-load latency on cold cache.

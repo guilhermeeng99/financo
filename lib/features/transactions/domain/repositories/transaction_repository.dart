@@ -12,6 +12,8 @@ abstract class TransactionRepository {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
     bool forceRefresh = false,
   });
 
@@ -21,11 +23,21 @@ abstract class TransactionRepository {
     TransactionEntity transaction,
   );
 
+  Future<Either<Failure, List<TransactionEntity>>> createTransactions(
+    List<TransactionEntity> transactions,
+  );
+
   Future<Either<Failure, TransactionEntity>> updateTransaction(
     TransactionEntity transaction,
   );
 
+  Future<Either<Failure, List<TransactionEntity>>> updateTransactions(
+    List<TransactionEntity> transactions,
+  );
+
   Future<Either<Failure, void>> deleteTransaction(String id);
+
+  Future<Either<Failure, void>> deleteTransactions(List<String> ids);
 
   Future<Either<Failure, List<TransactionEntity>>> createTransfer({
     required TransactionEntity expense,

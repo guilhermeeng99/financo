@@ -13,7 +13,9 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockCreateTransactionUseCase mockCreate;
+  late MockCreateTransactionsUseCase mockCreateMany;
   late MockUpdateTransactionUseCase mockUpdate;
+  late MockUpdateTransactionSequenceUseCase mockUpdateSequence;
   late MockCreateTransferUseCase mockTransfer;
   late MockGetTransactionUseCase mockGet;
 
@@ -23,7 +25,9 @@ void main() {
 
   setUp(() {
     mockCreate = MockCreateTransactionUseCase();
+    mockCreateMany = MockCreateTransactionsUseCase();
     mockUpdate = MockUpdateTransactionUseCase();
+    mockUpdateSequence = MockUpdateTransactionSequenceUseCase();
     mockTransfer = MockCreateTransferUseCase();
     mockGet = MockGetTransactionUseCase();
     // Default counterpart-leg fetch (used when editing a transfer). The
@@ -38,7 +42,9 @@ void main() {
   TransactionFormCubit buildCubit({TransactionEntity? existing}) =>
       TransactionFormCubit(
         createTransaction: mockCreate,
+        createTransactions: mockCreateMany,
         updateTransaction: mockUpdate,
+        updateTransactionSequence: mockUpdateSequence,
         createTransfer: mockTransfer,
         getTransaction: mockGet,
         userId: userId,
@@ -468,6 +474,59 @@ void main() {
         verify: (_) {
           verify(() => mockCreate(any())).called(1);
           verifyNever(() => mockUpdate(any()));
+        },
+      );
+
+      blocTest<TransactionFormCubit, TransactionFormState>(
+        'creates installment transactions in one batch',
+        setUp: () {
+          when(() => mockCreateMany(any())).thenAnswer((invocation) async {
+            final transactions =
+                invocation.positionalArguments.first as List<TransactionEntity>;
+            return Right(transactions);
+          });
+        },
+        build: buildCubit,
+        seed: () => TransactionFormState(
+          userId: userId,
+          type: TransactionType.expense,
+          amount: 100,
+          description: 'Notebook',
+          date: DateTime(2024, 3, 15),
+          accountId: 'acc-1',
+          categoryId: 'cat-1',
+          notes: '',
+          status: FormStatus.initial,
+          isTransfer: false,
+          recurrence: TransactionRecurrence.installment,
+          installmentCount: 3,
+        ),
+        act: (cubit) async => cubit.submit(),
+        expect: () => [
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.submitting,
+          ),
+          isA<TransactionFormState>().having(
+            (s) => s.status,
+            'status',
+            FormStatus.success,
+          ),
+        ],
+        verify: (_) {
+          final created =
+              verify(
+                    () => mockCreateMany(captureAny()),
+                  ).captured.single
+                  as List<TransactionEntity>;
+          expect(created, hasLength(3));
+          expect(created.map((tx) => tx.amount), [33.34, 33.33, 33.33]);
+          expect(
+            created.map((tx) => tx.description),
+            ['Notebook 1/3', 'Notebook 2/3', 'Notebook 3/3'],
+          );
+          verifyNever(() => mockCreate(any()));
         },
       );
 

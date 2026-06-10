@@ -4,7 +4,9 @@ enum TransactionType { income, expense }
 
 enum TransactionSettlementStatus { pending, paid }
 
-enum TransactionRecurrence { oneShot, monthly }
+enum TransactionRecurrence { single, installment, fixed }
+
+enum TransactionSequenceScope { onlyThis, thisAndFollowing }
 
 class TransactionEntity extends Equatable {
   const TransactionEntity({
@@ -21,7 +23,13 @@ class TransactionEntity extends Equatable {
     this.settlementStatus = TransactionSettlementStatus.paid,
     DateTime? dueDate,
     this.settledAt,
-    this.recurrence = TransactionRecurrence.oneShot,
+    this.recurrence = TransactionRecurrence.single,
+    this.recurrenceGroupId,
+    this.recurrenceIntervalMonths = 1,
+    this.recurrenceIndex,
+    this.recurrenceTotal,
+    this.recurrenceBaseDescription,
+    this.recurrenceEndDate,
     this.notes,
     this.linkedTransactionId,
   }) : dueDate = dueDate ?? date;
@@ -38,12 +46,19 @@ class TransactionEntity extends Equatable {
   final DateTime dueDate;
   final DateTime? settledAt;
   final TransactionRecurrence recurrence;
+  final String? recurrenceGroupId;
+  final int recurrenceIntervalMonths;
+  final int? recurrenceIndex;
+  final int? recurrenceTotal;
+  final String? recurrenceBaseDescription;
+  final DateTime? recurrenceEndDate;
   final String? notes;
   final String? linkedTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   bool get isTransfer => linkedTransactionId != null;
+  bool get isRecurring => recurrence != TransactionRecurrence.single;
   bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
   bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;
   bool get isPayable => type == TransactionType.expense;
@@ -74,6 +89,12 @@ class TransactionEntity extends Equatable {
     DateTime? dueDate,
     DateTime? settledAt,
     TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
+    int? recurrenceIntervalMonths,
+    int? recurrenceIndex,
+    int? recurrenceTotal,
+    String? recurrenceBaseDescription,
+    DateTime? recurrenceEndDate,
     String? notes,
     String? linkedTransactionId,
     DateTime? createdAt,
@@ -92,6 +113,14 @@ class TransactionEntity extends Equatable {
       dueDate: dueDate ?? this.dueDate,
       settledAt: settledAt ?? this.settledAt,
       recurrence: recurrence ?? this.recurrence,
+      recurrenceGroupId: recurrenceGroupId ?? this.recurrenceGroupId,
+      recurrenceIntervalMonths:
+          recurrenceIntervalMonths ?? this.recurrenceIntervalMonths,
+      recurrenceIndex: recurrenceIndex ?? this.recurrenceIndex,
+      recurrenceTotal: recurrenceTotal ?? this.recurrenceTotal,
+      recurrenceBaseDescription:
+          recurrenceBaseDescription ?? this.recurrenceBaseDescription,
+      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
@@ -113,6 +142,12 @@ class TransactionEntity extends Equatable {
     dueDate,
     settledAt,
     recurrence,
+    recurrenceGroupId,
+    recurrenceIntervalMonths,
+    recurrenceIndex,
+    recurrenceTotal,
+    recurrenceBaseDescription,
+    recurrenceEndDate,
     notes,
     linkedTransactionId,
     createdAt,

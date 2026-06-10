@@ -15,7 +15,13 @@ TransactionEntity {
   settlementStatus:      TransactionSettlementStatus (pending | paid, default paid)
   dueDate:               DateTime        (defaults to date)
   settledAt:             DateTime?       (set when paid)
-  recurrence:            TransactionRecurrence (oneShot | monthly)
+  recurrence:            TransactionRecurrence (single | installment | fixed)
+  recurrenceGroupId:     String?         (same value for a generated sequence)
+  recurrenceIntervalMonths: int          (defaults to 1, monthly cadence)
+  recurrenceIndex:       int?            (1-based occurrence index)
+  recurrenceTotal:       int?            (installment total; null for fixed)
+  recurrenceBaseDescription: String?     (description without installment marker)
+  recurrenceEndDate:     DateTime?       (fixed series stop boundary)
   notes:                 String?         (optional free-text)
   linkedTransactionId:   String?         (optional, non-null for transfers)
   createdAt:             DateTime        (required, set on creation)
@@ -41,6 +47,12 @@ bool get isPaid => settlementStatus == paid
 10. **Reassign transactions** — bulk operation that moves all transactions from one category to another (used when deleting a category).
 11. **Pending transactions do not affect financial totals** — balances, dashboard, budgets, account statements, investments, and 50/30/20 use `tx.isPaid`.
 12. **Future dates auto-schedule** — the form switches to `pending` when the selected date is in the future.
+13. **Repetition modes** — normal transactions support `single`, `installment`, and `fixed`. Transfers are always single and paid.
+14. **Installments use the total purchase amount** — the form amount is split into per-installment rows. Cents are distributed from the first installment onward so the row sum equals the original total.
+15. **Installment descriptions include markers** — generated rows append `1/N`, `2/N`, ... to the base description.
+16. **Fixed transactions are materialized as a rolling window** — the user intent is permanent, but the app only creates occurrences through the next 12 months. A generator can later fill the next window without creating unbounded Firestore documents.
+17. **Only the first occurrence follows the current paid/pending toggle** — generated future occurrences are always pending/scheduled.
+18. **Sequence edits/deletes are scoped** — editing/deleting a sequence row asks whether to affect only this row or this row and following rows. The following scope only changes pending rows with `dueDate >= selected.dueDate`; paid rows are not changed financially.
 
 ### Transfer Rules
 
@@ -64,6 +76,8 @@ abstract class TransactionRepository {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
     bool forceRefresh = false,
   });
 
@@ -71,9 +85,15 @@ abstract class TransactionRepository {
 
   Future<Either<Failure, TransactionEntity>> createTransaction(TransactionEntity transaction);
 
+  Future<Either<Failure, List<TransactionEntity>>> createTransactions(List<TransactionEntity> transactions);
+
   Future<Either<Failure, TransactionEntity>> updateTransaction(TransactionEntity transaction);
 
+  Future<Either<Failure, List<TransactionEntity>>> updateTransactions(List<TransactionEntity> transactions);
+
   Future<Either<Failure, void>> deleteTransaction(String id);
+
+  Future<Either<Failure, void>> deleteTransactions(List<String> ids);
 
   Future<Either<Failure, List<TransactionEntity>>> createTransfer({
     required TransactionEntity expense,
@@ -87,11 +107,27 @@ abstract class TransactionRepository {
 }
 ```
 
+Settlement use case:
+
+```dart
+class SettleTransactionUseCase {
+  Future<Either<Failure, TransactionEntity>> call({
+    required TransactionEntity transaction,
+    DateTime? settledAt,
+  });
+}
+```
+
+It rejects transfers, then updates the same transaction to `paid`, sets
+`date = settledAt ?? DateTime.now()`, `settledAt` to the same value, and writes
+the updated row through `TransactionRepository.updateTransaction`.
+
 **Cache strategy:**
 - `forceRefresh: false` → read from local Drift cache only (with filters).
 - `forceRefresh: true` → fetch from Firestore (with filters), **upsert** into local cache (not replace-all), then read local.
 - `getTransaction` → try local first, fallback to remote + cache.
 - Create/update → write to remote, then upsert local cache.
+- Batch create/update/delete → Firestore batch, then mirror the changed rows in Drift.
 - Delete → if linked (transfer), delete both sides from remote + local. Otherwise delete single.
 - `createTransfer` → create both in Firestore (batch), link them by ID, upsert both locally.
 - `reassignTransactions` → batch update in Firestore only (Drift cache becomes stale; caller must force-refresh).
@@ -111,6 +147,16 @@ abstract class TransactionRepository {
 | `amount` | `amount` | `(num).toDouble()` |
 | `description` | `description` | `String` |
 | `date` | `date` | `Timestamp → DateTime` |
+| `settlementStatus` | `settlementStatus` | `String → TransactionSettlementStatus`, default `paid` |
+| `dueDate` | `dueDate` | `Timestamp → DateTime`, fallback to `date` |
+| `settledAt` | `settledAt` | `Timestamp? → DateTime?` |
+| `recurrence` | `recurrence` | `String → TransactionRecurrence`, default `single`; legacy `oneShot` loads as `single`, legacy `monthly` as `fixed` |
+| `recurrenceGroupId` | `recurrenceGroupId` | `String?` |
+| `recurrenceIntervalMonths` | `recurrenceIntervalMonths` | `int`, default `1` |
+| `recurrenceIndex` | `recurrenceIndex` | `int?` |
+| `recurrenceTotal` | `recurrenceTotal` | `int?` |
+| `recurrenceBaseDescription` | `recurrenceBaseDescription` | `String?` |
+| `recurrenceEndDate` | `recurrenceEndDate` | `Timestamp? → DateTime?` |
 | `notes` | `notes` | `String?` |
 | `linkedTransactionId` | `linkedTransactionId` | `String?` |
 | `createdAt` | `createdAt` | `Timestamp → DateTime` |
@@ -119,7 +165,7 @@ abstract class TransactionRepository {
 **Model → Firestore (`toJson`):**
 - Serializes all fields except `id`.
 - DateTime fields serialized as `Timestamp`.
-- `type` serialized as `.name` string.
+- `type`, `settlementStatus`, and `recurrence` serialized as `.name` strings.
 
 ## State Machines
 
@@ -149,7 +195,9 @@ Default year/month: DateTime.now() when not specified in event.
 
 ```
 State: { userId, type, amount, description, date, accountId, categoryId,
-         destinationAccountId, notes, status, isTransfer,
+         destinationAccountId, notes, status, settlementStatus, recurrence,
+         recurrenceIntervalMonths, installmentCount,
+         isTransfer,
          existingId?, linkedTransactionId?,
          originalCreatedAt?, destinationCreatedAt?, failure? }
 
@@ -157,6 +205,7 @@ State: { userId, type, amount, description, date, accountId, categoryId,
   // destinationCreatedAt = income-leg createdAt (preserved on transfer update)
 
 Deps: createTransaction, updateTransaction, createTransfer, getTransaction
+Deps also include batch recurring create/update/delete use cases.
 
 isEditing  = existingId != null
 isTransfer = state.isTransfer flag (or linkedTransactionId != null on existing)
@@ -167,7 +216,8 @@ On construct (editing a transfer):
   (income leg). See Transfer Rule 15.
 
 isValid (normal):
-  amount > 0 && accountId.isNotEmpty && categoryId.isNotEmpty && !date.isAfter(endOfToday)
+  amount > 0 && accountId.isNotEmpty && categoryId.isNotEmpty
+  && (settlementStatus == pending || !date.isAfter(endOfToday))
 
 isValid (transfer):
   amount > 0 && accountId.isNotEmpty && destinationAccountId.isNotEmpty
@@ -176,13 +226,21 @@ isValid (transfer):
 Field update methods:
   updateType, updateAmount, updateDescription, updateDate,
   updateAccountId, updateCategoryId, updateDestinationAccountId, updateNotes,
-  setTransferMode
+  updateSettlementStatus, updateRecurrence, updateRecurrenceIntervalMonths,
+  updateInstallmentCount, setTransferMode
+
+Date behavior:
+  - updateDate switches non-transfer future dates to pending automatically.
+  - updateSettlementStatus(paid) moves future dates back to today.
+  - Transfers are always paid-only in V1.
 
 submit():
   if !isValid → no-op
   → emit(submitting)
   → if isTransfer
       → isEditing ? updateTransfer(both legs) : createTransfer(expense, income)
+  → else if creating recurring → createTransactions(generated occurrences)
+  → else if editing sequence with following scope → update pending future rows
   → else → isEditing ? updateTransaction : createTransaction
   → success: emit(success)
   → failure: emit(failure + Failure)
@@ -193,6 +251,8 @@ submit():
 - **Empty transaction list** — Loaded with empty list, not error.
 - **Amount parsing** — `double.tryParse` with fallback to 0.
 - **Future date** — allowed only when `settlementStatus == pending`; paid future dates are blocked.
+- **Recurring future rows** — generated rows after the first occurrence are pending even when the first occurrence is paid.
+- **Fixed recurrence end** — deleting "this and following" stops the fixed sequence at the selected due date so the rolling generator does not recreate deleted future rows.
 - **Delete transfer** — deletes both linked transactions.
 - **Delete then reload** — after successful delete, bloc re-dispatches load for current month.
 - **Reassign with no matching transactions** — Firestore batch is empty, succeeds silently.
@@ -305,6 +365,25 @@ The CSV import flow has two stages: **parse + preview** and **confirm**. The pre
 
 **Collection:** `transactions/{id}`
 
+**Scheduling fields:**
+- `settlementStatus`: `"pending"` or `"paid"`; missing values load as `paid`.
+- `dueDate`: due date for pending rows; missing values load from `date`.
+- `settledAt`: settlement date for paid rows.
+- `recurrence`: `"single"`, `"installment"`, or `"fixed"`; missing values load as `single`; legacy `"oneShot"`/`"monthly"` are accepted.
+- `recurrenceGroupId`: sequence identifier shared by all generated rows.
+- `recurrenceIntervalMonths`: month interval between occurrences.
+- `recurrenceIndex`: 1-based generated occurrence index.
+- `recurrenceTotal`: total number of installments, null for fixed.
+- `recurrenceBaseDescription`: user-entered description without installment marker.
+- `recurrenceEndDate`: exclusive stop boundary for fixed sequences ended by deleting "this and following".
+- `sourceBillId` and `parentTransactionId` may exist on migrated Firestore
+  documents as legacy audit fields, but they are not part of `TransactionEntity`
+  or the Drift cache in V1.
+
 **Indexes:**
 - `userId` + `date` (descending)
 - `accountId` + `userId` + `date` (descending)
+- `userId` + `settlementStatus` + `dueDate` (ascending)
+- `userId` + `settlementStatus` + `type` + `dueDate` (ascending)
+- `userId` + `settlementStatus` + `date` (descending)
+- `accountId` + `userId` + `settlementStatus` + `date` (descending)

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recurrences_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
@@ -13,9 +14,11 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     required DeleteTransactionUseCase deleteTransaction,
     required ImportTransactionsCsvUseCase importTransactionsCsv,
     required String userId,
+    EnsureFixedRecurrencesUseCase? ensureFixedRecurrences,
   }) : _getTransactions = getTransactions,
        _deleteTransaction = deleteTransaction,
        _importTransactionsCsv = importTransactionsCsv,
+       _ensureFixedRecurrences = ensureFixedRecurrences,
        _userId = userId,
        super(const TransactionsInitial()) {
     on<TransactionsLoadRequested>(_onLoadRequested);
@@ -27,6 +30,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final GetTransactionsUseCase _getTransactions;
   final DeleteTransactionUseCase _deleteTransaction;
   final ImportTransactionsCsvUseCase _importTransactionsCsv;
+  final EnsureFixedRecurrencesUseCase? _ensureFixedRecurrences;
   final String _userId;
 
   Future<Either<Failure, TransactionImportPreview>> previewCsv(
@@ -37,7 +41,6 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       userId: _userId,
     );
   }
-
 
   Future<void> _onLoadRequested(
     TransactionsLoadRequested event,
@@ -51,6 +54,8 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       }
     }
     emit(const TransactionsLoading());
+
+    await _ensureFixedRecurrences?.call(userId: _userId);
 
     final ref = DateTime(event.year, event.month);
     final result = await _getTransactions(

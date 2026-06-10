@@ -43,9 +43,9 @@ These were debated and locked before code:
 - **No automatic rebalance execution.** Rebalance suggestions are
   read-only labels. The user moves money via the existing transfer flow
   on the Accounts page; the investments tab does not push transactions.
-- **Bills moves into Planning as a sub-tab.** The shell slot vacated by
-  Bills (mobile bottom nav index 1, sidebar second item) is now occupied
-  by the Investments entry.
+- **Investments keeps its shell slot.** Bills/payables no longer occupies a
+  mobile bottom-nav slot; payables/receivables live under Dashboard on the
+  sidebar.
 
 ## 1. Entity Contract
 
@@ -526,18 +526,16 @@ self-contained.
   `InvestmentsCubit.removeHoldingsForAccount(deletedId)` (fire and
   forget — failures are logged but do not block the account delete).
   Provides the cascade required by rule 6.
-- **Navigation refactor** — Bills moves from a top-level shell route to
-  the **middle tab** of `PlanningPage` (order: 50/30/20 · Bills ·
-  Orçamentos). The freed nav slot at mobile bottom index 1 / sidebar
-  position 2 is taken by Investments. Routes `/bills`, `/budgets`,
-  `/fifty-thirty-twenty` continue to resolve (deep links + push
-  notifications), redirecting to `/planning` with the appropriate
-  initial tab.
-- **Bills page** — gains an `embedded: true` flag mirroring
-  `BudgetsPage` so the parent Planning shell hosts the title row.
+- **Navigation refactor** — Bills/payables are no longer a Planning tab.
+  Planning contains 50/30/20 and Orçamentos. Payables/receivables live as
+  Dashboard sidebar children at `/payables-receivables` and
+  `/paid-and-received`; legacy `/bills` redirects to
+  `/payables-receivables` for deep-link/push compatibility.
+- **Bills page** — remains as the transaction-backed
+  payables/receivables surface, but is no longer embedded in Planning.
 - **Bills nav badge** — `nav_bills_badge.dart` is no longer rendered on
-  the bottom/sidebar nav. The unread count is now surfaced on the
-  Bills tab label inside the Planning shell.
+  the bottom/sidebar nav. Due/overdue payables should be surfaced through the
+  transaction-backed payables/receivables entry.
 
 ## 11. Firestore
 

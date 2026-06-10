@@ -1,5 +1,12 @@
 # Bills Feature Spec
 
+> Legacy status: this spec documents the old bills domain for maintenance,
+> rollback, and audit only. As of the 2026-06-10 migration, production
+> payables/receivables are transaction-backed (`transactions.settlementStatus`)
+> and the app UI no longer reads `bills/{id}`. New work must follow
+> [payables_receivables_refactor.md](payables_receivables_refactor.md) and
+> [transactions.md](transactions.md).
+
 Bills are user-defined reminders for upcoming money movements with a due date. A bill can be either **payable** (Conta a Pagar — e.g. internet, rent) or **receivable** (Conta a Receber — e.g. salary, freelance invoice). They live separately from `transactions` — a bill represents an *intent* to pay/receive; once settled it produces a real `TransactionEntity` (expense for payable, income for receivable) that is linked back via `paidTransactionId`.
 
 The feature is reachable from the main navigation (bottom bar on mobile, sidebar on web) — it is no longer nested under Profile/Settings.

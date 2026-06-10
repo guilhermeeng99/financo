@@ -262,8 +262,7 @@ class _SummarySide extends StatelessWidget {
           // CREDIT CARD section was eating ~280dp of scroll height for
           // info that's reference-only, making the list itself feel
           // unusable (one tx visible at a time on small phones).
-          showCreditMeta:
-              isMobile && account.type == AccountType.creditCard,
+          showCreditMeta: isMobile && account.type == AccountType.creditCard,
         ),
         const SizedBox(height: 20),
         AccountDetailSection(
@@ -431,6 +430,7 @@ class _TransactionsSide extends StatelessWidget {
         return TransactionTile(
           transaction: tx,
           categoryLabel: label,
+          showSettlementStatus: true,
           // Awaited via the parent so the statement reloads after edit
           // or delete; `context.push` directly would not refresh.
           onTap: () => onTransactionTap(tx),

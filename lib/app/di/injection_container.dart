@@ -136,12 +136,16 @@ import 'package:financo/features/transactions/data/datasources/transaction_remot
 import 'package:financo/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/delete_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recurrences_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/settle_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -359,13 +363,25 @@ Future<void> initDependencies() async {
       () => CreateTransactionUseCase(sl()),
     )
     ..registerLazySingleton(
+      () => CreateTransactionsUseCase(sl()),
+    )
+    ..registerLazySingleton(
       () => UpdateTransactionUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => UpdateTransactionSequenceUseCase(sl()),
     )
     ..registerLazySingleton(
       () => SettleTransactionUseCase(sl()),
     )
     ..registerLazySingleton(
       () => DeleteTransactionUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => DeleteTransactionSequenceUseCase(sl()),
+    )
+    ..registerLazySingleton(
+      () => EnsureFixedRecurrencesUseCase(sl()),
     )
     ..registerLazySingleton(
       () => CreateTransferUseCase(sl()),

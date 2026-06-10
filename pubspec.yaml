@@ -1,7 +1,7 @@
 name: financo
 description: "Personal finance manager with AI-powered data entry."
 publish_to: "none"
-version: 1.1.5+8
+version: 1.2.0+8
 
 environment:
   sdk: ^3.11.4

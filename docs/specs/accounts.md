@@ -162,18 +162,25 @@ Initial ──load(account, year, month)──→ Loading
   → parallel fetch: allTimeTransactions + periodTransactions
   → either fails → Error
   → both succeed:
-    runningBalance = initialBalance + Σ(income) − Σ(expense)  [all time]
-    totalIncome    = Σ(income)  [period]
-    totalExpenses  = Σ(expense) [period]
+    runningBalance = initialBalance + Σ(income) − Σ(expense)  [paid only, all time]
+    totalIncome    = Σ(income)  [paid only, period]
+    totalExpenses  = Σ(expense) [paid only, period]
     → for each transfer in period: fetch linked transaction to resolve
       its accountId (the "other side"). Build
       transferCounterpartAccountIds: Map<transactionId, linkedAccountId>.
       A failed lookup leaves the entry absent — the view falls back to
       no label.
-    → Loaded { account, runningBalance, transactions (sorted desc by date),
+    → Loaded { account, runningBalance, transactions
+               (paid + pending, sorted desc by transaction/due date),
                totalIncome, totalExpenses, year, month,
                transferCounterpartAccountIds }
 ```
+
+The statement list includes pending scheduled movements for the selected
+account and month so the user can see what is paid, pending, due today,
+overdue, or scheduled from the account context. Pending rows are visual only:
+they do not affect `runningBalance`, `totalIncome`, `totalExpenses`, or
+`result`.
 
 ## Edge Cases
 
@@ -184,6 +191,7 @@ Initial ──load(account, year, month)──→ Loading
 - **Unknown account type from Firestore** — `AccountType.values.byName` throws on invalid value (no fallback currently).
 - **Delete with transactions** — cascades to delete all linked transactions.
 - **Statement with no transactions** — runningBalance = initialBalance, zero totals.
+- **Statement with pending-only transactions** — list renders the pending rows; totals and running balance remain unchanged.
 - **Statement fetch failure** — first failing result short-circuits to error.
 
 ## CSV Import

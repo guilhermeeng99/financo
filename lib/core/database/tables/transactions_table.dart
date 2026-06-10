@@ -13,7 +13,14 @@ class LocalTransactions extends Table {
       text().withDefault(const Constant('paid'))();
   DateTimeColumn get dueDate => dateTime().nullable()();
   DateTimeColumn get settledAt => dateTime().nullable()();
-  TextColumn get recurrence => text().withDefault(const Constant('oneShot'))();
+  TextColumn get recurrence => text().withDefault(const Constant('single'))();
+  TextColumn get recurrenceGroupId => text().nullable()();
+  IntColumn get recurrenceIntervalMonths =>
+      integer().withDefault(const Constant(1))();
+  IntColumn get recurrenceIndex => integer().nullable()();
+  IntColumn get recurrenceTotal => integer().nullable()();
+  TextColumn get recurrenceBaseDescription => text().nullable()();
+  DateTimeColumn get recurrenceEndDate => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
   TextColumn get linkedTransactionId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();

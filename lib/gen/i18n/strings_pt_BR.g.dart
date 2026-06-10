@@ -328,6 +328,21 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get transactionUpdated => 'Transação atualizada';
 	@override String get transactionCreated => 'Transação criada';
 	@override String get transactionScheduled => 'Lançamento agendado';
+	@override String get recurrenceSingle => 'Única';
+	@override String get recurrenceInstallment => 'Parcelada';
+	@override String get recurrenceFixed => 'Fixa';
+	@override String get periodicity => 'Periodicidade';
+	@override String get periodicityMonthly => 'Mensal';
+	@override String get installmentCount => 'Número de parcelas';
+	@override String get recurrenceIntervalMonths => 'Repete a cada n meses';
+	@override String get sequenceEditTitle => 'Editar sequência';
+	@override String get sequenceEditMessage => 'Este lançamento faz parte de uma sequência. Escolha se deseja alterar apenas esta ocorrência ou esta e as próximas pendentes.';
+	@override String get sequenceEditOnlyThis => 'Apenas esta';
+	@override String get sequenceEditThisAndFollowing => 'Esta e as próximas';
+	@override String get sequenceDeleteTitle => 'Excluir lançamento';
+	@override String get sequenceDeleteMessage => 'Este lançamento faz parte de uma sequência. Escolha se deseja excluir apenas esta ocorrência ou esta e as próximas pendentes.';
+	@override String get sequenceDeleteOnlyThis => 'Excluir apenas esta';
+	@override String get sequenceDeleteThisAndFollowing => 'Excluir esta e as próximas';
 	@override String get saved => 'Transação salva!';
 	@override String get deleted => 'Transação excluída.';
 	@override String get importCsv => 'Importar transações';
@@ -1247,6 +1262,21 @@ extension on TranslationsPtBr {
 			'transactions.transactionUpdated' => 'Transação atualizada',
 			'transactions.transactionCreated' => 'Transação criada',
 			'transactions.transactionScheduled' => 'Lançamento agendado',
+			'transactions.recurrenceSingle' => 'Única',
+			'transactions.recurrenceInstallment' => 'Parcelada',
+			'transactions.recurrenceFixed' => 'Fixa',
+			'transactions.periodicity' => 'Periodicidade',
+			'transactions.periodicityMonthly' => 'Mensal',
+			'transactions.installmentCount' => 'Número de parcelas',
+			'transactions.recurrenceIntervalMonths' => 'Repete a cada n meses',
+			'transactions.sequenceEditTitle' => 'Editar sequência',
+			'transactions.sequenceEditMessage' => 'Este lançamento faz parte de uma sequência. Escolha se deseja alterar apenas esta ocorrência ou esta e as próximas pendentes.',
+			'transactions.sequenceEditOnlyThis' => 'Apenas esta',
+			'transactions.sequenceEditThisAndFollowing' => 'Esta e as próximas',
+			'transactions.sequenceDeleteTitle' => 'Excluir lançamento',
+			'transactions.sequenceDeleteMessage' => 'Este lançamento faz parte de uma sequência. Escolha se deseja excluir apenas esta ocorrência ou esta e as próximas pendentes.',
+			'transactions.sequenceDeleteOnlyThis' => 'Excluir apenas esta',
+			'transactions.sequenceDeleteThisAndFollowing' => 'Excluir esta e as próximas',
 			'transactions.saved' => 'Transação salva!',
 			'transactions.deleted' => 'Transação excluída.',
 			'transactions.importCsv' => 'Importar transações',
@@ -1571,6 +1601,8 @@ extension on TranslationsPtBr {
 			'bills.empty' => 'Nenhuma movimentação encontrada neste período.',
 			'bills.addBill' => 'Nova conta',
 			'bills.editBill' => 'Editar conta',
+			_ => null,
+		} ?? switch (path) {
 			'bills.description' => 'Descrição',
 			'bills.descriptionHint' => 'ex.: Energia',
 			'bills.amount' => 'Valor',
@@ -1586,8 +1618,6 @@ extension on TranslationsPtBr {
 			'bills.category' => 'Categoria',
 			'bills.categoryRequired' => 'Selecione uma categoria',
 			'bills.notes' => 'Observações (opcional)',
-			_ => null,
-		} ?? switch (path) {
 			'bills.notesHint' => 'Detalhes adicionais...',
 			'bills.markAsPaid' => 'Marcar como paga',
 			'bills.markAsReceived' => 'Marcar como recebida',

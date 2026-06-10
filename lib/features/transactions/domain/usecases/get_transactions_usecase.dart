@@ -17,6 +17,8 @@ class GetTransactionsUseCase {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
     bool forceRefresh = false,
   }) => _repository.getTransactions(
     userId: userId,
@@ -27,6 +29,8 @@ class GetTransactionsUseCase {
     categoryId: categoryId,
     accountId: accountId,
     settlementStatus: settlementStatus,
+    recurrence: recurrence,
+    recurrenceGroupId: recurrenceGroupId,
     forceRefresh: forceRefresh,
   );
 }

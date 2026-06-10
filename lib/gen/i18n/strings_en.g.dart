@@ -678,6 +678,51 @@ class Translations$transactions$en {
 	/// en: 'Transaction scheduled'
 	String get transactionScheduled => 'Transaction scheduled';
 
+	/// en: 'Single'
+	String get recurrenceSingle => 'Single';
+
+	/// en: 'Installment'
+	String get recurrenceInstallment => 'Installment';
+
+	/// en: 'Fixed'
+	String get recurrenceFixed => 'Fixed';
+
+	/// en: 'Periodicity'
+	String get periodicity => 'Periodicity';
+
+	/// en: 'Monthly'
+	String get periodicityMonthly => 'Monthly';
+
+	/// en: 'Number of installments'
+	String get installmentCount => 'Number of installments';
+
+	/// en: 'Repeats every n months'
+	String get recurrenceIntervalMonths => 'Repeats every n months';
+
+	/// en: 'Edit sequence'
+	String get sequenceEditTitle => 'Edit sequence';
+
+	/// en: 'This transaction is part of a sequence. Choose whether to update only this occurrence or this and the following pending occurrences.'
+	String get sequenceEditMessage => 'This transaction is part of a sequence. Choose whether to update only this occurrence or this and the following pending occurrences.';
+
+	/// en: 'Only this one'
+	String get sequenceEditOnlyThis => 'Only this one';
+
+	/// en: 'This and following'
+	String get sequenceEditThisAndFollowing => 'This and following';
+
+	/// en: 'Delete transaction'
+	String get sequenceDeleteTitle => 'Delete transaction';
+
+	/// en: 'This transaction is part of a sequence. Choose whether to delete only this occurrence or this and the following pending occurrences.'
+	String get sequenceDeleteMessage => 'This transaction is part of a sequence. Choose whether to delete only this occurrence or this and the following pending occurrences.';
+
+	/// en: 'Delete only this one'
+	String get sequenceDeleteOnlyThis => 'Delete only this one';
+
+	/// en: 'Delete this and following'
+	String get sequenceDeleteThisAndFollowing => 'Delete this and following';
+
 	/// en: 'Transaction saved!'
 	String get saved => 'Transaction saved!';
 
@@ -2806,6 +2851,21 @@ extension on Translations {
 			'transactions.transactionUpdated' => 'Transaction updated',
 			'transactions.transactionCreated' => 'Transaction created',
 			'transactions.transactionScheduled' => 'Transaction scheduled',
+			'transactions.recurrenceSingle' => 'Single',
+			'transactions.recurrenceInstallment' => 'Installment',
+			'transactions.recurrenceFixed' => 'Fixed',
+			'transactions.periodicity' => 'Periodicity',
+			'transactions.periodicityMonthly' => 'Monthly',
+			'transactions.installmentCount' => 'Number of installments',
+			'transactions.recurrenceIntervalMonths' => 'Repeats every n months',
+			'transactions.sequenceEditTitle' => 'Edit sequence',
+			'transactions.sequenceEditMessage' => 'This transaction is part of a sequence. Choose whether to update only this occurrence or this and the following pending occurrences.',
+			'transactions.sequenceEditOnlyThis' => 'Only this one',
+			'transactions.sequenceEditThisAndFollowing' => 'This and following',
+			'transactions.sequenceDeleteTitle' => 'Delete transaction',
+			'transactions.sequenceDeleteMessage' => 'This transaction is part of a sequence. Choose whether to delete only this occurrence or this and the following pending occurrences.',
+			'transactions.sequenceDeleteOnlyThis' => 'Delete only this one',
+			'transactions.sequenceDeleteThisAndFollowing' => 'Delete this and following',
 			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
 			'transactions.importCsv' => 'Import transactions',
@@ -3130,6 +3190,8 @@ extension on Translations {
 			'bills.empty' => 'No movements found in this period.',
 			'bills.addBill' => 'New Bill',
 			'bills.editBill' => 'Edit Bill',
+			_ => null,
+		} ?? switch (path) {
 			'bills.description' => 'Description',
 			'bills.descriptionHint' => 'e.g. Electricity',
 			'bills.amount' => 'Amount',
@@ -3145,8 +3207,6 @@ extension on Translations {
 			'bills.category' => 'Category',
 			'bills.categoryRequired' => 'Pick a category',
 			'bills.notes' => 'Notes (optional)',
-			_ => null,
-		} ?? switch (path) {
 			'bills.notesHint' => 'Additional details...',
 			'bills.markAsPaid' => 'Mark as paid',
 			'bills.markAsReceived' => 'Mark as received',

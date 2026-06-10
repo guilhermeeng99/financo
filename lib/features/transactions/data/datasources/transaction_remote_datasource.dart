@@ -16,11 +16,20 @@ abstract class TransactionRemoteDataSource {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
   });
   Future<TransactionModel> getTransaction(String id);
   Future<TransactionModel> createTransaction(TransactionModel model);
+  Future<List<TransactionModel>> createTransactions(
+    List<TransactionModel> models,
+  );
   Future<TransactionModel> updateTransaction(TransactionModel model);
+  Future<List<TransactionModel>> updateTransactions(
+    List<TransactionModel> models,
+  );
   Future<void> deleteTransaction(String id);
+  Future<void> deleteTransactions(List<String> ids);
 
   /// Deletes both legs of a transfer atomically. WHY: a transfer is two
   /// linked docs; deleting them in separate requests can leave a dangling
@@ -55,6 +64,8 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
   }) async {
     try {
       var query = _collection.where('userId', isEqualTo: userId);
@@ -98,6 +109,15 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
           isEqualTo: settlementStatus.name,
         );
       }
+      if (recurrence != null) {
+        query = query.where('recurrence', isEqualTo: recurrence.name);
+      }
+      if (recurrenceGroupId != null) {
+        query = query.where(
+          'recurrenceGroupId',
+          isEqualTo: recurrenceGroupId,
+        );
+      }
 
       query = query.orderBy(dateField, descending: true);
 
@@ -136,6 +156,29 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
   }
 
   @override
+  Future<List<TransactionModel>> createTransactions(
+    List<TransactionModel> models,
+  ) async {
+    if (models.isEmpty) return [];
+    try {
+      final refs = [
+        for (final model in models)
+          model.id.isEmpty ? _collection.doc() : _collection.doc(model.id),
+      ];
+      final batch = _firestore.batch();
+      for (var i = 0; i < models.length; i++) {
+        batch.set(refs[i], models[i].toJson());
+      }
+      await batch.commit();
+
+      final docs = await Future.wait(refs.map((ref) => ref.get()));
+      return docs.map(TransactionModel.fromFirestore).toList();
+    } on Exception {
+      throw const ServerException('Failed to create transactions.');
+    }
+  }
+
+  @override
   Future<TransactionModel> updateTransaction(TransactionModel model) async {
     try {
       await _collection.doc(model.id).update(model.toJson());
@@ -147,11 +190,46 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
   }
 
   @override
+  Future<List<TransactionModel>> updateTransactions(
+    List<TransactionModel> models,
+  ) async {
+    if (models.isEmpty) return [];
+    try {
+      final batch = _firestore.batch();
+      for (final model in models) {
+        batch.update(_collection.doc(model.id), model.toJson());
+      }
+      await batch.commit();
+
+      final docs = await Future.wait(
+        models.map((model) => _collection.doc(model.id).get()),
+      );
+      return docs.map(TransactionModel.fromFirestore).toList();
+    } on Exception {
+      throw const ServerException('Failed to update transactions.');
+    }
+  }
+
+  @override
   Future<void> deleteTransaction(String id) async {
     try {
       await _collection.doc(id).delete();
     } on Exception {
       throw const ServerException('Failed to delete transaction.');
+    }
+  }
+
+  @override
+  Future<void> deleteTransactions(List<String> ids) async {
+    if (ids.isEmpty) return;
+    try {
+      final batch = _firestore.batch();
+      for (final id in ids) {
+        batch.delete(_collection.doc(id));
+      }
+      await batch.commit();
+    } on Exception {
+      throw const ServerException('Failed to delete transactions.');
     }
   }
 

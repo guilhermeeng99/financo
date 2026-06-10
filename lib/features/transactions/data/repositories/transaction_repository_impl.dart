@@ -27,6 +27,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
     String? categoryId,
     String? accountId,
     TransactionSettlementStatus? settlementStatus,
+    TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
     bool forceRefresh = false,
   }) async {
     try {
@@ -40,6 +42,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
           categoryId: categoryId,
           accountId: accountId,
           settlementStatus: settlementStatus,
+          recurrence: recurrence,
+          recurrenceGroupId: recurrenceGroupId,
         );
         // Upsert (not replace-all): transactions are paged by date range,
         // so wiping the local table here would discard rows outside the
@@ -56,6 +60,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         accountId: accountId,
         categoryId: categoryId,
         settlementStatus: settlementStatus,
+        recurrence: recurrence,
+        recurrenceGroupId: recurrenceGroupId,
       );
       return Right(local);
     } on ServerException catch (e) {
@@ -93,6 +99,22 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
+  Future<Either<Failure, List<TransactionEntity>>> createTransactions(
+    List<TransactionEntity> transactions,
+  ) async {
+    try {
+      final models = transactions.map(TransactionModel.fromEntity).toList();
+      final results = await _remote.createTransactions(models);
+      if (results.isNotEmpty) {
+        await _dao.insertAllTransactions(results);
+      }
+      return Right(results);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, TransactionEntity>> updateTransaction(
     TransactionEntity transaction,
   ) async {
@@ -101,6 +123,22 @@ class TransactionRepositoryImpl implements TransactionRepository {
       final result = await _remote.updateTransaction(model);
       await _dao.upsertTransaction(result);
       return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<TransactionEntity>>> updateTransactions(
+    List<TransactionEntity> transactions,
+  ) async {
+    try {
+      final models = transactions.map(TransactionModel.fromEntity).toList();
+      final results = await _remote.updateTransactions(models);
+      if (results.isNotEmpty) {
+        await _dao.insertAllTransactions(results);
+      }
+      return Right(results);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -120,6 +158,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
         await _remote.deleteTransaction(id);
       }
       await _dao.deleteTransaction(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteTransactions(List<String> ids) async {
+    try {
+      await _remote.deleteTransactions(ids);
+      await _dao.deleteTransactions(ids);
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

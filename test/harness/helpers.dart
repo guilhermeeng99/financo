@@ -98,6 +98,8 @@ void registerTransactionFallbackValues() {
       updatedAt: DateTime(2024),
     ),
   );
+  registerFallbackValue(<TransactionEntity>[]);
+  registerFallbackValue(TransactionSequenceScope.onlyThis);
 }
 
 void registerChatFallbackValues() {

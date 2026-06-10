@@ -1,13 +1,17 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transfer_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,10 +22,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     required CreateTransferUseCase createTransfer,
     required GetTransactionUseCase getTransaction,
     required String userId,
+    CreateTransactionsUseCase? createTransactions,
+    UpdateTransactionSequenceUseCase? updateTransactionSequence,
     TransactionEntity? existingTransaction,
     String? prefillAccountId,
   }) : _createTransaction = createTransaction,
+       _createTransactions = createTransactions,
        _updateTransaction = updateTransaction,
+       _updateTransactionSequence = updateTransactionSequence,
        _createTransfer = createTransfer,
        _getTransaction = getTransaction,
        super(
@@ -40,7 +48,9 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   }
 
   final CreateTransactionUseCase _createTransaction;
+  final CreateTransactionsUseCase? _createTransactions;
   final UpdateTransactionUseCase _updateTransaction;
+  final UpdateTransactionSequenceUseCase? _updateTransactionSequence;
   final CreateTransferUseCase _createTransfer;
   final GetTransactionUseCase _getTransaction;
 
@@ -87,6 +97,46 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   void updateCategoryId(String id) => emit(state.copyWith(categoryId: id));
 
+  void updateRecurrence(TransactionRecurrence recurrence) => emit(
+    state.copyWith(
+      recurrence: recurrence,
+      recurrenceIntervalMonths: recurrence == TransactionRecurrence.single
+          ? 1
+          : state.recurrenceIntervalMonths,
+      installmentCount: recurrence == TransactionRecurrence.installment
+          ? state.installmentCount
+          : 2,
+    ),
+  );
+
+  void updateRecurrenceIntervalMonths(String value) {
+    final parsed = int.tryParse(value) ?? 1;
+    final interval = _clampInt(parsed, 1, kMaxRecurringWindowMonths);
+    final maxInstallments = maxInstallmentsForInterval(interval);
+    emit(
+      state.copyWith(
+        recurrenceIntervalMonths: interval,
+        installmentCount: _clampInt(
+          state.installmentCount,
+          2,
+          maxInstallments,
+        ),
+      ),
+    );
+  }
+
+  void updateInstallmentCount(String value) {
+    final parsed = int.tryParse(value) ?? 2;
+    final maxInstallments = maxInstallmentsForInterval(
+      state.recurrenceIntervalMonths,
+    );
+    emit(
+      state.copyWith(
+        installmentCount: _clampInt(parsed, 2, maxInstallments),
+      ),
+    );
+  }
+
   void updateDestinationAccountId(String id) =>
       emit(state.copyWith(destinationAccountId: id));
 
@@ -98,6 +148,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       settlementStatus: enabled
           ? TransactionSettlementStatus.paid
           : state.settlementStatus,
+      recurrence: enabled ? TransactionRecurrence.single : state.recurrence,
     ),
   );
 
@@ -106,7 +157,10 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// on the form (with all fields preserved) instead of popping the
   /// route. Used by the "+ create another" affordance for fast batch
   /// entry of similar transactions.
-  Future<void> submit({bool continueAfterSave = false}) async {
+  Future<void> submit({
+    bool continueAfterSave = false,
+    TransactionSequenceScope sequenceScope = TransactionSequenceScope.onlyThis,
+  }) async {
     if (!state.isValid) return;
     emit(
       state.copyWith(
@@ -118,7 +172,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     if (state.isTransfer) {
       await (state.isEditing ? _updateTransfer() : _submitTransfer());
     } else {
-      await _submitTransaction();
+      await _submitTransaction(sequenceScope: sequenceScope);
     }
   }
 
@@ -169,13 +223,25 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         linkedTransactionId: state.linkedTransactionId,
         settlementStatus: state.settlementStatus,
         recurrence: state.recurrence,
+        recurrenceGroupId: state.recurrenceGroupId,
+        recurrenceIntervalMonths: state.recurrenceIntervalMonths,
+        recurrenceIndex: state.recurrenceIndex,
+        recurrenceTotal: state.recurrenceTotal,
+        recurrenceBaseDescription: state.recurrenceBaseDescription,
+        recurrenceEndDate: state.recurrenceEndDate,
+        installmentCount: state.installmentCount,
+        originalDueDate: state.originalDueDate,
+        originalTransaction: state.originalTransaction,
       ),
     );
   }
 
-  Future<void> _submitTransaction() async {
+  Future<void> _submitTransaction({
+    required TransactionSequenceScope sequenceScope,
+  }) async {
     final now = DateTime.now();
     final isPaid = state.settlementStatus == TransactionSettlementStatus.paid;
+    final isRecurring = state.recurrence != TransactionRecurrence.single;
     final transaction = TransactionEntity(
       id: state.existingId ?? '',
       userId: state.userId,
@@ -189,6 +255,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       dueDate: state.date,
       settledAt: isPaid ? state.date : null,
       recurrence: state.recurrence,
+      recurrenceGroupId: isRecurring ? state.recurrenceGroupId : null,
+      recurrenceIntervalMonths: state.recurrenceIntervalMonths,
+      recurrenceIndex: isRecurring ? state.recurrenceIndex : null,
+      recurrenceTotal: isRecurring ? state.recurrenceTotal : null,
+      recurrenceBaseDescription: isRecurring
+          ? state.recurrenceBaseDescription ?? state.description
+          : null,
+      recurrenceEndDate: isRecurring ? state.recurrenceEndDate : null,
       notes: state.notes,
       linkedTransactionId: state.linkedTransactionId,
       // Preserve original createdAt on edit — overwriting with `now`
@@ -197,26 +271,83 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       updatedAt: now,
     );
 
-    (state.isEditing
-            ? await _updateTransaction(transaction)
-            : await _createTransaction(transaction))
-        .fold(
-          (failure) => emit(
-            state.copyWith(
-              status: FormStatus.failure,
-              failure: failure,
-            ),
-          ),
-          // Surface the saved id so listeners (e.g. the bill-settlement
-          // flow) can chain follow-up work like linking the bill to
-          // this transaction. For updates it's just `existingId`.
-          (saved) => emit(
-            state.copyWith(
-              status: FormStatus.success,
-              savedTransactionId: saved.id,
-            ),
-          ),
-        );
+    final result = state.isEditing
+        ? await _updateSavedTransaction(
+            original: state.originalTransaction,
+            transaction: transaction,
+            sequenceScope: sequenceScope,
+          )
+        : await _createSavedTransaction(transaction, now);
+
+    final nextState = result.fold(
+      (failure) => state.copyWith(
+        status: FormStatus.failure,
+        failure: failure,
+      ),
+      // Surface the saved id so listeners (e.g. the bill-settlement
+      // flow) can chain follow-up work like linking the bill to
+      // this transaction. For updates it's just `existingId`.
+      (saved) => state.copyWith(
+        status: FormStatus.success,
+        savedTransactionId: saved.id,
+      ),
+    );
+    emit(nextState);
+  }
+
+  Future<Either<Failure, TransactionEntity>> _createSavedTransaction(
+    TransactionEntity transaction,
+    DateTime now,
+  ) async {
+    if (transaction.recurrence == TransactionRecurrence.single) {
+      return _createTransaction(transaction);
+    }
+
+    final createTransactions = _createTransactions;
+    if (createTransactions == null) return _createTransaction(transaction);
+
+    final transactions = buildRecurringTransactions(
+      template: transaction,
+      now: now,
+      installmentCount: state.installmentCount,
+    );
+    return (await createTransactions(transactions)).map(
+      (created) => created.first,
+    );
+  }
+
+  Future<Either<Failure, TransactionEntity>> _updateSavedTransaction({
+    required TransactionEntity? original,
+    required TransactionEntity transaction,
+    required TransactionSequenceScope sequenceScope,
+  }) async {
+    final updateSequence = _updateTransactionSequence;
+    if (original == null ||
+        updateSequence == null ||
+        sequenceScope == TransactionSequenceScope.onlyThis ||
+        !original.isRecurring) {
+      return _updateTransaction(_withOccurrenceDescription(transaction));
+    }
+
+    return (await updateSequence(
+      original: original,
+      updated: transaction,
+      scope: sequenceScope,
+    )).map((updated) => updated.isEmpty ? transaction : updated.first);
+  }
+
+  TransactionEntity _withOccurrenceDescription(TransactionEntity transaction) {
+    if (transaction.recurrence != TransactionRecurrence.installment) {
+      return transaction;
+    }
+    return transaction.copyWith(
+      description: installmentDescription(
+        baseDescription:
+            transaction.recurrenceBaseDescription ?? transaction.description,
+        index: transaction.recurrenceIndex ?? 1,
+        total: transaction.recurrenceTotal ?? state.installmentCount,
+      ),
+    );
   }
 
   Future<void> _submitTransfer() async {
@@ -331,10 +462,19 @@ class TransactionFormState extends Equatable {
     required this.status,
     required this.isTransfer,
     this.settlementStatus = TransactionSettlementStatus.paid,
-    this.recurrence = TransactionRecurrence.oneShot,
+    this.recurrence = TransactionRecurrence.single,
+    this.recurrenceIntervalMonths = 1,
+    this.installmentCount = 2,
     this.destinationAccountId = '',
     this.existingId,
     this.linkedTransactionId,
+    this.recurrenceGroupId,
+    this.recurrenceIndex,
+    this.recurrenceTotal,
+    this.recurrenceBaseDescription,
+    this.recurrenceEndDate,
+    this.originalDueDate,
+    this.originalTransaction,
     this.originalCreatedAt,
     this.destinationCreatedAt,
     this.savedTransactionId,
@@ -357,8 +497,9 @@ class TransactionFormState extends Equatable {
       userId: userId,
       type: existing?.type ?? TransactionType.expense,
       amount: existing?.amount ?? 0,
-      description: existing?.description ?? '',
-      date: existing?.date ?? DateTime.now(),
+      description:
+          existing?.recurrenceBaseDescription ?? existing?.description ?? '',
+      date: existing?.dueDate ?? existing?.date ?? DateTime.now(),
       // Prefill only matters in create mode — when editing, the existing
       // accountId always wins so we never silently rewrite it.
       accountId: existing?.accountId ?? prefillAccountId ?? '',
@@ -368,7 +509,16 @@ class TransactionFormState extends Equatable {
       isTransfer: false,
       settlementStatus:
           existing?.settlementStatus ?? TransactionSettlementStatus.paid,
-      recurrence: existing?.recurrence ?? TransactionRecurrence.oneShot,
+      recurrence: existing?.recurrence ?? TransactionRecurrence.single,
+      recurrenceGroupId: existing?.recurrenceGroupId,
+      recurrenceIntervalMonths: existing?.recurrenceIntervalMonths ?? 1,
+      recurrenceIndex: existing?.recurrenceIndex,
+      recurrenceTotal: existing?.recurrenceTotal,
+      recurrenceBaseDescription: existing?.recurrenceBaseDescription,
+      recurrenceEndDate: existing?.recurrenceEndDate,
+      installmentCount: existing?.recurrenceTotal ?? 2,
+      originalDueDate: existing?.dueDate,
+      originalTransaction: existing,
       existingId: existing?.id,
       linkedTransactionId: existing?.linkedTransactionId,
       originalCreatedAt: existing?.createdAt,
@@ -420,9 +570,18 @@ class TransactionFormState extends Equatable {
   final bool isTransfer;
   final TransactionSettlementStatus settlementStatus;
   final TransactionRecurrence recurrence;
+  final String? recurrenceGroupId;
+  final int recurrenceIntervalMonths;
+  final int? recurrenceIndex;
+  final int? recurrenceTotal;
+  final String? recurrenceBaseDescription;
+  final DateTime? recurrenceEndDate;
+  final int installmentCount;
   final String destinationAccountId;
   final String? existingId;
   final String? linkedTransactionId;
+  final DateTime? originalDueDate;
+  final TransactionEntity? originalTransaction;
 
   /// Captured at form open time on edit so `_submitTransaction` /
   /// `_updateTransfer` can preserve the (expense leg, when a transfer)
@@ -448,6 +607,9 @@ class TransactionFormState extends Equatable {
   final Failure? failure;
 
   bool get isEditing => existingId != null;
+  bool get isSequenceMember =>
+      originalTransaction?.isRecurring ??
+      recurrence != TransactionRecurrence.single;
 
   bool get _isDateValid {
     if (!isTransfer &&
@@ -481,6 +643,15 @@ class TransactionFormState extends Equatable {
     bool? isTransfer,
     TransactionSettlementStatus? settlementStatus,
     TransactionRecurrence? recurrence,
+    String? recurrenceGroupId,
+    int? recurrenceIntervalMonths,
+    int? recurrenceIndex,
+    int? recurrenceTotal,
+    String? recurrenceBaseDescription,
+    DateTime? recurrenceEndDate,
+    int? installmentCount,
+    DateTime? originalDueDate,
+    TransactionEntity? originalTransaction,
     DateTime? originalCreatedAt,
     DateTime? destinationCreatedAt,
     String? savedTransactionId,
@@ -501,8 +672,19 @@ class TransactionFormState extends Equatable {
       isTransfer: isTransfer ?? this.isTransfer,
       settlementStatus: settlementStatus ?? this.settlementStatus,
       recurrence: recurrence ?? this.recurrence,
+      recurrenceGroupId: recurrenceGroupId ?? this.recurrenceGroupId,
+      recurrenceIntervalMonths:
+          recurrenceIntervalMonths ?? this.recurrenceIntervalMonths,
+      recurrenceIndex: recurrenceIndex ?? this.recurrenceIndex,
+      recurrenceTotal: recurrenceTotal ?? this.recurrenceTotal,
+      recurrenceBaseDescription:
+          recurrenceBaseDescription ?? this.recurrenceBaseDescription,
+      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
+      installmentCount: installmentCount ?? this.installmentCount,
       existingId: existingId,
       linkedTransactionId: linkedTransactionId,
+      originalDueDate: originalDueDate ?? this.originalDueDate,
+      originalTransaction: originalTransaction ?? this.originalTransaction,
       // These are only ever assigned (filling in the counterpart leg on
       // transfer edit), never cleared — so `?? this.` is correct.
       originalCreatedAt: originalCreatedAt ?? this.originalCreatedAt,
@@ -528,8 +710,17 @@ class TransactionFormState extends Equatable {
     isTransfer,
     settlementStatus,
     recurrence,
+    recurrenceGroupId,
+    recurrenceIntervalMonths,
+    recurrenceIndex,
+    recurrenceTotal,
+    recurrenceBaseDescription,
+    recurrenceEndDate,
+    installmentCount,
     existingId,
     linkedTransactionId,
+    originalDueDate,
+    originalTransaction,
     originalCreatedAt,
     destinationCreatedAt,
     savedTransactionId,
@@ -542,4 +733,10 @@ bool _isAfterToday(DateTime date) {
   final now = DateTime.now();
   final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
   return date.isAfter(endOfToday);
+}
+
+int _clampInt(int value, int min, int max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
 }

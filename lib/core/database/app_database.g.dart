@@ -1363,8 +1363,77 @@ class $LocalTransactionsTable extends LocalTransactions
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('oneShot'),
+    defaultValue: const Constant('single'),
   );
+  static const VerificationMeta _recurrenceGroupIdMeta = const VerificationMeta(
+    'recurrenceGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceGroupId =
+      GeneratedColumn<String>(
+        'recurrence_group_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _recurrenceIntervalMonthsMeta =
+      const VerificationMeta('recurrenceIntervalMonths');
+  @override
+  late final GeneratedColumn<int> recurrenceIntervalMonths =
+      GeneratedColumn<int>(
+        'recurrence_interval_months',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(1),
+      );
+  static const VerificationMeta _recurrenceIndexMeta = const VerificationMeta(
+    'recurrenceIndex',
+  );
+  @override
+  late final GeneratedColumn<int> recurrenceIndex = GeneratedColumn<int>(
+    'recurrence_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recurrenceTotalMeta = const VerificationMeta(
+    'recurrenceTotal',
+  );
+  @override
+  late final GeneratedColumn<int> recurrenceTotal = GeneratedColumn<int>(
+    'recurrence_total',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recurrenceBaseDescriptionMeta =
+      const VerificationMeta('recurrenceBaseDescription');
+  @override
+  late final GeneratedColumn<String> recurrenceBaseDescription =
+      GeneratedColumn<String>(
+        'recurrence_base_description',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _recurrenceEndDateMeta = const VerificationMeta(
+    'recurrenceEndDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> recurrenceEndDate =
+      GeneratedColumn<DateTime>(
+        'recurrence_end_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -1421,6 +1490,12 @@ class $LocalTransactionsTable extends LocalTransactions
     dueDate,
     settledAt,
     recurrence,
+    recurrenceGroupId,
+    recurrenceIntervalMonths,
+    recurrenceIndex,
+    recurrenceTotal,
+    recurrenceBaseDescription,
+    recurrenceEndDate,
     notes,
     linkedTransactionId,
     createdAt,
@@ -1529,6 +1604,60 @@ class $LocalTransactionsTable extends LocalTransactions
         recurrence.isAcceptableOrUnknown(data['recurrence']!, _recurrenceMeta),
       );
     }
+    if (data.containsKey('recurrence_group_id')) {
+      context.handle(
+        _recurrenceGroupIdMeta,
+        recurrenceGroupId.isAcceptableOrUnknown(
+          data['recurrence_group_id']!,
+          _recurrenceGroupIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_interval_months')) {
+      context.handle(
+        _recurrenceIntervalMonthsMeta,
+        recurrenceIntervalMonths.isAcceptableOrUnknown(
+          data['recurrence_interval_months']!,
+          _recurrenceIntervalMonthsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_index')) {
+      context.handle(
+        _recurrenceIndexMeta,
+        recurrenceIndex.isAcceptableOrUnknown(
+          data['recurrence_index']!,
+          _recurrenceIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_total')) {
+      context.handle(
+        _recurrenceTotalMeta,
+        recurrenceTotal.isAcceptableOrUnknown(
+          data['recurrence_total']!,
+          _recurrenceTotalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_base_description')) {
+      context.handle(
+        _recurrenceBaseDescriptionMeta,
+        recurrenceBaseDescription.isAcceptableOrUnknown(
+          data['recurrence_base_description']!,
+          _recurrenceBaseDescriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_end_date')) {
+      context.handle(
+        _recurrenceEndDateMeta,
+        recurrenceEndDate.isAcceptableOrUnknown(
+          data['recurrence_end_date']!,
+          _recurrenceEndDateMeta,
+        ),
+      );
+    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
@@ -1617,6 +1746,30 @@ class $LocalTransactionsTable extends LocalTransactions
         DriftSqlType.string,
         data['${effectivePrefix}recurrence'],
       )!,
+      recurrenceGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_group_id'],
+      ),
+      recurrenceIntervalMonths: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recurrence_interval_months'],
+      )!,
+      recurrenceIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recurrence_index'],
+      ),
+      recurrenceTotal: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recurrence_total'],
+      ),
+      recurrenceBaseDescription: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_base_description'],
+      ),
+      recurrenceEndDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}recurrence_end_date'],
+      ),
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
@@ -1656,6 +1809,12 @@ class LocalTransaction extends DataClass
   final DateTime? dueDate;
   final DateTime? settledAt;
   final String recurrence;
+  final String? recurrenceGroupId;
+  final int recurrenceIntervalMonths;
+  final int? recurrenceIndex;
+  final int? recurrenceTotal;
+  final String? recurrenceBaseDescription;
+  final DateTime? recurrenceEndDate;
   final String? notes;
   final String? linkedTransactionId;
   final DateTime createdAt;
@@ -1673,6 +1832,12 @@ class LocalTransaction extends DataClass
     this.dueDate,
     this.settledAt,
     required this.recurrence,
+    this.recurrenceGroupId,
+    required this.recurrenceIntervalMonths,
+    this.recurrenceIndex,
+    this.recurrenceTotal,
+    this.recurrenceBaseDescription,
+    this.recurrenceEndDate,
     this.notes,
     this.linkedTransactionId,
     required this.createdAt,
@@ -1697,6 +1862,24 @@ class LocalTransaction extends DataClass
       map['settled_at'] = Variable<DateTime>(settledAt);
     }
     map['recurrence'] = Variable<String>(recurrence);
+    if (!nullToAbsent || recurrenceGroupId != null) {
+      map['recurrence_group_id'] = Variable<String>(recurrenceGroupId);
+    }
+    map['recurrence_interval_months'] = Variable<int>(recurrenceIntervalMonths);
+    if (!nullToAbsent || recurrenceIndex != null) {
+      map['recurrence_index'] = Variable<int>(recurrenceIndex);
+    }
+    if (!nullToAbsent || recurrenceTotal != null) {
+      map['recurrence_total'] = Variable<int>(recurrenceTotal);
+    }
+    if (!nullToAbsent || recurrenceBaseDescription != null) {
+      map['recurrence_base_description'] = Variable<String>(
+        recurrenceBaseDescription,
+      );
+    }
+    if (!nullToAbsent || recurrenceEndDate != null) {
+      map['recurrence_end_date'] = Variable<DateTime>(recurrenceEndDate);
+    }
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
@@ -1726,6 +1909,23 @@ class LocalTransaction extends DataClass
           ? const Value.absent()
           : Value(settledAt),
       recurrence: Value(recurrence),
+      recurrenceGroupId: recurrenceGroupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceGroupId),
+      recurrenceIntervalMonths: Value(recurrenceIntervalMonths),
+      recurrenceIndex: recurrenceIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceIndex),
+      recurrenceTotal: recurrenceTotal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceTotal),
+      recurrenceBaseDescription:
+          recurrenceBaseDescription == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceBaseDescription),
+      recurrenceEndDate: recurrenceEndDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceEndDate),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
@@ -1755,6 +1955,20 @@ class LocalTransaction extends DataClass
       dueDate: serializer.fromJson<DateTime?>(json['dueDate']),
       settledAt: serializer.fromJson<DateTime?>(json['settledAt']),
       recurrence: serializer.fromJson<String>(json['recurrence']),
+      recurrenceGroupId: serializer.fromJson<String?>(
+        json['recurrenceGroupId'],
+      ),
+      recurrenceIntervalMonths: serializer.fromJson<int>(
+        json['recurrenceIntervalMonths'],
+      ),
+      recurrenceIndex: serializer.fromJson<int?>(json['recurrenceIndex']),
+      recurrenceTotal: serializer.fromJson<int?>(json['recurrenceTotal']),
+      recurrenceBaseDescription: serializer.fromJson<String?>(
+        json['recurrenceBaseDescription'],
+      ),
+      recurrenceEndDate: serializer.fromJson<DateTime?>(
+        json['recurrenceEndDate'],
+      ),
       notes: serializer.fromJson<String?>(json['notes']),
       linkedTransactionId: serializer.fromJson<String?>(
         json['linkedTransactionId'],
@@ -1779,6 +1993,16 @@ class LocalTransaction extends DataClass
       'dueDate': serializer.toJson<DateTime?>(dueDate),
       'settledAt': serializer.toJson<DateTime?>(settledAt),
       'recurrence': serializer.toJson<String>(recurrence),
+      'recurrenceGroupId': serializer.toJson<String?>(recurrenceGroupId),
+      'recurrenceIntervalMonths': serializer.toJson<int>(
+        recurrenceIntervalMonths,
+      ),
+      'recurrenceIndex': serializer.toJson<int?>(recurrenceIndex),
+      'recurrenceTotal': serializer.toJson<int?>(recurrenceTotal),
+      'recurrenceBaseDescription': serializer.toJson<String?>(
+        recurrenceBaseDescription,
+      ),
+      'recurrenceEndDate': serializer.toJson<DateTime?>(recurrenceEndDate),
       'notes': serializer.toJson<String?>(notes),
       'linkedTransactionId': serializer.toJson<String?>(linkedTransactionId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -1799,6 +2023,12 @@ class LocalTransaction extends DataClass
     Value<DateTime?> dueDate = const Value.absent(),
     Value<DateTime?> settledAt = const Value.absent(),
     String? recurrence,
+    Value<String?> recurrenceGroupId = const Value.absent(),
+    int? recurrenceIntervalMonths,
+    Value<int?> recurrenceIndex = const Value.absent(),
+    Value<int?> recurrenceTotal = const Value.absent(),
+    Value<String?> recurrenceBaseDescription = const Value.absent(),
+    Value<DateTime?> recurrenceEndDate = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     Value<String?> linkedTransactionId = const Value.absent(),
     DateTime? createdAt,
@@ -1816,6 +2046,23 @@ class LocalTransaction extends DataClass
     dueDate: dueDate.present ? dueDate.value : this.dueDate,
     settledAt: settledAt.present ? settledAt.value : this.settledAt,
     recurrence: recurrence ?? this.recurrence,
+    recurrenceGroupId: recurrenceGroupId.present
+        ? recurrenceGroupId.value
+        : this.recurrenceGroupId,
+    recurrenceIntervalMonths:
+        recurrenceIntervalMonths ?? this.recurrenceIntervalMonths,
+    recurrenceIndex: recurrenceIndex.present
+        ? recurrenceIndex.value
+        : this.recurrenceIndex,
+    recurrenceTotal: recurrenceTotal.present
+        ? recurrenceTotal.value
+        : this.recurrenceTotal,
+    recurrenceBaseDescription: recurrenceBaseDescription.present
+        ? recurrenceBaseDescription.value
+        : this.recurrenceBaseDescription,
+    recurrenceEndDate: recurrenceEndDate.present
+        ? recurrenceEndDate.value
+        : this.recurrenceEndDate,
     notes: notes.present ? notes.value : this.notes,
     linkedTransactionId: linkedTransactionId.present
         ? linkedTransactionId.value
@@ -1845,6 +2092,24 @@ class LocalTransaction extends DataClass
       recurrence: data.recurrence.present
           ? data.recurrence.value
           : this.recurrence,
+      recurrenceGroupId: data.recurrenceGroupId.present
+          ? data.recurrenceGroupId.value
+          : this.recurrenceGroupId,
+      recurrenceIntervalMonths: data.recurrenceIntervalMonths.present
+          ? data.recurrenceIntervalMonths.value
+          : this.recurrenceIntervalMonths,
+      recurrenceIndex: data.recurrenceIndex.present
+          ? data.recurrenceIndex.value
+          : this.recurrenceIndex,
+      recurrenceTotal: data.recurrenceTotal.present
+          ? data.recurrenceTotal.value
+          : this.recurrenceTotal,
+      recurrenceBaseDescription: data.recurrenceBaseDescription.present
+          ? data.recurrenceBaseDescription.value
+          : this.recurrenceBaseDescription,
+      recurrenceEndDate: data.recurrenceEndDate.present
+          ? data.recurrenceEndDate.value
+          : this.recurrenceEndDate,
       notes: data.notes.present ? data.notes.value : this.notes,
       linkedTransactionId: data.linkedTransactionId.present
           ? data.linkedTransactionId.value
@@ -1869,6 +2134,12 @@ class LocalTransaction extends DataClass
           ..write('dueDate: $dueDate, ')
           ..write('settledAt: $settledAt, ')
           ..write('recurrence: $recurrence, ')
+          ..write('recurrenceGroupId: $recurrenceGroupId, ')
+          ..write('recurrenceIntervalMonths: $recurrenceIntervalMonths, ')
+          ..write('recurrenceIndex: $recurrenceIndex, ')
+          ..write('recurrenceTotal: $recurrenceTotal, ')
+          ..write('recurrenceBaseDescription: $recurrenceBaseDescription, ')
+          ..write('recurrenceEndDate: $recurrenceEndDate, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
@@ -1878,7 +2149,7 @@ class LocalTransaction extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     userId,
     accountId,
@@ -1891,11 +2162,17 @@ class LocalTransaction extends DataClass
     dueDate,
     settledAt,
     recurrence,
+    recurrenceGroupId,
+    recurrenceIntervalMonths,
+    recurrenceIndex,
+    recurrenceTotal,
+    recurrenceBaseDescription,
+    recurrenceEndDate,
     notes,
     linkedTransactionId,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1912,6 +2189,12 @@ class LocalTransaction extends DataClass
           other.dueDate == this.dueDate &&
           other.settledAt == this.settledAt &&
           other.recurrence == this.recurrence &&
+          other.recurrenceGroupId == this.recurrenceGroupId &&
+          other.recurrenceIntervalMonths == this.recurrenceIntervalMonths &&
+          other.recurrenceIndex == this.recurrenceIndex &&
+          other.recurrenceTotal == this.recurrenceTotal &&
+          other.recurrenceBaseDescription == this.recurrenceBaseDescription &&
+          other.recurrenceEndDate == this.recurrenceEndDate &&
           other.notes == this.notes &&
           other.linkedTransactionId == this.linkedTransactionId &&
           other.createdAt == this.createdAt &&
@@ -1931,6 +2214,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
   final Value<DateTime?> dueDate;
   final Value<DateTime?> settledAt;
   final Value<String> recurrence;
+  final Value<String?> recurrenceGroupId;
+  final Value<int> recurrenceIntervalMonths;
+  final Value<int?> recurrenceIndex;
+  final Value<int?> recurrenceTotal;
+  final Value<String?> recurrenceBaseDescription;
+  final Value<DateTime?> recurrenceEndDate;
   final Value<String?> notes;
   final Value<String?> linkedTransactionId;
   final Value<DateTime> createdAt;
@@ -1949,6 +2238,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.dueDate = const Value.absent(),
     this.settledAt = const Value.absent(),
     this.recurrence = const Value.absent(),
+    this.recurrenceGroupId = const Value.absent(),
+    this.recurrenceIntervalMonths = const Value.absent(),
+    this.recurrenceIndex = const Value.absent(),
+    this.recurrenceTotal = const Value.absent(),
+    this.recurrenceBaseDescription = const Value.absent(),
+    this.recurrenceEndDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -1968,6 +2263,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.dueDate = const Value.absent(),
     this.settledAt = const Value.absent(),
     this.recurrence = const Value.absent(),
+    this.recurrenceGroupId = const Value.absent(),
+    this.recurrenceIntervalMonths = const Value.absent(),
+    this.recurrenceIndex = const Value.absent(),
+    this.recurrenceTotal = const Value.absent(),
+    this.recurrenceBaseDescription = const Value.absent(),
+    this.recurrenceEndDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
     required DateTime createdAt,
@@ -1996,6 +2297,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Expression<DateTime>? dueDate,
     Expression<DateTime>? settledAt,
     Expression<String>? recurrence,
+    Expression<String>? recurrenceGroupId,
+    Expression<int>? recurrenceIntervalMonths,
+    Expression<int>? recurrenceIndex,
+    Expression<int>? recurrenceTotal,
+    Expression<String>? recurrenceBaseDescription,
+    Expression<DateTime>? recurrenceEndDate,
     Expression<String>? notes,
     Expression<String>? linkedTransactionId,
     Expression<DateTime>? createdAt,
@@ -2015,6 +2322,14 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       if (dueDate != null) 'due_date': dueDate,
       if (settledAt != null) 'settled_at': settledAt,
       if (recurrence != null) 'recurrence': recurrence,
+      if (recurrenceGroupId != null) 'recurrence_group_id': recurrenceGroupId,
+      if (recurrenceIntervalMonths != null)
+        'recurrence_interval_months': recurrenceIntervalMonths,
+      if (recurrenceIndex != null) 'recurrence_index': recurrenceIndex,
+      if (recurrenceTotal != null) 'recurrence_total': recurrenceTotal,
+      if (recurrenceBaseDescription != null)
+        'recurrence_base_description': recurrenceBaseDescription,
+      if (recurrenceEndDate != null) 'recurrence_end_date': recurrenceEndDate,
       if (notes != null) 'notes': notes,
       if (linkedTransactionId != null)
         'linked_transaction_id': linkedTransactionId,
@@ -2037,6 +2352,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Value<DateTime?>? dueDate,
     Value<DateTime?>? settledAt,
     Value<String>? recurrence,
+    Value<String?>? recurrenceGroupId,
+    Value<int>? recurrenceIntervalMonths,
+    Value<int?>? recurrenceIndex,
+    Value<int?>? recurrenceTotal,
+    Value<String?>? recurrenceBaseDescription,
+    Value<DateTime?>? recurrenceEndDate,
     Value<String?>? notes,
     Value<String?>? linkedTransactionId,
     Value<DateTime>? createdAt,
@@ -2056,6 +2377,14 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       dueDate: dueDate ?? this.dueDate,
       settledAt: settledAt ?? this.settledAt,
       recurrence: recurrence ?? this.recurrence,
+      recurrenceGroupId: recurrenceGroupId ?? this.recurrenceGroupId,
+      recurrenceIntervalMonths:
+          recurrenceIntervalMonths ?? this.recurrenceIntervalMonths,
+      recurrenceIndex: recurrenceIndex ?? this.recurrenceIndex,
+      recurrenceTotal: recurrenceTotal ?? this.recurrenceTotal,
+      recurrenceBaseDescription:
+          recurrenceBaseDescription ?? this.recurrenceBaseDescription,
+      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
       createdAt: createdAt ?? this.createdAt,
@@ -2103,6 +2432,28 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     if (recurrence.present) {
       map['recurrence'] = Variable<String>(recurrence.value);
     }
+    if (recurrenceGroupId.present) {
+      map['recurrence_group_id'] = Variable<String>(recurrenceGroupId.value);
+    }
+    if (recurrenceIntervalMonths.present) {
+      map['recurrence_interval_months'] = Variable<int>(
+        recurrenceIntervalMonths.value,
+      );
+    }
+    if (recurrenceIndex.present) {
+      map['recurrence_index'] = Variable<int>(recurrenceIndex.value);
+    }
+    if (recurrenceTotal.present) {
+      map['recurrence_total'] = Variable<int>(recurrenceTotal.value);
+    }
+    if (recurrenceBaseDescription.present) {
+      map['recurrence_base_description'] = Variable<String>(
+        recurrenceBaseDescription.value,
+      );
+    }
+    if (recurrenceEndDate.present) {
+      map['recurrence_end_date'] = Variable<DateTime>(recurrenceEndDate.value);
+    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
@@ -2138,6 +2489,12 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
           ..write('dueDate: $dueDate, ')
           ..write('settledAt: $settledAt, ')
           ..write('recurrence: $recurrence, ')
+          ..write('recurrenceGroupId: $recurrenceGroupId, ')
+          ..write('recurrenceIntervalMonths: $recurrenceIntervalMonths, ')
+          ..write('recurrenceIndex: $recurrenceIndex, ')
+          ..write('recurrenceTotal: $recurrenceTotal, ')
+          ..write('recurrenceBaseDescription: $recurrenceBaseDescription, ')
+          ..write('recurrenceEndDate: $recurrenceEndDate, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
           ..write('createdAt: $createdAt, ')
@@ -5664,6 +6021,12 @@ typedef $$LocalTransactionsTableCreateCompanionBuilder =
       Value<DateTime?> dueDate,
       Value<DateTime?> settledAt,
       Value<String> recurrence,
+      Value<String?> recurrenceGroupId,
+      Value<int> recurrenceIntervalMonths,
+      Value<int?> recurrenceIndex,
+      Value<int?> recurrenceTotal,
+      Value<String?> recurrenceBaseDescription,
+      Value<DateTime?> recurrenceEndDate,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
       required DateTime createdAt,
@@ -5684,6 +6047,12 @@ typedef $$LocalTransactionsTableUpdateCompanionBuilder =
       Value<DateTime?> dueDate,
       Value<DateTime?> settledAt,
       Value<String> recurrence,
+      Value<String?> recurrenceGroupId,
+      Value<int> recurrenceIntervalMonths,
+      Value<int?> recurrenceIndex,
+      Value<int?> recurrenceTotal,
+      Value<String?> recurrenceBaseDescription,
+      Value<DateTime?> recurrenceEndDate,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
       Value<DateTime> createdAt,
@@ -5757,6 +6126,36 @@ class $$LocalTransactionsTableFilterComposer
 
   ColumnFilters<String> get recurrence => $composableBuilder(
     column: $table.recurrence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceGroupId => $composableBuilder(
+    column: $table.recurrenceGroupId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recurrenceIntervalMonths => $composableBuilder(
+    column: $table.recurrenceIntervalMonths,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recurrenceIndex => $composableBuilder(
+    column: $table.recurrenceIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recurrenceTotal => $composableBuilder(
+    column: $table.recurrenceTotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceBaseDescription => $composableBuilder(
+    column: $table.recurrenceBaseDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get recurrenceEndDate => $composableBuilder(
+    column: $table.recurrenceEndDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5850,6 +6249,36 @@ class $$LocalTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get recurrenceGroupId => $composableBuilder(
+    column: $table.recurrenceGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recurrenceIntervalMonths => $composableBuilder(
+    column: $table.recurrenceIntervalMonths,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recurrenceIndex => $composableBuilder(
+    column: $table.recurrenceIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recurrenceTotal => $composableBuilder(
+    column: $table.recurrenceTotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceBaseDescription => $composableBuilder(
+    column: $table.recurrenceBaseDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get recurrenceEndDate => $composableBuilder(
+    column: $table.recurrenceEndDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
     builder: (column) => ColumnOrderings(column),
@@ -5924,6 +6353,36 @@ class $$LocalTransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get recurrenceGroupId => $composableBuilder(
+    column: $table.recurrenceGroupId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recurrenceIntervalMonths => $composableBuilder(
+    column: $table.recurrenceIntervalMonths,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recurrenceIndex => $composableBuilder(
+    column: $table.recurrenceIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get recurrenceTotal => $composableBuilder(
+    column: $table.recurrenceTotal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceBaseDescription => $composableBuilder(
+    column: $table.recurrenceBaseDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get recurrenceEndDate => $composableBuilder(
+    column: $table.recurrenceEndDate,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
@@ -5991,6 +6450,12 @@ class $$LocalTransactionsTableTableManager
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime?> settledAt = const Value.absent(),
                 Value<String> recurrence = const Value.absent(),
+                Value<String?> recurrenceGroupId = const Value.absent(),
+                Value<int> recurrenceIntervalMonths = const Value.absent(),
+                Value<int?> recurrenceIndex = const Value.absent(),
+                Value<int?> recurrenceTotal = const Value.absent(),
+                Value<String?> recurrenceBaseDescription = const Value.absent(),
+                Value<DateTime?> recurrenceEndDate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -6009,6 +6474,12 @@ class $$LocalTransactionsTableTableManager
                 dueDate: dueDate,
                 settledAt: settledAt,
                 recurrence: recurrence,
+                recurrenceGroupId: recurrenceGroupId,
+                recurrenceIntervalMonths: recurrenceIntervalMonths,
+                recurrenceIndex: recurrenceIndex,
+                recurrenceTotal: recurrenceTotal,
+                recurrenceBaseDescription: recurrenceBaseDescription,
+                recurrenceEndDate: recurrenceEndDate,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,
@@ -6029,6 +6500,12 @@ class $$LocalTransactionsTableTableManager
                 Value<DateTime?> dueDate = const Value.absent(),
                 Value<DateTime?> settledAt = const Value.absent(),
                 Value<String> recurrence = const Value.absent(),
+                Value<String?> recurrenceGroupId = const Value.absent(),
+                Value<int> recurrenceIntervalMonths = const Value.absent(),
+                Value<int?> recurrenceIndex = const Value.absent(),
+                Value<int?> recurrenceTotal = const Value.absent(),
+                Value<String?> recurrenceBaseDescription = const Value.absent(),
+                Value<DateTime?> recurrenceEndDate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
                 required DateTime createdAt,
@@ -6047,6 +6524,12 @@ class $$LocalTransactionsTableTableManager
                 dueDate: dueDate,
                 settledAt: settledAt,
                 recurrence: recurrence,
+                recurrenceGroupId: recurrenceGroupId,
+                recurrenceIntervalMonths: recurrenceIntervalMonths,
+                recurrenceIndex: recurrenceIndex,
+                recurrenceTotal: recurrenceTotal,
+                recurrenceBaseDescription: recurrenceBaseDescription,
+                recurrenceEndDate: recurrenceEndDate,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
                 createdAt: createdAt,
