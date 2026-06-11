@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/account_balance_calculator.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/period_totals.dart';
@@ -33,7 +34,7 @@ class AccountStatementCubit extends Cubit<AccountStatementState> {
     emit(const AccountStatementLoading());
 
     final startDate = DateTime(year, month);
-    final endDate = DateTime(year, month + 1);
+    final endDate = endOfMonth(startDate);
 
     // Fetch all-time transactions (for running balance) and period transactions
     // in parallel.

@@ -49,7 +49,7 @@ class FinancoDialogAction {
 ///     icon: FontAwesomeIcons.trashCan,
 ///     iconColor: ctx.appColors.error,
 ///     title: t.general.delete,
-///     message: t.bills.deleteConfirm,
+///     message: 'Delete this item?',
 ///     actions: [
 ///       FinancoDialogAction(
 ///         label: t.general.cancel,

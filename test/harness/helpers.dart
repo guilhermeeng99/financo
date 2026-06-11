@@ -2,9 +2,6 @@ import 'package:financo/features/accounts/data/models/account_model.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
-import 'package:financo/features/bills/data/models/bill_model.dart';
-import 'package:financo/features/bills/domain/entities/bill_entity.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
 import 'package:financo/features/budgets/data/models/budget_model.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/categories/data/models/category_model.dart';
@@ -142,38 +139,6 @@ void registerDashboardFallbackValues() {
     ),
   );
   registerFallbackValue(FiftyThirtyTwentyTargets.classic);
-}
-
-void registerBillFallbackValues() {
-  registerFallbackValue(
-    BillEntity(
-      id: 'fallback',
-      userId: 'fallback',
-      type: BillType.payable,
-      description: 'fallback',
-      amount: 1,
-      dueDate: DateTime(2026),
-      status: BillStatus.pending,
-      recurrence: BillRecurrence.oneShot,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    ),
-  );
-  registerFallbackValue(
-    BillModel(
-      id: 'fallback',
-      userId: 'fallback',
-      type: BillType.payable,
-      description: 'fallback',
-      amount: 1,
-      dueDate: DateTime(2026),
-      status: BillStatus.pending,
-      recurrence: BillRecurrence.oneShot,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-    ),
-  );
-  registerFallbackValue(BillEditScope.onlyThis);
 }
 
 void registerBudgetFallbackValues() {

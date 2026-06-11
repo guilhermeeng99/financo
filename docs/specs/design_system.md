@@ -200,7 +200,6 @@ comment in its source.
 | `FinancoMonthFilterPill` | Compact month stepper bound to `DateFilterCubit`. |
 | `LiftedFab` | Wraps a FAB so it floats above the mobile bottom bar (see §7). |
 | `SubPageScope` | Marks a pushed sub-page so the shell hides its bottom bar / month pill (see §7). |
-| `NavBillsBadge` | Red count badge overlay on a nav icon. |
 | `FinancoAppBarIconButton` | Circular tinted icon button for app-bar actions. |
 
 ### Display & feedback
@@ -245,7 +244,7 @@ comment in its source.
 
   | Context | Bottom padding |
   |---------|----------------|
-  | Shell **tab** with bottom bar + lifted FAB (dashboard, bills, budgets) | `160` (96 bar + ~56 FAB + spacing) |
+  | Shell **tab** with bottom bar + lifted FAB (dashboard, payables, budgets) | `160` (96 bar + ~56 FAB + spacing) |
   | **Sub-page** (no bar, FAB not lifted: accounts, categories, account statement) | `96` |
   | Single-column tab lists (investments, 50/30/20) | `120` |
 

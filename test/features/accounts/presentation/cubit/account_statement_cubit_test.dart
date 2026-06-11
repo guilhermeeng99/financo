@@ -85,7 +85,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer(
@@ -158,7 +158,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer(
@@ -213,7 +213,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer((_) async => const Right([]));
@@ -247,7 +247,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer((_) async => const Right([]));
@@ -275,7 +275,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer(
@@ -340,7 +340,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer(
@@ -385,7 +385,7 @@ void main() {
             userId: 'user-1',
             accountId: accountId,
             startDate: DateTime(2024, 3),
-            endDate: DateTime(2024, 4),
+            endDate: DateTime(2024, 3, 31, 23, 59, 59, 999),
             forceRefresh: true,
           ),
         ).thenAnswer(

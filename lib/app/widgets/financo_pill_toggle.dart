@@ -17,8 +17,8 @@ class FinancoPillToggleOption<T> {
 
 /// Custom 2+ segment pill toggle. Replaces Material's `SegmentedButton`
 /// so forms and settings get bigger tap targets, softer corners and a
-/// friendlier selected-state animation. Used by the bill form (type,
-/// recurrence) and the profile theme selector (light/dark/system).
+/// friendlier selected-state animation. Used by transaction recurrence
+/// controls and the profile theme selector (light/dark/system).
 class FinancoPillToggle<T> extends StatelessWidget {
   const FinancoPillToggle({
     required this.options,
@@ -32,8 +32,7 @@ class FinancoPillToggle<T> extends StatelessWidget {
   final T selected;
   final ValueChanged<T> onChanged;
 
-  /// True when the field is locked (e.g. editing a bill — type/recurrence
-  /// are immutable after creation per the spec). Visually muted, taps no-op.
+  /// True when the field is locked. Visually muted, taps no-op.
   final bool disabled;
 
   @override

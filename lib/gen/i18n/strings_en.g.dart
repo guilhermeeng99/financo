@@ -54,11 +54,11 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$accounts$en accounts = Translations$accounts$en._(_root);
 	late final Translations$categories$en categories = Translations$categories$en._(_root);
 	late final Translations$chat$en chat = Translations$chat$en._(_root);
-	late final Translations$bills$en bills = Translations$bills$en._(_root);
 	late final Translations$budgets$en budgets = Translations$budgets$en._(_root);
 	late final Translations$profile$en profile = Translations$profile$en._(_root);
 	late final Translations$startup$en startup = Translations$startup$en._(_root);
 	late final Translations$investments$en investments = Translations$investments$en._(_root);
+	late final Translations$payablesReceivables$en payablesReceivables = Translations$payablesReceivables$en._(_root);
 }
 
 // Path: general
@@ -368,6 +368,12 @@ class Translations$nav$en {
 
 	/// en: 'Investments'
 	String get investments => 'Investments';
+
+	/// en: 'Collapse sidebar'
+	String get collapseSidebar => 'Collapse sidebar';
+
+	/// en: 'Expand sidebar'
+	String get expandSidebar => 'Expand sidebar';
 }
 
 // Path: dashboard
@@ -551,9 +557,6 @@ class Translations$fiftyThirtyTwenty$en {
 
 	/// en: '50/30/20'
 	String get subTabFiftyThirtyTwenty => '50/30/20';
-
-	/// en: 'Bills'
-	String get subTabBills => 'Bills';
 }
 
 // Path: transactions
@@ -1335,8 +1338,8 @@ class Translations$chat$en {
 	/// en: 'How much do I have on my Nubank account?'
 	String get suggestion2 => 'How much do I have on my Nubank account?';
 
-	/// en: 'Show my overdue bills'
-	String get suggestion3 => 'Show my overdue bills';
+	/// en: 'Show my overdue payables'
+	String get suggestion3 => 'Show my overdue payables';
 
 	/// en: 'Create a category called Leisure'
 	String get suggestion4 => 'Create a category called Leisure';
@@ -1345,261 +1348,6 @@ class Translations$chat$en {
 	late final Translations$chat$audio$en audio = Translations$chat$audio$en._(_root);
 	late final Translations$chat$image$en image = Translations$chat$image$en._(_root);
 	late final Translations$chat$handlers$en handlers = Translations$chat$handlers$en._(_root);
-}
-
-// Path: bills
-class Translations$bills$en {
-	Translations$bills$en._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'Payables and receivables'
-	String get title => 'Payables and receivables';
-
-	/// en: 'No movements found in this period.'
-	String get empty => 'No movements found in this period.';
-
-	/// en: 'New Bill'
-	String get addBill => 'New Bill';
-
-	/// en: 'Edit Bill'
-	String get editBill => 'Edit Bill';
-
-	/// en: 'Description'
-	String get description => 'Description';
-
-	/// en: 'e.g. Electricity'
-	String get descriptionHint => 'e.g. Electricity';
-
-	/// en: 'Amount'
-	String get amount => 'Amount';
-
-	/// en: 'Amount'
-	String get amountLabel => 'Amount';
-
-	/// en: 'Due date'
-	String get dueDate => 'Due date';
-
-	/// en: 'Recurrence'
-	String get recurrence => 'Recurrence';
-
-	/// en: 'One-time'
-	String get oneShot => 'One-time';
-
-	/// en: 'Monthly'
-	String get monthly => 'Monthly';
-
-	/// en: 'Type'
-	String get type => 'Type';
-
-	/// en: 'To pay'
-	String get typePayable => 'To pay';
-
-	/// en: 'To receive'
-	String get typeReceivable => 'To receive';
-
-	/// en: 'All'
-	String get filterAll => 'All';
-
-	/// en: 'Category'
-	String get category => 'Category';
-
-	/// en: 'Pick a category'
-	String get categoryRequired => 'Pick a category';
-
-	/// en: 'Notes (optional)'
-	String get notes => 'Notes (optional)';
-
-	/// en: 'Additional details...'
-	String get notesHint => 'Additional details...';
-
-	/// en: 'Mark as paid'
-	String get markAsPaid => 'Mark as paid';
-
-	/// en: 'Mark as received'
-	String get markAsReceived => 'Mark as received';
-
-	/// en: 'Paid'
-	String get paid => 'Paid';
-
-	/// en: 'Received'
-	String get received => 'Received';
-
-	/// en: 'Paid'
-	String get paidPlural => 'Paid';
-
-	/// en: 'Received'
-	String get receivedPlural => 'Received';
-
-	/// en: 'Pending'
-	String get pending => 'Pending';
-
-	/// en: 'Scheduled'
-	String get scheduled => 'Scheduled';
-
-	/// en: 'Confirmed'
-	String get confirmed => 'Confirmed';
-
-	/// en: 'Reconciled'
-	String get reconciled => 'Reconciled';
-
-	/// en: 'Overdue'
-	String get overdue => 'Overdue';
-
-	/// en: 'Due today'
-	String get dueToday => 'Due today';
-
-	/// en: 'Upcoming'
-	String get upcoming => 'Upcoming';
-
-	/// en: 'Overdue'
-	String get overdueGroup => 'Overdue';
-
-	/// en: 'Today'
-	String get todayGroup => 'Today';
-
-	/// en: 'Upcoming'
-	String get upcomingGroup => 'Upcoming';
-
-	/// en: 'Settled'
-	String get paidGroup => 'Settled';
-
-	/// en: 'Are you sure you want to delete this bill?'
-	String get deleteConfirm => 'Are you sure you want to delete this bill?';
-
-	/// en: 'Bill created'
-	String get billCreated => 'Bill created';
-
-	/// en: 'Bill updated'
-	String get billUpdated => 'Bill updated';
-
-	/// en: 'Bill deleted'
-	String get billDeleted => 'Bill deleted';
-
-	/// en: 'Bill paid — transaction created'
-	String get billPaid => 'Bill paid — transaction created';
-
-	/// en: 'Payment received — transaction created'
-	String get billReceived => 'Payment received — transaction created';
-
-	/// en: 'Bill marked as paid'
-	String get transactionPaid => 'Bill marked as paid';
-
-	/// en: 'Receipt marked as received'
-	String get transactionReceived => 'Receipt marked as received';
-
-	/// en: 'Next month's bill scheduled'
-	String get nextOccurrenceCreated => 'Next month\'s bill scheduled';
-
-	/// en: 'This bill is already settled'
-	String get alreadyPaid => 'This bill is already settled';
-
-	/// en: 'Settled bills can't be edited'
-	String get cannotEditPaid => 'Settled bills can\'t be edited';
-
-	/// en: 'Pay bill'
-	String get payDialogTitle => 'Pay bill';
-
-	/// en: 'Register received payment'
-	String get receiveDialogTitle => 'Register received payment';
-
-	/// en: 'Account'
-	String get selectAccount => 'Account';
-
-	/// en: 'Category'
-	String get selectCategory => 'Category';
-
-	/// en: '$days days overdue'
-	String daysOverdue({required Object days}) => '${days} days overdue';
-
-	/// en: 'in $days days'
-	String dueInDays({required Object days}) => 'in ${days} days';
-
-	/// en: 'tomorrow'
-	String get dueTomorrow => 'tomorrow';
-
-	/// en: 'Create at least one expense category first.'
-	String get noExpenseCategory => 'Create at least one expense category first.';
-
-	/// en: 'Create at least one income category first.'
-	String get noIncomeCategory => 'Create at least one income category first.';
-
-	/// en: 'This month'
-	String get summaryTitle => 'This month';
-
-	/// en: 'Nothing due — you're all caught up'
-	String get summaryAllCaughtUp => 'Nothing due — you\'re all caught up';
-
-	/// en: '$count overdue'
-	String overdueChip({required Object count}) => '${count} overdue';
-
-	/// en: '$count pending'
-	String pendingCount({required Object count}) => '${count} pending';
-
-	/// en: 'No movements yet'
-	String get emptyTitle => 'No movements yet';
-
-	/// en: 'Add your first bill'
-	String get addFirst => 'Add your first bill';
-
-	/// en: 'Details'
-	String get formDetails => 'Details';
-
-	/// en: 'Classification'
-	String get formClassification => 'Classification';
-
-	/// en: 'Choose a category'
-	String get pickCategory => 'Choose a category';
-
-	late final Translations$bills$notification$en notification = Translations$bills$notification$en._(_root);
-	late final Translations$bills$match$en match = Translations$bills$match$en._(_root);
-
-	/// en: 'Pay the current occurrence first'
-	String get virtualBlocked => 'Pay the current occurrence first';
-
-	/// en: 'Preview'
-	String get preview => 'Preview';
-
-	/// en: 'Apply to which occurrences?'
-	String get editScopeTitle => 'Apply to which occurrences?';
-
-	/// en: 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).'
-	String get editScopeDescription => 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).';
-
-	/// en: 'Only this one'
-	String get editScopeOnlyThis => 'Only this one';
-
-	/// en: 'This and the following'
-	String get editScopeAlsoSubsequents => 'This and the following';
-
-	/// en: 'Import bills'
-	String get importCsv => 'Import bills';
-
-	/// en: 'Import bills from CSV'
-	String get importCsvIntroTitle => 'Import bills from CSV';
-
-	/// en: 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.'
-	String get importCsvIntroBody => 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.';
-
-	/// en: 'Download example'
-	String get importCsvDownloadExample => 'Download example';
-
-	/// en: 'Select file'
-	String get importCsvSelectFile => 'Select file';
-
-	/// en: 'Example saved.'
-	String get importCsvExampleDownloaded => 'Example saved.';
-
-	/// en: 'Couldn't save the example file.'
-	String get importCsvExampleFailed => 'Couldn\'t save the example file.';
-
-	/// en: 'Couldn't import the CSV'
-	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
-
-	/// en: 'Imported $imported bills. Skipped $skipped (unknown category).'
-	String importCsvSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} bills. Skipped ${skipped} (unknown category).';
 }
 
 // Path: budgets
@@ -1753,9 +1501,6 @@ class Translations$profile$en {
 
 	/// en: 'Categories'
 	String get categories => 'Categories';
-
-	/// en: 'Bills'
-	String get bills => 'Bills';
 
 	/// en: 'Theme'
 	String get theme => 'Theme';
@@ -2190,6 +1935,90 @@ class Translations$investments$en {
 	String targetSumExceedsSub({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.';
 }
 
+// Path: payablesReceivables
+class Translations$payablesReceivables$en {
+	Translations$payablesReceivables$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Payables and receivables'
+	String get title => 'Payables and receivables';
+
+	/// en: 'No movements found in this period.'
+	String get empty => 'No movements found in this period.';
+
+	/// en: 'To pay'
+	String get typePayable => 'To pay';
+
+	/// en: 'To receive'
+	String get typeReceivable => 'To receive';
+
+	/// en: 'Mark as paid'
+	String get markAsPaid => 'Mark as paid';
+
+	/// en: 'Mark as received'
+	String get markAsReceived => 'Mark as received';
+
+	/// en: 'Paid'
+	String get paid => 'Paid';
+
+	/// en: 'Received'
+	String get received => 'Received';
+
+	/// en: 'Paid'
+	String get paidPlural => 'Paid';
+
+	/// en: 'Received'
+	String get receivedPlural => 'Received';
+
+	/// en: 'Scheduled'
+	String get scheduled => 'Scheduled';
+
+	/// en: 'Overdue'
+	String get overdue => 'Overdue';
+
+	/// en: 'Due today'
+	String get dueToday => 'Due today';
+
+	/// en: 'Overdue'
+	String get overdueGroup => 'Overdue';
+
+	/// en: 'Today'
+	String get todayGroup => 'Today';
+
+	/// en: 'Upcoming'
+	String get upcomingGroup => 'Upcoming';
+
+	/// en: 'Are you sure you want to delete this transaction?'
+	String get deleteConfirm => 'Are you sure you want to delete this transaction?';
+
+	/// en: 'Transaction marked as paid'
+	String get transactionPaid => 'Transaction marked as paid';
+
+	/// en: 'Receipt marked as received'
+	String get transactionReceived => 'Receipt marked as received';
+
+	/// en: 'Create at least one expense category first.'
+	String get noExpenseCategory => 'Create at least one expense category first.';
+
+	/// en: 'Create at least one income category first.'
+	String get noIncomeCategory => 'Create at least one income category first.';
+
+	/// en: 'No movements yet'
+	String get emptyTitle => 'No movements yet';
+
+	/// en: 'Details'
+	String get formDetails => 'Details';
+
+	/// en: 'Classification'
+	String get formClassification => 'Classification';
+
+	/// en: 'Choose a category'
+	String get pickCategory => 'Choose a category';
+}
+
 // Path: chat.action
 class Translations$chat$action$en {
 	Translations$chat$action$en._(this._root);
@@ -2224,18 +2053,6 @@ class Translations$chat$action$en {
 
 	/// en: 'Delete category'
 	String get categoryDelete => 'Delete category';
-
-	/// en: 'Schedule bill'
-	String get billCreate => 'Schedule bill';
-
-	/// en: 'Update bill'
-	String get billUpdate => 'Update bill';
-
-	/// en: 'Mark bill as paid'
-	String get billMarkPaid => 'Mark bill as paid';
-
-	/// en: 'Delete bill'
-	String get billDelete => 'Delete bill';
 
 	/// en: 'Create budget'
 	String get budgetCreate => 'Create budget';
@@ -2390,9 +2207,6 @@ class Translations$chat$handlers$en {
 	/// en: 'Unknown category action.'
 	String get unknownCategoryAction => 'Unknown category action.';
 
-	/// en: 'Unknown bill action.'
-	String get unknownBillAction => 'Unknown bill action.';
-
 	/// en: 'Unknown budget action.'
 	String get unknownBudgetAction => 'Unknown budget action.';
 
@@ -2480,60 +2294,6 @@ class Translations$chat$handlers$en {
 	/// en: 'Transfer of $amount from "$from" to "$to" created successfully!'
 	String transferCreated({required Object amount, required Object from, required Object to}) => 'Transfer of ${amount} from "${from}" to "${to}" created successfully!';
 
-	/// en: 'Bill description is required.'
-	String get billDescriptionRequired => 'Bill description is required.';
-
-	/// en: 'Invalid bill amount.'
-	String get billAmountInvalid => 'Invalid bill amount.';
-
-	/// en: 'Failed to create bill: $error'
-	String billCreateFailed({required Object error}) => 'Failed to create bill: ${error}';
-
-	/// en: 'Bill "$description" of $amount scheduled for $dueDate.'
-	String billCreated({required Object description, required Object amount, required Object dueDate}) => 'Bill "${description}" of ${amount} scheduled for ${dueDate}.';
-
-	/// en: 'Bill id required.'
-	String get billIdRequired => 'Bill id required.';
-
-	/// en: 'Bill not found.'
-	String get billNotFound => 'Bill not found.';
-
-	/// en: 'Bill is already paid and cannot be edited.'
-	String get billCannotEditPaid => 'Bill is already paid and cannot be edited.';
-
-	/// en: 'Failed to update bill: $error'
-	String billUpdateFailed({required Object error}) => 'Failed to update bill: ${error}';
-
-	/// en: 'Bill "$description" updated.'
-	String billUpdated({required Object description}) => 'Bill "${description}" updated.';
-
-	/// en: 'Bill is already paid.'
-	String get billAlreadyPaid => 'Bill is already paid.';
-
-	/// en: 'No checking account available to register the payment.'
-	String get billNoCheckingAccount => 'No checking account available to register the payment.';
-
-	/// en: 'No income category available to register the payment.'
-	String get billNoIncomeCategory => 'No income category available to register the payment.';
-
-	/// en: 'No expense category available to register the payment.'
-	String get billNoExpenseCategory => 'No expense category available to register the payment.';
-
-	/// en: 'Failed to mark bill as paid: $error'
-	String billPayFailed({required Object error}) => 'Failed to mark bill as paid: ${error}';
-
-	/// en: 'Bill "$description" paid — transaction created.'
-	String billPaid({required Object description}) => 'Bill "${description}" paid — transaction created.';
-
-	/// en: 'Bill "$description" paid — transaction created. Next occurrence scheduled for $dueDate.'
-	String billPaidWithNext({required Object description, required Object dueDate}) => 'Bill "${description}" paid — transaction created. Next occurrence scheduled for ${dueDate}.';
-
-	/// en: 'Failed to delete bill: $error'
-	String billDeleteFailed({required Object error}) => 'Failed to delete bill: ${error}';
-
-	/// en: 'Bill deleted.'
-	String get billDeleted => 'Bill deleted.';
-
 	/// en: 'A category is required for the budget.'
 	String get budgetCategoryRequired => 'A category is required for the budget.';
 
@@ -2593,81 +2353,6 @@ class Translations$chat$handlers$en {
 
 	/// en: 'Multiple accounts match "$query": $names. Please be more specific.'
 	String resolveAccountMultiple({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.';
-}
-
-// Path: bills.notification
-class Translations$bills$notification$en {
-	Translations$bills$notification$en._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: 'You have $count bill(s) to pay'
-	String title({required Object count}) => 'You have ${count} bill(s) to pay';
-
-	/// en: '$description ($amount) is due today'
-	String bodyDueToday({required Object description, required Object amount}) => '${description} (${amount}) is due today';
-
-	/// en: '$description ($amount) is overdue'
-	String bodyOverdue({required Object description, required Object amount}) => '${description} (${amount}) is overdue';
-}
-
-// Path: bills.match
-class Translations$bills$match$en {
-	Translations$bills$match$en._(this._root);
-
-	final Translations _root; // ignore: unused_field
-
-	// Translations
-
-	/// en: '$count possible payment(s) detected'
-	String bannerTitle({required Object count}) => '${count} possible payment(s) detected';
-
-	/// en: 'Tap to confirm if any existing transaction settles a pending bill'
-	String get bannerSubtitle => 'Tap to confirm if any existing transaction settles a pending bill';
-
-	/// en: 'Confirm payments'
-	String get sheetTitle => 'Confirm payments';
-
-	/// en: 'We found transactions that could be paying your pending bills. Confirm one by one.'
-	String get sheetIntro => 'We found transactions that could be paying your pending bills. Confirm one by one.';
-
-	/// en: 'Was this transaction this bill?'
-	String get candidateQuestion => 'Was this transaction this bill?';
-
-	/// en: 'Yes'
-	String get yesItWas => 'Yes';
-
-	/// en: 'No'
-	String get notThisOne => 'No';
-
-	/// en: 'Bill marked as settled'
-	String get matchAccepted => 'Bill marked as settled';
-
-	/// en: 'Got it — we'll stop suggesting this one'
-	String get matchRejected => 'Got it — we\'ll stop suggesting this one';
-
-	/// en: 'Bill'
-	String get billLabel => 'Bill';
-
-	/// en: 'Transaction'
-	String get transactionLabel => 'Transaction';
-
-	/// en: 'Description'
-	String get fieldDescription => 'Description';
-
-	/// en: 'Category'
-	String get fieldCategory => 'Category';
-
-	/// en: 'Amount'
-	String get fieldAmount => 'Amount';
-
-	/// en: 'Date'
-	String get fieldDate => 'Date';
-
-	/// en: '—'
-	String get fieldEmpty => '—';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -2757,6 +2442,8 @@ extension on Translations {
 			'nav.paidAccounts' => 'Paid accounts',
 			'nav.receivedAccounts' => 'Received accounts',
 			'nav.investments' => 'Investments',
+			'nav.collapseSidebar' => 'Collapse sidebar',
+			'nav.expandSidebar' => 'Expand sidebar',
 			'dashboard.title' => 'Dashboard',
 			'dashboard.totalBalance' => 'Total Balance',
 			'dashboard.income' => 'Income',
@@ -2812,7 +2499,6 @@ extension on Translations {
 			'fiftyThirtyTwenty.navLabel' => 'Planning',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Budgets',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
-			'fiftyThirtyTwenty.subTabBills' => 'Bills',
 			'transactions.title' => 'Transactions',
 			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
@@ -3061,7 +2747,7 @@ extension on Translations {
 			'chat.tryAsking' => 'Try asking',
 			'chat.suggestion1' => 'I spent R\$ 30 at the bakery',
 			'chat.suggestion2' => 'How much do I have on my Nubank account?',
-			'chat.suggestion3' => 'Show my overdue bills',
+			'chat.suggestion3' => 'Show my overdue payables',
 			'chat.suggestion4' => 'Create a category called Leisure',
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
@@ -3072,10 +2758,6 @@ extension on Translations {
 			'chat.action.accountDelete' => 'Delete account',
 			'chat.action.categoryCreate' => 'Create category',
 			'chat.action.categoryDelete' => 'Delete category',
-			'chat.action.billCreate' => 'Schedule bill',
-			'chat.action.billUpdate' => 'Update bill',
-			'chat.action.billMarkPaid' => 'Mark bill as paid',
-			'chat.action.billDelete' => 'Delete bill',
 			'chat.action.budgetCreate' => 'Create budget',
 			'chat.action.budgetUpdate' => 'Update budget',
 			'chat.action.budgetDelete' => 'Delete budget',
@@ -3118,7 +2800,6 @@ extension on Translations {
 			'chat.handlers.unknownAction' => 'Unknown action.',
 			'chat.handlers.unknownAccountAction' => 'Unknown account action.',
 			'chat.handlers.unknownCategoryAction' => 'Unknown category action.',
-			'chat.handlers.unknownBillAction' => 'Unknown bill action.',
 			'chat.handlers.unknownBudgetAction' => 'Unknown budget action.',
 			'chat.handlers.invalidAmount' => 'Invalid amount.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Failed to create account: ${error}',
@@ -3148,24 +2829,6 @@ extension on Translations {
 			'chat.handlers.transferUnresolvedDestination' => 'Could not resolve destination account.',
 			'chat.handlers.transferCreateFailed' => ({required Object error}) => 'Failed to create transfer: ${error}',
 			'chat.handlers.transferCreated' => ({required Object amount, required Object from, required Object to}) => 'Transfer of ${amount} from "${from}" to "${to}" created successfully!',
-			'chat.handlers.billDescriptionRequired' => 'Bill description is required.',
-			'chat.handlers.billAmountInvalid' => 'Invalid bill amount.',
-			'chat.handlers.billCreateFailed' => ({required Object error}) => 'Failed to create bill: ${error}',
-			'chat.handlers.billCreated' => ({required Object description, required Object amount, required Object dueDate}) => 'Bill "${description}" of ${amount} scheduled for ${dueDate}.',
-			'chat.handlers.billIdRequired' => 'Bill id required.',
-			'chat.handlers.billNotFound' => 'Bill not found.',
-			'chat.handlers.billCannotEditPaid' => 'Bill is already paid and cannot be edited.',
-			'chat.handlers.billUpdateFailed' => ({required Object error}) => 'Failed to update bill: ${error}',
-			'chat.handlers.billUpdated' => ({required Object description}) => 'Bill "${description}" updated.',
-			'chat.handlers.billAlreadyPaid' => 'Bill is already paid.',
-			'chat.handlers.billNoCheckingAccount' => 'No checking account available to register the payment.',
-			'chat.handlers.billNoIncomeCategory' => 'No income category available to register the payment.',
-			'chat.handlers.billNoExpenseCategory' => 'No expense category available to register the payment.',
-			'chat.handlers.billPayFailed' => ({required Object error}) => 'Failed to mark bill as paid: ${error}',
-			'chat.handlers.billPaid' => ({required Object description}) => 'Bill "${description}" paid — transaction created.',
-			'chat.handlers.billPaidWithNext' => ({required Object description, required Object dueDate}) => 'Bill "${description}" paid — transaction created. Next occurrence scheduled for ${dueDate}.',
-			'chat.handlers.billDeleteFailed' => ({required Object error}) => 'Failed to delete bill: ${error}',
-			'chat.handlers.billDeleted' => 'Bill deleted.',
 			'chat.handlers.budgetCategoryRequired' => 'A category is required for the budget.',
 			'chat.handlers.budgetCategoryNotFound' => ({required Object name}) => 'Category "${name}" not found.',
 			'chat.handlers.budgetCategoryNotFoundCreate' => ({required Object name}) => 'Category "${name}" doesn\'t exist. Create it first.',
@@ -3186,108 +2849,6 @@ extension on Translations {
 			'chat.handlers.resolveAccountMissing' => 'Which account should I use? Please tell me the account name.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Account "${query}" not found. Please create it first or use the exact name.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.',
-			'bills.title' => 'Payables and receivables',
-			'bills.empty' => 'No movements found in this period.',
-			'bills.addBill' => 'New Bill',
-			'bills.editBill' => 'Edit Bill',
-			_ => null,
-		} ?? switch (path) {
-			'bills.description' => 'Description',
-			'bills.descriptionHint' => 'e.g. Electricity',
-			'bills.amount' => 'Amount',
-			'bills.amountLabel' => 'Amount',
-			'bills.dueDate' => 'Due date',
-			'bills.recurrence' => 'Recurrence',
-			'bills.oneShot' => 'One-time',
-			'bills.monthly' => 'Monthly',
-			'bills.type' => 'Type',
-			'bills.typePayable' => 'To pay',
-			'bills.typeReceivable' => 'To receive',
-			'bills.filterAll' => 'All',
-			'bills.category' => 'Category',
-			'bills.categoryRequired' => 'Pick a category',
-			'bills.notes' => 'Notes (optional)',
-			'bills.notesHint' => 'Additional details...',
-			'bills.markAsPaid' => 'Mark as paid',
-			'bills.markAsReceived' => 'Mark as received',
-			'bills.paid' => 'Paid',
-			'bills.received' => 'Received',
-			'bills.paidPlural' => 'Paid',
-			'bills.receivedPlural' => 'Received',
-			'bills.pending' => 'Pending',
-			'bills.scheduled' => 'Scheduled',
-			'bills.confirmed' => 'Confirmed',
-			'bills.reconciled' => 'Reconciled',
-			'bills.overdue' => 'Overdue',
-			'bills.dueToday' => 'Due today',
-			'bills.upcoming' => 'Upcoming',
-			'bills.overdueGroup' => 'Overdue',
-			'bills.todayGroup' => 'Today',
-			'bills.upcomingGroup' => 'Upcoming',
-			'bills.paidGroup' => 'Settled',
-			'bills.deleteConfirm' => 'Are you sure you want to delete this bill?',
-			'bills.billCreated' => 'Bill created',
-			'bills.billUpdated' => 'Bill updated',
-			'bills.billDeleted' => 'Bill deleted',
-			'bills.billPaid' => 'Bill paid — transaction created',
-			'bills.billReceived' => 'Payment received — transaction created',
-			'bills.transactionPaid' => 'Bill marked as paid',
-			'bills.transactionReceived' => 'Receipt marked as received',
-			'bills.nextOccurrenceCreated' => 'Next month\'s bill scheduled',
-			'bills.alreadyPaid' => 'This bill is already settled',
-			'bills.cannotEditPaid' => 'Settled bills can\'t be edited',
-			'bills.payDialogTitle' => 'Pay bill',
-			'bills.receiveDialogTitle' => 'Register received payment',
-			'bills.selectAccount' => 'Account',
-			'bills.selectCategory' => 'Category',
-			'bills.daysOverdue' => ({required Object days}) => '${days} days overdue',
-			'bills.dueInDays' => ({required Object days}) => 'in ${days} days',
-			'bills.dueTomorrow' => 'tomorrow',
-			'bills.noExpenseCategory' => 'Create at least one expense category first.',
-			'bills.noIncomeCategory' => 'Create at least one income category first.',
-			'bills.summaryTitle' => 'This month',
-			'bills.summaryAllCaughtUp' => 'Nothing due — you\'re all caught up',
-			'bills.overdueChip' => ({required Object count}) => '${count} overdue',
-			'bills.pendingCount' => ({required Object count}) => '${count} pending',
-			'bills.emptyTitle' => 'No movements yet',
-			'bills.addFirst' => 'Add your first bill',
-			'bills.formDetails' => 'Details',
-			'bills.formClassification' => 'Classification',
-			'bills.pickCategory' => 'Choose a category',
-			'bills.notification.title' => ({required Object count}) => 'You have ${count} bill(s) to pay',
-			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) is due today',
-			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) is overdue',
-			'bills.match.bannerTitle' => ({required Object count}) => '${count} possible payment(s) detected',
-			'bills.match.bannerSubtitle' => 'Tap to confirm if any existing transaction settles a pending bill',
-			'bills.match.sheetTitle' => 'Confirm payments',
-			'bills.match.sheetIntro' => 'We found transactions that could be paying your pending bills. Confirm one by one.',
-			'bills.match.candidateQuestion' => 'Was this transaction this bill?',
-			'bills.match.yesItWas' => 'Yes',
-			'bills.match.notThisOne' => 'No',
-			'bills.match.matchAccepted' => 'Bill marked as settled',
-			'bills.match.matchRejected' => 'Got it — we\'ll stop suggesting this one',
-			'bills.match.billLabel' => 'Bill',
-			'bills.match.transactionLabel' => 'Transaction',
-			'bills.match.fieldDescription' => 'Description',
-			'bills.match.fieldCategory' => 'Category',
-			'bills.match.fieldAmount' => 'Amount',
-			'bills.match.fieldDate' => 'Date',
-			'bills.match.fieldEmpty' => '—',
-			'bills.virtualBlocked' => 'Pay the current occurrence first',
-			'bills.preview' => 'Preview',
-			'bills.editScopeTitle' => 'Apply to which occurrences?',
-			'bills.editScopeDescription' => 'This is a recurring bill. You can apply the change to this occurrence only, or also to future ones (past occurrences are never affected).',
-			'bills.editScopeOnlyThis' => 'Only this one',
-			'bills.editScopeAlsoSubsequents' => 'This and the following',
-			'bills.importCsv' => 'Import bills',
-			'bills.importCsvIntroTitle' => 'Import bills from CSV',
-			'bills.importCsvIntroBody' => 'Your file must follow the expected format (columns Type, Description, Amount, Due Date, Status, Recurrence, Category, Notes — where Type is Payable/Receivable, Status is Pending/Paid and Recurrence is Monthly/One-time). Download the example to see how it works.',
-			'bills.importCsvDownloadExample' => 'Download example',
-			'bills.importCsvSelectFile' => 'Select file',
-			'bills.importCsvExampleDownloaded' => 'Example saved.',
-			'bills.importCsvExampleFailed' => 'Couldn\'t save the example file.',
-			'bills.importCsvErrorTitle' => 'Couldn\'t import the CSV',
-			'bills.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} bills. Skipped ${skipped} (unknown category).',
 			'budgets.title' => 'Budgets',
 			'budgets.addBudget' => 'New budget',
 			'budgets.editBudget' => 'Edit budget',
@@ -3314,6 +2875,8 @@ extension on Translations {
 			'budgets.duplicateCategory' => 'There\'s already a budget for this category.',
 			'budgets.noExpenseCategory' => 'Create at least one expense category first.',
 			'budgets.allCategoriesBudgeted' => 'All categories already have a budget.',
+			_ => null,
+		} ?? switch (path) {
 			'budgets.emptyTitle' => 'Take control of your spending',
 			'budgets.emptyBody' => 'Set a monthly cap per expense category. Financo tracks how much you\'ve spent, how much is left, and warns you upfront when you\'re about to go over.',
 			'budgets.emptyExample' => 'Ex: R\$ 1,500 on Food, R\$ 400 on Leisure, R\$ 200 on Transport.',
@@ -3333,7 +2896,6 @@ extension on Translations {
 			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',
 			'profile.categories' => 'Categories',
-			'profile.bills' => 'Bills',
 			'profile.theme' => 'Theme',
 			'profile.themeLight' => 'Light',
 			'profile.themeDark' => 'Dark',
@@ -3472,6 +3034,31 @@ extension on Translations {
 			'investments.allocationExceedsBalance' => ({required Object available}) => 'Allocation exceeds the available balance on this account (${available}).',
 			'investments.targetSumExceedsRoot' => ({required Object available}) => 'Target percent sum exceeds 100% for root classes. Available: ${available}.',
 			'investments.targetSumExceedsSub' => ({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.',
+			'payablesReceivables.title' => 'Payables and receivables',
+			'payablesReceivables.empty' => 'No movements found in this period.',
+			'payablesReceivables.typePayable' => 'To pay',
+			'payablesReceivables.typeReceivable' => 'To receive',
+			'payablesReceivables.markAsPaid' => 'Mark as paid',
+			'payablesReceivables.markAsReceived' => 'Mark as received',
+			'payablesReceivables.paid' => 'Paid',
+			'payablesReceivables.received' => 'Received',
+			'payablesReceivables.paidPlural' => 'Paid',
+			'payablesReceivables.receivedPlural' => 'Received',
+			'payablesReceivables.scheduled' => 'Scheduled',
+			'payablesReceivables.overdue' => 'Overdue',
+			'payablesReceivables.dueToday' => 'Due today',
+			'payablesReceivables.overdueGroup' => 'Overdue',
+			'payablesReceivables.todayGroup' => 'Today',
+			'payablesReceivables.upcomingGroup' => 'Upcoming',
+			'payablesReceivables.deleteConfirm' => 'Are you sure you want to delete this transaction?',
+			'payablesReceivables.transactionPaid' => 'Transaction marked as paid',
+			'payablesReceivables.transactionReceived' => 'Receipt marked as received',
+			'payablesReceivables.noExpenseCategory' => 'Create at least one expense category first.',
+			'payablesReceivables.noIncomeCategory' => 'Create at least one income category first.',
+			'payablesReceivables.emptyTitle' => 'No movements yet',
+			'payablesReceivables.formDetails' => 'Details',
+			'payablesReceivables.formClassification' => 'Classification',
+			'payablesReceivables.pickCategory' => 'Choose a category',
 			_ => null,
 		};
 	}

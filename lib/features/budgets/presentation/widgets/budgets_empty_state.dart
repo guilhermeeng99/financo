@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// First-impression empty state for the Budgets tab. Mirrors the
-/// `BillsEmptyState` / `CategoriesEmptyState` shape (icon disc → headline
+/// shared empty-state shape (icon disc → headline
 /// → explanatory body → primary CTA) so the feature feels at home in the
 /// app.
 ///

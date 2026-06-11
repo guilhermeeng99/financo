@@ -52,7 +52,7 @@ export const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
  *   1. accounts where userId == targetUid
  *   2. transactions where userId == targetUid
  *   3. categories where userId == targetUid
- *   4. bills where userId == targetUid
+ *   4. legacy bills where userId == targetUid
  *   5. budgets where userId == targetUid
  *   6. asset_classes where userId == targetUid
  *   7. asset_holdings where userId == targetUid

@@ -20,17 +20,6 @@ import 'package:financo/features/accounts/presentation/pages/import_accounts_pag
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/auth/presentation/pages/onboarding_page.dart';
-import 'package:financo/features/bills/domain/entities/bill_entity.dart';
-import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
-import 'package:financo/features/bills/presentation/pages/add_bill_page.dart';
-import 'package:financo/features/bills/presentation/pages/bills_page.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/delete_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_overview_usecase.dart';
@@ -64,6 +53,7 @@ import 'package:financo/features/master_panel/domain/usecases/delete_user_as_adm
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
 import 'package:financo/features/master_panel/presentation/pages/master_panel_page.dart';
+import 'package:financo/features/payables_receivables/presentation/pages/payables_receivables_page.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:financo/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:financo/features/profile/presentation/pages/profile_page.dart';
@@ -215,22 +205,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               ),
             ),
             BlocProvider(
-              // Eagerly load bills so the nav badge (overdue + due-today
-              // count) is correct from any tab — not only after the user
-              // opens the Bills page. Cache-only read; the page itself
-              // can still force a refresh.
-              create: (_) => BillsBloc(
-                getBills: GetIt.I<GetBillsUseCase>(),
-                deleteBill: GetIt.I<DeleteBillUseCase>(),
-                payBill: GetIt.I<PayBillUseCase>(),
-                getTransactions: GetIt.I<GetTransactionsUseCase>(),
-                linkBillToTransaction: GetIt.I<LinkBillToTransactionUseCase>(),
-                rejectBillMatch: GetIt.I<RejectBillMatchUseCase>(),
-                importBillsCsv: GetIt.I<ImportBillsCsvUseCase>(),
-                userId: userId,
-              )..add(const BillsLoadRequested()),
-            ),
-            BlocProvider(
               create: (_) => BudgetsCubit(
                 getOverview: GetIt.I<GetBudgetsOverviewUseCase>(),
                 deleteBudget: GetIt.I<DeleteBudgetUseCase>(),
@@ -304,11 +278,9 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           builder: (context, state) {
             // `extra` is polymorphic on this route:
             //   - `TransactionEntity` → editing an existing tx
-            //   - `BillEntity`        → creating a tx to settle a bill
             //   - null                → blank create flow
             final extra = state.extra;
             final existing = extra is TransactionEntity ? extra : null;
-            final prefillFromBill = extra is BillEntity ? extra : null;
             // Optional `?accountId=` — used by the account-statement FAB
             // so a new transaction opens with the current account already
             // selected. Edit mode (non-null `existing`) ignores it.
@@ -317,7 +289,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               child: AddTransactionPage(
                 existingTransaction: existing,
                 prefillAccountId: prefillAccountId,
-                prefillFromBill: prefillFromBill,
               ),
             );
           },
@@ -360,12 +331,12 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           },
         ),
         GoRoute(
-          path: AppRoutes.bills,
+          path: AppRoutes.legacyBills,
           redirect: (context, state) => AppRoutes.payablesReceivables,
         ),
         GoRoute(
           path: AppRoutes.payablesReceivables,
-          builder: (context, state) => const BillsPage(
+          builder: (context, state) => const PayablesReceivablesPage(
             availableViews: [
               PayablesReceivablesView.payables,
               PayablesReceivablesView.receivables,
@@ -374,7 +345,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         ),
         GoRoute(
           path: AppRoutes.paidAndReceived,
-          builder: (context, state) => const BillsPage(
+          builder: (context, state) => const PayablesReceivablesPage(
             initialView: PayablesReceivablesView.paid,
             availableViews: [
               PayablesReceivablesView.paid,
@@ -397,24 +368,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.receivedAccounts,
           redirect: (context, state) => AppRoutes.paidAndReceived,
-        ),
-        GoRoute(
-          path: AppRoutes.addBill,
-          builder: (context, state) {
-            final existing = state.extra as BillEntity?;
-            return SubPageScope(
-              child: AddBillPage(existingBill: existing),
-            );
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.editBill,
-          builder: (context, state) {
-            final existing = state.extra as BillEntity?;
-            return SubPageScope(
-              child: AddBillPage(existingBill: existing),
-            );
-          },
         ),
         GoRoute(
           path: AppRoutes.planning,

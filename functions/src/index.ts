@@ -6,11 +6,11 @@ import { transcribeAudio } from './chat/transcribe';
 import type { HistoryTurn } from './chat/types';
 import { isEmailAllowed } from './access/allowlist';
 import { deleteUserAsAdmin as deleteUserAsAdminImpl } from './admin/deleteUser';
-import { notifyBillsDue } from './bills/notifyBillsDue';
+import { notifyTransactionsDue } from './transactions/notifyTransactionsDue';
 
 admin.initializeApp();
 
-export { notifyBillsDue };
+export { notifyTransactionsDue };
 
 interface ChatSendRequest {
   content: string;
@@ -126,4 +126,3 @@ export const transcribeChatAudio = onCall<TranscribeRequest>(
     }
   },
 );
-

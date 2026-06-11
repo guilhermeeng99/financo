@@ -76,6 +76,32 @@ void main() {
     );
   });
 
+  group('NotificationService.isLegacyBillsPush', () {
+    test('drops the old Bills notification type', () {
+      expect(
+        NotificationService.isLegacyBillsPush({'type': 'bills_due'}),
+        isTrue,
+      );
+    });
+
+    test('drops the old Bills route', () {
+      expect(
+        NotificationService.isLegacyBillsPush({'route': '/bills'}),
+        isTrue,
+      );
+    });
+
+    test('keeps transaction due notifications deliverable', () {
+      expect(
+        NotificationService.isLegacyBillsPush({
+          'type': 'transactions_due',
+          'route': '/payables-receivables',
+        }),
+        isFalse,
+      );
+    });
+  });
+
   group('NotificationService.removeTokenOnSignOut', () {
     late _MockMessaging messaging;
     late FakeFirebaseFirestore firestore;

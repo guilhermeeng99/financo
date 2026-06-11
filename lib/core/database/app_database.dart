@@ -3,7 +3,6 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
-import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
@@ -11,7 +10,6 @@ import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
 import 'package:financo/core/database/tables/asset_classes_table.dart';
 import 'package:financo/core/database/tables/asset_holdings_table.dart';
-import 'package:financo/core/database/tables/bills_table.dart';
 import 'package:financo/core/database/tables/budgets_table.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
@@ -25,7 +23,6 @@ part 'app_database.g.dart';
     LocalAccounts,
     LocalTransactions,
     LocalCategories,
-    LocalBills,
     LocalBudgets,
     LocalAssetClasses,
     LocalAssetHoldings,
@@ -35,7 +32,6 @@ part 'app_database.g.dart';
     AccountsDao,
     TransactionsDao,
     CategoriesDao,
-    BillsDao,
     BudgetsDao,
     AssetClassesDao,
     AssetHoldingsDao,
@@ -45,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch
@@ -59,12 +55,14 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
+      await customStatement('DROP TABLE IF EXISTS local_bills');
       for (final table in allTables) {
         await m.deleteTable(table.actualTableName);
       }
       await m.createAll();
     },
     beforeOpen: (details) async {
+      await customStatement('DROP TABLE IF EXISTS local_bills');
       if (!details.wasCreated && details.hadUpgrade) return;
       // Belt-and-braces sweep: if any registered table is missing a
       // column the generated schema expects, drop + recreate it. A

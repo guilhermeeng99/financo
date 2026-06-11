@@ -1,7 +1,7 @@
 import 'package:financo/core/utils/amount_parser.dart';
 
 /// Shared CSV-cell parsing helpers used by every feature's import use case
-/// (transactions, accounts, bills, budgets). Centralised here so the BR/EN
+/// (transactions, accounts, budgets). Centralised here so the BR/EN
 /// number handling and date parsing stay identical across imports instead of
 /// being copy-pasted per feature.
 

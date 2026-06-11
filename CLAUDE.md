@@ -197,7 +197,7 @@ Test infrastructure lives in `test/harness/`:
   `AuthBloc`, `StartupCubit`, `ThemeCubit`, `LightPaletteCubit`,
   `DarkPaletteCubit`, `AppLocaleCubit`, `DateFilterCubit`, `NotificationService`.
 * Session-scoped blocs/cubits that take `userId` (`DashboardBloc`,
-  `TransactionsBloc`, `BillsBloc`, `BudgetsCubit`, `AccountsCubit`,
+  `TransactionsBloc`, `BudgetsCubit`, `AccountsCubit`,
   `CategoriesCubit`, `ProfileCubit`, `InvestmentsCubit`,
   `FiftyThirtyTwentyTargetsCubit`, `DashboardAccountSelectionCubit`) are
   created by the shell route via `BlocProvider` — the `userId` is resolved
@@ -226,7 +226,7 @@ users/{userId}/fcmTokens/{tokenId}
 accounts/{id}
 categories/{id}
 transactions/{id}
-bills/{id}
+bills/{id}  # legacy/read-only after 2026-06-10 migration
 budgets/{id}
 asset_classes/{id}
 asset_holdings/{id}
@@ -251,7 +251,7 @@ users/{userId}/fcmTokens/{tokenId}   → token, platform, updatedAt
 accounts/{id}                        → userId, name, type, bank, balance (Dart: initialBalance), creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
 categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?, bucket? (needs | wants), countsIn50_30_20
 transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, settlementStatus (pending | paid), dueDate, settledAt?, recurrence (single | installment | fixed), recurrenceGroupId?, recurrenceIntervalMonths?, recurrenceIndex?, recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?, notes?, linkedTransactionId?, sourceBillId? (legacy migration trace), parentTransactionId? (legacy migration trace), createdAt, updatedAt
-bills/{id}                           → legacy/read-only after the 2026-06-10 migration; retained for rollback/audit only. Previous shape: userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
+bills/{id}                           → legacy/read-only after the 2026-06-10 migration; retained for rollback/audit and account-wipe cleanup only. The app must not query or notify from this collection. Previous shape: userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
 budgets/{id}                         → userId, categoryId, amount, createdAt, updatedAt
 asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt
 asset_holdings/{id}                  → userId, accountId, assetClassId, amount, notes?, updatedAt

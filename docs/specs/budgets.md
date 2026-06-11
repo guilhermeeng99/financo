@@ -20,9 +20,9 @@ budgets do not duplicate that data — they only carry the cap and metadata.
 - **No push alerts**: progress is visible in-app; FCM notifications come later.
 
 Budgets live inside the **Planning** shell (`Planejamento` in the main
-navigation) as its second tab, alongside the 50/30/20 and Accounts/Bills
-tabs. See docs/specs/fifty_thirty_twenty.md and docs/specs/investments.md
-for the Planning shell layout.
+navigation) alongside the 50/30/20 planning views. See
+docs/specs/fifty_thirty_twenty.md and docs/specs/investments.md for the
+Planning shell layout.
 
 ---
 
@@ -82,7 +82,7 @@ Color mapping at the UI layer (re-uses theme tokens, no new color constants):
    picker filters the list; the repository re-validates as a defensive check.
 3. **categoryId is immutable after creation**. To change which category a
    budget covers, delete and recreate. The form hides the category selector in
-   edit mode (same pattern as `type` on categories, `recurrence` on bills).
+   edit mode (same pattern as `type` on categories).
 4. **Amount must be `> 0`**. The form rejects `<= 0` and non-numeric input.
 5. **Spending calculation** (per month, per budget):
    - Filter transactions where `userId == budget.userId`
@@ -104,7 +104,7 @@ Color mapping at the UI layer (re-uses theme tokens, no new color constants):
    use case skips that budget silently and emits a debug log. The orphan
    row never reaches the UI.
 9. **Default amount**: empty / R$ 0,00 — the form requires the user to type a
-   value before submit is enabled (same UX as `BillFormCubit.amount`).
+   value before submit is enabled (same UX as transaction amount fields).
 10. **List ordering**: by `categoryName` ASC. Consistent with categories list.
 
 ---
@@ -308,7 +308,7 @@ fromEntity(BudgetEntity) → BudgetModel:
   orders by `createdAt` for stable retrieval. Mirrors the same composite
   shape used by `accounts` and `chat_messages` in `firestore.indexes.json`.
 
-**Security rules** (drop in alongside the existing `bills/{id}` block):
+**Security rules** (drop in alongside the existing user-owned collections):
 
 ```
 match /budgets/{id} {
@@ -327,7 +327,7 @@ match /budgets/{id} {
 
 A new top-level tab labeled **Orçamento** is added to:
 
-- `FinancoMobileNav` — bottom bar entry between `Bills` and `Chat`.
+- `FinancoMobileNav` — bottom bar entry in the Planning area.
 - `FinancoSidebar` — sidebar entry, same position.
 
 Route: `/budgets` (registered inside the `ShellRoute`).
@@ -444,7 +444,7 @@ intent and budgets being orphaned is recoverable (rule 8).
 ## 10. AI Chat Integration
 
 The in-app chat emits a `[BUDGET_ACTION]` block. Same Confirm-button
-pattern as transactions / accounts / bills.
+pattern as transactions and accounts.
 
 ### Action shapes
 

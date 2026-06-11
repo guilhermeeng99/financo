@@ -354,12 +354,6 @@ class _ActionPreview {
       'category' => action == 'delete'
           ? _ActionPreview.categoryDelete(context, meta)
           : _ActionPreview.categoryCreate(context, meta),
-      'bill' => switch (action) {
-        'markPaid' => _ActionPreview.billMarkPaid(context, meta),
-        'delete' => _ActionPreview.billDelete(context, meta),
-        'update' => _ActionPreview.billUpdate(context, meta),
-        _ => _ActionPreview.billCreate(context, meta),
-      },
       'budget' => switch (action) {
         'delete' => _ActionPreview.budgetDelete(context, meta),
         'update' => _ActionPreview.budgetUpdate(context, meta),
@@ -518,92 +512,6 @@ class _ActionPreview {
       icon: FontAwesomeIcons.trash,
       accent: context.appColors.error,
       headline: meta['name'] as String?,
-      destructive: true,
-    );
-  }
-
-  factory _ActionPreview.billCreate(
-    BuildContext context,
-    Map<String, dynamic> meta,
-  ) {
-    final colors = context.appColors;
-    final isReceivable = (meta['type'] as String?) == 'receivable';
-    final amount = (meta['amount'] as num?)?.toDouble() ?? 0;
-    final isMonthly = (meta['recurrence'] as String?) == 'monthly';
-    return _ActionPreview(
-      title: t.chat.action.billCreate,
-      icon: FontAwesomeIcons.calendar,
-      accent: isReceivable ? colors.income : colors.warning,
-      amount: formatCurrency(amount),
-      headline: meta['description'] as String?,
-      fields: [
-        (
-          label: t.chat.action.fieldDueDate,
-          value: _formatDate(meta['dueDate'] as String?),
-        ),
-        (
-          label: t.chat.action.fieldRecurrence,
-          value: isMonthly ? t.bills.monthly : t.bills.oneShot,
-        ),
-        if (meta['category'] != null)
-          (label: t.chat.action.fieldCategory, value: '${meta['category']}'),
-        if (meta['notes'] != null && (meta['notes'] as String).isNotEmpty)
-          (label: t.chat.action.fieldNotes, value: '${meta['notes']}'),
-      ],
-    );
-  }
-
-  factory _ActionPreview.billUpdate(
-    BuildContext context,
-    Map<String, dynamic> meta,
-  ) {
-    final amount = (meta['amount'] as num?)?.toDouble();
-    return _ActionPreview(
-      title: t.chat.action.billUpdate,
-      icon: FontAwesomeIcons.penToSquare,
-      accent: context.appColors.primary,
-      amount: amount != null ? formatCurrency(amount) : null,
-      headline: meta['description'] as String?,
-      fields: [
-        if (meta['dueDate'] != null)
-          (
-            label: t.chat.action.fieldDueDate,
-            value: _formatDate(meta['dueDate'] as String?),
-          ),
-        if (meta['notes'] != null && (meta['notes'] as String).isNotEmpty)
-          (label: t.chat.action.fieldNotes, value: '${meta['notes']}'),
-      ],
-    );
-  }
-
-  factory _ActionPreview.billMarkPaid(
-    BuildContext context,
-    Map<String, dynamic> meta,
-  ) {
-    return _ActionPreview(
-      title: t.chat.action.billMarkPaid,
-      icon: FontAwesomeIcons.circleCheck,
-      accent: context.appColors.success,
-      headline: meta['description'] as String?,
-      fields: [
-        if (meta['accountName'] != null)
-          (
-            label: t.chat.action.fieldAccount,
-            value: '${meta['accountName']}',
-          ),
-      ],
-    );
-  }
-
-  factory _ActionPreview.billDelete(
-    BuildContext context,
-    Map<String, dynamic> meta,
-  ) {
-    return _ActionPreview(
-      title: t.chat.action.billDelete,
-      icon: FontAwesomeIcons.trash,
-      accent: context.appColors.error,
-      headline: meta['description'] as String?,
       destructive: true,
     );
   }

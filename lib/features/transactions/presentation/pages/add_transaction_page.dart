@@ -18,9 +18,6 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/bills/domain/entities/bill_entity.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
@@ -59,7 +56,6 @@ class AddTransactionPage extends StatelessWidget {
     super.key,
     this.existingTransaction,
     this.prefillAccountId,
-    this.prefillFromBill,
   });
 
   final TransactionEntity? existingTransaction;
@@ -68,13 +64,6 @@ class AddTransactionPage extends StatelessWidget {
   /// account-statement page don't have to re-pick the account they're
   /// already viewing. Ignored when editing (the existing accountId wins).
   final String? prefillAccountId;
-
-  /// When non-null, the page is being used to *settle a bill*: prefill
-  /// description/amount/type/category from the bill, lock the type
-  /// toggle, and dispatch `BillMatchAccepted` after the transaction is
-  /// successfully saved (so the bill links to the new tx + advances the
-  /// monthly chain via `linkBillToExistingTransaction`).
-  final BillEntity? prefillFromBill;
 
   @override
   Widget build(BuildContext context) {
@@ -93,15 +82,13 @@ class AddTransactionPage extends StatelessWidget {
         existingTransaction: existingTransaction,
         prefillAccountId: prefillAccountId,
       ),
-      child: _AddTransactionView(prefillFromBill: prefillFromBill),
+      child: const _AddTransactionView(),
     );
   }
 }
 
 class _AddTransactionView extends StatefulWidget {
-  const _AddTransactionView({this.prefillFromBill});
-
-  final BillEntity? prefillFromBill;
+  const _AddTransactionView();
 
   @override
   State<_AddTransactionView> createState() => _AddTransactionViewState();
@@ -125,24 +112,6 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
           : '';
       _notesController.text = state.notes;
       return;
-    }
-    // Prefill from a pending bill the user is settling. Account stays
-    // empty on purpose — the user is the one who knows where the money
-    // moved from/to. Date keeps the cubit default (today).
-    final bill = widget.prefillFromBill;
-    if (bill != null) {
-      _descriptionController.text = bill.description;
-      _amountController.text = BrlCurrencyInputFormatter.format(bill.amount);
-      cubit
-        ..updateDescription(bill.description)
-        // Feed the cubit the same formatted string the field shows, so the
-        // form never round-trips money through a raw double.toString().
-        ..updateAmount(_amountController.text)
-        ..updateType(
-          bill.isReceivable ? TransactionType.income : TransactionType.expense,
-        );
-      final categoryId = bill.categoryId;
-      if (categoryId != null) cubit.updateCategoryId(categoryId);
     }
   }
 
@@ -260,16 +229,11 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     final cubit = context.read<TransactionFormCubit>();
     final currentDate = cubit.state.date;
     final now = DateTime.now();
-    final allowsFutureDate =
-        !cubit.state.isTransfer &&
-        cubit.state.settlementStatus == TransactionSettlementStatus.pending;
+    final allowsFutureDate = !cubit.state.isTransfer;
     // `lastDate` must always be ≥ `initialDate` or `showDatePicker`
-    // hits an assertion and the tap silently no-ops. Transactions
-    // with future dates (imported, or created when "now" was later)
-    // would otherwise get stuck — keep "today" as the typical upper
-    // bound but expand to the existing date if it's already in the
-    // future. The cubit's `isValid` still rejects future dates on
-    // submit, so the constraint isn't lost.
+    // hits an assertion and the tap silently no-ops. Expense/income rows may
+    // be scheduled in the future; the cubit automatically marks them pending.
+    // Transfers stay bounded to today because they are always settled now.
     final lastDate = allowsFutureDate
         ? DateTime(now.year + 10, now.month, now.day)
         : currentDate.isAfter(now)
@@ -346,23 +310,10 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     TransactionFormState state,
   ) {
     if (state.status == FormStatus.success) {
-      // When this page was opened to settle a bill, auto-link the bill
-      // to the freshly-created transaction. Same code path the match
-      // suggestion sheet uses — the bloc then advances the monthly
-      // chain and refreshes the bills list.
-      final bill = widget.prefillFromBill;
-      final txId = state.savedTransactionId;
-      if (bill != null && txId != null) {
-        context.read<BillsBloc>().add(
-          BillMatchAccepted(billId: bill.id, transactionId: txId),
-        );
-      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            bill != null
-                ? (bill.isReceivable ? t.bills.billReceived : t.bills.billPaid)
-                : state.isTransfer && !state.isEditing
+            state.isTransfer && !state.isEditing
                 ? t.transactions.transferCreated
                 : state.settlementStatus == TransactionSettlementStatus.pending
                 ? t.transactions.transactionScheduled
@@ -460,12 +411,8 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                       children: [
                         FinancoPillToggle<_Mode>(
                           selected: _modeFromState(state),
-                          // Lock the toggle when settling a bill —
                           // switching to Transfer (or flipping
-                          // income↔expense) would invalidate the bill
-                          // link the page is about to dispatch.
-                          disabled:
-                              state.isEditing || widget.prefillFromBill != null,
+                          disabled: state.isEditing,
                           onChanged: (mode) {
                             if (mode == _Mode.transfer) {
                               cubit.setTransferMode(enabled: true);
@@ -501,7 +448,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                     ),
                     const SizedBox(height: 20),
                     FinancoFormSection(
-                      label: t.bills.formDetails,
+                      label: t.payablesReceivables.formDetails,
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -514,13 +461,9 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                                 onChanged: cubit.updateAmount,
                                 // Web: land in the amount field ready to type
                                 // the instant the form opens. Skipped for
-                                // edit / bill-settle, where the amount is
                                 // prefilled and autofocus would prepend digits
                                 // to the existing value.
-                                autofocus:
-                                    kIsWeb &&
-                                    !state.isEditing &&
-                                    widget.prefillFromBill == null,
+                                autofocus: kIsWeb && !state.isEditing,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -537,8 +480,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                             ),
                           ],
                         ),
-                        if (!state.isTransfer &&
-                            widget.prefillFromBill == null) ...[
+                        if (!state.isTransfer) ...[
                           const SizedBox(height: 12),
                           FinancoPillToggle<TransactionRecurrence>(
                             selected: state.recurrence,
@@ -592,7 +534,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                     ),
                     const SizedBox(height: 20),
                     FinancoFormSection(
-                      label: t.bills.formClassification,
+                      label: t.payablesReceivables.formClassification,
                       children: state.isTransfer
                           ? _transferFields(cubit, state)
                           : _normalFields(cubit, state),
@@ -629,13 +571,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
             BlocBuilder<TransactionFormCubit, TransactionFormState>(
               builder: (context, state) {
                 final cubit = context.read<TransactionFormCubit>();
-                // "Save and add another" only makes sense for fresh
-                // create flows. In edit mode there's no "next one" to
-                // queue up; in bill-settlement mode the page is single-
-                // shot because it dispatches `BillMatchAccepted` and
-                // the cubit lacks a fresh bill to link the next save to.
-                final canContinue =
-                    !state.isEditing && widget.prefillFromBill == null;
+                final canContinue = !state.isEditing;
                 return FinancoSubmitBar(
                   label: state.isEditing ? t.general.update : t.general.save,
                   isLoading: state.status == FormStatus.submitting,
@@ -718,13 +654,8 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
       centerTitle: true,
       title: BlocBuilder<TransactionFormCubit, TransactionFormState>(
         builder: (context, state) {
-          final bill = widget.prefillFromBill;
           final label = state.isEditing
               ? t.transactions.editTransaction
-              : bill != null
-              ? (bill.isReceivable
-                    ? t.transactions.confirmReceiptTitle
-                    : t.transactions.confirmPaymentTitle)
               : t.transactions.addTransaction;
           return Text(
             label,
@@ -930,9 +861,13 @@ class _CategoryRow extends StatelessWidget {
       // Subcategories render as "Parent › Child" so the user sees where
       // the bucket lives (e.g. "Moradia › Aluguel").
       value: selected?.displayPath(categories),
-      placeholder: t.bills.pickCategory,
+      placeholder: t.payablesReceivables.pickCategory,
       leading: selected != null
-          ? FinancoCategoryAvatar(category: selected, size: 28)
+          ? FinancoCategoryAvatar(
+              category: selected,
+              allCategories: categories,
+              size: 28,
+            )
           : FaIcon(
               FontAwesomeIcons.tag,
               size: 14,

@@ -14,7 +14,9 @@ class SettleTransactionUseCase {
   }) {
     if (transaction.isTransfer) {
       return Future.value(
-        const Left(ValidationFailure('Transfers cannot be pending bills.')),
+        const Left(
+          ValidationFailure('Transfers cannot be pending payables.'),
+        ),
       );
     }
 

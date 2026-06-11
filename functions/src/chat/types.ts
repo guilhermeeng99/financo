@@ -25,5 +25,4 @@ export type ActionType =
   | 'transfer'
   | 'account'
   | 'category'
-  | 'bill'
   | 'budget';

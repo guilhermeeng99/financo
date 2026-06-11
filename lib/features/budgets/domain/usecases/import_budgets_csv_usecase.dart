@@ -29,7 +29,7 @@ class BudgetImportResult extends Equatable {
 /// Bulk-creates [BudgetEntity] records from a 2-column CSV
 /// (`Category,Amount`). Tolerant about category resolution: rows referencing
 /// non-existent or non-expense-root categories are skipped and surfaced via
-/// `skippedCount`, mirroring the bills/accounts import philosophy.
+/// `skippedCount`, mirroring the accounts import philosophy.
 ///
 /// Duplicates against existing budgets (same `(userId, categoryId)`) are
 /// also skipped — the repository enforces uniqueness, so the use case

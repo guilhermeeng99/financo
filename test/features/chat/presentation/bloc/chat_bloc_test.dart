@@ -25,7 +25,6 @@ void main() {
   late MockCategoryChatActionHandler mockCategoryHandler;
   late MockTransactionChatActionHandler mockTransactionHandler;
   late MockTransferChatActionHandler mockTransferHandler;
-  late MockBillChatActionHandler mockBillHandler;
   late MockBudgetChatActionHandler mockBudgetHandler;
 
   const userId = 'user-1';
@@ -41,7 +40,6 @@ void main() {
     mockCategoryHandler = MockCategoryChatActionHandler();
     mockTransactionHandler = MockTransactionChatActionHandler();
     mockTransferHandler = MockTransferChatActionHandler();
-    mockBillHandler = MockBillChatActionHandler();
     mockBudgetHandler = MockBudgetChatActionHandler();
     when(() => mockSaveChatMessage(any())).thenAnswer(
       (_) async => const Right<Failure, void>(null),
@@ -57,7 +55,6 @@ void main() {
     categoryHandler: mockCategoryHandler,
     transactionHandler: mockTransactionHandler,
     transferHandler: mockTransferHandler,
-    billHandler: mockBillHandler,
     budgetHandler: mockBudgetHandler,
     userId: userId,
   );
@@ -301,35 +298,6 @@ void main() {
               (s) => s.messages.last.metadata?['originActionId'],
               'originActionId',
               'msg-1',
-            ),
-      ],
-    );
-
-    blocTest<ChatBloc, ChatState>(
-      'bill action sets shouldRefreshBills + shouldRefreshTransactions',
-      build: buildBloc,
-      setUp: () {
-        when(
-          () => mockBillHandler.handle(
-            userId: any(named: 'userId'),
-            meta: any(named: 'meta'),
-            locale: any(named: 'locale'),
-          ),
-        ).thenAnswer((_) async => 'Bill paid');
-      },
-      act: (bloc) => bloc.add(
-        const ChatActionConfirmed(
-          actionMessageId: 'msg-1',
-          metadata: {'actionType': 'bill'},
-        ),
-      ),
-      expect: () => [
-        isA<ChatLoaded>()
-            .having((s) => s.shouldRefreshBills, 'shouldRefreshBills', true)
-            .having(
-              (s) => s.shouldRefreshTransactions,
-              'shouldRefreshTransactions',
-              true,
             ),
       ],
     );

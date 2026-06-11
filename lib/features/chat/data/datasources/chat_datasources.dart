@@ -48,7 +48,7 @@ bool _shouldSendToAi(ChatMessageEntity m) {
 }
 
 final RegExp _legacyResultPattern = RegExp(
-  '^(Transaction|Account|Category|Bill|Transação|Conta|Categoria) '
+  '^(Transaction|Account|Category|Transação|Conta|Categoria) '
   '.*(created successfully|deleted successfully|updated|paid|'
   'criada com sucesso|removida com sucesso|scheduled for)',
   caseSensitive: false,
@@ -86,7 +86,6 @@ String? _actionTag(String actionType) => switch (actionType) {
   'transfer' => 'TRANSFER_DATA',
   'account' => 'ACCOUNT_ACTION',
   'category' => 'CATEGORY_ACTION',
-  'bill' => 'BILL_ACTION',
   'budget' => 'BUDGET_ACTION',
   _ => null,
 };

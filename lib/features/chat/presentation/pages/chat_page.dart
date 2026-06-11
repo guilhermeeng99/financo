@@ -4,11 +4,8 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_bloc.dart';
-import 'package:financo/features/bills/presentation/bloc/bills_event_state.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
-import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
@@ -49,7 +46,6 @@ class ChatPage extends StatelessWidget {
         categoryHandler: GetIt.I<CategoryChatActionHandler>(),
         transactionHandler: GetIt.I<TransactionChatActionHandler>(),
         transferHandler: GetIt.I<TransferChatActionHandler>(),
-        billHandler: GetIt.I<BillChatActionHandler>(),
         budgetHandler: GetIt.I<BudgetChatActionHandler>(),
         userId: userId,
       ),
@@ -112,11 +108,6 @@ class _ChatViewState extends State<_ChatView> {
       );
       context.read<DashboardBloc>().add(
         const DashboardRefreshRequested(),
-      );
-    }
-    if (state.shouldRefreshBills) {
-      context.read<BillsBloc>().add(
-        const BillsLoadRequested(forceRefresh: true),
       );
     }
     if (state.shouldRefreshBudgets) {

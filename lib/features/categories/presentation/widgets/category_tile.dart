@@ -1,5 +1,5 @@
+import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -31,10 +31,9 @@ class CategoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final isSub = category.isSubcategory;
-    final displayIcon = isSub ? parent?.icon ?? category.icon : category.icon;
-    final categoryColor = Color(
-      isSub ? parent?.color ?? category.color : category.color,
-    );
+    final allCategories = parent == null
+        ? const <CategoryEntity>[]
+        : <CategoryEntity>[parent!];
 
     return Padding(
       padding: EdgeInsets.only(
@@ -56,9 +55,10 @@ class CategoryTile extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  _IconDisc(
-                    iconCode: displayIcon,
-                    color: categoryColor,
+                  FinancoCategoryAvatar(
+                    category: category,
+                    allCategories: allCategories,
+                    size: 40,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -109,31 +109,5 @@ class CategoryTile extends StatelessWidget {
     return category.type == CategoryType.income
         ? t.categories.incomeType
         : t.categories.expenseType;
-  }
-}
-
-class _IconDisc extends StatelessWidget {
-  const _IconDisc({required this.iconCode, required this.color});
-
-  final int iconCode;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Center(
-        child: Icon(
-          materialIconFor(iconCode),
-          size: 18,
-          color: color,
-        ),
-      ),
-    );
   }
 }

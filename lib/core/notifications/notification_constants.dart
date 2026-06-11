@@ -12,9 +12,10 @@ import 'package:flutter/material.dart';
 class NotificationConstants {
   const NotificationConstants._();
 
-  static const channelId = 'bills_due';
-  static const channelName = 'Bill reminders';
-  static const channelDescription = 'Alerts when a bill is due or overdue.';
+  static const channelId = 'transactions_due';
+  static const channelName = 'Transaction reminders';
+  static const channelDescription =
+      'Alerts when a pending transaction is due or overdue.';
 
   /// Drawable resource name (no `@drawable/` prefix). Must match
   /// `ic_notification.xml` and the AndroidManifest meta-data so cold

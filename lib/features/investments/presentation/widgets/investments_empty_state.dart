@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// First-impression empty state for the Investments tab. Mirrors the
-/// `BudgetsEmptyState` / `BillsEmptyState` shape (icon disc → headline
+/// shared empty-state shape (icon disc → headline
 /// → explanatory body → optional example chip → primary CTA) so the
 /// feature feels at home in the app.
 ///

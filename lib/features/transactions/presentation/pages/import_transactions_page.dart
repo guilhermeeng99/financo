@@ -861,7 +861,7 @@ class _EditRowSheetState extends State<_EditRowSheet> {
                   ),
                   const SizedBox(height: 20),
                   FinancoFormSection(
-                    label: t.bills.formDetails,
+                    label: t.payablesReceivables.formDetails,
                     children: [
                       FinancoTextField(
                         controller: _amountController,

@@ -22,6 +22,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   /// Every top-level collection scoped by `userId`. Keep this list in sync
   /// with the Firestore schema (CLAUDE.md → Firebase — Firestore Collections).
   /// Forgetting one here leaves orphan rows behind on account wipe.
+  /// `bills` is legacy-only, but still wiped so old migrated data does not
+  /// survive account deletion.
   static const _userScopedCollections = <String>[
     'bills',
     'transactions',

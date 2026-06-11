@@ -1,6 +1,6 @@
+import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
@@ -95,7 +95,7 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  t.bills.pickCategory,
+                  t.payablesReceivables.pickCategory,
                   style: context.textTheme.titleLarge?.copyWith(
                     color: colors.onBackground,
                     fontWeight: FontWeight.w600,
@@ -114,26 +114,26 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
               child: hasNoCategoriesAtAll
                   ? _Empty(
                       message: widget.transactionType == TransactionType.income
-                          ? t.bills.noIncomeCategory
-                          : t.bills.noExpenseCategory,
+                          ? t.payablesReceivables.noIncomeCategory
+                          : t.payablesReceivables.noExpenseCategory,
                     )
                   : hasNoSearchResults
-                      ? _Empty(message: t.categories.searchNoResults)
-                      : ListView.separated(
-                          controller: scrollController,
-                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                          itemCount: categories.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 4),
-                          itemBuilder: (_, i) {
-                            final c = categories[i];
-                            return _CategoryRow(
-                              category: c,
-                              isSelected: c.id == widget.selectedId,
-                              onTap: () => Navigator.pop(context, c.id),
-                            );
-                          },
-                        ),
+                  ? _Empty(message: t.categories.searchNoResults)
+                  : ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 4),
+                      itemBuilder: (_, i) {
+                        final c = categories[i];
+                        return _CategoryRow(
+                          category: c,
+                          allCategories: allOfType,
+                          isSelected: c.id == widget.selectedId,
+                          onTap: () => Navigator.pop(context, c.id),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -145,18 +145,19 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({
     required this.category,
+    required this.allCategories,
     required this.isSelected,
     required this.onTap,
   });
 
   final CategoryEntity category;
+  final Iterable<CategoryEntity> allCategories;
   final bool isSelected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final tint = Color(category.color);
     return Material(
       color: isSelected
           ? colors.primary.withValues(alpha: 0.08)
@@ -174,20 +175,9 @@ class _CategoryRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: tint.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Icon(
-                    materialIconFor(category.icon),
-                    size: 18,
-                    color: tint,
-                  ),
-                ),
+              FinancoCategoryAvatar(
+                category: category,
+                allCategories: allCategories,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -195,9 +185,7 @@ class _CategoryRow extends StatelessWidget {
                   category.name,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: colors.onBackground,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

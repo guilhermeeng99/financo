@@ -284,9 +284,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         status: FormStatus.failure,
         failure: failure,
       ),
-      // Surface the saved id so listeners (e.g. the bill-settlement
-      // flow) can chain follow-up work like linking the bill to
-      // this transaction. For updates it's just `existingId`.
+      // Surface the saved id so listeners can chain follow-up work without
+      // re-fetching. For updates it's just `existingId`.
       (saved) => state.copyWith(
         status: FormStatus.success,
         savedTransactionId: saved.id,
@@ -595,8 +594,8 @@ class TransactionFormState extends Equatable {
   final DateTime? destinationCreatedAt;
 
   /// Set on `FormStatus.success` to the id of the row written by the
-  /// last submit (created or updated). Lets callers — e.g. the bill
-  /// settlement flow — chain follow-ups without re-fetching.
+  /// last submit (created or updated). Lets callers chain follow-ups without
+  /// re-fetching.
   final String? savedTransactionId;
 
   /// Mirrors the flag passed to `submit()` so the page can tell, on

@@ -46,7 +46,7 @@ profile-specific entity. The renderer reads:
    first, then upserts the same record into `UsersDao`. If the Firestore
    write fails, the local cache is left untouched.
 3. **Clear account data is irreversible.** Wipes every document owned by
-   `userId` across **bills**, **transactions**, **chat_messages**,
+   `userId` across legacy **bills**, **transactions**, **chat_messages**,
    **categories**, **accounts**, **budgets**, **asset_classes** and
    **asset_holdings**, then calls `AppDatabase.clearAllTables()` to drop the
    local cache. The user is asked to type their email as confirmation before
@@ -118,7 +118,7 @@ doesn't leave a stale `Loaded` state hanging on a defunct user id.
 ## 5. UI Contract
 
 - **`ProfilePage`** — Material list grouped into sections:
-  - **Your data** — accounts, categories, bills shortcuts
+  - **Your data** — accounts and categories shortcuts
   - **Preferences** — theme, palettes, language
   - **Get the app** — download Android APK (web only)
   - **Account** — sign out

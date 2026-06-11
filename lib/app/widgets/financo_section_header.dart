@@ -2,7 +2,7 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 
 /// Uppercase, letter-spaced section header used to separate logical groups
-/// of cards in long-scrolling pages (Bills, future Transactions/Accounts).
+/// of cards in long-scrolling pages (payables, future transactions/accounts).
 ///
 /// Example:
 ///   FinancoSectionHeader(title: 'Overdue', count: 3, accent: colors.expense)

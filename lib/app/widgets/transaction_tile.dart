@@ -10,7 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 /// Single row representing a transaction. Used by:
 ///   - the transactions list page
 ///   - the accounts statement page (passes [categoryLabel])
-///   - the bills feature (linked transactions from settled bills)
+///   - the payables/receivables pages with settlement status enabled
 ///
 /// Shows a type-tinted icon disc (income/expense/transfer), description on
 /// top, and a contextual subtitle below combining date + optional category
@@ -124,10 +124,14 @@ class TransactionTile extends StatelessWidget {
   }
 
   String _settlementLabel(TransactionEntity tx) {
-    if (tx.isPaid) return tx.isReceivable ? t.bills.received : t.bills.paid;
-    if (tx.isOverdue) return t.bills.overdue;
-    if (tx.isDueToday) return t.bills.dueToday;
-    return t.bills.scheduled;
+    if (tx.isPaid) {
+      return tx.isReceivable
+          ? t.payablesReceivables.received
+          : t.payablesReceivables.paid;
+    }
+    if (tx.isOverdue) return t.payablesReceivables.overdue;
+    if (tx.isDueToday) return t.payablesReceivables.dueToday;
+    return t.payablesReceivables.scheduled;
   }
 }
 

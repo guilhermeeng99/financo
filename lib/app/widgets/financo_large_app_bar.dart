@@ -13,7 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 ///
 /// Example:
 ///   Scaffold(
-///     appBar: FinancoLargeAppBar(title: t.bills.title),
+///     appBar: FinancoLargeAppBar(title: t.nav.dashboard),
 ///     body: ...,
 ///   )
 class FinancoLargeAppBar extends StatelessWidget

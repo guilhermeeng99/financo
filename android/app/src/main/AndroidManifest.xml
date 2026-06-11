@@ -31,10 +31,10 @@
             </intent-filter>
         </activity>
         <!-- Default channel for FCM notifications when the cloud message
-             does not specify one. Must match NotificationService._channelId. -->
+             does not specify one. Must match NotificationConstants.channelId. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="bills_due" />
+            android:value="transactions_due" />
         <!-- Monochrome small icon shown in the status bar / notification
              header — required for Android 5+, otherwise the system falls
              back to a generic bell. Tinted by `notification_color`. -->

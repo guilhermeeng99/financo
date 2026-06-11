@@ -531,9 +531,9 @@ self-contained.
   Dashboard sidebar children at `/payables-receivables` and
   `/paid-and-received`; legacy `/bills` redirects to
   `/payables-receivables` for deep-link/push compatibility.
-- **Bills page** — remains as the transaction-backed
-  payables/receivables surface, but is no longer embedded in Planning.
-- **Bills nav badge** — `nav_bills_badge.dart` is no longer rendered on
+- **Payables/receivables page** — remains transaction-backed and is no longer
+  embedded in Planning.
+- **Legacy Bills nav badge** — `nav_bills_badge.dart` is no longer rendered on
   the bottom/sidebar nav. Due/overdue payables should be surfaced through the
   transaction-backed payables/receivables entry.
 

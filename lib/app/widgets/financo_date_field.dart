@@ -8,8 +8,8 @@ import 'package:intl/intl.dart';
 /// date picker (or any date-resolving sheet) — the widget itself is just
 /// the display.
 ///
-/// Replaces the per-feature `_DateField` copies that the bill and
-/// transaction forms each maintained.
+/// Replaces the per-feature `_DateField` copies that transaction forms
+/// previously maintained.
 class FinancoDateField extends StatelessWidget {
   const FinancoDateField({
     required this.label,

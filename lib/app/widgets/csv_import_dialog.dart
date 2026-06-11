@@ -8,9 +8,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 /// [showCsvImportIntroDialog]) means cancel / dismiss.
 enum CsvImportIntroChoice { downloadExample, selectFile }
 
-/// Shared intro dialog for every "import from CSV" flow (transactions, bills,
+/// Shared intro dialog for every "import from CSV" flow (transactions,
 /// accounts, categories, budgets). Only the strings differ per feature — the
-/// layout, icon and button order live here so all five stay identical.
+/// layout, icon and button order live here so all import flows stay identical.
 Future<CsvImportIntroChoice?> showCsvImportIntroDialog(
   BuildContext context, {
   required String title,

@@ -8,10 +8,10 @@ Personal finance manager for Android and Web. Natural-language data entry powere
 - **Accounts** — checking and credit card; credit cards link to a paying checking account (closing/due day, available credit).
 - **Categories** — income and expense, with optional parent (sub-category) hierarchy and Material icons.
 - **Transactions** — single-account or **transfers** (linked expense/income across two own accounts), with running balance per account.
-- **Bills** — payable or receivable, one-shot or monthly recurring; "Mark as paid" generates the corresponding transaction automatically.
-- **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories, bills) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
-- **CSV import** — bulk-create accounts, categories, transactions, bills, and budgets from CSV files (samples shipped in `lib/app/assets/samples/`).
-- **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today bills.
+- **Payables and receivables** — future-dated transactions can remain pending, become overdue in their month, and be marked as paid/received.
+- **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
+- **CSV import** — bulk-create accounts, categories, transactions, and budgets from CSV files (samples shipped in `lib/app/assets/samples/`).
+- **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today pending transactions.
 
 ## Architecture
 
@@ -27,7 +27,7 @@ lib/
 functions/
 └── src/
     ├── chat/     # Gemini pipeline, action extractor
-    └── bills/    # Scheduled bill-due notifier
+    └── transactions/ # Scheduled pending-transaction notifier
 
 docs/specs/       # Per-feature contracts (entities, business rules, state machines)
 test/
@@ -106,7 +106,7 @@ npm run build
 firebase deploy --only functions
 ```
 
-The callables `chatSend`, `transcribeChatAudio`, and `deleteUserAsAdmin` are defined in `functions/src/index.ts`; the scheduled bill notifier `notifyBillsDue` lives in `functions/src/bills/notifyBillsDue.ts` and is re-exported from `index.ts`.
+The callables `chatSend`, `transcribeChatAudio`, and `deleteUserAsAdmin` are defined in `functions/src/index.ts`; the scheduled pending-transaction notifier `notifyTransactionsDue` lives in `functions/src/transactions/notifyTransactionsDue.ts` and is re-exported from `index.ts`.
 
 ## Testing
 

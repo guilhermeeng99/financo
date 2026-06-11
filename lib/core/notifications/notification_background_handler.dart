@@ -22,6 +22,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 /// hence the manual Firebase + plugin init below.
 @pragma('vm:entry-point')
 Future<void> notificationBackgroundHandler(RemoteMessage message) async {
+  if (NotificationService.isLegacyBillsPush(message.data)) {
+    log(
+      'Dropping legacy Bills background push',
+      name: 'NotificationService',
+    );
+    return;
+  }
+
   // Idempotent: returns the existing app if one is already initialized
   // (foreground isolate path) and otherwise bootstraps one here.
   await Firebase.initializeApp(

@@ -37,4 +37,46 @@ void main() {
       expect(root.displayPath(const []), 'Moradia');
     });
   });
+
+  group('CategoryEntity.displayAppearance', () {
+    test('returns own icon and color for a root category', () {
+      final appearance = root.displayAppearance([root, child]);
+
+      expect(appearance.icon, root.icon);
+      expect(appearance.color, root.color);
+    });
+
+    test('inherits parent icon and color for a subcategory', () {
+      const parent = CategoryEntity(
+        id: 'parent-1',
+        name: 'Gato',
+        icon: 0xe91d,
+        color: 0xFF8A2BE2,
+        type: CategoryType.expense,
+      );
+      const subcategory = CategoryEntity(
+        id: 'child-1',
+        name: 'Areia',
+        icon: 0xe3c9,
+        color: 0xFF00AA99,
+        type: CategoryType.expense,
+        parentId: 'parent-1',
+      );
+
+      final appearance = subcategory.displayAppearance([
+        parent,
+        subcategory,
+      ]);
+
+      expect(appearance.icon, parent.icon);
+      expect(appearance.color, parent.color);
+    });
+
+    test('falls back to own icon and color when parent is missing', () {
+      final appearance = child.displayAppearance(const [child]);
+
+      expect(appearance.icon, child.icon);
+      expect(appearance.color, child.color);
+    });
+  });
 }

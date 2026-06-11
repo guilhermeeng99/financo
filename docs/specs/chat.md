@@ -149,7 +149,7 @@ Thin delegators:
 
 **ChatActionConfirmed:**
 1. Extract `actionType` from metadata
-2. Route to handler: `account` | `category` | `transaction` | `bill` | `budget` | `transfer` | default → "Unknown action type." (handlers registered in `injection_container.dart`)
+2. Route to handler: `account` | `category` | `transaction` | `budget` | `transfer` | default → "Unknown action type." (handlers registered in `injection_container.dart`)
 3. Create assistant message with result text
 4. Add to list, persist (non-blocking — failure swallowed)
 5. Emit `ChatLoaded(shouldRefreshTransactions: actionType == 'transaction')`

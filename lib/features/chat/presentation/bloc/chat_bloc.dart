@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
-import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/chat_action_handler.dart';
@@ -99,7 +98,6 @@ final class ChatLoaded extends ChatState {
     required this.messages,
     this.isTyping = false,
     this.shouldRefreshTransactions = false,
-    this.shouldRefreshBills = false,
     this.shouldRefreshBudgets = false,
     this.isTranscribing = false,
   });
@@ -107,7 +105,6 @@ final class ChatLoaded extends ChatState {
   final List<ChatMessageEntity> messages;
   final bool isTyping;
   final bool shouldRefreshTransactions;
-  final bool shouldRefreshBills;
   final bool shouldRefreshBudgets;
   final bool isTranscribing;
 
@@ -116,7 +113,6 @@ final class ChatLoaded extends ChatState {
     messages,
     isTyping,
     shouldRefreshTransactions,
-    shouldRefreshBills,
     shouldRefreshBudgets,
     isTranscribing,
   ];
@@ -141,7 +137,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required CategoryChatActionHandler categoryHandler,
     required TransactionChatActionHandler transactionHandler,
     required TransferChatActionHandler transferHandler,
-    required BillChatActionHandler billHandler,
     required BudgetChatActionHandler budgetHandler,
     required String userId,
   }) : _sendMessage = sendMessage,
@@ -153,7 +148,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
          'category': categoryHandler,
          'transaction': transactionHandler,
          'transfer': transferHandler,
-         'bill': billHandler,
          'budget': budgetHandler,
        },
        _userId = userId,
@@ -398,9 +392,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ChatLoaded(
         messages: List.unmodifiable(next),
         shouldRefreshTransactions: actionType == 'transaction' ||
-            actionType == 'transfer' ||
-            actionType == 'bill',
-        shouldRefreshBills: actionType == 'bill',
+            actionType == 'transfer',
         shouldRefreshBudgets: actionType == 'budget',
       ),
     );

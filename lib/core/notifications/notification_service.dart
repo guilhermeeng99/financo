@@ -56,7 +56,7 @@ class NotificationService {
   /// Why this exists: an FCM token survives across sign-ins on the same
   /// device. If account A and account B both ever logged in here, the
   /// token sits under `users/A/fcmTokens` AND `users/B/fcmTokens`. The
-  /// daily `notifyBillsDue` Cloud Function would then push *both*
+  /// daily transaction-reminder Cloud Function would then push *both*
   /// accounts' reminders to a device currently logged into only one of
   /// them. This filter is the client side of the fix; the server side
   /// includes `userId` in the data payload so the client can decide.
@@ -71,6 +71,14 @@ class NotificationService {
     if (messageUserId == null || messageUserId.isEmpty) return true;
     if (currentUid == null || currentUid.isEmpty) return false;
     return messageUserId == currentUid;
+  }
+
+  /// Legacy Bills reminders must not surface after the payables migration.
+  /// The old scheduled Cloud Function used `type=bills_due` and `/bills`;
+  /// dropping both keeps already-queued FCM messages from showing stale
+  /// reminders while deployments roll forward.
+  static bool isLegacyBillsPush(Map<String, dynamic> data) {
+    return data['type'] == 'bills_due' || data['route'] == '/bills';
   }
 
   Future<void> init() async {
@@ -135,6 +143,7 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(notificationBackgroundHandler);
     // App opened from a tapped notification (warm start).
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      if (isLegacyBillsPush(message.data)) return;
       final route = message.data['route'] as String?;
       if (route != null) _onNavigate?.call(route);
     });
@@ -143,6 +152,7 @@ class NotificationService {
   // Cold start: app launched by tapping a notification while terminated.
   Future<void> _handleColdStartMessage() async {
     final initial = await _messaging.getInitialMessage();
+    if (initial != null && isLegacyBillsPush(initial.data)) return;
     final route = initial?.data['route'] as String?;
     if (route != null) _onNavigate?.call(route);
   }
@@ -195,6 +205,14 @@ class NotificationService {
   }
 
   Future<void> _onForegroundMessage(RemoteMessage message) async {
+    if (isLegacyBillsPush(message.data)) {
+      log(
+        'Dropping legacy Bills push',
+        name: 'NotificationService',
+      );
+      return;
+    }
+
     final messageUserId = message.data['userId'] as String?;
     final currentUid = _auth.currentUser?.uid;
     if (!shouldDeliver(messageUserId: messageUserId, currentUid: currentUid)) {

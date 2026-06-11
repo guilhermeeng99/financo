@@ -1,6 +1,6 @@
+import 'package:financo/app/widgets/financo_category_avatar.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -60,16 +60,17 @@ class _BudgetCategoryPickerSheetState
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final all = context
-        .watch<CategoriesCubit>()
-        .state
-        .categoriesOrEmpty
-        .where((c) => c.type == CategoryType.expense && c.canBeParent)
-        .where((c) => !widget.excludedIds.contains(c.id))
-        .toList()
-      ..sort(
-        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      );
+    final all =
+        context
+            .watch<CategoriesCubit>()
+            .state
+            .categoriesOrEmpty
+            .where((c) => c.type == CategoryType.expense && c.canBeParent)
+            .where((c) => !widget.excludedIds.contains(c.id))
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     final filtered = _query.trim().isEmpty
         ? all
@@ -169,7 +170,6 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final categoryColor = Color(category.color);
     return Material(
       color: isSelected
           ? colors.primary.withValues(alpha: 0.08)
@@ -182,30 +182,14 @@ class _CategoryRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: categoryColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Icon(
-                    materialIconFor(category.icon),
-                    size: 18,
-                    color: categoryColor,
-                  ),
-                ),
-              ),
+              FinancoCategoryAvatar(category: category),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   category.name,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: colors.onBackground,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

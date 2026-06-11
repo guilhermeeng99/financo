@@ -4,8 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Tap-to-open form tile shaped like a "row selector": optional leading
 /// widget, label-on-top + value-below text column, trailing chevron.
-/// Used by the category, account and linked-account pickers in the
-/// transaction and bill forms — replaces the near-identical
+/// Used by the category, account and linked-account pickers in transaction
+/// forms — replaces the near-identical
 /// `_CategoryRow` / `_AccountRow` / `_RowSelector` copies that each form
 /// used to ship.
 ///
@@ -37,8 +37,8 @@ class FinancoPickerField extends StatelessWidget {
     final valueColor = isError
         ? colors.error
         : hasValue
-            ? colors.onBackground
-            : colors.onBackgroundLight;
+        ? colors.onBackground
+        : colors.onBackgroundLight;
     return Material(
       color: colors.surfaceVariant,
       borderRadius: BorderRadius.circular(12),

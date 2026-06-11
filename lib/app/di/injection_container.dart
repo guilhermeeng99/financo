@@ -11,7 +11,6 @@ import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
-import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
@@ -47,19 +46,6 @@ import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-// Bills
-import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
-import 'package:financo/features/bills/data/repositories/bill_repository_impl.dart';
-import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
-import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 // Budgets
 import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
 import 'package:financo/features/budgets/data/repositories/budget_repository_impl.dart';
@@ -84,7 +70,6 @@ import 'package:financo/features/categories/domain/usecases/update_category_usec
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/data/repositories/chat_repository_impl.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
-import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
@@ -188,7 +173,6 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => AccountsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => TransactionsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => CategoriesDao(sl<AppDatabase>()))
-    ..registerLazySingleton(() => BillsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => BudgetsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => AssetClassesDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => AssetHoldingsDao(sl<AppDatabase>()))
@@ -198,12 +182,10 @@ Future<void> initDependencies() async {
         accountRemote: sl(),
         transactionRemote: sl(),
         categoryRemote: sl(),
-        billRemote: sl(),
         budgetRemote: sl(),
         accountsDao: sl(),
         transactionsDao: sl(),
         categoriesDao: sl(),
-        billsDao: sl(),
         budgetsDao: sl(),
         usersDao: sl(),
         database: sl(),
@@ -234,9 +216,6 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<CategoryRemoteDataSource>(
       () => CategoryRemoteDataSourceImpl(firestore: sl()),
-    )
-    ..registerLazySingleton<BillRemoteDataSource>(
-      () => BillRemoteDataSourceImpl(firestore: sl()),
     )
     ..registerLazySingleton<BudgetRemoteDataSource>(
       () => BudgetRemoteDataSourceImpl(firestore: sl()),
@@ -287,13 +266,6 @@ Future<void> initDependencies() async {
       () => CategoryRepositoryImpl(
         remoteDataSource: sl(),
         categoriesDao: sl(),
-      ),
-    )
-    ..registerLazySingleton<BillRepository>(
-      () => BillRepositoryImpl(
-        remoteDataSource: sl(),
-        billsDao: sl(),
-        transactionRepository: sl(),
       ),
     )
     ..registerLazySingleton<BudgetRepository>(
@@ -432,15 +404,6 @@ Future<void> initDependencies() async {
         deleteCategory: sl(),
       ),
     )
-    ..registerLazySingleton(() => GetBillsUseCase(sl()))
-    ..registerLazySingleton(() => CreateBillUseCase(sl()))
-    ..registerLazySingleton(() => UpdateBillUseCase(sl()))
-    ..registerLazySingleton(() => UpdateBillScopedUseCase(sl()))
-    ..registerLazySingleton(() => DeleteBillUseCase(sl()))
-    ..registerLazySingleton(() => PayBillUseCase(sl()))
-    ..registerLazySingleton(() => LinkBillToTransactionUseCase(sl()))
-    ..registerLazySingleton(() => RejectBillMatchUseCase(sl()))
-    ..registerLazySingleton(() => ImportBillsCsvUseCase(sl(), sl()))
     ..registerLazySingleton(() => GetBudgetsUseCase(sl()))
     ..registerLazySingleton(() => CreateBudgetUseCase(sl()))
     ..registerLazySingleton(() => UpdateBudgetUseCase(sl()))
@@ -489,17 +452,6 @@ Future<void> initDependencies() async {
       () => TransferChatActionHandler(
         getAccounts: sl(),
         createTransfer: sl(),
-      ),
-    )
-    ..registerLazySingleton(
-      () => BillChatActionHandler(
-        getBills: sl(),
-        createBill: sl(),
-        updateBill: sl(),
-        deleteBill: sl(),
-        payBill: sl(),
-        getAccounts: sl(),
-        getCategories: sl(),
       ),
     )
     ..registerLazySingleton(

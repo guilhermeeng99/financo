@@ -1,15 +1,16 @@
 # Payables / Receivables Refactor Spec
 
-This spec defines the replacement for the current `bills` feature. The goal is
-to make scheduled money movements first-class transactions instead of keeping a
-separate, duplicate bill model.
+This spec documents the replacement of the legacy `bills` feature. Scheduled
+money movements are first-class transactions instead of a separate, duplicate
+bill model.
 
-Current problem:
+Original problem:
 
-- `BillEntity` is an intent that later creates or links a `TransactionEntity`.
-- `TransactionEntity.date` currently rejects future dates.
-- The user has to think in two concepts: bills and transactions.
-- The UI does not match the mental model of "I have a future transaction, but
+- `BillEntity` was an intent that later created or linked a
+  `TransactionEntity`.
+- `TransactionEntity.date` rejected future dates.
+- The user had to think in two concepts: bills and transactions.
+- The UI did not match the mental model of "I have a future transaction, but
   it is not paid/received yet".
 
 Target model:
@@ -59,8 +60,8 @@ The implementation ships the core transaction-based behavior:
   `oneShot`/`monthly` values are accepted only as migration-compatible input.
 - Future dates allowed through `AddTransactionPage` when the transaction is
   pending.
-- `BillsPage` reads transactions and renders `A pagar`, `A receber`, `Pagas`,
-  and `Recebidas`.
+- `PayablesReceivablesPage` reads transactions and renders `A pagar`,
+  `A receber`, `Pagas`, and `Recebidas`.
 - The shell navigation exposes two Dashboard child entries:
   `A pagar e receber` and `Pagas e recebidas`.
 - `A pagar e receber` has two internal tabs: `A pagar` and `A receber`.
@@ -68,17 +69,17 @@ The implementation ships the core transaction-based behavior:
 - Planning no longer hosts a bills/accounts sub-tab.
 - Settlement updates the same transaction.
 - Financial calculations ignore pending transactions.
-- `notifyBillsDue` queries pending transactions.
+- `notifyTransactionsDue` queries pending transactions.
 - Legacy `bills` production data has been migrated to `transactions`.
 - Fixed recurrence is materialized as a rolling 12-month window, filled
   opportunistically when Dashboard/Transactions load.
 - Installments are created as multiple pending/paid transaction rows in one
   batch.
-
-Deferred:
-
-- Full `[BILL_ACTION]` chat migration.
-- Removing or archiving the legacy bills domain after rollback risk is closed.
+- AI chat no longer has a bill action; future payables and receivables are
+  created as regular transaction actions with future dates.
+- The legacy Bills domain/data/repository/bloc/form code was removed from the
+  app on 2026-06-10. Only the `/bills` route alias remains for backwards
+  compatibility.
 
 ## Entity Contract
 
@@ -241,12 +242,11 @@ Future<Either<Failure, List<TransactionEntity>>> updateTransactions(
 Future<Either<Failure, void>> deleteTransactions(List<String> ids);
 ```
 
-`BillsPage` currently builds the payables/receivables overview directly from
-`TransactionRepository.getTransactions`; there is no separate
+The transaction-backed payables/receivables page currently builds its overview
+directly from `TransactionRepository.getTransactions`; there is no separate
 `GetPayablesReceivablesUseCase` in V1.
 
-`BillRepository` is legacy-only after migration and should not be used by new UI
-flows.
+The legacy `BillRepository` and bill-only use cases have been removed.
 
 ## Firestore
 
@@ -442,7 +442,8 @@ from financial totals and running balances.
 
 ## Notifications
 
-Replace `notifyBillsDue` with a transaction-based function.
+`notifyBillsDue` was deleted from Firebase on 2026-06-10 and replaced by
+`notifyTransactionsDue`.
 
 Query:
 
@@ -463,8 +464,8 @@ FCM data:
 
 ```json
 {
-  "type": "payables_receivables_due",
-  "route": "/bills",
+  "type": "transactions_due",
+  "route": "/payables-receivables",
   "userId": "...",
   "count": "3",
   "title": "...",
@@ -472,12 +473,15 @@ FCM data:
 }
 ```
 
-Route may stay `/bills` as a compatibility alias, but the visible page should be
-the new payables/receivables UI.
+The Flutter client also drops already-queued legacy pushes with
+`type == "bills_due"` or `route == "/bills"` so old Bills reminders do not
+surface after the migration.
 
 ## AI Chat
 
-The AI should stop emitting `[BILL_ACTION]` for new flows.
+Future payable/receivable requests are represented as normal
+`[TRANSACTION_DATA]` blocks with a future `date`; the app stores them as
+pending transactions. There is no separate bill/reminder action.
 
 Transaction actions gain:
 
@@ -495,14 +499,8 @@ Transaction actions gain:
 }
 ```
 
-For compatibility, the client may keep parsing `[BILL_ACTION]` temporarily and
-translate it into scheduled transaction creation.
-
-AI context should include:
-
-- overdue pending transactions
-- due-today pending transactions
-- upcoming pending transactions for the current month
+The backend extractor and Flutter chat handler registry only support
+transaction-backed scheduled movements.
 
 ## Migration Plan
 
@@ -526,9 +524,8 @@ AI context should include:
 
 ### Phase 3 - Payables / Receivables UI
 
-1. Remodel `BillsPage` into `PayablesReceivablesPage` or keep the filename
-   temporarily but change the contract.
-2. Replace `BillsBloc` data source with transaction queries.
+1. Keep the page contract transaction-backed in `PayablesReceivablesPage`.
+2. Query transactions directly instead of using the removed legacy `BillsBloc`.
 3. Implement tabs:
    - `A pagar`
    - `A receber`
@@ -551,12 +548,17 @@ AI context should include:
 
 ### Phase 5 - Notifications
 
-1. Replace `functions/src/bills/notifyBillsDue.ts` query with pending
-   transactions query.
-2. Update notification type and body copy.
-3. Keep client-side cross-account filtering unchanged.
-4. Route taps to the new page through `/bills` alias.
-5. Add backend unit tests for message grouping.
+Status: completed on 2026-06-10.
+
+1. `functions/src/bills/notifyBillsDue.ts` was replaced with
+   `functions/src/transactions/notifyTransactionsDue.ts`.
+2. The deployed `notifyBillsDue` function was deleted from Firebase project
+   `financo-app-2026`.
+3. The new notification type is `transactions_due`.
+4. Notification taps route to `/payables-receivables`.
+5. Client-side cross-account filtering remains unchanged.
+6. Client-side legacy push filtering drops `bills_due` and `/bills` payloads.
+7. Backend unit tests cover message grouping.
 
 ### Phase 6 - Legacy Bills Migration
 
@@ -578,11 +580,21 @@ Status: completed on 2026-06-10.
 
 ### Phase 7 - Cleanup
 
-1. Remove deprecated bill-only use cases and match suggestion flow if no longer
-   needed.
-2. Update README and feature docs.
-3. Update CSV samples and import docs.
-4. Update AI prompt/actions to prefer scheduled transactions.
+Status: completed on 2026-06-10.
+
+1. Removed deprecated bill-only entities, models, repository, use cases,
+   form cubit, bloc, match suggestion flow, CSV import UI, and navigation
+   badge.
+2. Removed `AddBillPage`, `/bill/add`, and `/bill/edit`; users create
+   scheduled payables/receivables through `AddTransactionPage`.
+3. Removed `BillRepository`, `BillRemoteDataSource`, and `BillsDao` from DI.
+4. Removed `local_bills` from the Drift schema. App startup/migration drops the
+   old local table if it still exists.
+5. Removed `bills` from startup sync so Firestore legacy documents no longer
+   repopulate local cache.
+6. Removed `BillChatActionHandler` and obsolete bill-handler i18n strings.
+7. AI prompt/actions now use scheduled transactions and no longer support a
+   separate bill action.
 
 ## Testing Checklist
 

@@ -1,7 +1,7 @@
 # Categories Feature Spec
 
 > **Status**: Active
-> **Last updated**: 2026-04-17
+> **Last updated**: 2026-06-10
 > **Coverage**: Entity, Business Rules, Repository, State Machines, Edge Cases
 
 ## 1. Entity Contract
@@ -39,7 +39,7 @@ the category.
 
 ## 2. Business Rules
 
-1. **All categories are fully editable**: name, icon, and color can be changed on any category.
+1. **Editable fields**: root categories can edit name, icon, color, bucket/50-30-20 flag when applicable, and parent assignment. Subcategories can edit name and parent assignment; icon and color are inherited from the parent in app surfaces.
 2. **All categories are deletable**.
 3. **Type is immutable after creation**: a category's type (income/expense) cannot be changed once created. The type selector is disabled in edit mode.
 4. **Name must not be empty**: form validation rejects empty names.
@@ -65,6 +65,7 @@ the category.
 20. **`bucket` is set only on root categories — subcategories inherit from the parent**. The user classifies once, at the root. Storing a separate bucket on each child would force re-classification on every subcategory and create silent drift (a "Mercado" parent flagged as `needs` while a forgotten "Delivery" child stayed as `null`). At write time, subcategory rows have `bucket == null`; the 50/30/20 calculation walks up to the parent to resolve the effective bucket. If the parent itself is missing (orphan parent), the transaction counts as unclassified.
 21. **`bucket` is only meaningful when `type == expense` AND `parentId == null`**. The form hides the bucket selector for income categories and for subcategories. Toggling type to income clears any previously chosen bucket; picking a parent also clears it.
 22. **`countsIn50_30_20` (bool, default `true`)** — only meaningful on **root income categories**. Drives whether transactions on this category feed the 50/30/20 base income (see [fifty_thirty_twenty.md](fifty_thirty_twenty.md)). The form exposes a toggle when `type == income` AND `parentId == null`; set to `false` to exclude one-off receipts (reimbursements, gifts, sold goods) that would otherwise distort the monthly breakdown. Sub-income categories **inherit the flag from the parent** — same rationale as rule 20 (single classification point at the root, no per-child drift). Expense categories ignore the field entirely. Legacy data without the field falls back to `true` so prior behaviour is preserved.
+23. **Subcategory appearance**: Subcategories render with the parent's icon and color everywhere categories are shown (category list, transaction pickers, and selected category fields). This is a display-level inheritance rule; stored child icon/color values are used only as a fallback when the parent cannot be resolved.
 
 ## 3. Repository Contract
 
@@ -147,9 +148,10 @@ Actions:
                               (sets bucket to null when type becomes income)
   updateIcon(int)     → emits state with new icon
   updateColor(int)    → emits state with new color
-  updateParentId(String?) → emits state with new parentId (create mode only)
+  updateParentId(String?, parent?) → emits state with new parentId
                             (sets bucket to null when a parent is chosen —
-                             subcategories inherit per rule 20)
+                             subcategories inherit per rule 20; when parent is
+                             provided, copies parent icon/color per rule 23)
   updateBucket(CategoryBucket?) → emits state with new bucket
                                    (input is silently ignored when type == income
                                     OR parentId != null — see rule 21)

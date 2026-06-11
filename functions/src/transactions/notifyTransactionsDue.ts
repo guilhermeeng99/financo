@@ -155,7 +155,7 @@ const cleanupInvalidTokens = async (
   await Promise.all(toDelete);
 };
 
-export const notifyBillsDue = onSchedule(
+export const notifyTransactionsDue = onSchedule(
   {
     schedule: 'every day 09:00',
     timeZone: 'America/Sao_Paulo',
@@ -166,7 +166,7 @@ export const notifyBillsDue = onSchedule(
   async () => {
     const allTransactions = await fetchDueTransactions();
     if (allTransactions.length === 0) {
-      logger.info('notifyBillsDue: no due/overdue transactions');
+      logger.info('notifyTransactionsDue: no due/overdue transactions');
       return;
     }
 
@@ -191,9 +191,9 @@ export const notifyBillsDue = onSchedule(
         const response = await messaging.sendEachForMulticast({
           tokens,
           data: {
-            route: '/bills',
+            route: '/payables-receivables',
             count: String(transactions.length),
-            type: 'bills_due',
+            type: 'transactions_due',
             userId,
             title,
             body,
@@ -224,7 +224,7 @@ export const notifyBillsDue = onSchedule(
       }),
     );
 
-    logger.info('notifyBillsDue completed', {
+    logger.info('notifyTransactionsDue completed', {
       users: byUser.size,
       transactions: allTransactions.length,
       sent: totalSent,

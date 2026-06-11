@@ -2,7 +2,6 @@ import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
-import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
@@ -26,17 +25,6 @@ import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
-import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
-import 'package:financo/features/bills/domain/repositories/bill_repository.dart';
-import 'package:financo/features/bills/domain/usecases/create_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/delete_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/get_bills_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/import_bills_csv_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/link_bill_to_transaction_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/pay_bill_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/reject_bill_match_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_scoped_usecase.dart';
-import 'package:financo/features/bills/domain/usecases/update_bill_usecase.dart';
 import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
 import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
@@ -54,7 +42,6 @@ import 'package:financo/features/categories/domain/usecases/import_categories_cs
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
-import 'package:financo/features/chat/domain/action_handlers/bill_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
@@ -146,34 +133,6 @@ class MockDeleteAccountUseCase extends Mock implements DeleteAccountUseCase {}
 
 class MockImportAccountsCsvUseCase extends Mock
     implements ImportAccountsCsvUseCase {}
-
-// ── Bills ──
-class MockBillRepository extends Mock implements BillRepository {}
-
-class MockBillRemoteDataSource extends Mock implements BillRemoteDataSource {}
-
-class MockBillsDao extends Mock implements BillsDao {}
-
-class MockGetBillsUseCase extends Mock implements GetBillsUseCase {}
-
-class MockCreateBillUseCase extends Mock implements CreateBillUseCase {}
-
-class MockUpdateBillUseCase extends Mock implements UpdateBillUseCase {}
-
-class MockUpdateBillScopedUseCase extends Mock
-    implements UpdateBillScopedUseCase {}
-
-class MockDeleteBillUseCase extends Mock implements DeleteBillUseCase {}
-
-class MockPayBillUseCase extends Mock implements PayBillUseCase {}
-
-class MockLinkBillToTransactionUseCase extends Mock
-    implements LinkBillToTransactionUseCase {}
-
-class MockRejectBillMatchUseCase extends Mock
-    implements RejectBillMatchUseCase {}
-
-class MockImportBillsCsvUseCase extends Mock implements ImportBillsCsvUseCase {}
 
 // ── Budgets ──
 class MockBudgetRepository extends Mock implements BudgetRepository {}
@@ -306,8 +265,6 @@ class MockTransactionChatActionHandler extends Mock
 
 class MockTransferChatActionHandler extends Mock
     implements TransferChatActionHandler {}
-
-class MockBillChatActionHandler extends Mock implements BillChatActionHandler {}
 
 class MockBudgetChatActionHandler extends Mock
     implements BudgetChatActionHandler {}

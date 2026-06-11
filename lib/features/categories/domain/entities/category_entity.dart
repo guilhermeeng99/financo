@@ -86,6 +86,32 @@ class CategoryEntity extends Equatable {
 }
 
 extension CategoryEntityDisplay on CategoryEntity {
+  /// Resolves the icon and color every category surface should render.
+  ///
+  /// Subcategories inherit their parent appearance so category families
+  /// stay visually consistent even if legacy child rows still carry
+  /// different stored values. [allCategories] is the resolved list used
+  /// by the current screen; orphaned children fall back to their own
+  /// stored appearance.
+  ///
+  /// Example:
+  /// ```dart
+  /// final appearance = child.displayAppearance(categories);
+  /// Icon(materialIconFor(appearance.icon), color: Color(appearance.color));
+  /// ```
+  ({int icon, int color}) displayAppearance(
+    Iterable<CategoryEntity> allCategories,
+  ) {
+    final parentId = this.parentId;
+    if (parentId == null) return (icon: icon, color: color);
+    for (final category in allCategories) {
+      if (category.id == parentId) {
+        return (icon: category.icon, color: category.color);
+      }
+    }
+    return (icon: icon, color: color);
+  }
+
   /// Human-readable path to this category. Returns `name` for root
   /// categories and `Parent › Child` for subcategories — the project's
   /// standard breadcrumb format.

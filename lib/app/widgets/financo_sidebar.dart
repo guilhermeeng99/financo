@@ -34,7 +34,7 @@ class FinancoSidebar extends StatefulWidget {
 }
 
 class _FinancoSidebarState extends State<FinancoSidebar> {
-  bool _expanded = false;
+  bool _expanded = true;
 
   void _toggle() {
     unawaited(HapticFeedback.selectionClick());
@@ -76,7 +76,11 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _BrandRow(expanded: _expanded, onToggle: _toggle),
+              _BrandRow(
+                expanded: _expanded,
+                onNavigateHome: () => context.go(AppRoutes.dashboard),
+                onToggle: _toggle,
+              ),
               const SizedBox(height: 24),
               _DateScope(
                 year: dateFilter.year,
@@ -126,9 +130,8 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 expanded: _expanded,
                 label: t.nav.planning,
                 onTap: () => context.go(AppRoutes.planning),
-                // Planning tab stays active for every sub-tab and any
-                // legacy direct deep-link — bills moved into the shell
-                // (see docs/specs/investments.md §10) so /bills sits here too.
+                // Planning stays active for its own sub-tabs only; payables
+                // now live under Dashboard.
                 isActive:
                     location.startsWith(AppRoutes.planning) ||
                     location.startsWith(AppRoutes.budgets) ||
@@ -157,35 +160,118 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
 }
 
 class _BrandRow extends StatelessWidget {
-  const _BrandRow({required this.expanded, required this.onToggle});
+  const _BrandRow({
+    required this.expanded,
+    required this.onNavigateHome,
+    required this.onToggle,
+  });
 
   final bool expanded;
+  final VoidCallback onNavigateHome;
   final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     return SizedBox(
-      height: 44,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 52,
-            child: Center(child: _BrandMark(onTap: onToggle)),
-          ),
-          if (expanded)
-            Expanded(
-              child: Text(
-                AppConstants.appName,
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: colors.onBackground,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+      height: expanded ? 44 : 76,
+      child: expanded
+          ? Row(
+              children: [
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      onTap: () {
+                        unawaited(HapticFeedback.selectionClick());
+                        onNavigateHome();
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Row(
+                        children: [
+                          const SizedBox(
+                            width: 52,
+                            child: Center(child: _BrandMark()),
+                          ),
+                          Expanded(
+                            child: Text(
+                              AppConstants.appName,
+                              style: context.textTheme.titleMedium?.copyWith(
+                                color: colors.onBackground,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
+                _SidebarToggleButton(expanded: expanded, onTap: onToggle),
+              ],
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _BrandMark(
+                  onTap: () {
+                    unawaited(HapticFeedback.selectionClick());
+                    onNavigateHome();
+                  },
+                ),
+                const SizedBox(height: 8),
+                _SidebarToggleButton(
+                  expanded: expanded,
+                  onTap: onToggle,
+                  compact: true,
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _SidebarToggleButton extends StatelessWidget {
+  const _SidebarToggleButton({
+    required this.expanded,
+    required this.onTap,
+    this.compact = false,
+  });
+
+  final bool expanded;
+  final VoidCallback onTap;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final width = compact ? 36.0 : 32.0;
+    final height = compact ? 24.0 : 32.0;
+    return Tooltip(
+      message: expanded ? t.nav.collapseSidebar : t.nav.expandSidebar,
+      child: Material(
+        color: colors.surfaceVariant.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Center(
+              child: FaIcon(
+                expanded
+                    ? FontAwesomeIcons.chevronLeft
+                    : FontAwesomeIcons.chevronRight,
+                size: compact ? 10 : 12,
+                color: colors.onBackgroundLight,
               ),
             ),
-        ],
+          ),
+        ),
       ),
     );
   }

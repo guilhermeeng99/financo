@@ -1,13 +1,11 @@
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
-import 'package:financo/core/database/daos/bills_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
-import 'package:financo/features/bills/data/datasources/bill_remote_datasource.dart';
 import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
 import 'package:financo/features/categories/data/datasources/category_remote_datasource.dart';
 import 'package:financo/features/transactions/data/datasources/transaction_remote_datasource.dart';
@@ -20,24 +18,20 @@ class SyncService {
     required AccountRemoteDataSource accountRemote,
     required TransactionRemoteDataSource transactionRemote,
     required CategoryRemoteDataSource categoryRemote,
-    required BillRemoteDataSource billRemote,
     required BudgetRemoteDataSource budgetRemote,
     required AccountsDao accountsDao,
     required TransactionsDao transactionsDao,
     required CategoriesDao categoriesDao,
-    required BillsDao billsDao,
     required BudgetsDao budgetsDao,
     required UsersDao usersDao,
     required AppDatabase database,
   }) : _accountRemote = accountRemote,
        _transactionRemote = transactionRemote,
        _categoryRemote = categoryRemote,
-       _billRemote = billRemote,
        _budgetRemote = budgetRemote,
        _accountsDao = accountsDao,
        _transactionsDao = transactionsDao,
        _categoriesDao = categoriesDao,
-       _billsDao = billsDao,
        _budgetsDao = budgetsDao,
        _usersDao = usersDao,
        _database = database;
@@ -45,12 +39,10 @@ class SyncService {
   final AccountRemoteDataSource _accountRemote;
   final TransactionRemoteDataSource _transactionRemote;
   final CategoryRemoteDataSource _categoryRemote;
-  final BillRemoteDataSource _billRemote;
   final BudgetRemoteDataSource _budgetRemote;
   final AccountsDao _accountsDao;
   final TransactionsDao _transactionsDao;
   final CategoriesDao _categoriesDao;
-  final BillsDao _billsDao;
   final BudgetsDao _budgetsDao;
   final UsersDao _usersDao;
   final AppDatabase _database;
@@ -73,7 +65,6 @@ class SyncService {
     final transactions = await _transactionRemote.getTransactions(
       userId: userId,
     );
-    final bills = await _billRemote.getBills(userId: userId);
     final budgets = await _budgetRemote.getBudgets(userId: userId);
 
     // Phase 2 — persist to Drift (local, fast).
@@ -87,9 +78,6 @@ class SyncService {
     }
     if (transactions.isNotEmpty) {
       await _transactionsDao.insertAllTransactions(transactions);
-    }
-    if (bills.isNotEmpty) {
-      await _billsDao.insertAllBills(bills);
     }
     if (budgets.isNotEmpty) {
       await _budgetsDao.insertAllBudgets(budgets);

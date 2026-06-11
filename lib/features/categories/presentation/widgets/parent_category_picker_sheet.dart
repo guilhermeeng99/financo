@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Bottom sheet that lets the user pick a parent category (or "None").
-/// Replaces the dropdown — same shape as the bills category picker so the
+/// Replaces the dropdown — same shape as the shared category picker so the
 /// app stays consistent.
 ///
 /// Returns:
@@ -258,9 +258,7 @@ class _CategoryRow extends StatelessWidget {
                   category.name,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: colors.onBackground,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

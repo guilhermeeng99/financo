@@ -51,11 +51,11 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	@override late final _Translations$accounts$pt_BR accounts = _Translations$accounts$pt_BR._(_root);
 	@override late final _Translations$categories$pt_BR categories = _Translations$categories$pt_BR._(_root);
 	@override late final _Translations$chat$pt_BR chat = _Translations$chat$pt_BR._(_root);
-	@override late final _Translations$bills$pt_BR bills = _Translations$bills$pt_BR._(_root);
 	@override late final _Translations$budgets$pt_BR budgets = _Translations$budgets$pt_BR._(_root);
 	@override late final _Translations$profile$pt_BR profile = _Translations$profile$pt_BR._(_root);
 	@override late final _Translations$startup$pt_BR startup = _Translations$startup$pt_BR._(_root);
 	@override late final _Translations$investments$pt_BR investments = _Translations$investments$pt_BR._(_root);
+	@override late final _Translations$payablesReceivables$pt_BR payablesReceivables = _Translations$payablesReceivables$pt_BR._(_root);
 }
 
 // Path: general
@@ -207,6 +207,8 @@ class _Translations$nav$pt_BR implements Translations$nav$en {
 	@override String get paidAccounts => 'Contas pagas';
 	@override String get receivedAccounts => 'Contas recebidas';
 	@override String get investments => 'Investimentos';
+	@override String get collapseSidebar => 'Recolher menu';
+	@override String get expandSidebar => 'Expandir menu';
 }
 
 // Path: dashboard
@@ -280,7 +282,6 @@ class _Translations$fiftyThirtyTwenty$pt_BR implements Translations$fiftyThirtyT
 	@override String get navLabel => 'Planejamento';
 	@override String get subTabBudgets => 'Orçamentos';
 	@override String get subTabFiftyThirtyTwenty => '50/30/20';
-	@override String get subTabBills => 'Contas';
 }
 
 // Path: transactions
@@ -565,104 +566,12 @@ class _Translations$chat$pt_BR implements Translations$chat$en {
 	@override String get tryAsking => 'Experimente perguntar';
 	@override String get suggestion1 => 'Gastei R\$ 30 na padaria';
 	@override String get suggestion2 => 'Quanto tenho na conta Nubank?';
-	@override String get suggestion3 => 'Mostrar minhas contas atrasadas';
+	@override String get suggestion3 => 'Mostrar contas a pagar atrasadas';
 	@override String get suggestion4 => 'Criar uma categoria chamada Lazer';
 	@override late final _Translations$chat$action$pt_BR action = _Translations$chat$action$pt_BR._(_root);
 	@override late final _Translations$chat$audio$pt_BR audio = _Translations$chat$audio$pt_BR._(_root);
 	@override late final _Translations$chat$image$pt_BR image = _Translations$chat$image$pt_BR._(_root);
 	@override late final _Translations$chat$handlers$pt_BR handlers = _Translations$chat$handlers$pt_BR._(_root);
-}
-
-// Path: bills
-class _Translations$bills$pt_BR implements Translations$bills$en {
-	_Translations$bills$pt_BR._(this._root);
-
-	final TranslationsPtBr _root; // ignore: unused_field
-
-	// Translations
-	@override String get title => 'Contas a pagar e receber';
-	@override String get empty => 'Nenhuma movimentação encontrada neste período.';
-	@override String get addBill => 'Nova conta';
-	@override String get editBill => 'Editar conta';
-	@override String get description => 'Descrição';
-	@override String get descriptionHint => 'ex.: Energia';
-	@override String get amount => 'Valor';
-	@override String get amountLabel => 'Valor';
-	@override String get dueDate => 'Vencimento';
-	@override String get recurrence => 'Recorrência';
-	@override String get oneShot => 'Única';
-	@override String get monthly => 'Mensal';
-	@override String get type => 'Tipo';
-	@override String get typePayable => 'A pagar';
-	@override String get typeReceivable => 'A receber';
-	@override String get filterAll => 'Todas';
-	@override String get category => 'Categoria';
-	@override String get categoryRequired => 'Selecione uma categoria';
-	@override String get notes => 'Observações (opcional)';
-	@override String get notesHint => 'Detalhes adicionais...';
-	@override String get markAsPaid => 'Marcar como paga';
-	@override String get markAsReceived => 'Marcar como recebida';
-	@override String get paid => 'Paga';
-	@override String get received => 'Recebida';
-	@override String get paidPlural => 'Pagas';
-	@override String get receivedPlural => 'Recebidas';
-	@override String get pending => 'Pendente';
-	@override String get scheduled => 'Agendada';
-	@override String get confirmed => 'Confirmadas';
-	@override String get reconciled => 'Conciliadas';
-	@override String get overdue => 'Atrasada';
-	@override String get dueToday => 'Vence hoje';
-	@override String get upcoming => 'Próximas';
-	@override String get overdueGroup => 'Atrasadas';
-	@override String get todayGroup => 'Hoje';
-	@override String get upcomingGroup => 'Próximas';
-	@override String get paidGroup => 'Quitadas';
-	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta conta?';
-	@override String get billCreated => 'Conta criada';
-	@override String get billUpdated => 'Conta atualizada';
-	@override String get billDeleted => 'Conta excluída';
-	@override String get billPaid => 'Conta paga — transação criada';
-	@override String get billReceived => 'Pagamento recebido — transação criada';
-	@override String get transactionPaid => 'Conta marcada como paga';
-	@override String get transactionReceived => 'Recebimento marcado como recebido';
-	@override String get nextOccurrenceCreated => 'Conta do próximo mês agendada';
-	@override String get alreadyPaid => 'Esta conta já está quitada';
-	@override String get cannotEditPaid => 'Contas quitadas não podem ser editadas';
-	@override String get payDialogTitle => 'Pagar conta';
-	@override String get receiveDialogTitle => 'Registrar pagamento recebido';
-	@override String get selectAccount => 'Conta';
-	@override String get selectCategory => 'Categoria';
-	@override String daysOverdue({required Object days}) => '${days} dias em atraso';
-	@override String dueInDays({required Object days}) => 'em ${days} dias';
-	@override String get dueTomorrow => 'amanhã';
-	@override String get noExpenseCategory => 'Crie ao menos uma categoria de despesa primeiro.';
-	@override String get noIncomeCategory => 'Crie ao menos uma categoria de receita primeiro.';
-	@override String get summaryTitle => 'Este mês';
-	@override String get summaryAllCaughtUp => 'Nada vencendo — você está em dia';
-	@override String overdueChip({required Object count}) => '${count} em atraso';
-	@override String pendingCount({required Object count}) => '${count} pendentes';
-	@override String get emptyTitle => 'Nenhuma movimentação ainda';
-	@override String get addFirst => 'Adicionar primeira conta';
-	@override String get formDetails => 'Detalhes';
-	@override String get formClassification => 'Classificação';
-	@override String get pickCategory => 'Escolha uma categoria';
-	@override late final _Translations$bills$notification$pt_BR notification = _Translations$bills$notification$pt_BR._(_root);
-	@override late final _Translations$bills$match$pt_BR match = _Translations$bills$match$pt_BR._(_root);
-	@override String get virtualBlocked => 'Pague a ocorrência atual primeiro';
-	@override String get preview => 'Pré-visualização';
-	@override String get editScopeTitle => 'Aplicar a quais ocorrências?';
-	@override String get editScopeDescription => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).';
-	@override String get editScopeOnlyThis => 'Apenas esta';
-	@override String get editScopeAlsoSubsequents => 'Esta e as subsequentes';
-	@override String get importCsv => 'Importar contas';
-	@override String get importCsvIntroTitle => 'Importar contas de CSV';
-	@override String get importCsvIntroBody => 'Seu arquivo deve seguir o formato esperado (colunas Tipo, Descrição, Valor, Vencimento, Status, Recorrência, Categoria, Observações — onde Tipo é A pagar/A receber, Status é Pendente/Paga e Recorrência é Mensal/Única). Baixe o exemplo para ver como funciona.';
-	@override String get importCsvDownloadExample => 'Baixar exemplo';
-	@override String get importCsvSelectFile => 'Selecionar arquivo';
-	@override String get importCsvExampleDownloaded => 'Exemplo salvo.';
-	@override String get importCsvExampleFailed => 'Não foi possível salvar o arquivo de exemplo.';
-	@override String get importCsvErrorTitle => 'Não foi possível importar o CSV';
-	@override String importCsvSuccess({required Object imported, required Object skipped}) => 'Importadas ${imported} contas. Ignoradas ${skipped} (categoria desconhecida).';
 }
 
 // Path: budgets
@@ -726,7 +635,6 @@ class _Translations$profile$pt_BR implements Translations$profile$en {
 	@override String get editProfile => 'Editar perfil';
 	@override String get accounts => 'Contas';
 	@override String get categories => 'Categorias';
-	@override String get bills => 'Contas a pagar/receber';
 	@override String get theme => 'Tema';
 	@override String get themeLight => 'Claro';
 	@override String get themeDark => 'Escuro';
@@ -885,6 +793,40 @@ class _Translations$investments$pt_BR implements Translations$investments$en {
 	@override String targetSumExceedsSub({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.';
 }
 
+// Path: payablesReceivables
+class _Translations$payablesReceivables$pt_BR implements Translations$payablesReceivables$en {
+	_Translations$payablesReceivables$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Contas a pagar e receber';
+	@override String get empty => 'Nenhuma movimentação encontrada neste período.';
+	@override String get typePayable => 'A pagar';
+	@override String get typeReceivable => 'A receber';
+	@override String get markAsPaid => 'Marcar como paga';
+	@override String get markAsReceived => 'Marcar como recebida';
+	@override String get paid => 'Paga';
+	@override String get received => 'Recebida';
+	@override String get paidPlural => 'Pagas';
+	@override String get receivedPlural => 'Recebidas';
+	@override String get scheduled => 'Agendada';
+	@override String get overdue => 'Atrasada';
+	@override String get dueToday => 'Vence hoje';
+	@override String get overdueGroup => 'Atrasadas';
+	@override String get todayGroup => 'Hoje';
+	@override String get upcomingGroup => 'Próximas';
+	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta transação?';
+	@override String get transactionPaid => 'Transação marcada como paga';
+	@override String get transactionReceived => 'Recebimento marcado como recebido';
+	@override String get noExpenseCategory => 'Crie ao menos uma categoria de despesa primeiro.';
+	@override String get noIncomeCategory => 'Crie ao menos uma categoria de receita primeiro.';
+	@override String get emptyTitle => 'Nenhuma movimentação ainda';
+	@override String get formDetails => 'Detalhes';
+	@override String get formClassification => 'Classificação';
+	@override String get pickCategory => 'Escolha uma categoria';
+}
+
 // Path: chat.action
 class _Translations$chat$action$pt_BR implements Translations$chat$action$en {
 	_Translations$chat$action$pt_BR._(this._root);
@@ -901,10 +843,6 @@ class _Translations$chat$action$pt_BR implements Translations$chat$action$en {
 	@override String get accountDelete => 'Excluir conta';
 	@override String get categoryCreate => 'Criar categoria';
 	@override String get categoryDelete => 'Excluir categoria';
-	@override String get billCreate => 'Agendar conta';
-	@override String get billUpdate => 'Atualizar conta';
-	@override String get billMarkPaid => 'Marcar como paga';
-	@override String get billDelete => 'Excluir conta';
 	@override String get budgetCreate => 'Criar orçamento';
 	@override String get budgetUpdate => 'Atualizar orçamento';
 	@override String get budgetDelete => 'Excluir orçamento';
@@ -974,7 +912,6 @@ class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en
 	@override String get unknownAction => 'Ação desconhecida.';
 	@override String get unknownAccountAction => 'Ação de conta desconhecida.';
 	@override String get unknownCategoryAction => 'Ação de categoria desconhecida.';
-	@override String get unknownBillAction => 'Ação de boleto desconhecida.';
 	@override String get unknownBudgetAction => 'Ação de orçamento desconhecida.';
 	@override String get invalidAmount => 'Valor inválido.';
 	@override String accountCreateFailed({required Object error}) => 'Falha ao criar conta: ${error}';
@@ -1004,24 +941,6 @@ class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en
 	@override String get transferUnresolvedDestination => 'Não foi possível resolver a conta de destino.';
 	@override String transferCreateFailed({required Object error}) => 'Falha ao criar transferência: ${error}';
 	@override String transferCreated({required Object amount, required Object from, required Object to}) => 'Transferência de ${amount} de "${from}" para "${to}" criada com sucesso!';
-	@override String get billDescriptionRequired => 'Descrição do boleto é obrigatória.';
-	@override String get billAmountInvalid => 'Valor do boleto inválido.';
-	@override String billCreateFailed({required Object error}) => 'Falha ao criar boleto: ${error}';
-	@override String billCreated({required Object description, required Object amount, required Object dueDate}) => 'Boleto "${description}" de ${amount} agendado para ${dueDate}.';
-	@override String get billIdRequired => 'Id do boleto é obrigatório.';
-	@override String get billNotFound => 'Boleto não encontrado.';
-	@override String get billCannotEditPaid => 'O boleto já foi pago e não pode ser editado.';
-	@override String billUpdateFailed({required Object error}) => 'Falha ao atualizar boleto: ${error}';
-	@override String billUpdated({required Object description}) => 'Boleto "${description}" atualizado.';
-	@override String get billAlreadyPaid => 'O boleto já está pago.';
-	@override String get billNoCheckingAccount => 'Nenhuma conta corrente disponível para registrar o pagamento.';
-	@override String get billNoIncomeCategory => 'Nenhuma categoria de receita disponível para registrar o pagamento.';
-	@override String get billNoExpenseCategory => 'Nenhuma categoria de despesa disponível para registrar o pagamento.';
-	@override String billPayFailed({required Object error}) => 'Falha ao marcar boleto como pago: ${error}';
-	@override String billPaid({required Object description}) => 'Boleto "${description}" pago — transação criada.';
-	@override String billPaidWithNext({required Object description, required Object dueDate}) => 'Boleto "${description}" pago — transação criada. Próxima ocorrência agendada para ${dueDate}.';
-	@override String billDeleteFailed({required Object error}) => 'Falha ao excluir boleto: ${error}';
-	@override String get billDeleted => 'Boleto excluído.';
 	@override String get budgetCategoryRequired => 'Categoria é obrigatória para orçamento.';
 	@override String budgetCategoryNotFound({required Object name}) => 'Categoria "${name}" não encontrada.';
 	@override String budgetCategoryNotFoundCreate({required Object name}) => 'Categoria "${name}" não existe. Crie-a primeiro.';
@@ -1042,43 +961,6 @@ class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en
 	@override String get resolveAccountMissing => 'Qual conta devo usar? Me diga o nome da conta.';
 	@override String resolveAccountNotFound({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.';
 	@override String resolveAccountMultiple({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.';
-}
-
-// Path: bills.notification
-class _Translations$bills$notification$pt_BR implements Translations$bills$notification$en {
-	_Translations$bills$notification$pt_BR._(this._root);
-
-	final TranslationsPtBr _root; // ignore: unused_field
-
-	// Translations
-	@override String title({required Object count}) => 'Você tem ${count} conta(s) para pagar';
-	@override String bodyDueToday({required Object description, required Object amount}) => '${description} (${amount}) vence hoje';
-	@override String bodyOverdue({required Object description, required Object amount}) => '${description} (${amount}) está atrasada';
-}
-
-// Path: bills.match
-class _Translations$bills$match$pt_BR implements Translations$bills$match$en {
-	_Translations$bills$match$pt_BR._(this._root);
-
-	final TranslationsPtBr _root; // ignore: unused_field
-
-	// Translations
-	@override String bannerTitle({required Object count}) => '${count} possível(is) pagamento(s) detectado(s)';
-	@override String get bannerSubtitle => 'Toque para confirmar se alguma transação existente quita uma conta pendente';
-	@override String get sheetTitle => 'Confirmar pagamentos';
-	@override String get sheetIntro => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.';
-	@override String get candidateQuestion => 'Esta transação foi esta conta?';
-	@override String get yesItWas => 'Sim';
-	@override String get notThisOne => 'Não';
-	@override String get matchAccepted => 'Conta marcada como quitada';
-	@override String get matchRejected => 'Entendido — não vamos sugerir esta de novo';
-	@override String get billLabel => 'Conta';
-	@override String get transactionLabel => 'Transação';
-	@override String get fieldDescription => 'Descrição';
-	@override String get fieldCategory => 'Categoria';
-	@override String get fieldAmount => 'Valor';
-	@override String get fieldDate => 'Data';
-	@override String get fieldEmpty => '—';
 }
 
 /// The flat map containing all translations for locale <pt-BR>.
@@ -1168,6 +1050,8 @@ extension on TranslationsPtBr {
 			'nav.paidAccounts' => 'Contas pagas',
 			'nav.receivedAccounts' => 'Contas recebidas',
 			'nav.investments' => 'Investimentos',
+			'nav.collapseSidebar' => 'Recolher menu',
+			'nav.expandSidebar' => 'Expandir menu',
 			'dashboard.title' => 'Início',
 			'dashboard.totalBalance' => 'Saldo total',
 			'dashboard.income' => 'Receitas',
@@ -1223,7 +1107,6 @@ extension on TranslationsPtBr {
 			'fiftyThirtyTwenty.navLabel' => 'Planejamento',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Orçamentos',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
-			'fiftyThirtyTwenty.subTabBills' => 'Contas',
 			'transactions.title' => 'Transações',
 			'transactions.empty' => 'Nenhuma transação. Adicione sua primeira para começar.',
 			'transactions.addTransaction' => 'Nova transação',
@@ -1472,7 +1355,7 @@ extension on TranslationsPtBr {
 			'chat.tryAsking' => 'Experimente perguntar',
 			'chat.suggestion1' => 'Gastei R\$ 30 na padaria',
 			'chat.suggestion2' => 'Quanto tenho na conta Nubank?',
-			'chat.suggestion3' => 'Mostrar minhas contas atrasadas',
+			'chat.suggestion3' => 'Mostrar contas a pagar atrasadas',
 			'chat.suggestion4' => 'Criar uma categoria chamada Lazer',
 			'chat.action.transactionExpense' => 'Confirmar despesa',
 			'chat.action.transactionIncome' => 'Confirmar receita',
@@ -1483,10 +1366,6 @@ extension on TranslationsPtBr {
 			'chat.action.accountDelete' => 'Excluir conta',
 			'chat.action.categoryCreate' => 'Criar categoria',
 			'chat.action.categoryDelete' => 'Excluir categoria',
-			'chat.action.billCreate' => 'Agendar conta',
-			'chat.action.billUpdate' => 'Atualizar conta',
-			'chat.action.billMarkPaid' => 'Marcar como paga',
-			'chat.action.billDelete' => 'Excluir conta',
 			'chat.action.budgetCreate' => 'Criar orçamento',
 			'chat.action.budgetUpdate' => 'Atualizar orçamento',
 			'chat.action.budgetDelete' => 'Excluir orçamento',
@@ -1529,7 +1408,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.unknownAction' => 'Ação desconhecida.',
 			'chat.handlers.unknownAccountAction' => 'Ação de conta desconhecida.',
 			'chat.handlers.unknownCategoryAction' => 'Ação de categoria desconhecida.',
-			'chat.handlers.unknownBillAction' => 'Ação de boleto desconhecida.',
 			'chat.handlers.unknownBudgetAction' => 'Ação de orçamento desconhecida.',
 			'chat.handlers.invalidAmount' => 'Valor inválido.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Falha ao criar conta: ${error}',
@@ -1559,24 +1437,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.transferUnresolvedDestination' => 'Não foi possível resolver a conta de destino.',
 			'chat.handlers.transferCreateFailed' => ({required Object error}) => 'Falha ao criar transferência: ${error}',
 			'chat.handlers.transferCreated' => ({required Object amount, required Object from, required Object to}) => 'Transferência de ${amount} de "${from}" para "${to}" criada com sucesso!',
-			'chat.handlers.billDescriptionRequired' => 'Descrição do boleto é obrigatória.',
-			'chat.handlers.billAmountInvalid' => 'Valor do boleto inválido.',
-			'chat.handlers.billCreateFailed' => ({required Object error}) => 'Falha ao criar boleto: ${error}',
-			'chat.handlers.billCreated' => ({required Object description, required Object amount, required Object dueDate}) => 'Boleto "${description}" de ${amount} agendado para ${dueDate}.',
-			'chat.handlers.billIdRequired' => 'Id do boleto é obrigatório.',
-			'chat.handlers.billNotFound' => 'Boleto não encontrado.',
-			'chat.handlers.billCannotEditPaid' => 'O boleto já foi pago e não pode ser editado.',
-			'chat.handlers.billUpdateFailed' => ({required Object error}) => 'Falha ao atualizar boleto: ${error}',
-			'chat.handlers.billUpdated' => ({required Object description}) => 'Boleto "${description}" atualizado.',
-			'chat.handlers.billAlreadyPaid' => 'O boleto já está pago.',
-			'chat.handlers.billNoCheckingAccount' => 'Nenhuma conta corrente disponível para registrar o pagamento.',
-			'chat.handlers.billNoIncomeCategory' => 'Nenhuma categoria de receita disponível para registrar o pagamento.',
-			'chat.handlers.billNoExpenseCategory' => 'Nenhuma categoria de despesa disponível para registrar o pagamento.',
-			'chat.handlers.billPayFailed' => ({required Object error}) => 'Falha ao marcar boleto como pago: ${error}',
-			'chat.handlers.billPaid' => ({required Object description}) => 'Boleto "${description}" pago — transação criada.',
-			'chat.handlers.billPaidWithNext' => ({required Object description, required Object dueDate}) => 'Boleto "${description}" pago — transação criada. Próxima ocorrência agendada para ${dueDate}.',
-			'chat.handlers.billDeleteFailed' => ({required Object error}) => 'Falha ao excluir boleto: ${error}',
-			'chat.handlers.billDeleted' => 'Boleto excluído.',
 			'chat.handlers.budgetCategoryRequired' => 'Categoria é obrigatória para orçamento.',
 			'chat.handlers.budgetCategoryNotFound' => ({required Object name}) => 'Categoria "${name}" não encontrada.',
 			'chat.handlers.budgetCategoryNotFoundCreate' => ({required Object name}) => 'Categoria "${name}" não existe. Crie-a primeiro.',
@@ -1597,108 +1457,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.resolveAccountMissing' => 'Qual conta devo usar? Me diga o nome da conta.',
 			'chat.handlers.resolveAccountNotFound' => ({required Object query}) => 'Conta "${query}" não encontrada. Crie-a primeiro ou use o nome exato.',
 			'chat.handlers.resolveAccountMultiple' => ({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.',
-			'bills.title' => 'Contas a pagar e receber',
-			'bills.empty' => 'Nenhuma movimentação encontrada neste período.',
-			'bills.addBill' => 'Nova conta',
-			'bills.editBill' => 'Editar conta',
-			_ => null,
-		} ?? switch (path) {
-			'bills.description' => 'Descrição',
-			'bills.descriptionHint' => 'ex.: Energia',
-			'bills.amount' => 'Valor',
-			'bills.amountLabel' => 'Valor',
-			'bills.dueDate' => 'Vencimento',
-			'bills.recurrence' => 'Recorrência',
-			'bills.oneShot' => 'Única',
-			'bills.monthly' => 'Mensal',
-			'bills.type' => 'Tipo',
-			'bills.typePayable' => 'A pagar',
-			'bills.typeReceivable' => 'A receber',
-			'bills.filterAll' => 'Todas',
-			'bills.category' => 'Categoria',
-			'bills.categoryRequired' => 'Selecione uma categoria',
-			'bills.notes' => 'Observações (opcional)',
-			'bills.notesHint' => 'Detalhes adicionais...',
-			'bills.markAsPaid' => 'Marcar como paga',
-			'bills.markAsReceived' => 'Marcar como recebida',
-			'bills.paid' => 'Paga',
-			'bills.received' => 'Recebida',
-			'bills.paidPlural' => 'Pagas',
-			'bills.receivedPlural' => 'Recebidas',
-			'bills.pending' => 'Pendente',
-			'bills.scheduled' => 'Agendada',
-			'bills.confirmed' => 'Confirmadas',
-			'bills.reconciled' => 'Conciliadas',
-			'bills.overdue' => 'Atrasada',
-			'bills.dueToday' => 'Vence hoje',
-			'bills.upcoming' => 'Próximas',
-			'bills.overdueGroup' => 'Atrasadas',
-			'bills.todayGroup' => 'Hoje',
-			'bills.upcomingGroup' => 'Próximas',
-			'bills.paidGroup' => 'Quitadas',
-			'bills.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
-			'bills.billCreated' => 'Conta criada',
-			'bills.billUpdated' => 'Conta atualizada',
-			'bills.billDeleted' => 'Conta excluída',
-			'bills.billPaid' => 'Conta paga — transação criada',
-			'bills.billReceived' => 'Pagamento recebido — transação criada',
-			'bills.transactionPaid' => 'Conta marcada como paga',
-			'bills.transactionReceived' => 'Recebimento marcado como recebido',
-			'bills.nextOccurrenceCreated' => 'Conta do próximo mês agendada',
-			'bills.alreadyPaid' => 'Esta conta já está quitada',
-			'bills.cannotEditPaid' => 'Contas quitadas não podem ser editadas',
-			'bills.payDialogTitle' => 'Pagar conta',
-			'bills.receiveDialogTitle' => 'Registrar pagamento recebido',
-			'bills.selectAccount' => 'Conta',
-			'bills.selectCategory' => 'Categoria',
-			'bills.daysOverdue' => ({required Object days}) => '${days} dias em atraso',
-			'bills.dueInDays' => ({required Object days}) => 'em ${days} dias',
-			'bills.dueTomorrow' => 'amanhã',
-			'bills.noExpenseCategory' => 'Crie ao menos uma categoria de despesa primeiro.',
-			'bills.noIncomeCategory' => 'Crie ao menos uma categoria de receita primeiro.',
-			'bills.summaryTitle' => 'Este mês',
-			'bills.summaryAllCaughtUp' => 'Nada vencendo — você está em dia',
-			'bills.overdueChip' => ({required Object count}) => '${count} em atraso',
-			'bills.pendingCount' => ({required Object count}) => '${count} pendentes',
-			'bills.emptyTitle' => 'Nenhuma movimentação ainda',
-			'bills.addFirst' => 'Adicionar primeira conta',
-			'bills.formDetails' => 'Detalhes',
-			'bills.formClassification' => 'Classificação',
-			'bills.pickCategory' => 'Escolha uma categoria',
-			'bills.notification.title' => ({required Object count}) => 'Você tem ${count} conta(s) para pagar',
-			'bills.notification.bodyDueToday' => ({required Object description, required Object amount}) => '${description} (${amount}) vence hoje',
-			'bills.notification.bodyOverdue' => ({required Object description, required Object amount}) => '${description} (${amount}) está atrasada',
-			'bills.match.bannerTitle' => ({required Object count}) => '${count} possível(is) pagamento(s) detectado(s)',
-			'bills.match.bannerSubtitle' => 'Toque para confirmar se alguma transação existente quita uma conta pendente',
-			'bills.match.sheetTitle' => 'Confirmar pagamentos',
-			'bills.match.sheetIntro' => 'Encontramos transações que podem estar pagando suas contas pendentes. Confirme uma a uma.',
-			'bills.match.candidateQuestion' => 'Esta transação foi esta conta?',
-			'bills.match.yesItWas' => 'Sim',
-			'bills.match.notThisOne' => 'Não',
-			'bills.match.matchAccepted' => 'Conta marcada como quitada',
-			'bills.match.matchRejected' => 'Entendido — não vamos sugerir esta de novo',
-			'bills.match.billLabel' => 'Conta',
-			'bills.match.transactionLabel' => 'Transação',
-			'bills.match.fieldDescription' => 'Descrição',
-			'bills.match.fieldCategory' => 'Categoria',
-			'bills.match.fieldAmount' => 'Valor',
-			'bills.match.fieldDate' => 'Data',
-			'bills.match.fieldEmpty' => '—',
-			'bills.virtualBlocked' => 'Pague a ocorrência atual primeiro',
-			'bills.preview' => 'Pré-visualização',
-			'bills.editScopeTitle' => 'Aplicar a quais ocorrências?',
-			'bills.editScopeDescription' => 'Esta é uma cobrança recorrente. Você pode aplicar a alteração apenas a esta ocorrência ou também às futuras (não afeta as anteriores).',
-			'bills.editScopeOnlyThis' => 'Apenas esta',
-			'bills.editScopeAlsoSubsequents' => 'Esta e as subsequentes',
-			'bills.importCsv' => 'Importar contas',
-			'bills.importCsvIntroTitle' => 'Importar contas de CSV',
-			'bills.importCsvIntroBody' => 'Seu arquivo deve seguir o formato esperado (colunas Tipo, Descrição, Valor, Vencimento, Status, Recorrência, Categoria, Observações — onde Tipo é A pagar/A receber, Status é Pendente/Paga e Recorrência é Mensal/Única). Baixe o exemplo para ver como funciona.',
-			'bills.importCsvDownloadExample' => 'Baixar exemplo',
-			'bills.importCsvSelectFile' => 'Selecionar arquivo',
-			'bills.importCsvExampleDownloaded' => 'Exemplo salvo.',
-			'bills.importCsvExampleFailed' => 'Não foi possível salvar o arquivo de exemplo.',
-			'bills.importCsvErrorTitle' => 'Não foi possível importar o CSV',
-			'bills.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Importadas ${imported} contas. Ignoradas ${skipped} (categoria desconhecida).',
 			'budgets.title' => 'Orçamento',
 			'budgets.addBudget' => 'Novo orçamento',
 			'budgets.editBudget' => 'Editar orçamento',
@@ -1725,6 +1483,8 @@ extension on TranslationsPtBr {
 			'budgets.duplicateCategory' => 'Já existe um orçamento para essa categoria.',
 			'budgets.noExpenseCategory' => 'Crie ao menos uma categoria de despesa antes.',
 			'budgets.allCategoriesBudgeted' => 'Todas as categorias já têm orçamento.',
+			_ => null,
+		} ?? switch (path) {
 			'budgets.emptyTitle' => 'Tome controle dos seus gastos',
 			'budgets.emptyBody' => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.',
 			'budgets.emptyExample' => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.',
@@ -1744,7 +1504,6 @@ extension on TranslationsPtBr {
 			'profile.editProfile' => 'Editar perfil',
 			'profile.accounts' => 'Contas',
 			'profile.categories' => 'Categorias',
-			'profile.bills' => 'Contas a pagar/receber',
 			'profile.theme' => 'Tema',
 			'profile.themeLight' => 'Claro',
 			'profile.themeDark' => 'Escuro',
@@ -1883,6 +1642,31 @@ extension on TranslationsPtBr {
 			'investments.allocationExceedsBalance' => ({required Object available}) => 'A alocação excede o saldo disponível nesta conta (${available}).',
 			'investments.targetSumExceedsRoot' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: ${available}.',
 			'investments.targetSumExceedsSub' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.',
+			'payablesReceivables.title' => 'Contas a pagar e receber',
+			'payablesReceivables.empty' => 'Nenhuma movimentação encontrada neste período.',
+			'payablesReceivables.typePayable' => 'A pagar',
+			'payablesReceivables.typeReceivable' => 'A receber',
+			'payablesReceivables.markAsPaid' => 'Marcar como paga',
+			'payablesReceivables.markAsReceived' => 'Marcar como recebida',
+			'payablesReceivables.paid' => 'Paga',
+			'payablesReceivables.received' => 'Recebida',
+			'payablesReceivables.paidPlural' => 'Pagas',
+			'payablesReceivables.receivedPlural' => 'Recebidas',
+			'payablesReceivables.scheduled' => 'Agendada',
+			'payablesReceivables.overdue' => 'Atrasada',
+			'payablesReceivables.dueToday' => 'Vence hoje',
+			'payablesReceivables.overdueGroup' => 'Atrasadas',
+			'payablesReceivables.todayGroup' => 'Hoje',
+			'payablesReceivables.upcomingGroup' => 'Próximas',
+			'payablesReceivables.deleteConfirm' => 'Tem certeza que deseja excluir esta transação?',
+			'payablesReceivables.transactionPaid' => 'Transação marcada como paga',
+			'payablesReceivables.transactionReceived' => 'Recebimento marcado como recebido',
+			'payablesReceivables.noExpenseCategory' => 'Crie ao menos uma categoria de despesa primeiro.',
+			'payablesReceivables.noIncomeCategory' => 'Crie ao menos uma categoria de receita primeiro.',
+			'payablesReceivables.emptyTitle' => 'Nenhuma movimentação ainda',
+			'payablesReceivables.formDetails' => 'Detalhes',
+			'payablesReceivables.formClassification' => 'Classificação',
+			'payablesReceivables.pickCategory' => 'Escolha uma categoria',
 			_ => null,
 		};
 	}
