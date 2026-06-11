@@ -1,6 +1,0 @@
-Type,Description,Amount,Due Date,Status,Recurrence,Category,Notes
-Payable,Internet bill,109.90,01/05/2026,Pending,Monthly,Housing/Internet,
-Payable,Monthly rent,2000.00,05/05/2026,Pending,Monthly,Housing/Rent,
-Payable,Health insurance,660.50,06/05/2026,Pending,Monthly,Health/Health Insurance,
-Receivable,Salary,5500.00,05/05/2026,Pending,Monthly,Salary,
-Payable,Annual subscription,499.00,15/05/2026,Pending,One-time,Education/Online Courses,Renews next year
