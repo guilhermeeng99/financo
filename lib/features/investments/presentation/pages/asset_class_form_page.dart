@@ -171,14 +171,11 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
     final result = await useCase(id: existing.id, userId: state.userId);
     if (!mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
       (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.investments.deleteClassSuccess)),
-        );
-        context.pop(true);
+        context
+          ..showSnack(t.investments.deleteClassSuccess)
+          ..pop(true);
       },
     );
   }
@@ -223,21 +220,16 @@ class _AssetClassFormViewState extends State<_AssetClassFormView> {
       listenWhen: (a, b) => a.status != b.status,
       listener: (context, state) {
         if (state.status == FormStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.isEditing
-                    ? t.investments.classUpdated
-                    : t.investments.classCreated,
-              ),
-            ),
-          );
-          context.pop(true);
+          context
+            ..showSnack(
+              state.isEditing
+                  ? t.investments.classUpdated
+                  : t.investments.classCreated,
+            )
+            ..pop(true);
         } else if (state.status == FormStatus.failure &&
             state.failure != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(localizedFailure(state.failure))),
-          );
+          context.showSnack(localizedFailure(state.failure));
         }
       },
       builder: (context, state) {

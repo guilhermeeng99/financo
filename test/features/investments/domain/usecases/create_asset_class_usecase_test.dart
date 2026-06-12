@@ -38,8 +38,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<EmptyNameFailure>()),
+        (_) => fail('Expected EmptyNameFailure'),
       );
       verifyNever(() => repository.createAssetClass(any()));
     });
@@ -50,6 +50,10 @@ void main() {
       final result = await useCase(entity);
 
       expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<TargetPercentOutOfRangeFailure>()),
+        (_) => fail('Expected TargetPercentOutOfRangeFailure'),
+      );
       verifyNever(() => repository.createAssetClass(any()));
     });
 

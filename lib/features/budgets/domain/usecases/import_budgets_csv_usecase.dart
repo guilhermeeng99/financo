@@ -3,11 +3,11 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_parsing.dart';
-import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 
 class BudgetImportResult extends Equatable {
   const BudgetImportResult({
@@ -114,14 +114,17 @@ class ImportBudgetsCsvUseCase {
   List<_BudgetImportRow> _parseCsv(String csvContent) {
     final decoded = Csv().decode(csvContent.trim());
     if (decoded.length < 2) {
-      throw const FormatException('CSV file is empty or invalid.');
+      throw FormatException(t.csvImport.errors.emptyFile);
     }
 
-    final colIndex = _mapHeaderColumns(decoded.first);
+    final colIndex = mapCsvHeaderColumns(
+      decoded.first,
+      synonyms: _budgetHeaderSynonyms,
+    );
     for (final required in const ['category', 'amount']) {
       if (!colIndex.containsKey(required)) {
         throw FormatException(
-          'CSV is missing the required "$required" column.',
+          t.csvImport.errors.missingColumn(column: required),
         );
       }
     }
@@ -150,7 +153,7 @@ class ImportBudgetsCsvUseCase {
       final amount = parseCsvAmount(amountStr, absolute: true);
       if (amount <= 0) {
         throw FormatException(
-          'Row $rowNumber: invalid or zero amount "$amountStr".',
+          t.csvImport.errors.invalidAmount(row: rowNumber, value: amountStr),
         );
       }
 
@@ -160,40 +163,26 @@ class ImportBudgetsCsvUseCase {
     }
 
     if (rows.isEmpty) {
-      throw const FormatException('CSV file has no valid budgets.');
+      throw FormatException(t.csvImport.errors.noValidBudgets);
     }
     return rows;
   }
-
-  Map<String, int> _mapHeaderColumns(List<dynamic> header) {
-    const synonyms = <String, List<String>>{
-      'category': ['categoria', 'category'],
-      'amount': [
-        'valor',
-        'amount',
-        'value',
-        'cap',
-        'limite',
-        'monthly cap',
-        'valor mensal',
-      ],
-    };
-
-    final out = <String, int>{};
-    for (var i = 0; i < header.length; i++) {
-      final norm = normalizeForMatch('${header[i] ?? ''}');
-      if (norm.isEmpty) continue;
-      for (final entry in synonyms.entries) {
-        if (out.containsKey(entry.key)) continue;
-        if (entry.value.contains(norm)) {
-          out[entry.key] = i;
-          break;
-        }
-      }
-    }
-    return out;
-  }
 }
+
+/// Budgets header synonyms for [mapCsvHeaderColumns] — accepts the
+/// 2-column `Category,Amount` layout in PT-BR or English.
+const _budgetHeaderSynonyms = <String, List<String>>{
+  'category': ['categoria', 'category'],
+  'amount': [
+    'valor',
+    'amount',
+    'value',
+    'cap',
+    'limite',
+    'monthly cap',
+    'valor mensal',
+  ],
+};
 
 class _BudgetImportRow {
   const _BudgetImportRow({required this.categoryName, required this.amount});

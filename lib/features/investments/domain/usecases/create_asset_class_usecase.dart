@@ -31,12 +31,10 @@ class CreateAssetClassUseCase {
 
   Failure? _validate(AssetClassEntity assetClass) {
     if (assetClass.name.trim().isEmpty) {
-      return const ValidationFailure('Asset class name must not be empty.');
+      return const EmptyNameFailure();
     }
     if (assetClass.targetPercent < 0 || assetClass.targetPercent > 100) {
-      return const ValidationFailure(
-        'Target percent must be between 0 and 100.',
-      );
+      return const TargetPercentOutOfRangeFailure();
     }
     return null;
   }
@@ -55,12 +53,10 @@ class CreateAssetClassUseCase {
         }
       }
       if (parent == null) {
-        return const ValidationFailure('Parent class not found.');
+        return const ParentAssetClassNotFoundFailure();
       }
       if (parent.parentId != null) {
-        return const ValidationFailure(
-          'A subclass cannot be the parent of another subclass.',
-        );
+        return const SubclassCannotBeParentFailure();
       }
     }
     return validateSiblingTargetSum(

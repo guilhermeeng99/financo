@@ -225,9 +225,9 @@ New use cases:
 
 ```dart
 class SettleTransactionUseCase {
-  Future<Either<Failure, TransactionEntity>> call({
-    required TransactionEntity transaction,
-    DateTime? settledAt,
+  Future<Either<Failure, TransactionEntity>> call(
+    TransactionEntity transaction, {
+    DateTime? settledAt, // defaults to now
   });
 }
 
@@ -288,13 +288,14 @@ Default when missing:
 - `settledAt = null`
 - `recurrence = single`
 
-Indexes:
+Indexes (transaction entries in `firestore.indexes.json`):
 
 ```text
-transactions: userId + settlementStatus + dueDate asc
-transactions: userId + settlementStatus + type + dueDate asc
-transactions: userId + settlementStatus + date desc
-transactions: accountId + userId + settlementStatus + date desc
+transactions: userId + date desc
+transactions: accountId + userId + date desc
+transactions: userId + recurrence + date desc
+transactions: userId + recurrenceGroupId + dueDate desc
+transactions: settlementStatus + dueDate asc   (cross-user notifyTransactionsDue query)
 ```
 
 The existing `bills/{id}` collection remains after migration as read-only /
@@ -340,12 +341,15 @@ The page has two primary sections:
 1. `A pagar e receber`
    - Tabs: `A pagar`, `A receber`
    - Shows only `settlementStatus = pending`
-   - Chips:
-     - `Pendentes`: overdue + due today
-     - `Agendados`: future due date
+   - Pending rows are grouped into list sections by due status:
+     - `Atrasadas` (overdue) — expense accent
+     - `Hoje` (due today) — warning accent
+     - `Próximas` (future due date) — warning accent
+   - Empty sections are hidden.
 2. `Pagas e recebidas`
    - Tabs: `Pagas`, `Recebidas`
-   - Shows only `settlementStatus = paid`
+   - Shows only `settlementStatus = paid`, in a single `Pagas`/`Recebidas`
+     section
 
 For desktop/tablet, follow the reference layout:
 
@@ -407,13 +411,15 @@ Behavior:
 
 ### Settlement Flow
 
-Tapping "mark as paid/received" on a pending row opens a confirmation sheet:
+Tapping "mark as paid/received" on a pending row settles it in one tap:
 
-- Title: `Confirmar pagamento` or `Confirmar recebimento`
-- Fields:
-  - settlement date, default today
-  - optional account adjustment if the user picked the wrong account
-- Confirm updates the existing transaction; it does not create a second record.
+- The row action immediately calls `SettleTransactionUseCase(transaction)`
+  with today as the settlement date — there is no confirmation sheet and no
+  date/account adjustment step in V1.
+- On success the page shows a paid/received snackbar and refreshes itself plus
+  dependent state (`TransactionsBloc`, `DashboardBloc`, `AccountsCubit`).
+- Settling updates the existing transaction; it does not create a second
+  record.
 
 ## Dashboard / Reports / Balances
 
@@ -451,7 +457,6 @@ Query:
 transactions
 where settlementStatus == "pending"
 where dueDate <= endOfToday
-where type in ["expense", "income"]
 ```
 
 Grouping:
@@ -531,10 +536,9 @@ transaction-backed scheduled movements.
    - `A receber`
    - `Pagas`
    - `Recebidas`
-4. Implement pending status chips:
-   - `Pendentes`
-   - `Agendados`
-5. Add settlement confirmation sheet.
+4. Group pending rows into `Atrasadas` / `Hoje` / `Próximas` sections.
+5. One-tap settle action on each pending row (no confirmation sheet shipped
+   in V1).
 6. Keep route `/bills` as alias.
 
 ### Phase 4 - Create/Edit Flow

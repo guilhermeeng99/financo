@@ -15,7 +15,6 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockGetInvestmentOverviewUseCase getOverview;
-  late MockAssetHoldingRepository holdingRepository;
 
   const userId = 'user-1';
 
@@ -23,12 +22,10 @@ void main() {
 
   setUp(() {
     getOverview = MockGetInvestmentOverviewUseCase();
-    holdingRepository = MockAssetHoldingRepository();
   });
 
   InvestmentsCubit build() => InvestmentsCubit(
     getOverview: getOverview,
-    assetHoldingRepository: holdingRepository,
     userId: userId,
   );
 
@@ -98,37 +95,6 @@ void main() {
         isA<InvestmentsLoading>(),
         isA<InvestmentsError>(),
       ],
-    );
-
-    blocTest<InvestmentsCubit, InvestmentsState>(
-      'removeHoldingsForAccount delegates to the repository and refreshes',
-      setUp: () {
-        when(
-          () => holdingRepository.deleteHoldingsForAccount('acc-inv-1'),
-        ).thenAnswer((_) async => const Right<Failure, void>(null));
-        when(
-          () => getOverview(
-            userId: userId,
-            forceRefresh: any(named: 'forceRefresh'),
-          ),
-        ).thenAnswer(
-          (_) async =>
-              Right<Failure, InvestmentSnapshot>(snapshotFixture()),
-        );
-      },
-      build: build,
-      act: (cubit) => cubit.removeHoldingsForAccount('acc-inv-1'),
-      verify: (_) {
-        verify(
-          () => holdingRepository.deleteHoldingsForAccount('acc-inv-1'),
-        ).called(1);
-        verify(
-          () => getOverview(
-            userId: userId,
-            forceRefresh: true,
-          ),
-        ).called(1);
-      },
     );
   });
 }

@@ -99,7 +99,7 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (f) => expect(f, isA<ValidationFailure>()),
+        (f) => expect(f, isA<DuplicateBudgetCategoryFailure>()),
         (_) => fail('expected Left'),
       );
       verifyNever(() => remote.createBudget(any()));

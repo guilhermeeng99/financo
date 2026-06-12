@@ -237,9 +237,7 @@ class _AssetHoldingSheetViewState extends State<_AssetHoldingSheetView> {
     final result = await GetIt.I<DeleteAssetHoldingUseCase>()(existing.id);
     if (!mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
       (_) => Navigator.of(context).pop(true),
     );
   }
@@ -254,9 +252,7 @@ class _AssetHoldingSheetViewState extends State<_AssetHoldingSheetView> {
           Navigator.of(context).pop(true);
         } else if (state.status == FormStatus.failure &&
             state.failure != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(localizedFailure(state.failure))),
-          );
+          context.showSnack(localizedFailure(state.failure));
         }
       },
       builder: (context, state) {

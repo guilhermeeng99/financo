@@ -38,8 +38,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<EmptyNameFailure>()),
+        (_) => fail('Expected EmptyNameFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
       verifyNever(
@@ -54,8 +54,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<TargetPercentOutOfRangeFailure>()),
+        (_) => fail('Expected TargetPercentOutOfRangeFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
     });
@@ -80,8 +80,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<ParentAssetClassNotFoundFailure>()),
+        (_) => fail('Expected ParentAssetClassNotFoundFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
     });
@@ -111,8 +111,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<SubclassCannotBeParentFailure>()),
+        (_) => fail('Expected SubclassCannotBeParentFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
     });
@@ -132,8 +132,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<SelfParentAssetClassFailure>()),
+        (_) => fail('Expected SelfParentAssetClassFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
     });
@@ -161,8 +161,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<ClassOwnsSubclassesFailure>()),
+        (_) => fail('Expected ClassOwnsSubclassesFailure'),
       );
       verifyNever(() => repository.updateAssetClass(any()));
     });

@@ -3,10 +3,11 @@ import 'package:equatable/equatable.dart';
 enum CategoryType { income, expense }
 
 /// Drives the 50/30/20 dashboard card — see
-/// docs/specs/fifty_thirty_twenty.md. Only meaningful on `expense` categories;
-/// `null` means the user hasn't classified the category yet, which the
-/// overview surfaces as "unclassified" (it does not fall back to a
-/// parent's bucket — see rule 20 of docs/specs/categories.md).
+/// docs/specs/fifty_thirty_twenty.md. Only meaningful on root `expense`
+/// categories: `null` on a root means the user hasn't classified it yet,
+/// which the overview surfaces as "unclassified". Subcategories inherit
+/// the parent's bucket — their own value is ignored (rule 20 of
+/// docs/specs/categories.md).
 enum CategoryBucket { needs, wants }
 
 class CategoryEntity extends Equatable {

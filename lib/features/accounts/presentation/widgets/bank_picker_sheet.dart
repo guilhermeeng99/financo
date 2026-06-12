@@ -1,4 +1,6 @@
 import 'package:financo/app/widgets/bank_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
+import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
@@ -85,125 +87,41 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final filtered = _filtered;
-    return DraggableScrollableSheet(
+    return FinancoPickerSheet(
+      title: t.accounts.pickBank,
       initialChildSize: 0.85,
       minChildSize: 0.5,
       maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  t.accounts.pickBank,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            _SearchField(
-              controller: _queryController,
-              onChanged: (v) => setState(() => _query = v),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: filtered.isEmpty
-                  ? const _EmptyResults()
-                  : ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                      itemCount: filtered.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 4),
-                      itemBuilder: (_, i) {
-                        final bank = filtered[i];
-                        return _BankRow(
-                          bank: bank,
-                          isSelected: bank == widget.selected,
-                          onTap: () => Navigator.pop(context, bank),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
+      header: [
+        FinancoSearchField(
+          controller: _queryController,
+          onChanged: (v) => setState(() => _query = v),
           hintText: t.accounts.bankSearchHint,
-          prefixIcon: SizedBox(
-            width: 44,
-            child: Center(
-              child: FaIcon(
-                FontAwesomeIcons.magnifyingGlass,
-                size: 14,
-                color: colors.onBackgroundLight,
-              ),
-            ),
-          ),
-          suffixIcon: ValueListenableBuilder<TextEditingValue>(
-            valueListenable: controller,
-            builder: (_, value, _) {
-              if (value.text.isEmpty) return const SizedBox.shrink();
-              return IconButton(
-                icon: FaIcon(
-                  FontAwesomeIcons.xmark,
-                  size: 14,
-                  color: colors.onBackgroundLight,
-                ),
-                onPressed: () {
-                  controller.clear();
-                  onChanged('');
-                },
-              );
-            },
-          ),
-          filled: true,
-          fillColor: colors.surfaceVariant,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
         ),
-      ),
+        const SizedBox(height: 8),
+      ],
+      bodyBuilder: (scrollController) {
+        if (filtered.isEmpty) {
+          return FinancoPickerSheetEmpty(
+            message: t.accounts.bankSearchNoResults,
+          );
+        }
+        return ListView.separated(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+          itemCount: filtered.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 4),
+          itemBuilder: (_, i) {
+            final bank = filtered[i];
+            return _BankRow(
+              bank: bank,
+              isSelected: bank == widget.selected,
+              onTap: () => Navigator.pop(context, bank),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -255,27 +173,6 @@ class _BankRow extends StatelessWidget {
                   color: colors.primary,
                 ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyResults extends StatelessWidget {
-  const _EmptyResults();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          t.accounts.bankSearchNoResults,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: colors.onBackgroundLight,
           ),
         ),
       ),

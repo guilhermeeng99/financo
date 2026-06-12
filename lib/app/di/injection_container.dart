@@ -69,12 +69,14 @@ import 'package:financo/features/categories/domain/usecases/update_category_usec
 // Chat
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/data/repositories/chat_repository_impl.dart';
+import 'package:financo/features/chat/data/services/chat_audio_recorder_impl.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/transaction_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/transfer_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/repositories/chat_repository.dart';
+import 'package:financo/features/chat/domain/services/chat_audio_recorder.dart';
 import 'package:financo/features/chat/domain/usecases/get_chat_history_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/save_chat_message_usecase.dart';
 import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart';
@@ -463,6 +465,10 @@ Future<void> initDependencies() async {
         deleteBudget: sl(),
       ),
     )
+    // ─── Chat Services ──────────────────────────────────────
+    // Factory: each ChatInput mount gets its own recorder and disposes it
+    // when unmounted — a singleton would be unusable after the first visit.
+    ..registerFactory<ChatAudioRecorder>(ChatAudioRecorderImpl.new)
     ..registerLazySingleton(
       () => GetDashboardSummaryUseCase(sl()),
     )

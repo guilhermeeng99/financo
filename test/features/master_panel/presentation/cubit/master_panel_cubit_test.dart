@@ -5,7 +5,6 @@ import 'package:financo/features/access_control/domain/entities/allowed_email_en
 import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
 import 'package:financo/features/access_control/domain/usecases/list_allowed_emails_usecase.dart';
 import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
-import 'package:financo/features/master_panel/domain/repositories/master_users_repository.dart';
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
@@ -16,20 +15,17 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../harness/factories/user_factory.dart';
 import '../../../../harness/mocks.dart';
 
-class _MockMasterUsersRepository extends Mock
-    implements MasterUsersRepository {}
-
 void main() {
   late ListAllUsersUseCase listAllUsers;
   late ListAllowedEmailsUseCase listAllowedEmails;
   late AddAllowedEmailUseCase addAllowedEmail;
   late RemoveAllowedEmailUseCase removeAllowedEmail;
   late DeleteUserAsAdminUseCase deleteUserAsAdmin;
-  late _MockMasterUsersRepository masterRepo;
+  late MockMasterUsersRepository masterRepo;
   late MockAccessControlRepository accessRepo;
 
   setUp(() {
-    masterRepo = _MockMasterUsersRepository();
+    masterRepo = MockMasterUsersRepository();
     accessRepo = MockAccessControlRepository();
     listAllUsers = ListAllUsersUseCase(masterRepo);
     listAllowedEmails = ListAllowedEmailsUseCase(accessRepo);

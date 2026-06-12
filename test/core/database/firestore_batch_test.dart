@@ -4,17 +4,15 @@ import 'package:financo/core/database/firestore_batch.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockFirestore extends Mock implements FirebaseFirestore {}
-
-class _MockWriteBatch extends Mock implements WriteBatch {}
+import '../../harness/mocks.dart';
 
 void main() {
-  late _MockFirestore firestore;
-  late _MockWriteBatch batch;
+  late MockFirebaseFirestore firestore;
+  late MockWriteBatch batch;
 
   setUp(() {
-    firestore = _MockFirestore();
-    batch = _MockWriteBatch();
+    firestore = MockFirebaseFirestore();
+    batch = MockWriteBatch();
     when(firestore.batch).thenReturn(batch);
     when(batch.commit).thenAnswer((_) async {});
   });

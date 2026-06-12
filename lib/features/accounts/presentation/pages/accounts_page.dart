@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/feature_empty_state.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_section_header.dart';
@@ -12,7 +13,7 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/account_card.dart';
 import 'package:financo/features/accounts/presentation/widgets/accounts_csv_import_dialog.dart';
-import 'package:financo/features/accounts/presentation/widgets/accounts_empty_state.dart';
+import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,20 +36,26 @@ class _AccountsPageState extends State<AccountsPage> {
 
   Future<void> _openAdd() async {
     final result = await context.push(AppRoutes.addAccount);
-    if (result == true && mounted) {
-      unawaited(
-        context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
-      );
-    }
+    if (result == true && mounted) _refreshAfterAccountChange();
   }
 
   Future<void> _openEdit(AccountEntity account) async {
     final result = await context.push(AppRoutes.addAccount, extra: account);
-    if (result == true && mounted) {
-      unawaited(
-        context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
-      );
-    }
+    if (result == true && mounted) _refreshAfterAccountChange();
+  }
+
+  /// The add-account page lives on the root navigator, outside the shell's
+  /// providers, so it can't touch shell-scoped cubits itself — it signals
+  /// success via `pop(true)` and this page (inside the shell) refreshes.
+  /// InvestmentsCubit is included so a deleted/created investment
+  /// account's holdings drop in or out of the overview immediately.
+  void _refreshAfterAccountChange() {
+    unawaited(
+      context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
+    );
+    unawaited(
+      context.read<InvestmentsCubit>().refresh(forceRefresh: true),
+    );
   }
 
   Future<void> _openImport() => showAccountsCsvImportDialog(context);
@@ -82,14 +89,10 @@ class _AccountsPageState extends State<AccountsPage> {
       body: BlocListener<AccountsCubit, AccountsState>(
         listener: (context, state) {
           if (state is AccountsImported) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  t.accounts.importSuccessDetailed(
-                    imported: state.importedCount,
-                    duplicates: state.duplicateCount,
-                  ),
-                ),
+            context.showSnack(
+              t.accounts.importSuccessDetailed(
+                imported: state.importedCount,
+                duplicates: state.duplicateCount,
               ),
             );
           }
@@ -113,7 +116,13 @@ class _AccountsPageState extends State<AccountsPage> {
               _ => const <AccountEntity>[],
             };
             if (accounts.isEmpty) {
-              return AccountsEmptyState(onAddPressed: _openAdd);
+              return FeatureEmptyState(
+                icon: FontAwesomeIcons.buildingColumns,
+                title: t.accounts.emptyTitle,
+                message: t.accounts.emptySubtitle,
+                actionLabel: t.accounts.addFirst,
+                onAction: _openAdd,
+              );
             }
             return _AccountsList(
               accounts: accounts,

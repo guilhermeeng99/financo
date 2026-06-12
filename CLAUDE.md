@@ -203,9 +203,9 @@ Test infrastructure lives in `test/harness/`:
   created by the shell route via `BlocProvider` — the `userId` is resolved
   from `AuthBloc.state` at mount time and never changes during the shell's
   lifetime.
-* Form cubits and page-scoped cubits are created per use (`BlocProvider`
-  or `registerFactory`). `ChatBloc` is page-scoped: created per visit by
-  `ChatPage`, not by the shell.
+* Form cubits and page-scoped cubits are created per use (`BlocProvider`).
+  `ChatBloc` is page-scoped: created per visit by `ChatPage`, not by the
+  shell.
 
 ---
 

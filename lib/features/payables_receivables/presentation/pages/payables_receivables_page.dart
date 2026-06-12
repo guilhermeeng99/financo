@@ -151,18 +151,12 @@ class _PayablesReceivablesPageState extends State<PayablesReceivablesPage> {
     final result = await GetIt.I<SettleTransactionUseCase>()(transaction);
     if (!mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
       (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              transaction.isReceivable
-                  ? t.payablesReceivables.transactionReceived
-                  : t.payablesReceivables.transactionPaid,
-            ),
-          ),
+        context.showSnack(
+          transaction.isReceivable
+              ? t.payablesReceivables.transactionReceived
+              : t.payablesReceivables.transactionPaid,
         );
         _refreshDependents();
         _refresh(forceRefresh: true);
@@ -184,13 +178,9 @@ class _PayablesReceivablesPageState extends State<PayablesReceivablesPage> {
     final result = await GetIt.I<DeleteTransactionUseCase>()(transaction.id);
     if (!mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
       (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.transactions.deleted)),
-        );
+        context.showSnack(t.transactions.deleted);
         _refreshDependents();
         _refresh(forceRefresh: true);
       },

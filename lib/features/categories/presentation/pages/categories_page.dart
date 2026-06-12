@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/feature_empty_state.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
@@ -12,7 +13,6 @@ import 'package:financo/features/categories/domain/entities/category_entity.dart
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
 import 'package:financo/features/categories/presentation/widgets/categories_csv_import_dialog.dart';
-import 'package:financo/features/categories/presentation/widgets/categories_empty_state.dart';
 import 'package:financo/features/categories/presentation/widgets/category_tile.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +104,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
             _ => const <CategoryEntity>[],
           };
           if (categories.isEmpty) {
-            return CategoriesEmptyState(onAddPressed: _openAdd);
+            return FeatureEmptyState(
+              icon: FontAwesomeIcons.tags,
+              title: t.categories.emptyTitle,
+              message: t.categories.empty,
+              actionLabel: t.categories.addFirst,
+              onAction: _openAdd,
+            );
           }
           return _CategoriesBody(
             categories: categories,

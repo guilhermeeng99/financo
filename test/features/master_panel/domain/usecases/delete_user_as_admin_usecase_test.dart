@@ -1,19 +1,17 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
-import 'package:financo/features/master_panel/domain/repositories/master_users_repository.dart';
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockMasterUsersRepository extends Mock
-    implements MasterUsersRepository {}
+import '../../../../harness/mocks.dart';
 
 void main() {
   late DeleteUserAsAdminUseCase useCase;
-  late _MockMasterUsersRepository repo;
+  late MockMasterUsersRepository repo;
 
   setUp(() {
-    repo = _MockMasterUsersRepository();
+    repo = MockMasterUsersRepository();
     useCase = DeleteUserAsAdminUseCase(repo);
   });
 

@@ -1,4 +1,5 @@
 import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -59,7 +60,6 @@ class _BudgetCategoryPickerSheetState
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final all =
         context
             .watch<CategoriesCubit>()
@@ -82,76 +82,57 @@ class _BudgetCategoryPickerSheetState
               .toList();
 
     final hasNoneAtAll = all.isEmpty;
-    final hasNoSearchHits = !hasNoneAtAll && filtered.isEmpty;
 
-    return DraggableScrollableSheet(
+    return FinancoPickerSheet(
+      title: t.budgets.categoryHint,
       initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.9,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  t.budgets.categoryHint,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            if (!hasNoneAtAll)
-              FinancoSearchField(
-                controller: _searchController,
-                onChanged: (v) => setState(() => _query = v),
-                hintText: t.categories.searchHint,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              ),
-            Expanded(
-              child: hasNoneAtAll
-                  ? _EmptyHint(
-                      message: widget.excludedIds.isEmpty
-                          ? t.budgets.noExpenseCategory
-                          : t.budgets.allCategoriesBudgeted,
-                    )
-                  : hasNoSearchHits
-                  ? _EmptyHint(message: t.categories.searchNoResults)
-                  : ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                      itemCount: filtered.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 4),
-                      itemBuilder: (_, i) {
-                        final c = filtered[i];
-                        return _CategoryRow(
-                          category: c,
-                          isSelected: c.id == widget.selectedId,
-                          onTap: () => Navigator.pop(context, c.id),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+      header: [
+        if (!hasNoneAtAll)
+          FinancoSearchField(
+            controller: _searchController,
+            onChanged: (v) => setState(() => _query = v),
+            hintText: t.categories.searchHint,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          ),
+      ],
+      bodyBuilder: (scrollController) => _buildBody(
+        scrollController: scrollController,
+        filtered: filtered,
+        hasNoneAtAll: hasNoneAtAll,
       ),
+    );
+  }
+
+  Widget _buildBody({
+    required ScrollController scrollController,
+    required List<CategoryEntity> filtered,
+    required bool hasNoneAtAll,
+  }) {
+    if (hasNoneAtAll) {
+      return FinancoPickerSheetEmpty(
+        message: widget.excludedIds.isEmpty
+            ? t.budgets.noExpenseCategory
+            : t.budgets.allCategoriesBudgeted,
+      );
+    }
+    if (filtered.isEmpty) {
+      return FinancoPickerSheetEmpty(message: t.categories.searchNoResults);
+    }
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+      itemCount: filtered.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 4),
+      itemBuilder: (_, i) {
+        final c = filtered[i];
+        return _CategoryRow(
+          category: c,
+          isSelected: c.id == widget.selectedId,
+          onTap: () => Navigator.pop(context, c.id),
+        );
+      },
     );
   }
 }
@@ -202,29 +183,6 @@ class _CategoryRow extends StatelessWidget {
                   color: colors.primary,
                 ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyHint extends StatelessWidget {
-  const _EmptyHint({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: colors.onBackgroundLight,
           ),
         ),
       ),

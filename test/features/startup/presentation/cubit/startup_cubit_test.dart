@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/startup/presentation/cubit/startup_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,8 +9,6 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../harness/factories/user_factory.dart';
 import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
-
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 void main() {
   late MockAuthBloc mockAuthBloc;

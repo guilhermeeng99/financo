@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
@@ -13,7 +12,10 @@ import 'package:financo/features/transactions/domain/usecases/create_transfer_us
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
+import 'package:financo/features/transactions/presentation/cubit/transaction_form_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+export 'package:financo/features/transactions/presentation/cubit/transaction_form_state.dart';
 
 class TransactionFormCubit extends Cubit<TransactionFormState> {
   TransactionFormCubit({
@@ -68,7 +70,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       emit(state.copyWith(description: value));
 
   void updateDate(DateTime date) {
-    final settlementStatus = !state.isTransfer && _isAfterToday(date)
+    final settlementStatus = !state.isTransfer && isAfterEndOfToday(date)
         ? TransactionSettlementStatus.pending
         : state.settlementStatus;
     emit(
@@ -82,7 +84,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   void updateSettlementStatus(TransactionSettlementStatus settlementStatus) {
     final nextDate =
         settlementStatus == TransactionSettlementStatus.paid &&
-            _isAfterToday(state.date)
+            isAfterEndOfToday(state.date)
         ? DateTime.now()
         : state.date;
     emit(
@@ -205,44 +207,30 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// in place, so the form is immediately ready to submit another similar
   /// transaction. Called by the page after handling a `success` state
   /// produced by `submit(continueAfterSave: true)`.
-  void prepareForNext() {
-    emit(
-      TransactionFormState(
-        userId: state.userId,
-        type: state.type,
-        amount: state.amount,
-        description: state.description,
-        date: state.date,
-        accountId: state.accountId,
-        categoryId: state.categoryId,
-        destinationAccountId: state.destinationAccountId,
-        notes: state.notes,
-        status: FormStatus.initial,
-        isTransfer: state.isTransfer,
-        existingId: state.existingId,
-        linkedTransactionId: state.linkedTransactionId,
-        settlementStatus: state.settlementStatus,
-        recurrence: state.recurrence,
-        recurrenceGroupId: state.recurrenceGroupId,
-        recurrenceIntervalMonths: state.recurrenceIntervalMonths,
-        recurrenceIndex: state.recurrenceIndex,
-        recurrenceTotal: state.recurrenceTotal,
-        recurrenceBaseDescription: state.recurrenceBaseDescription,
-        recurrenceEndDate: state.recurrenceEndDate,
-        installmentCount: state.installmentCount,
-        originalDueDate: state.originalDueDate,
-        originalTransaction: state.originalTransaction,
-      ),
-    );
-  }
+  void prepareForNext() => emit(state.clearedForNextEntry());
 
   Future<void> _submitTransaction({
     required TransactionSequenceScope sequenceScope,
   }) async {
     final now = DateTime.now();
+    final transaction = _assembleSubmittedTransaction(now);
+
+    final result = state.isEditing
+        ? await _updateSavedTransaction(
+            original: state.originalTransaction,
+            transaction: transaction,
+            sequenceScope: sequenceScope,
+          )
+        : await _createSavedTransaction(transaction, now);
+
+    emit(_stateAfterSave(result));
+  }
+
+  /// Builds the entity persisted by a normal (non-transfer) submit from
+  /// the current form state.
+  TransactionEntity _assembleSubmittedTransaction(DateTime now) {
     final isPaid = state.settlementStatus == TransactionSettlementStatus.paid;
-    final isRecurring = state.recurrence != TransactionRecurrence.single;
-    final transaction = TransactionEntity(
+    return TransactionEntity(
       id: state.existingId ?? '',
       userId: state.userId,
       accountId: state.accountId,
@@ -255,14 +243,14 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       dueDate: state.date,
       settledAt: isPaid ? state.date : null,
       recurrence: state.recurrence,
-      recurrenceGroupId: isRecurring ? state.recurrenceGroupId : null,
+      recurrenceGroupId: _recurrenceOnly(state.recurrenceGroupId),
       recurrenceIntervalMonths: state.recurrenceIntervalMonths,
-      recurrenceIndex: isRecurring ? state.recurrenceIndex : null,
-      recurrenceTotal: isRecurring ? state.recurrenceTotal : null,
-      recurrenceBaseDescription: isRecurring
-          ? state.recurrenceBaseDescription ?? state.description
-          : null,
-      recurrenceEndDate: isRecurring ? state.recurrenceEndDate : null,
+      recurrenceIndex: _recurrenceOnly(state.recurrenceIndex),
+      recurrenceTotal: _recurrenceOnly(state.recurrenceTotal),
+      recurrenceBaseDescription: _recurrenceOnly(
+        state.recurrenceBaseDescription ?? state.description,
+      ),
+      recurrenceEndDate: _recurrenceOnly(state.recurrenceEndDate),
       notes: state.notes,
       linkedTransactionId: state.linkedTransactionId,
       // Preserve original createdAt on edit — overwriting with `now`
@@ -270,16 +258,17 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       createdAt: state.originalCreatedAt ?? now,
       updatedAt: now,
     );
+  }
 
-    final result = state.isEditing
-        ? await _updateSavedTransaction(
-            original: state.originalTransaction,
-            transaction: transaction,
-            sequenceScope: sequenceScope,
-          )
-        : await _createSavedTransaction(transaction, now);
+  /// Sequence metadata is only persisted for recurring rows; single
+  /// transactions store `null` so stale values never survive an edit.
+  T? _recurrenceOnly<T>(T? value) =>
+      state.recurrence == TransactionRecurrence.single ? null : value;
 
-    final nextState = result.fold(
+  TransactionFormState _stateAfterSave(
+    Either<Failure, TransactionEntity> result,
+  ) {
+    return result.fold(
       (failure) => state.copyWith(
         status: FormStatus.failure,
         failure: failure,
@@ -291,7 +280,6 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
         savedTransactionId: saved.id,
       ),
     );
-    emit(nextState);
   }
 
   Future<Either<Failure, TransactionEntity>> _createSavedTransaction(
@@ -351,35 +339,15 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
 
   Future<void> _submitTransfer() async {
     final now = DateTime.now();
-    final expense = TransactionEntity(
-      id: '',
-      userId: state.userId,
-      accountId: state.accountId,
-      categoryId: '',
+    final expense = _assembleTransferLeg(
       type: TransactionType.expense,
-      amount: state.amount,
-      description: state.description,
-      date: state.date,
-      notes: state.notes,
-      dueDate: state.date,
-      settledAt: state.date,
-      createdAt: now,
-      updatedAt: now,
+      accountId: state.accountId,
+      now: now,
     );
-    final income = TransactionEntity(
-      id: '',
-      userId: state.userId,
-      accountId: state.destinationAccountId,
-      categoryId: '',
+    final income = _assembleTransferLeg(
       type: TransactionType.income,
-      amount: state.amount,
-      description: state.description,
-      date: state.date,
-      notes: state.notes,
-      dueDate: state.date,
-      settledAt: state.date,
-      createdAt: now,
-      updatedAt: now,
+      accountId: state.destinationAccountId,
+      now: now,
     );
 
     (await _createTransfer(expense: expense, income: income)).fold(
@@ -390,49 +358,68 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     );
   }
 
+  /// Builds one leg of a transfer pair from the shared form fields.
+  /// Transfer legs carry no category and are always settled on the form
+  /// date. [createdAt] preserves the leg's original audit timestamp when
+  /// editing; `null` (create mode) falls back to [now].
+  TransactionEntity _assembleTransferLeg({
+    required TransactionType type,
+    required String accountId,
+    required DateTime now,
+    String id = '',
+    String? linkedTransactionId,
+    DateTime? createdAt,
+  }) {
+    return TransactionEntity(
+      id: id,
+      userId: state.userId,
+      accountId: accountId,
+      categoryId: '',
+      type: type,
+      amount: state.amount,
+      description: state.description,
+      date: state.date,
+      notes: state.notes,
+      linkedTransactionId: linkedTransactionId,
+      dueDate: state.date,
+      settledAt: state.date,
+      createdAt: createdAt ?? now,
+      updatedAt: now,
+    );
+  }
+
   /// Edits an existing transfer by updating *both* legs. `existingId` is the
   /// expense (source) leg, `linkedTransactionId` the income (destination)
   /// leg — normalized at form open by [_resolveTransferCounterpart]. Each
   /// leg keeps its own `createdAt` so the audit trail isn't corrupted.
-  ///
+  Future<void> _updateTransfer() async {
+    final now = DateTime.now();
+    final expense = _assembleTransferLeg(
+      type: TransactionType.expense,
+      accountId: state.accountId,
+      now: now,
+      id: state.existingId ?? '',
+      linkedTransactionId: state.linkedTransactionId,
+      createdAt: state.originalCreatedAt,
+    );
+    final income = _assembleTransferLeg(
+      type: TransactionType.income,
+      accountId: state.destinationAccountId,
+      now: now,
+      id: state.linkedTransactionId ?? '',
+      linkedTransactionId: state.existingId,
+      createdAt: state.destinationCreatedAt,
+    );
+    await _updateTransferLegs(expense: expense, income: income);
+  }
+
   /// The two writes aren't atomic: a failure between them can leave the
   /// legs divergent. Mirrors the existing non-batched create path; a proper
   /// fix needs a repository-level transfer update.
-  Future<void> _updateTransfer() async {
-    final now = DateTime.now();
-    final expense = TransactionEntity(
-      id: state.existingId ?? '',
-      userId: state.userId,
-      accountId: state.accountId,
-      categoryId: '',
-      type: TransactionType.expense,
-      amount: state.amount,
-      description: state.description,
-      date: state.date,
-      notes: state.notes,
-      linkedTransactionId: state.linkedTransactionId,
-      dueDate: state.date,
-      settledAt: state.date,
-      createdAt: state.originalCreatedAt ?? now,
-      updatedAt: now,
-    );
-    final income = TransactionEntity(
-      id: state.linkedTransactionId ?? '',
-      userId: state.userId,
-      accountId: state.destinationAccountId,
-      categoryId: '',
-      type: TransactionType.income,
-      amount: state.amount,
-      description: state.description,
-      date: state.date,
-      notes: state.notes,
-      linkedTransactionId: state.existingId,
-      dueDate: state.date,
-      settledAt: state.date,
-      createdAt: state.destinationCreatedAt ?? now,
-      updatedAt: now,
-    );
-
+  Future<void> _updateTransferLegs({
+    required TransactionEntity expense,
+    required TransactionEntity income,
+  }) async {
     final expenseResult = await _updateTransaction(expense);
     final expenseFailure = expenseResult.fold((f) => f, (_) => null);
     if (expenseFailure != null) {
@@ -446,292 +433,6 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       (_) => emit(state.copyWith(status: FormStatus.success)),
     );
   }
-}
-
-class TransactionFormState extends Equatable {
-  const TransactionFormState({
-    required this.userId,
-    required this.type,
-    required this.amount,
-    required this.description,
-    required this.date,
-    required this.accountId,
-    required this.categoryId,
-    required this.notes,
-    required this.status,
-    required this.isTransfer,
-    this.settlementStatus = TransactionSettlementStatus.paid,
-    this.recurrence = TransactionRecurrence.single,
-    this.recurrenceIntervalMonths = 1,
-    this.installmentCount = 2,
-    this.destinationAccountId = '',
-    this.existingId,
-    this.linkedTransactionId,
-    this.recurrenceGroupId,
-    this.recurrenceIndex,
-    this.recurrenceTotal,
-    this.recurrenceBaseDescription,
-    this.recurrenceEndDate,
-    this.originalDueDate,
-    this.originalTransaction,
-    this.originalCreatedAt,
-    this.destinationCreatedAt,
-    this.savedTransactionId,
-    this.continueAfterSave = false,
-    this.failure,
-  });
-
-  factory TransactionFormState.initial({
-    required String userId,
-    TransactionEntity? existing,
-    String? prefillAccountId,
-  }) {
-    if (existing != null && existing.isTransfer) {
-      return TransactionFormState._forTransferEdit(
-        userId: userId,
-        tapped: existing,
-      );
-    }
-    return TransactionFormState(
-      userId: userId,
-      type: existing?.type ?? TransactionType.expense,
-      amount: existing?.amount ?? 0,
-      description:
-          existing?.recurrenceBaseDescription ?? existing?.description ?? '',
-      date: existing?.dueDate ?? existing?.date ?? DateTime.now(),
-      // Prefill only matters in create mode — when editing, the existing
-      // accountId always wins so we never silently rewrite it.
-      accountId: existing?.accountId ?? prefillAccountId ?? '',
-      categoryId: existing?.categoryId ?? '',
-      notes: existing?.notes ?? '',
-      status: FormStatus.initial,
-      isTransfer: false,
-      settlementStatus:
-          existing?.settlementStatus ?? TransactionSettlementStatus.paid,
-      recurrence: existing?.recurrence ?? TransactionRecurrence.single,
-      recurrenceGroupId: existing?.recurrenceGroupId,
-      recurrenceIntervalMonths: existing?.recurrenceIntervalMonths ?? 1,
-      recurrenceIndex: existing?.recurrenceIndex,
-      recurrenceTotal: existing?.recurrenceTotal,
-      recurrenceBaseDescription: existing?.recurrenceBaseDescription,
-      recurrenceEndDate: existing?.recurrenceEndDate,
-      installmentCount: existing?.recurrenceTotal ?? 2,
-      originalDueDate: existing?.dueDate,
-      originalTransaction: existing,
-      existingId: existing?.id,
-      linkedTransactionId: existing?.linkedTransactionId,
-      originalCreatedAt: existing?.createdAt,
-    );
-  }
-
-  /// Seeds the form from one leg of a transfer being edited. A transfer is
-  /// a pair: the expense leg holds the source account, the income leg the
-  /// destination. Only the tapped leg is known here, but its
-  /// `linkedTransactionId` already identifies the other leg — so both
-  /// transaction ids are known up front and `existingId`/`linkedTransactionId`
-  /// are normalized to expense/income respectively. The counterpart leg's
-  /// *account* is filled in later by `_resolveTransferCounterpart`.
-  factory TransactionFormState._forTransferEdit({
-    required String userId,
-    required TransactionEntity tapped,
-  }) {
-    final tappedIsExpense = tapped.type == TransactionType.expense;
-    return TransactionFormState(
-      userId: userId,
-      type: tapped.type,
-      amount: tapped.amount,
-      description: tapped.description,
-      date: tapped.date,
-      accountId: tappedIsExpense ? tapped.accountId : '',
-      destinationAccountId: tappedIsExpense ? '' : tapped.accountId,
-      categoryId: '',
-      notes: tapped.notes ?? '',
-      status: FormStatus.initial,
-      isTransfer: true,
-      existingId: tappedIsExpense ? tapped.id : tapped.linkedTransactionId,
-      linkedTransactionId: tappedIsExpense
-          ? tapped.linkedTransactionId
-          : tapped.id,
-      originalCreatedAt: tappedIsExpense ? tapped.createdAt : null,
-      destinationCreatedAt: tappedIsExpense ? null : tapped.createdAt,
-    );
-  }
-
-  final String userId;
-  final TransactionType type;
-  final double amount;
-  final String description;
-  final DateTime date;
-  final String accountId;
-  final String categoryId;
-  final String notes;
-  final FormStatus status;
-  final bool isTransfer;
-  final TransactionSettlementStatus settlementStatus;
-  final TransactionRecurrence recurrence;
-  final String? recurrenceGroupId;
-  final int recurrenceIntervalMonths;
-  final int? recurrenceIndex;
-  final int? recurrenceTotal;
-  final String? recurrenceBaseDescription;
-  final DateTime? recurrenceEndDate;
-  final int installmentCount;
-  final String destinationAccountId;
-  final String? existingId;
-  final String? linkedTransactionId;
-  final DateTime? originalDueDate;
-  final TransactionEntity? originalTransaction;
-
-  /// Captured at form open time on edit so `_submitTransaction` /
-  /// `_updateTransfer` can preserve the (expense leg, when a transfer)
-  /// transaction's original `createdAt`. `null` in create mode — submit
-  /// falls back to `DateTime.now()`.
-  final DateTime? originalCreatedAt;
-
-  /// The income (destination) leg's original `createdAt`, captured when
-  /// editing a transfer so `_updateTransfer` preserves its audit trail.
-  /// `null` outside transfer edits.
-  final DateTime? destinationCreatedAt;
-
-  /// Set on `FormStatus.success` to the id of the row written by the
-  /// last submit (created or updated). Lets callers chain follow-ups without
-  /// re-fetching.
-  final String? savedTransactionId;
-
-  /// Mirrors the flag passed to `submit()` so the page can tell, on
-  /// `FormStatus.success`, whether to navigate away (false) or keep the
-  /// user on the form with prefilled fields (true) for fast back-to-back
-  /// entry. Reset to false by `prepareForNext()`.
-  final bool continueAfterSave;
-  final Failure? failure;
-
-  bool get isEditing => existingId != null;
-  bool get isSequenceMember =>
-      originalTransaction?.isRecurring ??
-      recurrence != TransactionRecurrence.single;
-
-  bool get _isDateValid {
-    if (!isTransfer &&
-        settlementStatus == TransactionSettlementStatus.pending) {
-      return true;
-    }
-    return !_isAfterToday(date);
-  }
-
-  bool get isValid {
-    if (amount <= 0 || !_isDateValid || accountId.isEmpty) return false;
-
-    if (isTransfer) {
-      return destinationAccountId.isNotEmpty &&
-          accountId != destinationAccountId;
-    }
-
-    return categoryId.isNotEmpty;
-  }
-
-  TransactionFormState copyWith({
-    TransactionType? type,
-    double? amount,
-    String? description,
-    DateTime? date,
-    String? accountId,
-    String? categoryId,
-    String? destinationAccountId,
-    String? notes,
-    FormStatus? status,
-    bool? isTransfer,
-    TransactionSettlementStatus? settlementStatus,
-    TransactionRecurrence? recurrence,
-    String? recurrenceGroupId,
-    int? recurrenceIntervalMonths,
-    int? recurrenceIndex,
-    int? recurrenceTotal,
-    String? recurrenceBaseDescription,
-    DateTime? recurrenceEndDate,
-    int? installmentCount,
-    DateTime? originalDueDate,
-    TransactionEntity? originalTransaction,
-    DateTime? originalCreatedAt,
-    DateTime? destinationCreatedAt,
-    String? savedTransactionId,
-    bool? continueAfterSave,
-    Failure? failure,
-  }) {
-    return TransactionFormState(
-      userId: userId,
-      type: type ?? this.type,
-      amount: amount ?? this.amount,
-      description: description ?? this.description,
-      date: date ?? this.date,
-      accountId: accountId ?? this.accountId,
-      categoryId: categoryId ?? this.categoryId,
-      destinationAccountId: destinationAccountId ?? this.destinationAccountId,
-      notes: notes ?? this.notes,
-      status: status ?? this.status,
-      isTransfer: isTransfer ?? this.isTransfer,
-      settlementStatus: settlementStatus ?? this.settlementStatus,
-      recurrence: recurrence ?? this.recurrence,
-      recurrenceGroupId: recurrenceGroupId ?? this.recurrenceGroupId,
-      recurrenceIntervalMonths:
-          recurrenceIntervalMonths ?? this.recurrenceIntervalMonths,
-      recurrenceIndex: recurrenceIndex ?? this.recurrenceIndex,
-      recurrenceTotal: recurrenceTotal ?? this.recurrenceTotal,
-      recurrenceBaseDescription:
-          recurrenceBaseDescription ?? this.recurrenceBaseDescription,
-      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
-      installmentCount: installmentCount ?? this.installmentCount,
-      existingId: existingId,
-      linkedTransactionId: linkedTransactionId,
-      originalDueDate: originalDueDate ?? this.originalDueDate,
-      originalTransaction: originalTransaction ?? this.originalTransaction,
-      // These are only ever assigned (filling in the counterpart leg on
-      // transfer edit), never cleared — so `?? this.` is correct.
-      originalCreatedAt: originalCreatedAt ?? this.originalCreatedAt,
-      destinationCreatedAt: destinationCreatedAt ?? this.destinationCreatedAt,
-      savedTransactionId: savedTransactionId ?? this.savedTransactionId,
-      continueAfterSave: continueAfterSave ?? this.continueAfterSave,
-      failure: failure ?? this.failure,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    userId,
-    type,
-    amount,
-    description,
-    date,
-    accountId,
-    categoryId,
-    destinationAccountId,
-    notes,
-    status,
-    isTransfer,
-    settlementStatus,
-    recurrence,
-    recurrenceGroupId,
-    recurrenceIntervalMonths,
-    recurrenceIndex,
-    recurrenceTotal,
-    recurrenceBaseDescription,
-    recurrenceEndDate,
-    installmentCount,
-    existingId,
-    linkedTransactionId,
-    originalDueDate,
-    originalTransaction,
-    originalCreatedAt,
-    destinationCreatedAt,
-    savedTransactionId,
-    continueAfterSave,
-    failure,
-  ];
-}
-
-bool _isAfterToday(DateTime date) {
-  final now = DateTime.now();
-  final endOfToday = DateTime(now.year, now.month, now.day, 23, 59, 59);
-  return date.isAfter(endOfToday);
 }
 
 int _clampInt(int value, int min, int max) {

@@ -4,13 +4,42 @@ import { logger } from 'firebase-functions/v2';
 import { runChatTurn } from './chat/pipeline';
 import { transcribeAudio } from './chat/transcribe';
 import type { HistoryTurn } from './chat/types';
-import { isEmailAllowed } from './access/allowlist';
+import {
+  assertAllowedCaller,
+  requireSignedInCaller,
+} from './access/assertAllowedCaller';
 import { deleteUserAsAdmin as deleteUserAsAdminImpl } from './admin/deleteUser';
 import { notifyTransactionsDue } from './transactions/notifyTransactionsDue';
 
 admin.initializeApp();
 
 export { notifyTransactionsDue };
+
+/**
+ * Runs a callable's core work, converting any throw into the logged
+ * `HttpsError('internal')` shape the Flutter client maps to a localized
+ * failure. Validation must happen *before* entering `work` so that only
+ * genuine server-side failures end up logged here.
+ *
+ * @param callableName Used as the log prefix (`<name> failed`).
+ * @param fallbackMessage Client-facing message when the error has none.
+ * @param work The callable's core async work.
+ * @returns Whatever `work` resolves to.
+ * @example
+ *   return wrapCallableErrors('chatSend', 'Chat failed', () => run());
+ */
+async function wrapCallableErrors<T>(
+  callableName: string,
+  fallbackMessage: string,
+  work: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await work();
+  } catch (error) {
+    logger.error(`${callableName} failed`, error);
+    throw new HttpsError('internal', (error as Error).message ?? fallbackMessage);
+  }
+}
 
 interface ChatSendRequest {
   content: string;
@@ -26,14 +55,7 @@ export const chatSend = onCall<ChatSendRequest>(
     invoker: 'public',
   },
   async (request) => {
-    const userId = request.auth?.uid;
-    const email = request.auth?.token?.email as string | undefined;
-    if (!userId) {
-      throw new HttpsError('unauthenticated', 'Sign-in required to use chat.');
-    }
-    if (!(await isEmailAllowed(email))) {
-      throw new HttpsError('permission-denied', 'Not allowed.');
-    }
+    const { uid: userId } = await assertAllowedCaller(request);
 
     const content = (request.data?.content ?? '').toString();
     const rawImage = request.data?.image;
@@ -55,18 +77,14 @@ export const chatSend = onCall<ChatSendRequest>(
         .slice(-50)
       : [];
 
-    try {
-      const reply = await runChatTurn({
+    return wrapCallableErrors('chatSend', 'Chat failed', () =>
+      runChatTurn({
         userId,
         content,
         history,
         image,
-      });
-      return reply;
-    } catch (error) {
-      logger.error('chatSend failed', error);
-      throw new HttpsError('internal', (error as Error).message ?? 'Chat failed');
-    }
+      }),
+    );
   },
 );
 
@@ -82,15 +100,10 @@ export const deleteUserAsAdmin = onCall<DeleteUserAsAdminCallableRequest>(
     invoker: 'public',
   },
   async (request) => {
-    if (!request.auth?.uid) {
-      throw new HttpsError('unauthenticated', 'Sign-in required.');
-    }
-    const callerEmail = request.auth.token?.email as string | undefined;
-    return deleteUserAsAdminImpl(
-      request.data,
-      callerEmail,
-      request.auth.uid,
-    );
+    // Master-only guard lives inside the impl — only the signed-in check
+    // is shared with the allowlisted user-facing callables.
+    const caller = requireSignedInCaller(request);
+    return deleteUserAsAdminImpl(request.data, caller.email, caller.uid);
   },
 );
 
@@ -106,23 +119,14 @@ export const transcribeChatAudio = onCall<TranscribeRequest>(
     invoker: 'public',
   },
   async (request) => {
-    if (!request.auth?.uid) {
-      throw new HttpsError('unauthenticated', 'Sign-in required.');
-    }
-    const email = request.auth.token?.email as string | undefined;
-    if (!(await isEmailAllowed(email))) {
-      throw new HttpsError('permission-denied', 'Not allowed.');
-    }
+    await assertAllowedCaller(request);
     const audio = request.data?.audio;
     if (!audio?.data || !audio.mimeType) {
       throw new HttpsError('invalid-argument', 'audio.data and audio.mimeType are required.');
     }
-    try {
+    return wrapCallableErrors('transcribeChatAudio', 'Transcription failed', async () => {
       const transcript = await transcribeAudio(audio);
       return { transcript };
-    } catch (error) {
-      logger.error('transcribeChatAudio failed', error);
-      throw new HttpsError('internal', (error as Error).message ?? 'Transcription failed');
-    }
+    });
   },
 );

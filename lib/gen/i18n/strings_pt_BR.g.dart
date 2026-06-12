@@ -39,6 +39,7 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	// Translations
 	@override late final _Translations$general$pt_BR general = _Translations$general$pt_BR._(_root);
 	@override late final _Translations$errors$pt_BR errors = _Translations$errors$pt_BR._(_root);
+	@override late final _Translations$csvImport$pt_BR csvImport = _Translations$csvImport$pt_BR._(_root);
 	@override late final _Translations$validators$pt_BR validators = _Translations$validators$pt_BR._(_root);
 	@override late final _Translations$auth$pt_BR auth = _Translations$auth$pt_BR._(_root);
 	@override late final _Translations$accessControl$pt_BR accessControl = _Translations$accessControl$pt_BR._(_root);
@@ -65,27 +66,15 @@ class _Translations$general$pt_BR implements Translations$general$en {
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get loading => 'Carregando...';
-	@override String get error => 'Ocorreu um erro';
 	@override String get retry => 'Tentar novamente';
 	@override String get cancel => 'Cancelar';
-	@override String get confirm => 'Confirmar';
 	@override String get save => 'Salvar';
 	@override String get delete => 'Excluir';
-	@override String get edit => 'Editar';
 	@override String get add => 'Adicionar';
-	@override String get search => 'Buscar';
-	@override String get filter => 'Filtrar';
 	@override String get noResults => 'Nenhum resultado encontrado';
-	@override String get success => 'Sucesso';
-	@override String get or => 'ou';
 	@override String get ok => 'OK';
 	@override String get update => 'Atualizar';
 	@override String get create => 'Criar';
-	@override String get yes => 'Sim';
-	@override String get no => 'Não';
-	@override String get all => 'Todos';
-	@override String get defaultLabel => 'Padrão';
 }
 
 // Path: errors
@@ -100,6 +89,18 @@ class _Translations$errors$pt_BR implements Translations$errors$en {
 	@override String get auth => 'Falha na autenticação. Entre novamente.';
 	@override String get ai => 'O assistente encontrou um problema. Tente novamente.';
 	@override String get accessDenied => 'O acesso é restrito para esta conta.';
+	@override String get emptyName => 'O nome não pode ficar vazio.';
+	@override String get negativeAmount => 'O valor não pode ser negativo.';
+}
+
+// Path: csvImport
+class _Translations$csvImport$pt_BR implements Translations$csvImport$en {
+	_Translations$csvImport$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$csvImport$errors$pt_BR errors = _Translations$csvImport$errors$pt_BR._(_root);
 }
 
 // Path: validators
@@ -114,8 +115,6 @@ class _Translations$validators$pt_BR implements Translations$validators$en {
 	@override String get emailInvalid => 'Informe um e-mail válido.';
 	@override String get amountRequired => 'O valor é obrigatório.';
 	@override String get amountInvalid => 'Informe um valor válido.';
-	@override String get selectAccount => 'Selecione uma conta';
-	@override String get selectCategory => 'Selecione uma categoria';
 }
 
 // Path: auth
@@ -161,6 +160,7 @@ class _Translations$masterPanel$pt_BR implements Translations$masterPanel$en {
 	@override String get addEmailNoteLabel => 'Observação (opcional)';
 	@override String get addEmailNoteHint => 'ex.: nome do amigo';
 	@override String get addEmailSuccess => 'E-mail autorizado.';
+	@override String get masterAlreadyAllowed => 'O master já tem acesso.';
 	@override String get removeEmailTitle => 'Remover acesso';
 	@override String removeEmailBody({required Object email}) => 'Isso remove o acesso de ${email}. Os dados existentes serão mantidos.';
 	@override String get removeEmailConfirm => 'Remover';
@@ -178,7 +178,6 @@ class _Translations$onboarding$pt_BR implements Translations$onboarding$en {
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get tagline => 'Tome controle das suas finanças pessoais\ncom acompanhamento inteligente e ajuda da IA.';
 	@override String get step1Title => 'Acompanhe suas finanças';
 	@override String get step1Body => 'Registre receitas e despesas sem esforço. Mantenha uma visão clara de para onde seu dinheiro vai.';
 	@override String get step2Title => 'Lançamentos com IA';
@@ -202,10 +201,6 @@ class _Translations$nav$pt_BR implements Translations$nav$en {
 	@override String get planning => 'Planejamento';
 	@override String get payablesReceivables => 'A pagar e receber';
 	@override String get paidAndReceived => 'Pagas e recebidas';
-	@override String get payables => 'Contas a pagar';
-	@override String get receivables => 'Contas a receber';
-	@override String get paidAccounts => 'Contas pagas';
-	@override String get receivedAccounts => 'Contas recebidas';
 	@override String get investments => 'Investimentos';
 	@override String get collapseSidebar => 'Recolher menu';
 	@override String get expandSidebar => 'Expandir menu';
@@ -223,28 +218,18 @@ class _Translations$dashboard$pt_BR implements Translations$dashboard$en {
 	@override String get income => 'Receitas';
 	@override String get expenses => 'Despesas';
 	@override String get netResult => 'Resultado';
-	@override String get recentTransactions => 'Transações recentes';
-	@override String get seeAll => 'Ver tudo';
-	@override String get thisMonth => 'Este mês';
-	@override String get noTransactionsYet => 'Nenhuma transação ainda';
 	@override String get accountBalances => 'Saldos';
-	@override String get monthResult => 'Resultado do mês';
 	@override String get expensesByCategory => 'Despesas por categoria';
 	@override String get incomeByCategory => 'Receitas por categoria';
 	@override String get noAccountsYet => 'Nenhuma conta cadastrada ainda';
 	@override String get creditCardBalance => 'Saldo do cartão';
-	@override String get noCreditCardsYet => 'Nenhum cartão de crédito cadastrado';
-	@override String get investmentBalance => 'Investimentos';
-	@override String get noInvestmentsYet => 'Nenhuma conta de investimento cadastrada';
 	@override String get noExpensesYet => 'Nenhuma despesa neste mês';
 	@override String get noIncomeYet => 'Nenhuma receita neste mês';
 	@override String get totalExpenses => 'Total de despesas';
-	@override String get totalIncome => 'Total de receitas';
 	@override String get transactionList => 'Lista de transações';
 	@override String get subcategories => 'Subcategorias';
 	@override String get noSubcategories => 'Sem subcategorias';
 	@override String get total => 'Total';
-	@override String get close => 'Fechar';
 }
 
 // Path: fiftyThirtyTwenty
@@ -269,7 +254,6 @@ class _Translations$fiftyThirtyTwenty$pt_BR implements Translations$fiftyThirtyT
 	@override String get ctaCreateInvestment => 'Criar conta';
 	@override String get ctaClassify => 'Classificar';
 	@override String get unclassifiedLabel => 'Sem classificação';
-	@override String get principalDisclaimer => 'Investimento aqui = aportes do mês (transferências corrente → investimento). Rendimento de mercado não é acompanhado.';
 	@override String get editTargets => 'Editar metas';
 	@override String get editTargetsHint => 'Defina o percentual de cada categoria. Os três precisam somar 100%.';
 	@override String get resetToClassic => 'Restaurar 50/30/20 padrão';
@@ -279,7 +263,6 @@ class _Translations$fiftyThirtyTwenty$pt_BR implements Translations$fiftyThirtyT
 	@override String get bucketEmpty => 'Sem despesas nesse grupo este mês.';
 	@override String get historyTitle => 'Últimos 3 meses';
 	@override String get historyEmpty => 'Ainda não há histórico para mostrar.';
-	@override String get navLabel => 'Planejamento';
 	@override String get subTabBudgets => 'Orçamentos';
 	@override String get subTabFiftyThirtyTwenty => '50/30/20';
 }
@@ -291,19 +274,12 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Transações';
-	@override String get empty => 'Nenhuma transação. Adicione sua primeira para começar.';
 	@override String get addTransaction => 'Nova transação';
 	@override String get editTransaction => 'Editar transação';
-	@override String get confirmPaymentTitle => 'Confirmar pagamento';
-	@override String get confirmReceiptTitle => 'Confirmar recebimento';
-	@override String get transactionDetails => 'Detalhes da transação';
 	@override String get transaction => 'Transação';
-	@override String get transactionNotFound => 'Transação não encontrada';
 	@override String get type => 'Tipo';
 	@override String get income => 'Receita';
 	@override String get expense => 'Despesa';
-	@override String get amount => 'Valor';
 	@override String get amountLabel => 'Valor';
 	@override String get amountHint => '0,00';
 	@override String get description => 'Descrição';
@@ -344,7 +320,6 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get sequenceDeleteMessage => 'Este lançamento faz parte de uma sequência. Escolha se deseja excluir apenas esta ocorrência ou esta e as próximas pendentes.';
 	@override String get sequenceDeleteOnlyThis => 'Excluir apenas esta';
 	@override String get sequenceDeleteThisAndFollowing => 'Excluir esta e as próximas';
-	@override String get saved => 'Transação salva!';
 	@override String get deleted => 'Transação excluída.';
 	@override String get importCsv => 'Importar transações';
 	@override String get importCsvIntroTitle => 'Importar transações de CSV';
@@ -357,15 +332,9 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get importInProgressTitle => 'Importando transações...';
 	@override String importProgressCounter({required Object processed, required Object total}) => '${processed} de ${total}';
 	@override String importMissingFields({required Object fields}) => 'Preencha: ${fields}';
-	@override String importReview({required Object count}) => 'Revisar importação: ${count} transações serão criadas.';
 	@override String get importMissingCategories => 'Categorias faltando:';
 	@override String get importMissingAccounts => 'Contas faltando:';
-	@override String importSkippedRows({required Object count}) => '${count} linhas foram ignoradas (formato inválido).';
 	@override String importSuccess({required Object imported, required Object skipped}) => 'Importadas ${imported} transações. Ignoradas ${skipped} linhas.';
-	@override String get importBlocked => 'Não é possível importar: algumas categorias ou contas não foram encontradas.';
-	@override String importTransfers({required Object count}) => '${count} transferências';
-	@override String importExpenses({required Object count}) => '${count} despesas';
-	@override String importIncomes({required Object count}) => '${count} receitas';
 	@override String get importPageTitle => 'Revisar importação';
 	@override String get importPageSubtitle => 'Toque numa linha para editar · lixeira para remover';
 	@override String importTabExpense({required Object count}) => 'Despesa (${count})';
@@ -389,8 +358,6 @@ class _Translations$accounts$pt_BR implements Translations$accounts$en {
 	@override String get title => 'Contas';
 	@override String get addAccount => 'Nova conta';
 	@override String get editAccount => 'Editar conta';
-	@override String get account => 'Conta';
-	@override String get accountNotFound => 'Conta não encontrada';
 	@override String get checking => 'Conta corrente';
 	@override String get creditCard => 'Cartão de crédito';
 	@override String get investment => 'Conta investimento';
@@ -401,8 +368,6 @@ class _Translations$accounts$pt_BR implements Translations$accounts$en {
 	@override String get name => 'Apelido da conta';
 	@override String get nameHint => 'ex.: Nubank Gui';
 	@override String get bank => 'Banco';
-	@override String get bankHint => 'ex.: Nubank';
-	@override String get bankOthers => 'Outros';
 	@override String get linkedAccount => 'Conta corrente vinculada';
 	@override String get balance => 'Saldo';
 	@override String get currentBalance => 'Saldo atual';
@@ -414,14 +379,10 @@ class _Translations$accounts$pt_BR implements Translations$accounts$en {
 	@override String get closingDay => 'Dia de fechamento';
 	@override String get dueDay => 'Dia de vencimento';
 	@override String get availableCredit => 'Limite disponível';
-	@override String get currentBill => 'Fatura atual';
-	@override String get type => 'Tipo';
 	@override String get empty => 'Nenhuma conta. Adicione sua primeira conta bancária ou cartão.';
 	@override String get emptySubtitle => 'Adicione suas contas bancárias e cartões de crédito.';
 	@override String get accountUpdated => 'Conta atualizada';
 	@override String get accountCreated => 'Conta criada';
-	@override String get saved => 'Conta salva!';
-	@override String get deleted => 'Conta excluída.';
 	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta conta?';
 	@override String get statement => 'Resumo mensal';
 	@override String get monthIncome => 'Receitas';
@@ -478,15 +439,10 @@ class _Translations$categories$pt_BR implements Translations$categories$en {
 	@override String get nameHint => 'ex.: Mercado';
 	@override String get incomeType => 'Receita';
 	@override String get expenseType => 'Despesa';
-	@override String get bothType => 'Ambos';
 	@override String get empty => 'Nenhuma categoria. As categorias aparecerão aqui.';
-	@override String get saved => 'Categoria salva!';
-	@override String get deleted => 'Categoria excluída.';
-	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta categoria?';
 	@override String get reassignPrompt => 'Selecione uma categoria para realocar as transações:';
 	@override String get categoryUpdated => 'Categoria atualizada';
 	@override String get categoryCreated => 'Categoria criada';
-	@override String get cannotDeleteDefault => 'Categorias padrão não podem ser excluídas.';
 	@override String get cannotDeleteLast => 'Crie outra categoria antes de excluir esta.';
 	@override String get selectIcon => 'Selecionar ícone';
 	@override String get selectColor => 'Selecionar cor';
@@ -505,9 +461,6 @@ class _Translations$categories$pt_BR implements Translations$categories$en {
 	@override String get importCsvExampleDownloaded => 'Exemplo salvo.';
 	@override String get importCsvExampleFailed => 'Não foi possível salvar o arquivo de exemplo.';
 	@override String get importCsvErrorTitle => 'Não foi possível importar o CSV';
-	@override String importSuccess({required Object count}) => 'Importadas ${count} categorias.';
-	@override String importReview({required Object arg}) => 'Revisar importação: ${arg} novos itens serão criados.';
-	@override String importDuplicates({required Object arg}) => '${arg} itens duplicados serão ignorados.';
 	@override String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Importados ${imported} itens. Ignorados ${duplicates} duplicados.';
 	@override String get importPageTitle => 'Revisar importação';
 	@override String get importPageSubtitle => 'Toque num item para editar · arraste a lixeira para remover';
@@ -551,14 +504,9 @@ class _Translations$chat$pt_BR implements Translations$chat$en {
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Assistente IA';
 	@override String get placeholder => 'Digite uma mensagem...';
 	@override String get welcomeTitle => 'Olá! Sou seu assistente financeiro.';
 	@override String get welcomeBody => 'Me conte sobre suas transações e eu te ajudo a registrá-las.';
-	@override String get confirmPrompt => 'Detectei a seguinte transação. Está correta?';
-	@override String get confirmed => 'Transação salva!';
-	@override String get cancelled => 'Transação cancelada.';
-	@override String get error => 'Desculpe, não consegui entender. Pode tentar de novo?';
 	@override String get aiName => 'Finanço IA';
 	@override String get online => 'Online';
 	@override String get today => 'Hoje';
@@ -594,7 +542,6 @@ class _Translations$budgets$pt_BR implements Translations$budgets$en {
 	@override String get summarySpent => 'Gasto';
 	@override String get summaryRemaining => 'Disponível';
 	@override String spentOf({required Object spent, required Object cap}) => '${spent} de ${cap}';
-	@override String percentageUsed({required Object value}) => '${value}% usado';
 	@override String remainingOf({required Object value}) => 'Restam ${value}';
 	@override String overBy({required Object value}) => 'Estourou em ${value}';
 	@override String get statusSafe => 'Tranquilo';
@@ -632,17 +579,14 @@ class _Translations$profile$pt_BR implements Translations$profile$en {
 
 	// Translations
 	@override String get title => 'Perfil';
-	@override String get editProfile => 'Editar perfil';
 	@override String get accounts => 'Contas';
 	@override String get categories => 'Categorias';
-	@override String get theme => 'Tema';
 	@override String get themeLight => 'Claro';
 	@override String get themeDark => 'Escuro';
 	@override String get themeSystem => 'Sistema';
 	@override String get signOutConfirm => 'Tem certeza que deseja sair?';
 	@override String get clearData => 'Limpar todos os meus dados';
 	@override String get clearDataDescription => 'Excluir transações, chat, categorias e contas';
-	@override String get clearDataConfirm => 'Isso excluirá permanentemente todos os dados da sua conta. Continuar?';
 	@override String get clearDataConfirmHeadline => 'Esta ação é permanente';
 	@override String get clearDataConfirmBody => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.';
 	@override String get clearDataConfirmField => 'Digite seu e-mail para confirmar';
@@ -745,9 +689,7 @@ class _Translations$investments$pt_BR implements Translations$investments$en {
 	@override String get pickParentClass => 'Escolher classe pai';
 	@override String get parentPickerEmpty => 'Crie uma classe raiz primeiro.';
 	@override String get parentPickerNone => 'Nenhuma (classe raiz)';
-	@override String subclassInheritsHint({required Object parent}) => 'Subclasse herda ícone e cor de ${parent}.';
 	@override String subclassOf({required Object parent}) => 'Subclasse de ${parent}';
-	@override String subclassRowSubtitle({required Object percent}) => '${percent} da classe';
 	@override String get addSubclass => 'Adicionar subclasse';
 	@override String get classRowNoSubclasses => 'Sem subclasses ainda — toque para criar.';
 	@override String get classDetailTitle => 'Classe';
@@ -786,11 +728,20 @@ class _Translations$investments$pt_BR implements Translations$investments$en {
 	@override String get fabAddHolding => 'Nova alocação';
 	@override String get fabAddHoldingSubtitle => 'Indique onde uma parte do saldo está investida.';
 	@override String get fabAddHoldingNoAccount => 'Crie uma conta de investimento primeiro.';
-	@override String get fabAddHoldingNoClass => 'Crie uma classe primeiro.';
 	@override String get fabAddHoldingNoSubclass => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.';
 	@override String allocationExceedsBalance({required Object available}) => 'A alocação excede o saldo disponível nesta conta (${available}).';
 	@override String targetSumExceedsRoot({required Object available}) => 'A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: ${available}.';
 	@override String targetSumExceedsSub({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.';
+	@override String get targetPercentOutOfRange => 'A porcentagem-alvo deve estar entre 0 e 100.';
+	@override String get parentClassNotFound => 'Classe pai não encontrada.';
+	@override String get subclassCannotBeParent => 'Uma subclasse não pode ser pai de outra subclasse.';
+	@override String get classCannotBeOwnParent => 'Uma classe não pode ser pai de si mesma.';
+	@override String get classOwnsSubclasses => 'Esta classe possui subclasses — remova-as ou mova-as para outra classe antes de transformá-la em subclasse.';
+	@override String deleteBlockedBySubclasses({required Object count}) => 'Não é possível excluir: ${count} subclasse(s) ainda apontam para esta classe.';
+	@override String deleteBlockedByHoldings({required Object count}) => 'Não é possível excluir: ${count} alocação(ões) ainda apontam para esta classe.';
+	@override String get assetClassNotFound => 'Classe de ativo não encontrada.';
+	@override String get holdingAccountNotInvestment => 'Alocações só podem ser vinculadas a contas de investimento.';
+	@override String get holdingRequiresSubclass => 'Alocações devem apontar para uma subclasse. Crie uma subclasse na classe escolhida primeiro.';
 }
 
 // Path: payablesReceivables
@@ -800,7 +751,6 @@ class _Translations$payablesReceivables$pt_BR implements Translations$payablesRe
 	final TranslationsPtBr _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Contas a pagar e receber';
 	@override String get empty => 'Nenhuma movimentação encontrada neste período.';
 	@override String get typePayable => 'A pagar';
 	@override String get typeReceivable => 'A receber';
@@ -816,7 +766,6 @@ class _Translations$payablesReceivables$pt_BR implements Translations$payablesRe
 	@override String get overdueGroup => 'Atrasadas';
 	@override String get todayGroup => 'Hoje';
 	@override String get upcomingGroup => 'Próximas';
-	@override String get deleteConfirm => 'Tem certeza que deseja excluir esta transação?';
 	@override String get transactionPaid => 'Transação marcada como paga';
 	@override String get transactionReceived => 'Recebimento marcado como recebido';
 	@override String get noExpenseCategory => 'Crie ao menos uma categoria de despesa primeiro.';
@@ -825,6 +774,32 @@ class _Translations$payablesReceivables$pt_BR implements Translations$payablesRe
 	@override String get formDetails => 'Detalhes';
 	@override String get formClassification => 'Classificação';
 	@override String get pickCategory => 'Escolha uma categoria';
+}
+
+// Path: csvImport.errors
+class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
+	_Translations$csvImport$errors$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get emptyFile => 'O arquivo CSV está vazio ou é inválido.';
+	@override String missingColumn({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".';
+	@override String get noValidAccounts => 'O arquivo CSV não tem contas válidas.';
+	@override String get noValidCategories => 'O arquivo CSV não tem categorias válidas.';
+	@override String get noValidTransactions => 'O arquivo CSV não tem transações válidas.';
+	@override String get noValidBudgets => 'O arquivo CSV não tem orçamentos válidos.';
+	@override String accountTypeEmpty({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Conta Corrente ou Cartão de Crédito.';
+	@override String accountTypeInvalid({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Conta Corrente ou Cartão de Crédito.';
+	@override String accountTypeInvestment({required Object row}) => 'Linha ${row}: contas de investimento não podem ser importadas por CSV nesta versão. Crie-as manualmente na tela de adicionar conta.';
+	@override String categoryTypeEmpty({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Receita, Despesa, Income ou Expense.';
+	@override String categoryTypeInvalid({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Receita, Despesa, Income ou Expense.';
+	@override String transactionTypeEmpty({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Despesa, Receita, Transferência ou Pagamento.';
+	@override String transactionTypeInvalid({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Despesa, Receita, Transferência ou Pagamento.';
+	@override String accountColumnEmpty({required Object row}) => 'Linha ${row}: a coluna de conta está vazia.';
+	@override String invalidAmount({required Object row, required Object value}) => 'Linha ${row}: valor inválido ou zerado "${value}".';
+	@override String invalidDate({required Object row, required Object value}) => 'Linha ${row}: data inválida "${value}". Use DD/MM/AAAA.';
+	@override String cannotImportMissing({required Object names}) => 'Não foi possível importar: faltando ${names}';
 }
 
 // Path: chat.action
@@ -846,8 +821,6 @@ class _Translations$chat$action$pt_BR implements Translations$chat$action$en {
 	@override String get budgetCreate => 'Criar orçamento';
 	@override String get budgetUpdate => 'Atualizar orçamento';
 	@override String get budgetDelete => 'Excluir orçamento';
-	@override String get fieldAmount => 'Valor';
-	@override String get fieldDescription => 'Descrição';
 	@override String get fieldCategory => 'Categoria';
 	@override String get fieldAccount => 'Conta';
 	@override String get fieldDate => 'Data';
@@ -856,12 +829,8 @@ class _Translations$chat$action$pt_BR implements Translations$chat$action$en {
 	@override String get fieldCreditLimit => 'Limite';
 	@override String get fieldClosingDay => 'Dia de fechamento';
 	@override String get fieldDueDay => 'Dia de vencimento';
-	@override String get fieldDueDate => 'Data de vencimento';
-	@override String get fieldRecurrence => 'Recorrência';
-	@override String get fieldName => 'Nome';
 	@override String get fieldLinkedAccount => 'Conta vinculada';
 	@override String get fieldBalance => 'Saldo inicial';
-	@override String get fieldNotes => 'Observações';
 	@override String get confirm => 'Confirmar';
 	@override String get cancel => 'Cancelar';
 	@override String get statusConfirmed => 'Confirmada';
@@ -878,7 +847,6 @@ class _Translations$chat$audio$pt_BR implements Translations$chat$audio$en {
 	@override String get start => 'Gravar mensagem de voz';
 	@override String get stop => 'Parar gravação';
 	@override String get cancel => 'Cancelar';
-	@override String get recording => 'Gravando';
 	@override String get transcribing => 'Transcrevendo...';
 	@override String get permissionDenied => 'Permissão de microfone necessária para gravar voz.';
 	@override String get recordError => 'Falha ao gravar áudio';
@@ -894,7 +862,6 @@ class _Translations$chat$image$pt_BR implements Translations$chat$image$en {
 	@override String get attach => 'Anexar imagem';
 	@override String get takePhoto => 'Tirar foto';
 	@override String get fromGallery => 'Escolher da galeria';
-	@override String get remove => 'Remover imagem';
 	@override String get pickError => 'Não foi possível escolher a imagem';
 	@override String get missing => 'Imagem não disponível';
 }
@@ -971,39 +938,44 @@ class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en
 extension on TranslationsPtBr {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'general.loading' => 'Carregando...',
-			'general.error' => 'Ocorreu um erro',
 			'general.retry' => 'Tentar novamente',
 			'general.cancel' => 'Cancelar',
-			'general.confirm' => 'Confirmar',
 			'general.save' => 'Salvar',
 			'general.delete' => 'Excluir',
-			'general.edit' => 'Editar',
 			'general.add' => 'Adicionar',
-			'general.search' => 'Buscar',
-			'general.filter' => 'Filtrar',
 			'general.noResults' => 'Nenhum resultado encontrado',
-			'general.success' => 'Sucesso',
-			'general.or' => 'ou',
 			'general.ok' => 'OK',
 			'general.update' => 'Atualizar',
 			'general.create' => 'Criar',
-			'general.yes' => 'Sim',
-			'general.no' => 'Não',
-			'general.all' => 'Todos',
-			'general.defaultLabel' => 'Padrão',
 			'errors.unexpected' => 'Algo deu errado. Tente novamente.',
 			'errors.server' => 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
 			'errors.auth' => 'Falha na autenticação. Entre novamente.',
 			'errors.ai' => 'O assistente encontrou um problema. Tente novamente.',
 			'errors.accessDenied' => 'O acesso é restrito para esta conta.',
+			'errors.emptyName' => 'O nome não pode ficar vazio.',
+			'errors.negativeAmount' => 'O valor não pode ser negativo.',
+			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
+			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
+			'csvImport.errors.noValidAccounts' => 'O arquivo CSV não tem contas válidas.',
+			'csvImport.errors.noValidCategories' => 'O arquivo CSV não tem categorias válidas.',
+			'csvImport.errors.noValidTransactions' => 'O arquivo CSV não tem transações válidas.',
+			'csvImport.errors.noValidBudgets' => 'O arquivo CSV não tem orçamentos válidos.',
+			'csvImport.errors.accountTypeEmpty' => ({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Conta Corrente ou Cartão de Crédito.',
+			'csvImport.errors.accountTypeInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Conta Corrente ou Cartão de Crédito.',
+			'csvImport.errors.accountTypeInvestment' => ({required Object row}) => 'Linha ${row}: contas de investimento não podem ser importadas por CSV nesta versão. Crie-as manualmente na tela de adicionar conta.',
+			'csvImport.errors.categoryTypeEmpty' => ({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Receita, Despesa, Income ou Expense.',
+			'csvImport.errors.categoryTypeInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Receita, Despesa, Income ou Expense.',
+			'csvImport.errors.transactionTypeEmpty' => ({required Object row}) => 'Linha ${row}: a coluna de tipo está vazia. Use Despesa, Receita, Transferência ou Pagamento.',
+			'csvImport.errors.transactionTypeInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: tipo inválido "${value}". Use Despesa, Receita, Transferência ou Pagamento.',
+			'csvImport.errors.accountColumnEmpty' => ({required Object row}) => 'Linha ${row}: a coluna de conta está vazia.',
+			'csvImport.errors.invalidAmount' => ({required Object row, required Object value}) => 'Linha ${row}: valor inválido ou zerado "${value}".',
+			'csvImport.errors.invalidDate' => ({required Object row, required Object value}) => 'Linha ${row}: data inválida "${value}". Use DD/MM/AAAA.',
+			'csvImport.errors.cannotImportMissing' => ({required Object names}) => 'Não foi possível importar: faltando ${names}',
 			'validators.required' => 'Este campo é obrigatório.',
 			'validators.emailRequired' => 'O e-mail é obrigatório.',
 			'validators.emailInvalid' => 'Informe um e-mail válido.',
 			'validators.amountRequired' => 'O valor é obrigatório.',
 			'validators.amountInvalid' => 'Informe um valor válido.',
-			'validators.selectAccount' => 'Selecione uma conta',
-			'validators.selectCategory' => 'Selecione uma categoria',
 			'auth.signOut' => 'Sair',
 			'auth.email' => 'E-mail',
 			'auth.emailHint' => 'seu@email.com',
@@ -1022,6 +994,7 @@ extension on TranslationsPtBr {
 			'masterPanel.addEmailNoteLabel' => 'Observação (opcional)',
 			'masterPanel.addEmailNoteHint' => 'ex.: nome do amigo',
 			'masterPanel.addEmailSuccess' => 'E-mail autorizado.',
+			'masterPanel.masterAlreadyAllowed' => 'O master já tem acesso.',
 			'masterPanel.removeEmailTitle' => 'Remover acesso',
 			'masterPanel.removeEmailBody' => ({required Object email}) => 'Isso remove o acesso de ${email}. Os dados existentes serão mantidos.',
 			'masterPanel.removeEmailConfirm' => 'Remover',
@@ -1030,7 +1003,6 @@ extension on TranslationsPtBr {
 			'masterPanel.deleteUserBody' => ({required Object name}) => 'Isso exclui permanentemente ${name} e todos os seus dados. Digite o e-mail para confirmar.',
 			'masterPanel.deleteUserConfirmField' => 'Digite o e-mail',
 			'masterPanel.deleteUserSuccess' => 'Usuário excluído.',
-			'onboarding.tagline' => 'Tome controle das suas finanças pessoais\ncom acompanhamento inteligente e ajuda da IA.',
 			'onboarding.step1Title' => 'Acompanhe suas finanças',
 			'onboarding.step1Body' => 'Registre receitas e despesas sem esforço. Mantenha uma visão clara de para onde seu dinheiro vai.',
 			'onboarding.step2Title' => 'Lançamentos com IA',
@@ -1045,10 +1017,6 @@ extension on TranslationsPtBr {
 			'nav.planning' => 'Planejamento',
 			'nav.payablesReceivables' => 'A pagar e receber',
 			'nav.paidAndReceived' => 'Pagas e recebidas',
-			'nav.payables' => 'Contas a pagar',
-			'nav.receivables' => 'Contas a receber',
-			'nav.paidAccounts' => 'Contas pagas',
-			'nav.receivedAccounts' => 'Contas recebidas',
 			'nav.investments' => 'Investimentos',
 			'nav.collapseSidebar' => 'Recolher menu',
 			'nav.expandSidebar' => 'Expandir menu',
@@ -1057,28 +1025,18 @@ extension on TranslationsPtBr {
 			'dashboard.income' => 'Receitas',
 			'dashboard.expenses' => 'Despesas',
 			'dashboard.netResult' => 'Resultado',
-			'dashboard.recentTransactions' => 'Transações recentes',
-			'dashboard.seeAll' => 'Ver tudo',
-			'dashboard.thisMonth' => 'Este mês',
-			'dashboard.noTransactionsYet' => 'Nenhuma transação ainda',
 			'dashboard.accountBalances' => 'Saldos',
-			'dashboard.monthResult' => 'Resultado do mês',
 			'dashboard.expensesByCategory' => 'Despesas por categoria',
 			'dashboard.incomeByCategory' => 'Receitas por categoria',
 			'dashboard.noAccountsYet' => 'Nenhuma conta cadastrada ainda',
 			'dashboard.creditCardBalance' => 'Saldo do cartão',
-			'dashboard.noCreditCardsYet' => 'Nenhum cartão de crédito cadastrado',
-			'dashboard.investmentBalance' => 'Investimentos',
-			'dashboard.noInvestmentsYet' => 'Nenhuma conta de investimento cadastrada',
 			'dashboard.noExpensesYet' => 'Nenhuma despesa neste mês',
 			'dashboard.noIncomeYet' => 'Nenhuma receita neste mês',
 			'dashboard.totalExpenses' => 'Total de despesas',
-			'dashboard.totalIncome' => 'Total de receitas',
 			'dashboard.transactionList' => 'Lista de transações',
 			'dashboard.subcategories' => 'Subcategorias',
 			'dashboard.noSubcategories' => 'Sem subcategorias',
 			'dashboard.total' => 'Total',
-			'dashboard.close' => 'Fechar',
 			'fiftyThirtyTwenty.title' => '50/30/20',
 			'fiftyThirtyTwenty.needsLabel' => 'Necessidades',
 			'fiftyThirtyTwenty.wantsLabel' => 'Desejos',
@@ -1094,7 +1052,6 @@ extension on TranslationsPtBr {
 			'fiftyThirtyTwenty.ctaCreateInvestment' => 'Criar conta',
 			'fiftyThirtyTwenty.ctaClassify' => 'Classificar',
 			'fiftyThirtyTwenty.unclassifiedLabel' => 'Sem classificação',
-			'fiftyThirtyTwenty.principalDisclaimer' => 'Investimento aqui = aportes do mês (transferências corrente → investimento). Rendimento de mercado não é acompanhado.',
 			'fiftyThirtyTwenty.editTargets' => 'Editar metas',
 			'fiftyThirtyTwenty.editTargetsHint' => 'Defina o percentual de cada categoria. Os três precisam somar 100%.',
 			'fiftyThirtyTwenty.resetToClassic' => 'Restaurar 50/30/20 padrão',
@@ -1104,22 +1061,14 @@ extension on TranslationsPtBr {
 			'fiftyThirtyTwenty.bucketEmpty' => 'Sem despesas nesse grupo este mês.',
 			'fiftyThirtyTwenty.historyTitle' => 'Últimos 3 meses',
 			'fiftyThirtyTwenty.historyEmpty' => 'Ainda não há histórico para mostrar.',
-			'fiftyThirtyTwenty.navLabel' => 'Planejamento',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Orçamentos',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
-			'transactions.title' => 'Transações',
-			'transactions.empty' => 'Nenhuma transação. Adicione sua primeira para começar.',
 			'transactions.addTransaction' => 'Nova transação',
 			'transactions.editTransaction' => 'Editar transação',
-			'transactions.confirmPaymentTitle' => 'Confirmar pagamento',
-			'transactions.confirmReceiptTitle' => 'Confirmar recebimento',
-			'transactions.transactionDetails' => 'Detalhes da transação',
 			'transactions.transaction' => 'Transação',
-			'transactions.transactionNotFound' => 'Transação não encontrada',
 			'transactions.type' => 'Tipo',
 			'transactions.income' => 'Receita',
 			'transactions.expense' => 'Despesa',
-			'transactions.amount' => 'Valor',
 			'transactions.amountLabel' => 'Valor',
 			'transactions.amountHint' => '0,00',
 			'transactions.description' => 'Descrição',
@@ -1160,7 +1109,6 @@ extension on TranslationsPtBr {
 			'transactions.sequenceDeleteMessage' => 'Este lançamento faz parte de uma sequência. Escolha se deseja excluir apenas esta ocorrência ou esta e as próximas pendentes.',
 			'transactions.sequenceDeleteOnlyThis' => 'Excluir apenas esta',
 			'transactions.sequenceDeleteThisAndFollowing' => 'Excluir esta e as próximas',
-			'transactions.saved' => 'Transação salva!',
 			'transactions.deleted' => 'Transação excluída.',
 			'transactions.importCsv' => 'Importar transações',
 			'transactions.importCsvIntroTitle' => 'Importar transações de CSV',
@@ -1173,15 +1121,9 @@ extension on TranslationsPtBr {
 			'transactions.importInProgressTitle' => 'Importando transações...',
 			'transactions.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} de ${total}',
 			'transactions.importMissingFields' => ({required Object fields}) => 'Preencha: ${fields}',
-			'transactions.importReview' => ({required Object count}) => 'Revisar importação: ${count} transações serão criadas.',
 			'transactions.importMissingCategories' => 'Categorias faltando:',
 			'transactions.importMissingAccounts' => 'Contas faltando:',
-			'transactions.importSkippedRows' => ({required Object count}) => '${count} linhas foram ignoradas (formato inválido).',
 			'transactions.importSuccess' => ({required Object imported, required Object skipped}) => 'Importadas ${imported} transações. Ignoradas ${skipped} linhas.',
-			'transactions.importBlocked' => 'Não é possível importar: algumas categorias ou contas não foram encontradas.',
-			'transactions.importTransfers' => ({required Object count}) => '${count} transferências',
-			'transactions.importExpenses' => ({required Object count}) => '${count} despesas',
-			'transactions.importIncomes' => ({required Object count}) => '${count} receitas',
 			'transactions.importPageTitle' => 'Revisar importação',
 			'transactions.importPageSubtitle' => 'Toque numa linha para editar · lixeira para remover',
 			'transactions.importTabExpense' => ({required Object count}) => 'Despesa (${count})',
@@ -1196,8 +1138,6 @@ extension on TranslationsPtBr {
 			'accounts.title' => 'Contas',
 			'accounts.addAccount' => 'Nova conta',
 			'accounts.editAccount' => 'Editar conta',
-			'accounts.account' => 'Conta',
-			'accounts.accountNotFound' => 'Conta não encontrada',
 			'accounts.checking' => 'Conta corrente',
 			'accounts.creditCard' => 'Cartão de crédito',
 			'accounts.investment' => 'Conta investimento',
@@ -1208,8 +1148,6 @@ extension on TranslationsPtBr {
 			'accounts.name' => 'Apelido da conta',
 			'accounts.nameHint' => 'ex.: Nubank Gui',
 			'accounts.bank' => 'Banco',
-			'accounts.bankHint' => 'ex.: Nubank',
-			'accounts.bankOthers' => 'Outros',
 			'accounts.linkedAccount' => 'Conta corrente vinculada',
 			'accounts.balance' => 'Saldo',
 			'accounts.currentBalance' => 'Saldo atual',
@@ -1221,14 +1159,10 @@ extension on TranslationsPtBr {
 			'accounts.closingDay' => 'Dia de fechamento',
 			'accounts.dueDay' => 'Dia de vencimento',
 			'accounts.availableCredit' => 'Limite disponível',
-			'accounts.currentBill' => 'Fatura atual',
-			'accounts.type' => 'Tipo',
 			'accounts.empty' => 'Nenhuma conta. Adicione sua primeira conta bancária ou cartão.',
 			'accounts.emptySubtitle' => 'Adicione suas contas bancárias e cartões de crédito.',
 			'accounts.accountUpdated' => 'Conta atualizada',
 			'accounts.accountCreated' => 'Conta criada',
-			'accounts.saved' => 'Conta salva!',
-			'accounts.deleted' => 'Conta excluída.',
 			'accounts.deleteConfirm' => 'Tem certeza que deseja excluir esta conta?',
 			'accounts.statement' => 'Resumo mensal',
 			'accounts.monthIncome' => 'Receitas',
@@ -1276,15 +1210,10 @@ extension on TranslationsPtBr {
 			'categories.nameHint' => 'ex.: Mercado',
 			'categories.incomeType' => 'Receita',
 			'categories.expenseType' => 'Despesa',
-			'categories.bothType' => 'Ambos',
 			'categories.empty' => 'Nenhuma categoria. As categorias aparecerão aqui.',
-			'categories.saved' => 'Categoria salva!',
-			'categories.deleted' => 'Categoria excluída.',
-			'categories.deleteConfirm' => 'Tem certeza que deseja excluir esta categoria?',
 			'categories.reassignPrompt' => 'Selecione uma categoria para realocar as transações:',
 			'categories.categoryUpdated' => 'Categoria atualizada',
 			'categories.categoryCreated' => 'Categoria criada',
-			'categories.cannotDeleteDefault' => 'Categorias padrão não podem ser excluídas.',
 			'categories.cannotDeleteLast' => 'Crie outra categoria antes de excluir esta.',
 			'categories.selectIcon' => 'Selecionar ícone',
 			'categories.selectColor' => 'Selecionar cor',
@@ -1303,9 +1232,6 @@ extension on TranslationsPtBr {
 			'categories.importCsvExampleDownloaded' => 'Exemplo salvo.',
 			'categories.importCsvExampleFailed' => 'Não foi possível salvar o arquivo de exemplo.',
 			'categories.importCsvErrorTitle' => 'Não foi possível importar o CSV',
-			'categories.importSuccess' => ({required Object count}) => 'Importadas ${count} categorias.',
-			'categories.importReview' => ({required Object arg}) => 'Revisar importação: ${arg} novos itens serão criados.',
-			'categories.importDuplicates' => ({required Object arg}) => '${arg} itens duplicados serão ignorados.',
 			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Importados ${imported} itens. Ignorados ${duplicates} duplicados.',
 			'categories.importPageTitle' => 'Revisar importação',
 			'categories.importPageSubtitle' => 'Toque num item para editar · arraste a lixeira para remover',
@@ -1340,14 +1266,9 @@ extension on TranslationsPtBr {
 			'categories.uncategorized' => 'Sem categoria',
 			'categories.demoteBlockedChildren' => 'Esta categoria tem subcategorias. Promova ou remova as subcategorias antes de transformá-la em subcategoria.',
 			'categories.demoteBlockedBudget' => 'Esta categoria tem um orçamento. Exclua o orçamento antes de transformá-la em subcategoria.',
-			'chat.title' => 'Assistente IA',
 			'chat.placeholder' => 'Digite uma mensagem...',
 			'chat.welcomeTitle' => 'Olá! Sou seu assistente financeiro.',
 			'chat.welcomeBody' => 'Me conte sobre suas transações e eu te ajudo a registrá-las.',
-			'chat.confirmPrompt' => 'Detectei a seguinte transação. Está correta?',
-			'chat.confirmed' => 'Transação salva!',
-			'chat.cancelled' => 'Transação cancelada.',
-			'chat.error' => 'Desculpe, não consegui entender. Pode tentar de novo?',
 			'chat.aiName' => 'Finanço IA',
 			'chat.online' => 'Online',
 			'chat.today' => 'Hoje',
@@ -1369,8 +1290,6 @@ extension on TranslationsPtBr {
 			'chat.action.budgetCreate' => 'Criar orçamento',
 			'chat.action.budgetUpdate' => 'Atualizar orçamento',
 			'chat.action.budgetDelete' => 'Excluir orçamento',
-			'chat.action.fieldAmount' => 'Valor',
-			'chat.action.fieldDescription' => 'Descrição',
 			'chat.action.fieldCategory' => 'Categoria',
 			'chat.action.fieldAccount' => 'Conta',
 			'chat.action.fieldDate' => 'Data',
@@ -1379,12 +1298,8 @@ extension on TranslationsPtBr {
 			'chat.action.fieldCreditLimit' => 'Limite',
 			'chat.action.fieldClosingDay' => 'Dia de fechamento',
 			'chat.action.fieldDueDay' => 'Dia de vencimento',
-			'chat.action.fieldDueDate' => 'Data de vencimento',
-			'chat.action.fieldRecurrence' => 'Recorrência',
-			'chat.action.fieldName' => 'Nome',
 			'chat.action.fieldLinkedAccount' => 'Conta vinculada',
 			'chat.action.fieldBalance' => 'Saldo inicial',
-			'chat.action.fieldNotes' => 'Observações',
 			'chat.action.confirm' => 'Confirmar',
 			'chat.action.cancel' => 'Cancelar',
 			'chat.action.statusConfirmed' => 'Confirmada',
@@ -1392,14 +1307,12 @@ extension on TranslationsPtBr {
 			'chat.audio.start' => 'Gravar mensagem de voz',
 			'chat.audio.stop' => 'Parar gravação',
 			'chat.audio.cancel' => 'Cancelar',
-			'chat.audio.recording' => 'Gravando',
 			'chat.audio.transcribing' => 'Transcrevendo...',
 			'chat.audio.permissionDenied' => 'Permissão de microfone necessária para gravar voz.',
 			'chat.audio.recordError' => 'Falha ao gravar áudio',
 			'chat.image.attach' => 'Anexar imagem',
 			'chat.image.takePhoto' => 'Tirar foto',
 			'chat.image.fromGallery' => 'Escolher da galeria',
-			'chat.image.remove' => 'Remover imagem',
 			'chat.image.pickError' => 'Não foi possível escolher a imagem',
 			'chat.image.missing' => 'Imagem não disponível',
 			'chat.handlers.imageAttached' => 'Imagem anexada.',
@@ -1470,7 +1383,6 @@ extension on TranslationsPtBr {
 			'budgets.summarySpent' => 'Gasto',
 			'budgets.summaryRemaining' => 'Disponível',
 			'budgets.spentOf' => ({required Object spent, required Object cap}) => '${spent} de ${cap}',
-			'budgets.percentageUsed' => ({required Object value}) => '${value}% usado',
 			'budgets.remainingOf' => ({required Object value}) => 'Restam ${value}',
 			'budgets.overBy' => ({required Object value}) => 'Estourou em ${value}',
 			'budgets.statusSafe' => 'Tranquilo',
@@ -1483,8 +1395,6 @@ extension on TranslationsPtBr {
 			'budgets.duplicateCategory' => 'Já existe um orçamento para essa categoria.',
 			'budgets.noExpenseCategory' => 'Crie ao menos uma categoria de despesa antes.',
 			'budgets.allCategoriesBudgeted' => 'Todas as categorias já têm orçamento.',
-			_ => null,
-		} ?? switch (path) {
 			'budgets.emptyTitle' => 'Tome controle dos seus gastos',
 			'budgets.emptyBody' => 'Defina um teto mensal por categoria de despesa. O Finanço acompanha quanto você gastou, quanto ainda resta, e mostra de cara quando você está prestes a estourar.',
 			'budgets.emptyExample' => 'Ex: R\$ 1.500 em Alimentação, R\$ 400 em Lazer, R\$ 200 em Transporte.',
@@ -1501,17 +1411,14 @@ extension on TranslationsPtBr {
 			'budgets.importCsvErrorTitle' => 'Não foi possível importar o CSV',
 			'budgets.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Importados ${imported} orçamentos. Ignorados ${skipped} (categoria desconhecida ou duplicada).',
 			'profile.title' => 'Perfil',
-			'profile.editProfile' => 'Editar perfil',
 			'profile.accounts' => 'Contas',
 			'profile.categories' => 'Categorias',
-			'profile.theme' => 'Tema',
 			'profile.themeLight' => 'Claro',
 			'profile.themeDark' => 'Escuro',
 			'profile.themeSystem' => 'Sistema',
 			'profile.signOutConfirm' => 'Tem certeza que deseja sair?',
 			'profile.clearData' => 'Limpar todos os meus dados',
 			'profile.clearDataDescription' => 'Excluir transações, chat, categorias e contas',
-			'profile.clearDataConfirm' => 'Isso excluirá permanentemente todos os dados da sua conta. Continuar?',
 			'profile.clearDataConfirmHeadline' => 'Esta ação é permanente',
 			'profile.clearDataConfirmBody' => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.',
 			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
@@ -1543,6 +1450,8 @@ extension on TranslationsPtBr {
 			'startup.errorRetry' => 'Tentar novamente',
 			'investments.title' => 'Investimentos',
 			'investments.heroTitle' => 'PATRIMÔNIO INVESTIDO',
+			_ => null,
+		} ?? switch (path) {
 			'investments.heroAllocated' => 'Alocado',
 			'investments.heroPending' => 'Pendente',
 			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} não alocados',
@@ -1596,9 +1505,7 @@ extension on TranslationsPtBr {
 			'investments.pickParentClass' => 'Escolher classe pai',
 			'investments.parentPickerEmpty' => 'Crie uma classe raiz primeiro.',
 			'investments.parentPickerNone' => 'Nenhuma (classe raiz)',
-			'investments.subclassInheritsHint' => ({required Object parent}) => 'Subclasse herda ícone e cor de ${parent}.',
 			'investments.subclassOf' => ({required Object parent}) => 'Subclasse de ${parent}',
-			'investments.subclassRowSubtitle' => ({required Object percent}) => '${percent} da classe',
 			'investments.addSubclass' => 'Adicionar subclasse',
 			'investments.classRowNoSubclasses' => 'Sem subclasses ainda — toque para criar.',
 			'investments.classDetailTitle' => 'Classe',
@@ -1637,12 +1544,20 @@ extension on TranslationsPtBr {
 			'investments.fabAddHolding' => 'Nova alocação',
 			'investments.fabAddHoldingSubtitle' => 'Indique onde uma parte do saldo está investida.',
 			'investments.fabAddHoldingNoAccount' => 'Crie uma conta de investimento primeiro.',
-			'investments.fabAddHoldingNoClass' => 'Crie uma classe primeiro.',
 			'investments.fabAddHoldingNoSubclass' => 'Crie uma subclasse antes de alocar — classes são apenas organizadoras.',
 			'investments.allocationExceedsBalance' => ({required Object available}) => 'A alocação excede o saldo disponível nesta conta (${available}).',
 			'investments.targetSumExceedsRoot' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para classes raiz. Disponível: ${available}.',
 			'investments.targetSumExceedsSub' => ({required Object available}) => 'A soma das porcentagens-alvo excede 100% para subclasses desta classe. Disponível: ${available}.',
-			'payablesReceivables.title' => 'Contas a pagar e receber',
+			'investments.targetPercentOutOfRange' => 'A porcentagem-alvo deve estar entre 0 e 100.',
+			'investments.parentClassNotFound' => 'Classe pai não encontrada.',
+			'investments.subclassCannotBeParent' => 'Uma subclasse não pode ser pai de outra subclasse.',
+			'investments.classCannotBeOwnParent' => 'Uma classe não pode ser pai de si mesma.',
+			'investments.classOwnsSubclasses' => 'Esta classe possui subclasses — remova-as ou mova-as para outra classe antes de transformá-la em subclasse.',
+			'investments.deleteBlockedBySubclasses' => ({required Object count}) => 'Não é possível excluir: ${count} subclasse(s) ainda apontam para esta classe.',
+			'investments.deleteBlockedByHoldings' => ({required Object count}) => 'Não é possível excluir: ${count} alocação(ões) ainda apontam para esta classe.',
+			'investments.assetClassNotFound' => 'Classe de ativo não encontrada.',
+			'investments.holdingAccountNotInvestment' => 'Alocações só podem ser vinculadas a contas de investimento.',
+			'investments.holdingRequiresSubclass' => 'Alocações devem apontar para uma subclasse. Crie uma subclasse na classe escolhida primeiro.',
 			'payablesReceivables.empty' => 'Nenhuma movimentação encontrada neste período.',
 			'payablesReceivables.typePayable' => 'A pagar',
 			'payablesReceivables.typeReceivable' => 'A receber',
@@ -1658,7 +1573,6 @@ extension on TranslationsPtBr {
 			'payablesReceivables.overdueGroup' => 'Atrasadas',
 			'payablesReceivables.todayGroup' => 'Hoje',
 			'payablesReceivables.upcomingGroup' => 'Próximas',
-			'payablesReceivables.deleteConfirm' => 'Tem certeza que deseja excluir esta transação?',
 			'payablesReceivables.transactionPaid' => 'Transação marcada como paga',
 			'payablesReceivables.transactionReceived' => 'Recebimento marcado como recebido',
 			'payablesReceivables.noExpenseCategory' => 'Crie ao menos uma categoria de despesa primeiro.',

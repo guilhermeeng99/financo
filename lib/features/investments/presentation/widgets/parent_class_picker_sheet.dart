@@ -1,3 +1,4 @@
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
@@ -21,135 +22,151 @@ Future<ParentPickResult?> showParentClassPickerSheet({
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (sheetContext) {
-      final colors = sheetContext.appColors;
-      return Container(
-        decoration: BoxDecoration(
-          color: colors.background,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    builder: (sheetContext) => FinancoPickerSheet.fixed(
+      title: t.investments.pickParentClass,
+      child: roots.isEmpty
+          ? const _NoRootsHint()
+          : Flexible(
+              child: _RootClassList(roots: roots, selectedId: selectedId),
+            ),
+    ),
+  );
+}
+
+class _NoRootsHint extends StatelessWidget {
+  const _NoRootsHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      child: Text(
+        t.investments.parentPickerEmpty,
+        style: context.textTheme.bodyMedium?.copyWith(
+          color: context.appColors.onBackgroundLight,
         ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    t.investments.pickParentClass,
-                    style: sheetContext.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-              if (roots.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-                  child: Text(
-                    t.investments.parentPickerEmpty,
-                    style: sheetContext.textTheme.bodyMedium?.copyWith(
-                      color: colors.onBackgroundLight,
-                    ),
-                  ),
-                )
-              else
-                Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-                    children: [
-                      // "No parent" row — promotes the form to root.
-                      Material(
-                        color: selectedId == null
-                            ? colors.primary.withValues(alpha: 0.12)
-                            : colors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        child: ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          leading: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: colors.surfaceVariant,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: FaIcon(
-                                FontAwesomeIcons.minus,
-                                size: 12,
-                                color: colors.onBackgroundLight,
-                              ),
-                            ),
-                          ),
-                          title: Text(t.investments.parentPickerNone),
-                          trailing: selectedId == null
-                              ? FaIcon(
-                                  FontAwesomeIcons.check,
-                                  size: 14,
-                                  color: colors.primary,
-                                )
-                              : null,
-                          onTap: () => Navigator.of(sheetContext)
-                              .pop(const ParentPickResult(null)),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      for (final root in roots) ...[
-                        Material(
-                          color: root.id == selectedId
-                              ? colors.primary.withValues(alpha: 0.12)
-                              : colors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            leading: _ParentAvatar(
-                              icon: root.icon,
-                              color: root.color,
-                            ),
-                            title: Text(root.name),
-                            subtitle: Text(
-                              '${t.investments.targetShort}: '
-                              '${root.targetPercent.toStringAsFixed(0)}%',
-                            ),
-                            trailing: root.id == selectedId
-                                ? FaIcon(
-                                    FontAwesomeIcons.check,
-                                    size: 14,
-                                    color: colors.primary,
-                                  )
-                                : null,
-                            onTap: () => Navigator.of(sheetContext)
-                                .pop(ParentPickResult(root)),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                      ],
-                    ],
-                  ),
-                ),
-            ],
+      ),
+    );
+  }
+}
+
+class _RootClassList extends StatelessWidget {
+  const _RootClassList({required this.roots, required this.selectedId});
+
+  final List<AssetClassEntity> roots;
+  final String? selectedId;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+      children: [
+        // "No parent" row — promotes the form to root.
+        _NoneRow(isSelected: selectedId == null),
+        const SizedBox(height: 6),
+        for (final root in roots) ...[
+          _RootRow(root: root, isSelected: root.id == selectedId),
+          const SizedBox(height: 6),
+        ],
+      ],
+    );
+  }
+}
+
+class _NoneRow extends StatelessWidget {
+  const _NoneRow({required this.isSelected});
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return _PickerTile(
+      isSelected: isSelected,
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: colors.surfaceVariant,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: FaIcon(
+            FontAwesomeIcons.minus,
+            size: 12,
+            color: colors.onBackgroundLight,
           ),
         ),
-      );
-    },
-  );
+      ),
+      title: Text(t.investments.parentPickerNone),
+      onTap: () => Navigator.of(context).pop(const ParentPickResult(null)),
+    );
+  }
+}
+
+class _RootRow extends StatelessWidget {
+  const _RootRow({required this.root, required this.isSelected});
+
+  final AssetClassEntity root;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PickerTile(
+      isSelected: isSelected,
+      leading: _ParentAvatar(icon: root.icon, color: root.color),
+      title: Text(root.name),
+      subtitle: Text(
+        '${t.investments.targetShort}: '
+        '${root.targetPercent.toStringAsFixed(0)}%',
+      ),
+      onTap: () => Navigator.of(context).pop(ParentPickResult(root)),
+    );
+  }
+}
+
+class _PickerTile extends StatelessWidget {
+  const _PickerTile({
+    required this.isSelected,
+    required this.leading,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final bool isSelected;
+  final Widget leading;
+  final Widget title;
+  final Widget? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Material(
+      color: isSelected
+          ? colors.primary.withValues(alpha: 0.12)
+          : Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        leading: leading,
+        title: title,
+        subtitle: subtitle,
+        trailing: isSelected
+            ? FaIcon(
+                FontAwesomeIcons.check,
+                size: 14,
+                color: colors.primary,
+              )
+            : null,
+        onTap: onTap,
+      ),
+    );
+  }
 }
 
 class _ParentAvatar extends StatelessWidget {

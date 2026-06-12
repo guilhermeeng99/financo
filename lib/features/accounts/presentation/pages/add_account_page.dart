@@ -22,7 +22,6 @@ import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.
 import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,12 +40,17 @@ class AddAccountPage extends StatelessWidget {
     final userId = authState is Authenticated ? authState.user.id : '';
 
     return BlocProvider(
-      create: (_) => AccountFormCubit(
-        createAccount: GetIt.I<CreateAccountUseCase>(),
-        updateAccount: GetIt.I<UpdateAccountUseCase>(),
-        userId: userId,
-        existingAccount: existingAccount,
-      ),
+      create: (_) {
+        final cubit = AccountFormCubit(
+          createAccount: GetIt.I<CreateAccountUseCase>(),
+          updateAccount: GetIt.I<UpdateAccountUseCase>(),
+          getAccounts: GetIt.I<GetAccountsUseCase>(),
+          userId: userId,
+          existingAccount: existingAccount,
+        );
+        unawaited(cubit.loadLinkedAccountName());
+        return cubit;
+      },
       child: const _AddAccountView(),
     );
   }
@@ -65,13 +69,6 @@ class _AddAccountViewState extends State<_AddAccountView> {
   final _balanceController = TextEditingController();
   final _creditLimitController = TextEditingController();
 
-  /// Display name for the linked checking account. Held in local state
-  /// (not the cubit) because this page is mounted on the root navigator,
-  /// outside the shell's `AccountsCubit` scope, so we can't resolve names
-  /// from cached state. Populated by the picker on selection and, in edit
-  /// mode, by an async lookup against `GetAccountsUseCase`.
-  String? _linkedAccountName;
-
   @override
   void initState() {
     super.initState();
@@ -87,21 +84,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
           state.creditLimit,
         );
       }
-      if (state.linkedAccountId.isNotEmpty) {
-        unawaited(_loadLinkedAccountName(state.userId, state.linkedAccountId));
-      }
     }
-  }
-
-  Future<void> _loadLinkedAccountName(String userId, String linkedId) async {
-    final result = await GetIt.I<GetAccountsUseCase>()(userId: userId);
-    if (!mounted) return;
-    final match = result
-        .fold<List<AccountEntity>>((_) => const [], (all) => all)
-        .where((a) => a.id == linkedId)
-        .firstOrNull;
-    if (match == null) return;
-    setState(() => _linkedAccountName = match.name);
   }
 
   @override
@@ -129,18 +112,13 @@ class _AddAccountViewState extends State<_AddAccountView> {
     );
     if (!mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
-      (_) {
-        // Refresh the shell-scoped investments state so a deleted account's
-        // holdings drop out of the overview. Fire-and-forget — the cubit
-        // outlives this page.
-        unawaited(
-          context.read<InvestmentsCubit>().refresh(forceRefresh: true),
-        );
-        context.pop(true);
-      },
+      (failure) => context.showSnack(localizedFailure(failure)),
+      // `true` signals the caller to refresh account/investment state.
+      // This page is mounted on the root navigator, OUTSIDE the shell's
+      // providers, so shell-scoped cubits (e.g. InvestmentsCubit — needed
+      // so a deleted account's holdings drop out of the overview) must be
+      // refreshed by the caller, never read from here.
+      (_) => context.pop(true),
     );
   }
 
@@ -173,8 +151,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
       selectedId: state.linkedAccountId.isEmpty ? null : state.linkedAccountId,
     );
     if (picked == null) return;
-    cubit.updateLinkedAccountId(picked.id);
-    setState(() => _linkedAccountName = picked.name);
+    cubit.updateLinkedAccount(id: picked.id, name: picked.name);
   }
 
   void _onSubmit() {
@@ -185,20 +162,15 @@ class _AddAccountViewState extends State<_AddAccountView> {
 
   void _onFormStateChanged(BuildContext context, AccountFormState state) {
     if (state.status == FormStatus.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            state.isEditing
-                ? t.accounts.accountUpdated
-                : t.accounts.accountCreated,
-          ),
-        ),
-      );
-      context.pop(true);
+      context
+        ..showSnack(
+          state.isEditing
+              ? t.accounts.accountUpdated
+              : t.accounts.accountCreated,
+        )
+        ..pop(true);
     } else if (state.status == FormStatus.failure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(state.failure))),
-      );
+      context.showSnack(localizedFailure(state.failure));
     }
   }
 
@@ -289,7 +261,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
                             label: t.accounts.linkedAccount,
                             value: state.linkedAccountId.isEmpty
                                 ? null
-                                : _linkedAccountName,
+                                : state.linkedAccountName,
                             placeholder: t.accounts.pickLinkedAccount,
                             icon: FontAwesomeIcons.link,
                             onTap: _pickLinkedAccount,

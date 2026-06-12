@@ -4,6 +4,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,14 +14,31 @@ class BudgetFormCubit extends Cubit<BudgetFormState> {
   BudgetFormCubit({
     required CreateBudgetUseCase createBudget,
     required UpdateBudgetUseCase updateBudget,
+    required GetBudgetsUseCase getBudgets,
     required String userId,
     BudgetEntity? existingBudget,
   }) : _createBudget = createBudget,
        _updateBudget = updateBudget,
+       _getBudgets = getBudgets,
        super(BudgetFormState.initial(userId: userId, existing: existingBudget));
 
   final CreateBudgetUseCase _createBudget;
   final UpdateBudgetUseCase _updateBudget;
+  final GetBudgetsUseCase _getBudgets;
+
+  /// Loads the category ids the user has already budgeted, so the picker
+  /// can hide them in create mode (one budget per category — spec rule 1).
+  /// Called once when the form opens; failures degrade to an empty set
+  /// (the repository re-enforces uniqueness on submit anyway).
+  Future<void> loadBudgetedCategoryIds() async {
+    final result = await _getBudgets(userId: state.userId);
+    if (isClosed) return;
+    final ids = result.fold<Set<String>>(
+      (_) => const {},
+      (budgets) => budgets.map((b) => b.categoryId).toSet(),
+    );
+    emit(state.copyWith(budgetedCategoryIds: ids));
+  }
 
   void updateCategoryId(String? id) {
     if (state.isEditing) return; // immutable after creation
@@ -66,6 +84,7 @@ class BudgetFormState extends Equatable {
     required this.userId,
     required this.amount,
     required this.status,
+    this.budgetedCategoryIds = const {},
     this.categoryId,
     this.existingId,
     this.existingCreatedAt,
@@ -90,6 +109,13 @@ class BudgetFormState extends Equatable {
   final String? categoryId;
   final double amount;
   final FormStatus status;
+
+  /// Categories the user has already budgeted — drives the picker's
+  /// exclusion list. Populated by
+  /// [BudgetFormCubit.loadBudgetedCategoryIds]; the form's own current
+  /// `categoryId` is excluded from this set in edit mode by the page so
+  /// re-saving the same record doesn't fight itself.
+  final Set<String> budgetedCategoryIds;
   final String? existingId;
   final DateTime? existingCreatedAt;
   final Failure? failure;
@@ -107,6 +133,7 @@ class BudgetFormState extends Equatable {
     bool clearCategory = false,
     double? amount,
     FormStatus? status,
+    Set<String>? budgetedCategoryIds,
     Failure? failure,
   }) {
     return BudgetFormState(
@@ -114,6 +141,7 @@ class BudgetFormState extends Equatable {
       categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
       amount: amount ?? this.amount,
       status: status ?? this.status,
+      budgetedCategoryIds: budgetedCategoryIds ?? this.budgetedCategoryIds,
       existingId: existingId,
       existingCreatedAt: existingCreatedAt,
       failure: failure ?? this.failure,
@@ -126,6 +154,7 @@ class BudgetFormState extends Equatable {
     categoryId,
     amount,
     status,
+    budgetedCategoryIds,
     existingId,
     existingCreatedAt,
     failure,

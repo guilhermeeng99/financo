@@ -26,6 +26,8 @@ lib/
 
 functions/
 └── src/
+    ├── access/   # Allowlist helpers + assertAllowedCaller gate
+    ├── admin/    # deleteUserAsAdmin callable (master-only user wipe)
     ├── chat/     # Gemini pipeline, action extractor
     └── transactions/ # Scheduled pending-transaction notifier
 
@@ -88,9 +90,9 @@ For web builds you also need the Drift web assets:
 
 ```bash
 curl -L -o web/sqlite3.wasm \
-  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.1/sqlite3.wasm
+  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.2/sqlite3.wasm
 curl -L -o web/drift_worker.dart.js \
-  https://github.com/simolus3/drift/releases/download/drift-2.32.1/drift_worker.js
+  https://github.com/simolus3/drift/releases/download/drift-2.34.0/drift_worker.js
 ```
 
 ## Backend (Cloud Functions)
@@ -135,6 +137,7 @@ GitHub Actions automates the client release on every push to `main` ([`.github/w
 
 - Builds the Web release with the Drift web assets bundled
 - Builds and signs the Android APK (uses `ANDROID_KEYSTORE_*` secrets)
+- Uploads the signed APK to Firebase App Distribution (`testers` group, release notes generated from the last commit)
 - Bundles the APK alongside the web build at `/financo.apk`
 - Publishes the result to GitHub Pages
 

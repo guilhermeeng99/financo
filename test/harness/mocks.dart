@@ -1,3 +1,6 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
@@ -20,11 +23,15 @@ import 'package:financo/features/accounts/domain/usecases/delete_account_usecase
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/import_accounts_csv_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:financo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:financo/features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:financo/features/auth/domain/usecases/sign_out_usecase.dart';
+import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:financo/features/auth/presentation/bloc/auth_event.dart';
+import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/budgets/data/datasources/budget_remote_datasource.dart';
 import 'package:financo/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
@@ -40,6 +47,7 @@ import 'package:financo/features/categories/domain/usecases/delete_category_usec
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/import_categories_csv_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
+import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/chat/data/datasources/chat_datasources.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
@@ -53,8 +61,11 @@ import 'package:financo/features/chat/domain/usecases/send_message_usecase.dart'
 import 'package:financo/features/chat/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
@@ -68,6 +79,8 @@ import 'package:financo/features/investments/domain/usecases/get_asset_holdings_
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/update_asset_class_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/update_asset_holding_usecase.dart';
+import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
+import 'package:financo/features/master_panel/domain/repositories/master_users_repository.dart';
 import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:financo/features/profile/domain/repositories/profile_repository.dart';
 import 'package:financo/features/profile/domain/usecases/get_profile_usecase.dart';
@@ -82,8 +95,13 @@ import 'package:financo/features/transactions/domain/usecases/ensure_fixed_recur
 import 'package:financo/features/transactions/domain/usecases/get_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
+import 'package:financo/features/transactions/domain/usecases/settle_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_sequence_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/update_transaction_usecase.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 
 // ── Repositories ──
@@ -185,8 +203,32 @@ class MockCreateTransferUseCase extends Mock implements CreateTransferUseCase {}
 class MockEnsureFixedRecurrencesUseCase extends Mock
     implements EnsureFixedRecurrencesUseCase {}
 
+class MockSettleTransactionUseCase extends Mock
+    implements SettleTransactionUseCase {}
+
 class MockImportTransactionsCsvUseCase extends Mock
     implements ImportTransactionsCsvUseCase {}
+
+// ── Blocs / Cubits: session-scoped (for page widget tests) ──
+// MockBloc/MockCubit (bloc_test) so widget tests can pin states with
+// `whenListen` while pages read them from the element tree.
+class MockTransactionsBloc extends MockBloc<TransactionsEvent,
+    TransactionsState> implements TransactionsBloc {}
+
+class MockDashboardBloc extends MockBloc<DashboardEvent, DashboardState>
+    implements DashboardBloc {}
+
+class MockAccountsCubit extends MockCubit<AccountsState>
+    implements AccountsCubit {}
+
+class MockCategoriesCubit extends MockCubit<CategoriesState>
+    implements CategoriesCubit {}
+
+// ── Blocs: Auth ──
+// `MockBloc` (bloc_test) instead of a plain mocktail Mock so tests can
+// drive the state stream with `whenListen`.
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState>
+    implements AuthBloc {}
 
 // ── Repositories: Auth ──
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -195,6 +237,11 @@ class MockProfileRepository extends Mock implements ProfileRepository {}
 
 // ── Data Sources: Auth ──
 class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
+
+// ── Raw Firebase Auth / Google Sign-In clients ──
+class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class MockGoogleSignIn extends Mock implements GoogleSignIn {}
 
 // ── DAOs: Users ──
 class MockUsersDao extends Mock implements UsersDao {}
@@ -273,6 +320,39 @@ class MockBudgetChatActionHandler extends Mock
 class MockProfileRemoteDataSource extends Mock
     implements ProfileRemoteDataSource {}
 
+// ── Raw Firestore client ──
+// For datasource tests that need to simulate FirebaseException codes
+// (fake_cloud_firestore cannot throw permission errors).
+class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+
+// Mocking these sealed types is the only way to make doc.get() throw a
+// FirebaseException with a chosen code — fake_cloud_firestore cannot.
+// ignore: subtype_of_sealed_class
+class MockMapCollectionReference extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+// ignore: subtype_of_sealed_class
+class MockMapDocumentReference extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class MockWriteBatch extends Mock implements WriteBatch {}
+
+// ── Raw Cloud Functions client ──
+// For callable-wrapper datasources (chat, master panel) — there is no
+// fake_cloud_functions equivalent, so calls are stubbed at the callable.
+class MockFirebaseFunctions extends Mock implements FirebaseFunctions {}
+
+class MockHttpsCallable extends Mock implements HttpsCallable {}
+
+class MockHttpsCallableResult<T> extends Mock
+    implements HttpsCallableResult<T> {}
+
+// Thrown (not constructed) in tests: the real constructor is @protected,
+// so a stubbed implementation is the lint-clean way to exercise the
+// `on FirebaseFunctionsException` error-mapping paths.
+class MockFirebaseFunctionsException extends Mock
+    implements FirebaseFunctionsException {}
+
 // ── Local Database ──
 class MockAppDatabase extends Mock implements AppDatabase {}
 
@@ -285,6 +365,9 @@ class MockGetDashboardSummaryUseCase extends Mock
 
 class MockGetFiftyThirtyTwentyTargetsUseCase extends Mock
     implements GetFiftyThirtyTwentyTargetsUseCase {}
+
+class MockGetFiftyThirtyTwentyHistoryUseCase extends Mock
+    implements GetFiftyThirtyTwentyHistoryUseCase {}
 
 class MockUpdateFiftyThirtyTwentyTargetsUseCase extends Mock
     implements UpdateFiftyThirtyTwentyTargetsUseCase {}
@@ -331,3 +414,10 @@ class MockDeleteAssetHoldingUseCase extends Mock
 
 class MockGetInvestmentOverviewUseCase extends Mock
     implements GetInvestmentOverviewUseCase {}
+
+// ── Master Panel ──
+class MockMasterUsersRepository extends Mock
+    implements MasterUsersRepository {}
+
+class MockMasterUsersRemoteDataSource extends Mock
+    implements MasterUsersRemoteDataSource {}

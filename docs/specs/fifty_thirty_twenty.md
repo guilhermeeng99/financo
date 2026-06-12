@@ -1,7 +1,7 @@
 # 50/30/20 Feature Spec
 
 > **Status**: Implemented (V1.1 — dedicated page + custom targets + history)
-> **Last updated**: 2026-05-17
+> **Last updated**: 2026-06-12
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases, Chat, Custom Targets, History, Navigation
 
 The **50/30/20 rule** is a budgeting heuristic: of your monthly income,
@@ -44,7 +44,9 @@ These were debated and locked before code:
   steps the month, the card recomputes alongside the other dashboard
   data.
 - **No push notifications, no history view**. The card shows the active
-  period only; both deferred to a later iteration.
+  period only; both deferred to a later iteration. *(Partially superseded:
+  V1.1 shipped a 3-month history chart on the detail page — see §12.4.
+  Push notifications remain deferred.)*
 - **Account type `investment` has no special fields** (no creditLimit /
   closingDay / dueDay / linkedAccountId). It behaves like a `checking`
   account for every cubit/widget that isn't the 50/30/20 calculation.
@@ -123,13 +125,16 @@ field on `DashboardSummary`.
 | savingsAmount       | double                              | Net `checking → investment` transfer flow in the period (≥ 0)      |
 | unclassifiedSpent   | double                              | Expense sum where the resolved root category's `bucket == null` (transaction-based, period-scoped) |
 | unclassifiedCount   | int                                 | Backlog of root expense categories with `bucket == null`. **Category-based, not transaction-based** — surfaces the full classification work to do, independent of whether those categories spent this month. Subcategories and orphans never increment it. |
+| hasInvestmentAccount | bool                               | Whether the user has ≥ 1 investment account; drives which of the two under-target savings tips renders |
+| targets             | FiftyThirtyTwentyTargets            | Active target split. Defaults to `FiftyThirtyTwentyTargets.classic`; production callers pass the user's saved value (§12.1) |
 | status              | FiftyThirtyTwentyStatus             | See below                                                          |
 
-Computed getters:
+Computed getters (target math uses the active `targets`, not hardcoded
+50/30/20 — §12.1 superseded the V1 constants):
 
-- `needsTarget = income * 0.50`
-- `wantsTarget = income * 0.30`
-- `savingsTarget = income * 0.20`
+- `needsTarget = income * targets.needs`
+- `wantsTarget = income * targets.wants`
+- `savingsTarget = income * targets.savings`
 - `needsPercent = needsSpent / income` (0 if income == 0)
 - `wantsPercent = wantsSpent / income` (0 if income == 0)
 - `savingsPercent = savingsAmount / income` (0 if income == 0)
@@ -141,10 +146,11 @@ Computed getters:
 A coarse summary of the whole snapshot, used by the headline copy on the
 card. Computed per-bucket then aggregated:
 
-- per-bucket:
-  - `needs`: `onTrack` if `needsPercent <= 0.50`, `over` otherwise
-  - `wants`: `onTrack` if `wantsPercent <= 0.30`, `over` otherwise
-  - `savings`: `onTrack` if `savingsPercent >= 0.20`, `under` otherwise
+- per-bucket (against the active `targets`; 0.50/0.30/0.20 only when the
+  user never customised):
+  - `needs`: `onTrack` if `needsPercent <= targets.needs`, `over` otherwise
+  - `wants`: `onTrack` if `wantsPercent <= targets.wants`, `over` otherwise
+  - `savings`: `onTrack` if `savingsPercent >= targets.savings`, `under` otherwise
 - aggregated:
   - `noData` if `income == 0`
   - `unclassifiedDominant` if `unclassifiedSpent > needsSpent + wantsSpent`
@@ -214,7 +220,7 @@ actual < target.
 9. **No savings without an investment account**: if the user has zero
    investment accounts, `savingsAmount` is always 0 (no transfers can
    possibly count). The UI shows a hint that explains this and links to
-   `/account/add`. This is the most common first-time-user state.
+   `/accounts/add`. This is the most common first-time-user state.
 
 ## 3. Architecture
 
@@ -385,7 +391,7 @@ border-radius (matches the rest of the dashboard surfaces).
     para atingir 20% de investimento."
   - `savingsAmount < savingsTarget && !hasInvestmentAccount`: "Crie uma
     conta de investimento para começar a registrar seus aportes." with a
-    button-style trailing chip → `/account/add`.
+    button-style trailing chip → `/accounts/add`.
   - `hasUnclassified`: "$count categoria(s) ainda sem classificação." +
     chip → `/categories`.
 
@@ -396,7 +402,7 @@ border-radius (matches the rest of the dashboard surfaces).
 | `income == 0`                                           | Compact card with a single no-income hint row ("Registre suas receitas...", `noIncomeHeadline`) + chart-pie icon. No baseline pill. No bars. No bucket rows. Same visual height as a `_NoAccountsHint`. |
 | `income > 0` but every expense category is unclassified | Bars rendered with all spend pooled in a 4th, muted "Sem classificação" row. CTA to classify (chip → `/categories`).                          |
 | `income > 0`, partial classification                    | Bars rendered normally + footer dica counts the unclassified                                                                                  |
-| No investment accounts                                  | Savings row still rendered (will read `R$ 0 · 0% de 20%`) + footer dica with `/account/add` chip                                              |
+| No investment accounts                                  | Savings row still rendered (will read `R$ 0 · 0% de 20%`) + footer dica with `/accounts/add` chip                                              |
 
 ### Colours
 
@@ -469,7 +475,8 @@ explicit verification, see §10).
 - Resgate partial → net positive.
 - Investment ↔ investment transfer → not counted.
 - Checking → credit card → not counted.
-- Subcategory `bucket` overrides parent (parent needs, child wants).
+- Subcategory transactions count under the parent's bucket (the parent
+  bucket always wins; the child's own bucket is stored `null` and ignored).
 - Orphan-category expense → `unclassifiedSpent`.
 - `unclassifiedDominant` boundary: when unclassified > needs+wants.
 - Excludes transfers from `income` and from bucket sums.
@@ -546,8 +553,6 @@ and we have real usage signal:
 - **`bucket` over the chat**. AI doesn't propose bucket on create.
 - **Configurable income source** ("use my salary number, not the income
   sum"). Useful for variable-income users (freelancers); deferred.
-- **Bucket inheritance from parent**. The current "explicit on
-  subcategory" rule is more flexible; an inheritance toggle is V2.
 
 ## 12. V1.1 Additions — Custom Targets, Detail Page, History, Navigation
 

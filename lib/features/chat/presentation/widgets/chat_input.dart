@@ -1,21 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math' as math;
+import 'dart:developer';
 
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/chat/domain/entities/chat_image_attachment.dart';
+import 'package:financo/features/chat/domain/services/chat_audio_recorder.dart';
 import 'package:financo/features/chat/presentation/bloc/chat_bloc.dart';
+import 'package:financo/features/chat/presentation/widgets/chat_attachment_preview.dart';
+import 'package:financo/features/chat/presentation/widgets/chat_input_audio_rows.dart';
+import 'package:financo/features/chat/presentation/widgets/chat_morphing_trailing_button.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:http/http.dart' as http;
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
 
 /// Composer at the bottom of the chat. Messaging-app layout:
 ///
@@ -43,12 +44,13 @@ class ChatInput extends StatefulWidget {
 
 class _ChatInputState extends State<ChatInput>
     with TickerProviderStateMixin {
-  final _recorder = AudioRecorder();
+  // Factory-registered: each composer gets its own recorder instance and
+  // owns its lifecycle (disposed below), mirroring a per-widget plugin.
+  final ChatAudioRecorder _audioRecorder = GetIt.I<ChatAudioRecorder>();
   final _imagePicker = ImagePicker();
   bool _isRecording = false;
   Duration _elapsed = Duration.zero;
   Timer? _tickTimer;
-  String? _currentRecordingPath;
   _PickedImage? _pickedImage;
   // True from picker-returned to encoding-finished. Drives the loading
   // overlay on the thumbnail and disables the send button so we don't
@@ -73,7 +75,7 @@ class _ChatInputState extends State<ChatInput>
   void dispose() {
     _tickTimer?.cancel();
     _waveformController.dispose();
-    unawaited(_recorder.dispose());
+    unawaited(_audioRecorder.dispose());
     super.dispose();
   }
 
@@ -160,9 +162,7 @@ class _ChatInputState extends State<ChatInput>
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isEncodingImage = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${t.chat.image.pickError}: $e')),
-      );
+      context.showSnack('${t.chat.image.pickError}: $e');
     }
   }
 
@@ -251,86 +251,73 @@ class _ChatInputState extends State<ChatInput>
 
   Future<void> _startRecording() async {
     try {
-      if (!await _recorder.hasPermission()) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.chat.audio.permissionDenied)),
-        );
-        return;
-      }
-      // On web, `path` is ignored by record_web (stop() returns a blob URL).
-      // On mobile/desktop we write to a temp file.
-      final path = kIsWeb
-          ? ''
-          : '${(await getTemporaryDirectory()).path}'
-                '/chat_audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      await _recorder.start(
-        const RecordConfig(bitRate: 96000, numChannels: 1),
-        path: path,
-      );
-      _currentRecordingPath = path;
-      _elapsed = Duration.zero;
-      _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() => _elapsed += const Duration(seconds: 1));
-      });
-      unawaited(_waveformController.repeat());
-      unawaited(HapticFeedback.mediumImpact());
-      setState(() => _isRecording = true);
-    } on Exception catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${t.chat.audio.recordError}: $e')),
-      );
+      if (!await _ensureMicPermission()) return;
+      await _audioRecorder.start();
+      _beginRecordingUi();
+    } on Exception catch (e, st) {
+      _showRecordError(e, st);
     }
   }
 
-  Future<void> _stopRecording() async {
-    _tickTimer?.cancel();
-    _tickTimer = null;
-    _waveformController.stop();
-    final stoppedPath = await _recorder.stop() ?? _currentRecordingPath;
-    setState(() => _isRecording = false);
-    if (stoppedPath == null || stoppedPath.isEmpty) return;
+  Future<bool> _ensureMicPermission() async {
+    if (await _audioRecorder.hasPermission()) return true;
+    if (mounted) {
+      context.showSnack(t.chat.audio.permissionDenied);
+    }
+    return false;
+  }
 
+  void _beginRecordingUi() {
+    _elapsed = Duration.zero;
+    _tickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _elapsed += const Duration(seconds: 1));
+    });
+    unawaited(_waveformController.repeat());
+    unawaited(HapticFeedback.mediumImpact());
+    setState(() => _isRecording = true);
+  }
+
+  Future<void> _stopRecording() async {
+    _stopRecordingUi();
     try {
-      late final List<int> bytes;
-      late final String mimeType;
-      if (kIsWeb) {
-        final response = await http.get(Uri.parse(stoppedPath));
-        bytes = response.bodyBytes;
-        mimeType = 'audio/webm';
-      } else {
-        final file = File(stoppedPath);
-        bytes = await file.readAsBytes();
-        unawaited(file.delete().catchError((_) => file));
-        mimeType = 'audio/mp4';
-      }
-      final base64Data = base64Encode(bytes);
-      if (!mounted) return;
+      final audio = await _audioRecorder.stop();
+      setState(() => _isRecording = false);
+      if (audio == null || !mounted) return;
       context.read<ChatBloc>().add(
         ChatAudioTranscriptionRequested(
-          base64Data: base64Data,
-          mimeType: mimeType,
+          base64Data: audio.base64Data,
+          mimeType: audio.mimeType,
         ),
       );
-    } on Exception catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${t.chat.audio.recordError}: $e')),
-      );
+    } on Exception catch (e, st) {
+      if (mounted) setState(() => _isRecording = false);
+      _showRecordError(e, st);
     }
   }
 
   Future<void> _cancelRecording() async {
+    _stopRecordingUi();
+    await _audioRecorder.cancel();
+    if (mounted) setState(() => _isRecording = false);
+  }
+
+  void _stopRecordingUi() {
     _tickTimer?.cancel();
     _tickTimer = null;
     _waveformController.stop();
-    final path = await _recorder.stop() ?? _currentRecordingPath;
-    if (!kIsWeb && path != null && path.isNotEmpty) {
-      final file = File(path);
-      unawaited(file.delete().catchError((_) => file));
-    }
-    if (mounted) setState(() => _isRecording = false);
+  }
+
+  /// Raw platform errors are logged, never shown — the snackbar carries
+  /// only the localized message.
+  void _showRecordError(Object error, StackTrace stackTrace) {
+    log(
+      'ChatInput: audio recording failed',
+      name: 'ChatInput',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    if (!mounted) return;
+    context.showSnack(t.chat.audio.recordError);
   }
 
   String _formatDuration(Duration d) {
@@ -368,14 +355,14 @@ class _ChatInputState extends State<ChatInput>
             curve: Curves.easeOut,
             alignment: Alignment.bottomCenter,
             child: _isRecording
-                ? _RecordingRow(
+                ? ChatRecordingRow(
                     elapsedLabel: _formatDuration(_elapsed),
                     onCancel: () => unawaited(_cancelRecording()),
                     onStop: () => unawaited(_stopRecording()),
                     waveformController: _waveformController,
                   )
                 : isTranscribing
-                    ? const _TranscribingRow()
+                    ? const ChatTranscribingRow()
                     : _DefaultRow(
                         controller: widget.controller,
                         pickedImage: _pickedImage,
@@ -422,8 +409,8 @@ class _DefaultRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (picked != null)
-          _ImagePreview(
-            picked: picked,
+          ChatAttachmentPreview(
+            bytes: picked.bytes,
             isEncoding: isEncodingImage,
             onRemove: onRemoveImage,
           ),
@@ -478,7 +465,7 @@ class _DefaultRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            _MorphingTrailingButton(
+            ChatMorphingTrailingButton(
               controller: controller,
               hasImage: picked != null,
               isDisabled: isEncodingImage,
@@ -508,401 +495,6 @@ class _PillLeadingIcon extends StatelessWidget {
       ),
       onPressed: onAttach,
       tooltip: t.chat.image.attach,
-    );
-  }
-}
-
-/// Trailing circular button that swaps icon based on whether there's
-/// content to send. Watches the [TextEditingController] so the swap is
-/// per-keystroke without rebuilding the whole row.
-class _MorphingTrailingButton extends StatelessWidget {
-  const _MorphingTrailingButton({
-    required this.controller,
-    required this.hasImage,
-    required this.isDisabled,
-    required this.onSend,
-    required this.onStartRecording,
-  });
-
-  final TextEditingController controller;
-  final bool hasImage;
-
-  /// True while the picked image is still being encoded — the send
-  /// pathway isn't ready yet, so the button shows a spinner and ignores
-  /// taps. Mic-mode taps are also blocked, since starting a recording
-  /// while encoding would race the staged attachment.
-  final bool isDisabled;
-  final VoidCallback onSend;
-  final VoidCallback onStartRecording;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    if (isDisabled) {
-      return SizedBox(
-        width: _CircleButton._size,
-        height: _CircleButton._size,
-        child: Material(
-          color: colors.primary.withValues(alpha: 0.6),
-          shape: const CircleBorder(),
-          child: const Center(
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: controller,
-      builder: (context, value, _) {
-        final hasText = value.text.trim().isNotEmpty;
-        final showSend = hasText || hasImage;
-        return _CircleButton(
-          icon: showSend
-              ? FontAwesomeIcons.paperPlane
-              : FontAwesomeIcons.microphone,
-          // The mic uses the same primary fill as the send button — the
-          // morph reads as "this is the action" rather than a state shift.
-          color: colors.primary,
-          onPressed: showSend ? onSend : onStartRecording,
-          semanticLabel: showSend ? null : t.chat.audio.start,
-        );
-      },
-    );
-  }
-}
-
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.icon,
-    required this.color,
-    required this.onPressed,
-    this.iconSize = 16,
-    this.semanticLabel,
-  });
-
-  static const _size = 44.0;
-
-  final FaIconData icon;
-  final Color color;
-  final VoidCallback onPressed;
-  final double iconSize;
-  final String? semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: Material(
-        color: color,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: SizedBox(
-            width: _size,
-            height: _size,
-            child: Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                transitionBuilder: (child, animation) => ScaleTransition(
-                  scale: animation,
-                  child: FadeTransition(opacity: animation, child: child),
-                ),
-                child: FaIcon(
-                  icon,
-                  key: ValueKey(icon),
-                  size: iconSize,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Recording row ──────────────────────────────────────────────────────
-
-class _RecordingRow extends StatelessWidget {
-  const _RecordingRow({
-    required this.elapsedLabel,
-    required this.onCancel,
-    required this.onStop,
-    required this.waveformController,
-  });
-
-  final String elapsedLabel;
-  final VoidCallback onCancel;
-  final VoidCallback onStop;
-  final AnimationController waveformController;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Row(
-      children: [
-        _CircleButton(
-          icon: FontAwesomeIcons.xmark,
-          color: colors.surfaceVariant,
-          onPressed: onCancel,
-          semanticLabel: t.chat.audio.cancel,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: colors.surfaceVariant,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Row(
-              children: [
-                _PulsingDot(color: colors.expense),
-                const SizedBox(width: 10),
-                Text(
-                  elapsedLabel,
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _WaveformBars(controller: waveformController),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        _CircleButton(
-          icon: FontAwesomeIcons.solidCircleStop,
-          color: colors.primary,
-          onPressed: onStop,
-          iconSize: 18,
-          semanticLabel: t.chat.audio.stop,
-        ),
-      ],
-    );
-  }
-}
-
-/// Cheap traveling-wave visualization. Each bar's height follows a phase-
-/// shifted sine so the bars look like a wave moving left-to-right.
-class _WaveformBars extends StatelessWidget {
-  const _WaveformBars({required this.controller});
-
-  final AnimationController controller;
-
-  static const _barCount = 22;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (_, _) {
-        final phase = controller.value * 2 * math.pi;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(_barCount, (i) {
-            final x = i / (_barCount - 1);
-            final h = 0.25 + 0.75 *
-                (0.5 + 0.5 * math.sin(phase + x * 4 * math.pi));
-            return Container(
-              width: 3,
-              height: 4 + h * 18,
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.6 + 0.4 * h),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-}
-
-class _PulsingDot extends StatefulWidget {
-  const _PulsingDot({required this.color});
-
-  final Color color;
-
-  @override
-  State<_PulsingDot> createState() => _PulsingDotState();
-}
-
-class _PulsingDotState extends State<_PulsingDot>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (_, _) {
-        final t = _controller.value;
-        return Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: 0.5 + 0.5 * t),
-            shape: BoxShape.circle,
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ─── Transcribing row ───────────────────────────────────────────────────
-
-class _TranscribingRow extends StatelessWidget {
-  const _TranscribingRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return SizedBox(
-      height: 44,
-      child: Row(
-        children: [
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: colors.primary,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              t.chat.audio.transcribing,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: colors.onBackgroundLight,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Image preview ──────────────────────────────────────────────────────
-
-class _ImagePreview extends StatelessWidget {
-  const _ImagePreview({
-    required this.picked,
-    required this.isEncoding,
-    required this.onRemove,
-  });
-
-  final _PickedImage picked;
-
-  /// Dim the thumbnail and show a centered spinner while base64 + BlurHash
-  /// are still being computed. The thumbnail itself is already painted
-  /// (bytes are available) — this just signals "wait, almost ready".
-  final bool isEncoding;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 4),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Stack(
-                children: [
-                  Image.memory(
-                    picked.bytes,
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.cover,
-                  ),
-                  if (isEncoding)
-                    Positioned.fill(
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.45),
-                        alignment: Alignment.center,
-                        child: const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Positioned(
-              top: -6,
-              right: -6,
-              child: Material(
-                color: colors.surface,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: onRemove,
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: colors.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: colors.surfaceVariant,
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: FaIcon(
-                        FontAwesomeIcons.xmark,
-                        size: 10,
-                        color: colors.onBackground,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

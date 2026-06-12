@@ -29,10 +29,10 @@ void main() {
     verify(() => repo.createBudget(budget)).called(1);
   });
 
-  test('propagates ValidationFailure for duplicates', () async {
+  test('propagates DuplicateBudgetCategoryFailure for duplicates', () async {
     final budget = BudgetFactory.make();
     when(() => repo.createBudget(any())).thenAnswer(
-      (_) async => const Left(ValidationFailure('Já existe um orçamento')),
+      (_) async => const Left(DuplicateBudgetCategoryFailure()),
     );
 
     final result = await useCase(budget);

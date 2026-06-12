@@ -9,6 +9,7 @@ class CategoryFactory {
     String name = 'Food',
     int icon = 58746,
     int color = 4294198070,
+    CategoryBucket? bucket,
   }) {
     return CategoryEntity(
       id: id,
@@ -17,6 +18,7 @@ class CategoryFactory {
       icon: icon,
       color: color,
       type: CategoryType.expense,
+      bucket: bucket,
     );
   }
 

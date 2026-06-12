@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
+import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/update_category_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,21 +14,75 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
   CategoryFormCubit({
     required CreateCategoryUseCase createCategory,
     required UpdateCategoryUseCase updateCategory,
+    required GetCategoriesUseCase getCategories,
+    required GetBudgetsUseCase getBudgets,
     required String userId,
     CategoryEntity? existingCategory,
-    int existingCategoryCount = 0,
   }) : _createCategory = createCategory,
        _updateCategory = updateCategory,
+       _getCategories = getCategories,
+       _getBudgets = getBudgets,
        super(
          CategoryFormState.initial(
            userId: userId,
            existing: existingCategory,
-           existingCategoryCount: existingCategoryCount,
          ),
        );
 
   final CreateCategoryUseCase _createCategory;
   final UpdateCategoryUseCase _updateCategory;
+  final GetCategoriesUseCase _getCategories;
+  final GetBudgetsUseCase _getBudgets;
+
+  /// Loads everything the form needs beyond the entity itself: the user's
+  /// categories (parent-picker options, delete-reassignment targets, the
+  /// palette index for a new category's default color) and — in edit mode —
+  /// the demote guardrails (`hasChildren`, `hasBudget`). Run once when the
+  /// form opens; the values don't change while it is open since CRUD on
+  /// this user's data is single-threaded.
+  Future<void> loadFormData() async {
+    final result = await _getCategories(userId: state.userId);
+    if (isClosed) return;
+    final all = result.fold((_) => <CategoryEntity>[], (cats) => cats);
+    _applyLoadedCategories(all);
+    if (state.isEditing) await _loadEditMetadata(all);
+  }
+
+  void _applyLoadedCategories(List<CategoryEntity> all) {
+    emit(
+      state.copyWith(
+        allCategories: all,
+        isLoadingCategories: false,
+        // New categories cycle through the palette so siblings don't all
+        // share one color — same rule the form page applied before the
+        // count moved into the cubit.
+        color: state.isEditing ? null : CategoryColors.forIndex(all.length),
+      ),
+    );
+    // Re-apply inheritance for subcategories opened in edit mode so
+    // legacy rows whose icon/color drifted from the parent snap back
+    // into the visual family on save.
+    final parentId = state.parentId;
+    if (parentId == null) return;
+    final parent = state.rootCategories
+        .where((c) => c.id == parentId)
+        .firstOrNull;
+    if (parent != null) updateParentId(parentId, parent: parent);
+  }
+
+  /// Demote validation needs `hasChildren` / `hasBudget` for the category
+  /// being edited — the cubit enforces both guardrails before persisting.
+  Future<void> _loadEditMetadata(List<CategoryEntity> all) async {
+    final categoryId = state.existingId!;
+    final hasChildren = all.any((c) => c.parentId == categoryId);
+    final budgetsResult = await _getBudgets(userId: state.userId);
+    if (isClosed) return;
+    final hasBudget = budgetsResult.fold<bool>(
+      (_) => false,
+      (budgets) => budgets.any((b) => b.categoryId == categoryId),
+    );
+    emit(state.copyWith(hasChildren: hasChildren, hasBudget: hasBudget));
+  }
 
   void updateName(String value) => emit(state.copyWith(name: value));
 
@@ -97,13 +153,6 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     if (state.type != CategoryType.income) return;
     if (state.parentId != null) return;
     emit(state.copyWith(countsIn50_30_20: value));
-  }
-
-  /// Page calls this after async-fetching children + budget existence
-  /// for the category being edited. Cubit needs both to enforce
-  /// demote guardrails (root → sub) before persisting.
-  void setMetadata({required bool hasChildren, required bool hasBudget}) {
-    emit(state.copyWith(hasChildren: hasChildren, hasBudget: hasBudget));
   }
 
   Future<void> submit() async {
@@ -187,6 +236,8 @@ class CategoryFormState extends Equatable {
     required this.countsIn50_30_20,
     required this.hasChildren,
     required this.hasBudget,
+    this.allCategories = const [],
+    this.isLoadingCategories = true,
     this.existingId,
     this.parentId,
     this.originalParentId,
@@ -197,14 +248,15 @@ class CategoryFormState extends Equatable {
   factory CategoryFormState.initial({
     required String userId,
     CategoryEntity? existing,
-    int existingCategoryCount = 0,
   }) {
     return CategoryFormState(
       userId: userId,
       name: existing?.name ?? '',
       type: existing?.type ?? CategoryType.expense,
       icon: existing?.icon ?? 58332,
-      color: existing?.color ?? CategoryColors.forIndex(existingCategoryCount),
+      // Placeholder for create mode — `loadFormData` re-seeds it from the
+      // user's category count before the form renders.
+      color: existing?.color ?? CategoryColors.forIndex(0),
       status: FormStatus.initial,
       existingId: existing?.id,
       parentId: existing?.parentId,
@@ -222,6 +274,16 @@ class CategoryFormState extends Equatable {
   final int icon;
   final int color;
   final FormStatus status;
+
+  /// Every category the user owns, fetched once by
+  /// [CategoryFormCubit.loadFormData]. Feeds the parent picker (via
+  /// [rootCategories]) and the delete-reassignment dialog.
+  final List<CategoryEntity> allCategories;
+
+  /// True until [CategoryFormCubit.loadFormData] resolves — the page
+  /// shows a spinner instead of the form so the default color and parent
+  /// options are correct on first paint.
+  final bool isLoadingCategories;
   final String? existingId;
   final String? parentId;
 
@@ -246,6 +308,10 @@ class CategoryFormState extends Equatable {
   bool get isEditing => existingId != null;
   bool get isValid => name.isNotEmpty;
 
+  /// Categories eligible to be a parent (roots of the right shape).
+  List<CategoryEntity> get rootCategories =>
+      allCategories.where((c) => c.canBeParent).toList();
+
   /// True when the user is converting a root into a sub on this edit.
   bool get isDemoting =>
       isEditing && originalParentId == null && parentId != null;
@@ -267,6 +333,8 @@ class CategoryFormState extends Equatable {
     bool? countsIn50_30_20,
     bool? hasChildren,
     bool? hasBudget,
+    List<CategoryEntity>? allCategories,
+    bool? isLoadingCategories,
     Failure? failure,
   }) {
     return CategoryFormState(
@@ -276,6 +344,8 @@ class CategoryFormState extends Equatable {
       icon: icon ?? this.icon,
       color: color ?? this.color,
       status: status ?? this.status,
+      allCategories: allCategories ?? this.allCategories,
+      isLoadingCategories: isLoadingCategories ?? this.isLoadingCategories,
       existingId: existingId,
       parentId: clearParentId ? null : (parentId ?? this.parentId),
       originalParentId: originalParentId,
@@ -295,6 +365,8 @@ class CategoryFormState extends Equatable {
     icon,
     color,
     status,
+    allCategories,
+    isLoadingCategories,
     existingId,
     parentId,
     originalParentId,

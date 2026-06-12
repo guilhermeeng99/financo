@@ -7,6 +7,7 @@ import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 
 class AccountImportPreviewItem extends Equatable {
   const AccountImportPreviewItem({
@@ -97,6 +98,31 @@ class AccountImportResult extends Equatable {
   @override
   List<Object?> get props => [importedCount, duplicateCount];
 }
+
+/// Accounts header synonyms for [mapCsvHeaderColumns] — tolerates extra
+/// columns (e.g. `Data Saldo Inicial` from Mobills exports), a reordered
+/// layout, or English headers.
+const _accountHeaderSynonyms = <String, List<String>>{
+  'name': ['nome', 'name', 'account name', 'apelido'],
+  'balance': [
+    'saldo inicial',
+    'saldo',
+    'initial balance',
+    'balance',
+    'opening balance',
+  ],
+  'type': ['tipo', 'type', 'kind'],
+  'bank': ['banco', 'bank'],
+  'limit': ['limite', 'credit limit', 'limit'],
+  'due': [
+    'proximo vencimento',
+    'vencimento',
+    'due date',
+    'due day',
+    'next due',
+  ],
+  'closing': ['fechamento', 'closing day', 'closing', 'closing date'],
+};
 
 class ImportAccountsCsvUseCase {
   const ImportAccountsCsvUseCase(this._repository);
@@ -255,14 +281,17 @@ class ImportAccountsCsvUseCase {
   List<AccountImportPreviewItem> _parseCsv(String csvContent) {
     final rows = Csv().decode(csvContent.trim());
     if (rows.length < 2) {
-      throw const FormatException('CSV file is empty or invalid.');
+      throw FormatException(t.csvImport.errors.emptyFile);
     }
 
-    final colIndex = _mapHeaderColumns(rows.first);
+    final colIndex = mapCsvHeaderColumns(
+      rows.first,
+      synonyms: _accountHeaderSynonyms,
+    );
     for (final required in const ['name', 'balance', 'type', 'bank']) {
       if (!colIndex.containsKey(required)) {
         throw FormatException(
-          'CSV is missing the required "$required" column.',
+          t.csvImport.errors.missingColumn(column: required),
         );
       }
     }
@@ -312,51 +341,9 @@ class ImportAccountsCsvUseCase {
     }
 
     if (items.isEmpty) {
-      throw const FormatException('CSV file has no valid accounts.');
+      throw FormatException(t.csvImport.errors.noValidAccounts);
     }
     return items;
-  }
-
-  /// Resolves header columns to logical field keys so the parser tolerates
-  /// extra columns (e.g. `Data Saldo Inicial` from Mobills exports), a
-  /// reordered layout, or English headers. Matching is accent- and
-  /// case-insensitive via `normalizeForMatch`.
-  Map<String, int> _mapHeaderColumns(List<dynamic> header) {
-    const synonyms = <String, List<String>>{
-      'name': ['nome', 'name', 'account name', 'apelido'],
-      'balance': [
-        'saldo inicial',
-        'saldo',
-        'initial balance',
-        'balance',
-        'opening balance',
-      ],
-      'type': ['tipo', 'type', 'kind'],
-      'bank': ['banco', 'bank'],
-      'limit': ['limite', 'credit limit', 'limit'],
-      'due': [
-        'proximo vencimento',
-        'vencimento',
-        'due date',
-        'due day',
-        'next due',
-      ],
-      'closing': ['fechamento', 'closing day', 'closing', 'closing date'],
-    };
-
-    final out = <String, int>{};
-    for (var i = 0; i < header.length; i++) {
-      final norm = normalizeForMatch('${header[i] ?? ''}');
-      if (norm.isEmpty) continue;
-      for (final entry in synonyms.entries) {
-        if (out.containsKey(entry.key)) continue;
-        if (entry.value.contains(norm)) {
-          out[entry.key] = i;
-          break;
-        }
-      }
-    }
-    return out;
   }
 
   AccountImportPreview _buildPreview(
@@ -394,8 +381,7 @@ class ImportAccountsCsvUseCase {
     final normalized = normalizeForMatch(raw);
     if (normalized.isEmpty) {
       throw FormatException(
-        'Row $csvRow: type column is empty. '
-        'Use Conta Corrente or Cartão de Crédito.',
+        t.csvImport.errors.accountTypeEmpty(row: csvRow),
       );
     }
     if (normalized.contains('corrente') || normalized.contains('checking')) {
@@ -410,13 +396,11 @@ class ImportAccountsCsvUseCase {
     if (normalized.contains('investimento') ||
         normalized.contains('investment')) {
       throw FormatException(
-        'Row $csvRow: investment accounts cannot be imported from CSV in '
-        'this version. Create them manually from the add-account screen.',
+        t.csvImport.errors.accountTypeInvestment(row: csvRow),
       );
     }
     throw FormatException(
-      'Row $csvRow: invalid type "$raw". '
-      'Use Conta Corrente or Cartão de Crédito.',
+      t.csvImport.errors.accountTypeInvalid(row: csvRow, value: raw),
     );
   }
 

@@ -37,7 +37,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
     BudgetEntity budget,
   ) async {
     // Not routed through guardServer: the uniqueness guard returns a
-    // ValidationFailure (not a ServerException) before any remote call.
+    // DuplicateBudgetCategoryFailure (not a ServerException) before any
+    // remote call.
     try {
       // Uniqueness check: one budget per (userId, categoryId). The remote
       // schema has no native uniqueness guard, so we enforce it here using
@@ -46,9 +47,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
       final existing = await _dao.getBudgets(userId: budget.userId);
       final dup = existing.any((b) => b.categoryId == budget.categoryId);
       if (dup) {
-        return const Left(
-          ValidationFailure('Já existe um orçamento para essa categoria.'),
-        );
+        return const Left(DuplicateBudgetCategoryFailure());
       }
       final result = await _remote.createBudget(BudgetModel.fromEntity(budget));
       await _dao.upsertBudget(result);

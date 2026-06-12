@@ -24,40 +24,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
-class AddBudgetPage extends StatefulWidget {
+class AddBudgetPage extends StatelessWidget {
   const AddBudgetPage({super.key, this.existingBudget});
 
   final BudgetEntity? existingBudget;
-
-  @override
-  State<AddBudgetPage> createState() => _AddBudgetPageState();
-}
-
-class _AddBudgetPageState extends State<AddBudgetPage> {
-  /// Categories the user has already budgeted. Loaded once on init so the
-  /// picker can hide them in create mode (one budget per category — spec
-  /// rule 1). The form's own current `categoryId` is excluded from this
-  /// set in edit mode so re-saving the same record doesn't fight itself.
-  Set<String> _budgetedCategoryIds = const {};
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadBudgetedCategoryIds());
-  }
-
-  Future<void> _loadBudgetedCategoryIds() async {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
-    final result = await GetIt.I<GetBudgetsUseCase>()(userId: userId);
-    if (!mounted) return;
-    setState(() {
-      _budgetedCategoryIds = result.fold(
-        (_) => const {},
-        (budgets) => budgets.map((b) => b.categoryId).toSet(),
-      );
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,21 +35,24 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
     final userId = authState is Authenticated ? authState.user.id : '';
 
     return BlocProvider(
-      create: (_) => BudgetFormCubit(
-        createBudget: GetIt.I<CreateBudgetUseCase>(),
-        updateBudget: GetIt.I<UpdateBudgetUseCase>(),
-        userId: userId,
-        existingBudget: widget.existingBudget,
-      ),
-      child: _AddBudgetView(budgetedCategoryIds: _budgetedCategoryIds),
+      create: (_) {
+        final cubit = BudgetFormCubit(
+          createBudget: GetIt.I<CreateBudgetUseCase>(),
+          updateBudget: GetIt.I<UpdateBudgetUseCase>(),
+          getBudgets: GetIt.I<GetBudgetsUseCase>(),
+          userId: userId,
+          existingBudget: existingBudget,
+        );
+        unawaited(cubit.loadBudgetedCategoryIds());
+        return cubit;
+      },
+      child: const _AddBudgetView(),
     );
   }
 }
 
 class _AddBudgetView extends StatefulWidget {
-  const _AddBudgetView({required this.budgetedCategoryIds});
-
-  final Set<String> budgetedCategoryIds;
+  const _AddBudgetView();
 
   @override
   State<_AddBudgetView> createState() => _AddBudgetViewState();
@@ -111,10 +84,10 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
     // one stays selectable so the user sees their selection. In create
     // mode the entire budgeted set is excluded.
     final excluded = state.isEditing
-        ? widget.budgetedCategoryIds
+        ? state.budgetedCategoryIds
               .where((id) => id != state.categoryId)
               .toSet()
-        : widget.budgetedCategoryIds;
+        : state.budgetedCategoryIds;
     final picked = await showBudgetCategoryPicker(
       context: context,
       selectedId: state.categoryId,
@@ -131,20 +104,15 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
 
   void _onFormStateChanged(BuildContext context, BudgetFormState state) {
     if (state.status == FormStatus.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            state.isEditing
-                ? t.budgets.budgetUpdated
-                : t.budgets.budgetCreated,
-          ),
-        ),
-      );
-      context.pop(true);
+      context
+        ..showSnack(
+          state.isEditing
+              ? t.budgets.budgetUpdated
+              : t.budgets.budgetCreated,
+        )
+        ..pop(true);
     } else if (state.status == FormStatus.failure) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(state.failure))),
-      );
+      context.showSnack(localizedFailure(state.failure));
     }
   }
 

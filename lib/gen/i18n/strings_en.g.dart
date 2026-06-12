@@ -42,6 +42,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	// Translations
 	late final Translations$general$en general = Translations$general$en._(_root);
 	late final Translations$errors$en errors = Translations$errors$en._(_root);
+	late final Translations$csvImport$en csvImport = Translations$csvImport$en._(_root);
 	late final Translations$validators$en validators = Translations$validators$en._(_root);
 	late final Translations$auth$en auth = Translations$auth$en._(_root);
 	late final Translations$accessControl$en accessControl = Translations$accessControl$en._(_root);
@@ -69,20 +70,11 @@ class Translations$general$en {
 
 	// Translations
 
-	/// en: 'Loading...'
-	String get loading => 'Loading...';
-
-	/// en: 'An error occurred'
-	String get error => 'An error occurred';
-
 	/// en: 'Try again'
 	String get retry => 'Try again';
 
 	/// en: 'Cancel'
 	String get cancel => 'Cancel';
-
-	/// en: 'Confirm'
-	String get confirm => 'Confirm';
 
 	/// en: 'Save'
 	String get save => 'Save';
@@ -90,26 +82,11 @@ class Translations$general$en {
 	/// en: 'Delete'
 	String get delete => 'Delete';
 
-	/// en: 'Edit'
-	String get edit => 'Edit';
-
 	/// en: 'Add'
 	String get add => 'Add';
 
-	/// en: 'Search'
-	String get search => 'Search';
-
-	/// en: 'Filter'
-	String get filter => 'Filter';
-
 	/// en: 'No results found'
 	String get noResults => 'No results found';
-
-	/// en: 'Success'
-	String get success => 'Success';
-
-	/// en: 'or'
-	String get or => 'or';
 
 	/// en: 'OK'
 	String get ok => 'OK';
@@ -119,18 +96,6 @@ class Translations$general$en {
 
 	/// en: 'Create'
 	String get create => 'Create';
-
-	/// en: 'Yes'
-	String get yes => 'Yes';
-
-	/// en: 'No'
-	String get no => 'No';
-
-	/// en: 'All'
-	String get all => 'All';
-
-	/// en: 'Default'
-	String get defaultLabel => 'Default';
 }
 
 // Path: errors
@@ -155,6 +120,22 @@ class Translations$errors$en {
 
 	/// en: 'Access is restricted for this account.'
 	String get accessDenied => 'Access is restricted for this account.';
+
+	/// en: 'The name cannot be empty.'
+	String get emptyName => 'The name cannot be empty.';
+
+	/// en: 'The amount cannot be negative.'
+	String get negativeAmount => 'The amount cannot be negative.';
+}
+
+// Path: csvImport
+class Translations$csvImport$en {
+	Translations$csvImport$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$csvImport$errors$en errors = Translations$csvImport$errors$en._(_root);
 }
 
 // Path: validators
@@ -179,12 +160,6 @@ class Translations$validators$en {
 
 	/// en: 'Enter a valid amount.'
 	String get amountInvalid => 'Enter a valid amount.';
-
-	/// en: 'Select an account'
-	String get selectAccount => 'Select an account';
-
-	/// en: 'Select a category'
-	String get selectCategory => 'Select a category';
 }
 
 // Path: auth
@@ -267,6 +242,9 @@ class Translations$masterPanel$en {
 	/// en: 'Email authorized.'
 	String get addEmailSuccess => 'Email authorized.';
 
+	/// en: 'The master account already has access.'
+	String get masterAlreadyAllowed => 'The master account already has access.';
+
 	/// en: 'Remove access'
 	String get removeEmailTitle => 'Remove access';
 
@@ -299,9 +277,6 @@ class Translations$onboarding$en {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-
-	/// en: 'Take control of your personal finances with smart tracking and AI assistance.'
-	String get tagline => 'Take control of your personal finances\nwith smart tracking and AI assistance.';
 
 	/// en: 'Track Your Finances'
 	String get step1Title => 'Track Your Finances';
@@ -354,18 +329,6 @@ class Translations$nav$en {
 	/// en: 'Paid and received'
 	String get paidAndReceived => 'Paid and received';
 
-	/// en: 'Payables'
-	String get payables => 'Payables';
-
-	/// en: 'Receivables'
-	String get receivables => 'Receivables';
-
-	/// en: 'Paid accounts'
-	String get paidAccounts => 'Paid accounts';
-
-	/// en: 'Received accounts'
-	String get receivedAccounts => 'Received accounts';
-
 	/// en: 'Investments'
 	String get investments => 'Investments';
 
@@ -399,23 +362,8 @@ class Translations$dashboard$en {
 	/// en: 'Result'
 	String get netResult => 'Result';
 
-	/// en: 'Recent Transactions'
-	String get recentTransactions => 'Recent Transactions';
-
-	/// en: 'See all'
-	String get seeAll => 'See all';
-
-	/// en: 'This month'
-	String get thisMonth => 'This month';
-
-	/// en: 'No transactions yet'
-	String get noTransactionsYet => 'No transactions yet';
-
 	/// en: 'Balances'
 	String get accountBalances => 'Balances';
-
-	/// en: 'Month Result'
-	String get monthResult => 'Month Result';
 
 	/// en: 'Expenses by Category'
 	String get expensesByCategory => 'Expenses by Category';
@@ -429,15 +377,6 @@ class Translations$dashboard$en {
 	/// en: 'Credit Card Balance'
 	String get creditCardBalance => 'Credit Card Balance';
 
-	/// en: 'No credit cards registered yet'
-	String get noCreditCardsYet => 'No credit cards registered yet';
-
-	/// en: 'Investments'
-	String get investmentBalance => 'Investments';
-
-	/// en: 'No investment accounts registered yet'
-	String get noInvestmentsYet => 'No investment accounts registered yet';
-
 	/// en: 'No expenses this month'
 	String get noExpensesYet => 'No expenses this month';
 
@@ -446,9 +385,6 @@ class Translations$dashboard$en {
 
 	/// en: 'Total Expenses'
 	String get totalExpenses => 'Total Expenses';
-
-	/// en: 'Total Income'
-	String get totalIncome => 'Total Income';
 
 	/// en: 'Transaction list'
 	String get transactionList => 'Transaction list';
@@ -461,9 +397,6 @@ class Translations$dashboard$en {
 
 	/// en: 'Total'
 	String get total => 'Total';
-
-	/// en: 'Close'
-	String get close => 'Close';
 }
 
 // Path: fiftyThirtyTwenty
@@ -519,9 +452,6 @@ class Translations$fiftyThirtyTwenty$en {
 	/// en: 'Unclassified'
 	String get unclassifiedLabel => 'Unclassified';
 
-	/// en: 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.'
-	String get principalDisclaimer => 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.';
-
 	/// en: 'Edit targets'
 	String get editTargets => 'Edit targets';
 
@@ -549,9 +479,6 @@ class Translations$fiftyThirtyTwenty$en {
 	/// en: 'No history to show yet.'
 	String get historyEmpty => 'No history to show yet.';
 
-	/// en: 'Planning'
-	String get navLabel => 'Planning';
-
 	/// en: 'Budgets'
 	String get subTabBudgets => 'Budgets';
 
@@ -567,32 +494,14 @@ class Translations$transactions$en {
 
 	// Translations
 
-	/// en: 'Transactions'
-	String get title => 'Transactions';
-
-	/// en: 'No transactions. Add your first transaction to get started.'
-	String get empty => 'No transactions. Add your first transaction to get started.';
-
 	/// en: 'New Transaction'
 	String get addTransaction => 'New Transaction';
 
 	/// en: 'Edit Transaction'
 	String get editTransaction => 'Edit Transaction';
 
-	/// en: 'Confirm payment'
-	String get confirmPaymentTitle => 'Confirm payment';
-
-	/// en: 'Confirm receipt'
-	String get confirmReceiptTitle => 'Confirm receipt';
-
-	/// en: 'Transaction Details'
-	String get transactionDetails => 'Transaction Details';
-
 	/// en: 'Transaction'
 	String get transaction => 'Transaction';
-
-	/// en: 'Transaction not found'
-	String get transactionNotFound => 'Transaction not found';
 
 	/// en: 'Type'
 	String get type => 'Type';
@@ -602,9 +511,6 @@ class Translations$transactions$en {
 
 	/// en: 'Expense'
 	String get expense => 'Expense';
-
-	/// en: 'Amount'
-	String get amount => 'Amount';
 
 	/// en: 'Amount'
 	String get amountLabel => 'Amount';
@@ -726,9 +632,6 @@ class Translations$transactions$en {
 	/// en: 'Delete this and following'
 	String get sequenceDeleteThisAndFollowing => 'Delete this and following';
 
-	/// en: 'Transaction saved!'
-	String get saved => 'Transaction saved!';
-
 	/// en: 'Transaction deleted.'
 	String get deleted => 'Transaction deleted.';
 
@@ -765,32 +668,14 @@ class Translations$transactions$en {
 	/// en: 'Fill in: $fields'
 	String importMissingFields({required Object fields}) => 'Fill in: ${fields}';
 
-	/// en: 'Review import: $count transactions will be created.'
-	String importReview({required Object count}) => 'Review import: ${count} transactions will be created.';
-
 	/// en: 'Missing categories:'
 	String get importMissingCategories => 'Missing categories:';
 
 	/// en: 'Missing accounts:'
 	String get importMissingAccounts => 'Missing accounts:';
 
-	/// en: '$count rows were skipped (invalid format).'
-	String importSkippedRows({required Object count}) => '${count} rows were skipped (invalid format).';
-
 	/// en: 'Imported $imported transactions. Skipped $skipped rows.'
 	String importSuccess({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.';
-
-	/// en: 'Cannot import: some categories or accounts were not found.'
-	String get importBlocked => 'Cannot import: some categories or accounts were not found.';
-
-	/// en: '$count transfers'
-	String importTransfers({required Object count}) => '${count} transfers';
-
-	/// en: '$count expenses'
-	String importExpenses({required Object count}) => '${count} expenses';
-
-	/// en: '$count incomes'
-	String importIncomes({required Object count}) => '${count} incomes';
 
 	/// en: 'Review import'
 	String get importPageTitle => 'Review import';
@@ -843,12 +728,6 @@ class Translations$accounts$en {
 	/// en: 'Edit Account'
 	String get editAccount => 'Edit Account';
 
-	/// en: 'Account'
-	String get account => 'Account';
-
-	/// en: 'Account not found'
-	String get accountNotFound => 'Account not found';
-
 	/// en: 'Checking Account'
 	String get checking => 'Checking Account';
 
@@ -878,12 +757,6 @@ class Translations$accounts$en {
 
 	/// en: 'Bank'
 	String get bank => 'Bank';
-
-	/// en: 'e.g. Nubank'
-	String get bankHint => 'e.g. Nubank';
-
-	/// en: 'Others'
-	String get bankOthers => 'Others';
 
 	/// en: 'Linked Checking Account'
 	String get linkedAccount => 'Linked Checking Account';
@@ -918,12 +791,6 @@ class Translations$accounts$en {
 	/// en: 'Available Credit'
 	String get availableCredit => 'Available Credit';
 
-	/// en: 'Current bill'
-	String get currentBill => 'Current bill';
-
-	/// en: 'Type'
-	String get type => 'Type';
-
 	/// en: 'No accounts. Add your first bank account or credit card.'
 	String get empty => 'No accounts. Add your first bank account or credit card.';
 
@@ -935,12 +802,6 @@ class Translations$accounts$en {
 
 	/// en: 'Account created'
 	String get accountCreated => 'Account created';
-
-	/// en: 'Account saved!'
-	String get saved => 'Account saved!';
-
-	/// en: 'Account deleted.'
-	String get deleted => 'Account deleted.';
 
 	/// en: 'Are you sure you want to delete this account?'
 	String get deleteConfirm => 'Are you sure you want to delete this account?';
@@ -1092,20 +953,8 @@ class Translations$categories$en {
 	/// en: 'Expense'
 	String get expenseType => 'Expense';
 
-	/// en: 'Both'
-	String get bothType => 'Both';
-
 	/// en: 'No categories. Categories will appear here.'
 	String get empty => 'No categories. Categories will appear here.';
-
-	/// en: 'Category saved!'
-	String get saved => 'Category saved!';
-
-	/// en: 'Category deleted.'
-	String get deleted => 'Category deleted.';
-
-	/// en: 'Are you sure you want to delete this category?'
-	String get deleteConfirm => 'Are you sure you want to delete this category?';
 
 	/// en: 'Select a category to reassign transactions to:'
 	String get reassignPrompt => 'Select a category to reassign transactions to:';
@@ -1115,9 +964,6 @@ class Translations$categories$en {
 
 	/// en: 'Category created'
 	String get categoryCreated => 'Category created';
-
-	/// en: 'Default categories cannot be deleted.'
-	String get cannotDeleteDefault => 'Default categories cannot be deleted.';
 
 	/// en: 'Create another category before deleting this one.'
 	String get cannotDeleteLast => 'Create another category before deleting this one.';
@@ -1172,15 +1018,6 @@ class Translations$categories$en {
 
 	/// en: 'Couldn't import the CSV'
 	String get importCsvErrorTitle => 'Couldn\'t import the CSV';
-
-	/// en: 'Imported $count categories.'
-	String importSuccess({required Object count}) => 'Imported ${count} categories.';
-
-	/// en: 'Review import: $arg new items will be created.'
-	String importReview({required Object arg}) => 'Review import: ${arg} new items will be created.';
-
-	/// en: '$arg duplicate items will be skipped.'
-	String importDuplicates({required Object arg}) => '${arg} duplicate items will be skipped.';
 
 	/// en: 'Imported $imported items. Skipped $duplicates duplicates.'
 	String importSuccessDetailed({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.';
@@ -1293,9 +1130,6 @@ class Translations$chat$en {
 
 	// Translations
 
-	/// en: 'AI Assistant'
-	String get title => 'AI Assistant';
-
 	/// en: 'Type a message...'
 	String get placeholder => 'Type a message...';
 
@@ -1304,18 +1138,6 @@ class Translations$chat$en {
 
 	/// en: 'Tell me about your transactions and I'll help you record them.'
 	String get welcomeBody => 'Tell me about your transactions and I\'ll help you record them.';
-
-	/// en: 'I detected the following transaction. Does this look correct?'
-	String get confirmPrompt => 'I detected the following transaction. Does this look correct?';
-
-	/// en: 'Transaction saved!'
-	String get confirmed => 'Transaction saved!';
-
-	/// en: 'Transaction cancelled.'
-	String get cancelled => 'Transaction cancelled.';
-
-	/// en: 'Sorry, I couldn't understand that. Could you try again?'
-	String get error => 'Sorry, I couldn\'t understand that. Could you try again?';
 
 	/// en: 'Financo AI'
 	String get aiName => 'Financo AI';
@@ -1396,9 +1218,6 @@ class Translations$budgets$en {
 
 	/// en: '$spent of $cap'
 	String spentOf({required Object spent, required Object cap}) => '${spent} of ${cap}';
-
-	/// en: '$value% used'
-	String percentageUsed({required Object value}) => '${value}% used';
 
 	/// en: '$value remaining'
 	String remainingOf({required Object value}) => '${value} remaining';
@@ -1493,17 +1312,11 @@ class Translations$profile$en {
 	/// en: 'Profile'
 	String get title => 'Profile';
 
-	/// en: 'Edit Profile'
-	String get editProfile => 'Edit Profile';
-
 	/// en: 'Accounts'
 	String get accounts => 'Accounts';
 
 	/// en: 'Categories'
 	String get categories => 'Categories';
-
-	/// en: 'Theme'
-	String get theme => 'Theme';
 
 	/// en: 'Light'
 	String get themeLight => 'Light';
@@ -1522,9 +1335,6 @@ class Translations$profile$en {
 
 	/// en: 'Delete transactions, chat, categories and accounts'
 	String get clearDataDescription => 'Delete transactions, chat, categories and accounts';
-
-	/// en: 'This will permanently delete all data from your account. Continue?'
-	String get clearDataConfirm => 'This will permanently delete all data from your account. Continue?';
 
 	/// en: 'This action is permanent'
 	String get clearDataConfirmHeadline => 'This action is permanent';
@@ -1796,14 +1606,8 @@ class Translations$investments$en {
 	/// en: 'None (root class)'
 	String get parentPickerNone => 'None (root class)';
 
-	/// en: 'Subclass inherits icon and color from $parent.'
-	String subclassInheritsHint({required Object parent}) => 'Subclass inherits icon and color from ${parent}.';
-
 	/// en: 'Subclass of $parent'
 	String subclassOf({required Object parent}) => 'Subclass of ${parent}';
-
-	/// en: '$percent of class'
-	String subclassRowSubtitle({required Object percent}) => '${percent} of class';
 
 	/// en: 'Add subclass'
 	String get addSubclass => 'Add subclass';
@@ -1919,9 +1723,6 @@ class Translations$investments$en {
 	/// en: 'Create an investment account first.'
 	String get fabAddHoldingNoAccount => 'Create an investment account first.';
 
-	/// en: 'Create a class first.'
-	String get fabAddHoldingNoClass => 'Create a class first.';
-
 	/// en: 'Add a subclass before allocating — classes are organisers only.'
 	String get fabAddHoldingNoSubclass => 'Add a subclass before allocating — classes are organisers only.';
 
@@ -1933,6 +1734,36 @@ class Translations$investments$en {
 
 	/// en: 'Target percent sum exceeds 100% for subclasses of this class. Available: $available.'
 	String targetSumExceedsSub({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.';
+
+	/// en: 'Target percent must be between 0 and 100.'
+	String get targetPercentOutOfRange => 'Target percent must be between 0 and 100.';
+
+	/// en: 'Parent class not found.'
+	String get parentClassNotFound => 'Parent class not found.';
+
+	/// en: 'A subclass cannot be the parent of another subclass.'
+	String get subclassCannotBeParent => 'A subclass cannot be the parent of another subclass.';
+
+	/// en: 'A class cannot be its own parent.'
+	String get classCannotBeOwnParent => 'A class cannot be its own parent.';
+
+	/// en: 'This class owns subclasses — remove or re-parent them before turning it into a subclass.'
+	String get classOwnsSubclasses => 'This class owns subclasses — remove or re-parent them before turning it into a subclass.';
+
+	/// en: 'Can't delete: $count subclass(es) still reference this class.'
+	String deleteBlockedBySubclasses({required Object count}) => 'Can\'t delete: ${count} subclass(es) still reference this class.';
+
+	/// en: 'Can't delete: $count holding(s) still reference this class.'
+	String deleteBlockedByHoldings({required Object count}) => 'Can\'t delete: ${count} holding(s) still reference this class.';
+
+	/// en: 'Asset class not found.'
+	String get assetClassNotFound => 'Asset class not found.';
+
+	/// en: 'Holdings can only be attached to investment accounts.'
+	String get holdingAccountNotInvestment => 'Holdings can only be attached to investment accounts.';
+
+	/// en: 'Holdings must point at a subclass. Add a subclass to the chosen class first.'
+	String get holdingRequiresSubclass => 'Holdings must point at a subclass. Add a subclass to the chosen class first.';
 }
 
 // Path: payablesReceivables
@@ -1942,9 +1773,6 @@ class Translations$payablesReceivables$en {
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-
-	/// en: 'Payables and receivables'
-	String get title => 'Payables and receivables';
 
 	/// en: 'No movements found in this period.'
 	String get empty => 'No movements found in this period.';
@@ -1991,9 +1819,6 @@ class Translations$payablesReceivables$en {
 	/// en: 'Upcoming'
 	String get upcomingGroup => 'Upcoming';
 
-	/// en: 'Are you sure you want to delete this transaction?'
-	String get deleteConfirm => 'Are you sure you want to delete this transaction?';
-
 	/// en: 'Transaction marked as paid'
 	String get transactionPaid => 'Transaction marked as paid';
 
@@ -2017,6 +1842,66 @@ class Translations$payablesReceivables$en {
 
 	/// en: 'Choose a category'
 	String get pickCategory => 'Choose a category';
+}
+
+// Path: csvImport.errors
+class Translations$csvImport$errors$en {
+	Translations$csvImport$errors$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'CSV file is empty or invalid.'
+	String get emptyFile => 'CSV file is empty or invalid.';
+
+	/// en: 'CSV is missing the required "$column" column.'
+	String missingColumn({required Object column}) => 'CSV is missing the required "${column}" column.';
+
+	/// en: 'CSV file has no valid accounts.'
+	String get noValidAccounts => 'CSV file has no valid accounts.';
+
+	/// en: 'CSV file has no valid categories.'
+	String get noValidCategories => 'CSV file has no valid categories.';
+
+	/// en: 'CSV file has no valid transactions.'
+	String get noValidTransactions => 'CSV file has no valid transactions.';
+
+	/// en: 'CSV file has no valid budgets.'
+	String get noValidBudgets => 'CSV file has no valid budgets.';
+
+	/// en: 'Row $row: type column is empty. Use Conta Corrente or Cartão de Crédito.'
+	String accountTypeEmpty({required Object row}) => 'Row ${row}: type column is empty. Use Conta Corrente or Cartão de Crédito.';
+
+	/// en: 'Row $row: invalid type "$value". Use Conta Corrente or Cartão de Crédito.'
+	String accountTypeInvalid({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Conta Corrente or Cartão de Crédito.';
+
+	/// en: 'Row $row: investment accounts cannot be imported from CSV in this version. Create them manually from the add-account screen.'
+	String accountTypeInvestment({required Object row}) => 'Row ${row}: investment accounts cannot be imported from CSV in this version. Create them manually from the add-account screen.';
+
+	/// en: 'Row $row: type column is empty. Use Receita, Despesa, Income or Expense.'
+	String categoryTypeEmpty({required Object row}) => 'Row ${row}: type column is empty. Use Receita, Despesa, Income or Expense.';
+
+	/// en: 'Row $row: invalid type "$value". Use Receita, Despesa, Income or Expense.'
+	String categoryTypeInvalid({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Receita, Despesa, Income or Expense.';
+
+	/// en: 'Row $row: type column is empty. Use Despesa, Receita, Transferência or Pagamento.'
+	String transactionTypeEmpty({required Object row}) => 'Row ${row}: type column is empty. Use Despesa, Receita, Transferência or Pagamento.';
+
+	/// en: 'Row $row: invalid type "$value". Use Despesa, Receita, Transferência or Pagamento.'
+	String transactionTypeInvalid({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Despesa, Receita, Transferência or Pagamento.';
+
+	/// en: 'Row $row: account column is empty.'
+	String accountColumnEmpty({required Object row}) => 'Row ${row}: account column is empty.';
+
+	/// en: 'Row $row: invalid or zero amount "$value".'
+	String invalidAmount({required Object row, required Object value}) => 'Row ${row}: invalid or zero amount "${value}".';
+
+	/// en: 'Row $row: invalid date "$value". Use DD/MM/YYYY.'
+	String invalidDate({required Object row, required Object value}) => 'Row ${row}: invalid date "${value}". Use DD/MM/YYYY.';
+
+	/// en: 'Cannot import: missing $names'
+	String cannotImportMissing({required Object names}) => 'Cannot import: missing ${names}';
 }
 
 // Path: chat.action
@@ -2063,12 +1948,6 @@ class Translations$chat$action$en {
 	/// en: 'Delete budget'
 	String get budgetDelete => 'Delete budget';
 
-	/// en: 'Amount'
-	String get fieldAmount => 'Amount';
-
-	/// en: 'Description'
-	String get fieldDescription => 'Description';
-
 	/// en: 'Category'
 	String get fieldCategory => 'Category';
 
@@ -2093,23 +1972,11 @@ class Translations$chat$action$en {
 	/// en: 'Due day'
 	String get fieldDueDay => 'Due day';
 
-	/// en: 'Due date'
-	String get fieldDueDate => 'Due date';
-
-	/// en: 'Recurrence'
-	String get fieldRecurrence => 'Recurrence';
-
-	/// en: 'Name'
-	String get fieldName => 'Name';
-
 	/// en: 'Linked account'
 	String get fieldLinkedAccount => 'Linked account';
 
 	/// en: 'Initial balance'
 	String get fieldBalance => 'Initial balance';
-
-	/// en: 'Notes'
-	String get fieldNotes => 'Notes';
 
 	/// en: 'Confirm'
 	String get confirm => 'Confirm';
@@ -2141,9 +2008,6 @@ class Translations$chat$audio$en {
 	/// en: 'Cancel'
 	String get cancel => 'Cancel';
 
-	/// en: 'Recording'
-	String get recording => 'Recording';
-
 	/// en: 'Transcribing...'
 	String get transcribing => 'Transcribing...';
 
@@ -2170,9 +2034,6 @@ class Translations$chat$image$en {
 
 	/// en: 'Choose from gallery'
 	String get fromGallery => 'Choose from gallery';
-
-	/// en: 'Remove image'
-	String get remove => 'Remove image';
 
 	/// en: 'Could not pick image'
 	String get pickError => 'Could not pick image';
@@ -2363,39 +2224,44 @@ class Translations$chat$handlers$en {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'general.loading' => 'Loading...',
-			'general.error' => 'An error occurred',
 			'general.retry' => 'Try again',
 			'general.cancel' => 'Cancel',
-			'general.confirm' => 'Confirm',
 			'general.save' => 'Save',
 			'general.delete' => 'Delete',
-			'general.edit' => 'Edit',
 			'general.add' => 'Add',
-			'general.search' => 'Search',
-			'general.filter' => 'Filter',
 			'general.noResults' => 'No results found',
-			'general.success' => 'Success',
-			'general.or' => 'or',
 			'general.ok' => 'OK',
 			'general.update' => 'Update',
 			'general.create' => 'Create',
-			'general.yes' => 'Yes',
-			'general.no' => 'No',
-			'general.all' => 'All',
-			'general.defaultLabel' => 'Default',
 			'errors.unexpected' => 'Something went wrong. Please try again.',
 			'errors.server' => 'Couldn\'t reach the server. Check your connection and try again.',
 			'errors.auth' => 'Authentication failed. Please sign in again.',
 			'errors.ai' => 'The assistant ran into a problem. Please try again.',
 			'errors.accessDenied' => 'Access is restricted for this account.',
+			'errors.emptyName' => 'The name cannot be empty.',
+			'errors.negativeAmount' => 'The amount cannot be negative.',
+			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
+			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
+			'csvImport.errors.noValidAccounts' => 'CSV file has no valid accounts.',
+			'csvImport.errors.noValidCategories' => 'CSV file has no valid categories.',
+			'csvImport.errors.noValidTransactions' => 'CSV file has no valid transactions.',
+			'csvImport.errors.noValidBudgets' => 'CSV file has no valid budgets.',
+			'csvImport.errors.accountTypeEmpty' => ({required Object row}) => 'Row ${row}: type column is empty. Use Conta Corrente or Cartão de Crédito.',
+			'csvImport.errors.accountTypeInvalid' => ({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Conta Corrente or Cartão de Crédito.',
+			'csvImport.errors.accountTypeInvestment' => ({required Object row}) => 'Row ${row}: investment accounts cannot be imported from CSV in this version. Create them manually from the add-account screen.',
+			'csvImport.errors.categoryTypeEmpty' => ({required Object row}) => 'Row ${row}: type column is empty. Use Receita, Despesa, Income or Expense.',
+			'csvImport.errors.categoryTypeInvalid' => ({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Receita, Despesa, Income or Expense.',
+			'csvImport.errors.transactionTypeEmpty' => ({required Object row}) => 'Row ${row}: type column is empty. Use Despesa, Receita, Transferência or Pagamento.',
+			'csvImport.errors.transactionTypeInvalid' => ({required Object row, required Object value}) => 'Row ${row}: invalid type "${value}". Use Despesa, Receita, Transferência or Pagamento.',
+			'csvImport.errors.accountColumnEmpty' => ({required Object row}) => 'Row ${row}: account column is empty.',
+			'csvImport.errors.invalidAmount' => ({required Object row, required Object value}) => 'Row ${row}: invalid or zero amount "${value}".',
+			'csvImport.errors.invalidDate' => ({required Object row, required Object value}) => 'Row ${row}: invalid date "${value}". Use DD/MM/YYYY.',
+			'csvImport.errors.cannotImportMissing' => ({required Object names}) => 'Cannot import: missing ${names}',
 			'validators.required' => 'This field is required.',
 			'validators.emailRequired' => 'Email is required.',
 			'validators.emailInvalid' => 'Enter a valid email.',
 			'validators.amountRequired' => 'Amount is required.',
 			'validators.amountInvalid' => 'Enter a valid amount.',
-			'validators.selectAccount' => 'Select an account',
-			'validators.selectCategory' => 'Select a category',
 			'auth.signOut' => 'Sign Out',
 			'auth.email' => 'Email',
 			'auth.emailHint' => 'your@email.com',
@@ -2414,6 +2280,7 @@ extension on Translations {
 			'masterPanel.addEmailNoteLabel' => 'Note (optional)',
 			'masterPanel.addEmailNoteHint' => 'e.g. friend\'s name',
 			'masterPanel.addEmailSuccess' => 'Email authorized.',
+			'masterPanel.masterAlreadyAllowed' => 'The master account already has access.',
 			'masterPanel.removeEmailTitle' => 'Remove access',
 			'masterPanel.removeEmailBody' => ({required Object email}) => 'This removes access for ${email}. Their existing data is kept.',
 			'masterPanel.removeEmailConfirm' => 'Remove',
@@ -2422,7 +2289,6 @@ extension on Translations {
 			'masterPanel.deleteUserBody' => ({required Object name}) => 'This permanently deletes ${name} and all of their data. Type the email to confirm.',
 			'masterPanel.deleteUserConfirmField' => 'Type the email',
 			'masterPanel.deleteUserSuccess' => 'User deleted.',
-			'onboarding.tagline' => 'Take control of your personal finances\nwith smart tracking and AI assistance.',
 			'onboarding.step1Title' => 'Track Your Finances',
 			'onboarding.step1Body' => 'Log income and expenses effortlessly. Keep a clear view of where your money goes.',
 			'onboarding.step2Title' => 'AI-Powered Entry',
@@ -2437,10 +2303,6 @@ extension on Translations {
 			'nav.planning' => 'Planning',
 			'nav.payablesReceivables' => 'Payables and receivables',
 			'nav.paidAndReceived' => 'Paid and received',
-			'nav.payables' => 'Payables',
-			'nav.receivables' => 'Receivables',
-			'nav.paidAccounts' => 'Paid accounts',
-			'nav.receivedAccounts' => 'Received accounts',
 			'nav.investments' => 'Investments',
 			'nav.collapseSidebar' => 'Collapse sidebar',
 			'nav.expandSidebar' => 'Expand sidebar',
@@ -2449,28 +2311,18 @@ extension on Translations {
 			'dashboard.income' => 'Income',
 			'dashboard.expenses' => 'Expenses',
 			'dashboard.netResult' => 'Result',
-			'dashboard.recentTransactions' => 'Recent Transactions',
-			'dashboard.seeAll' => 'See all',
-			'dashboard.thisMonth' => 'This month',
-			'dashboard.noTransactionsYet' => 'No transactions yet',
 			'dashboard.accountBalances' => 'Balances',
-			'dashboard.monthResult' => 'Month Result',
 			'dashboard.expensesByCategory' => 'Expenses by Category',
 			'dashboard.incomeByCategory' => 'Income by Category',
 			'dashboard.noAccountsYet' => 'No accounts registered yet',
 			'dashboard.creditCardBalance' => 'Credit Card Balance',
-			'dashboard.noCreditCardsYet' => 'No credit cards registered yet',
-			'dashboard.investmentBalance' => 'Investments',
-			'dashboard.noInvestmentsYet' => 'No investment accounts registered yet',
 			'dashboard.noExpensesYet' => 'No expenses this month',
 			'dashboard.noIncomeYet' => 'No income this month',
 			'dashboard.totalExpenses' => 'Total Expenses',
-			'dashboard.totalIncome' => 'Total Income',
 			'dashboard.transactionList' => 'Transaction list',
 			'dashboard.subcategories' => 'Subcategories',
 			'dashboard.noSubcategories' => 'No subcategories',
 			'dashboard.total' => 'Total',
-			'dashboard.close' => 'Close',
 			'fiftyThirtyTwenty.title' => '50/30/20',
 			'fiftyThirtyTwenty.needsLabel' => 'Needs',
 			'fiftyThirtyTwenty.wantsLabel' => 'Wants',
@@ -2486,7 +2338,6 @@ extension on Translations {
 			'fiftyThirtyTwenty.ctaCreateInvestment' => 'Create account',
 			'fiftyThirtyTwenty.ctaClassify' => 'Classify',
 			'fiftyThirtyTwenty.unclassifiedLabel' => 'Unclassified',
-			'fiftyThirtyTwenty.principalDisclaimer' => 'Savings here = monthly contributions (transfers checking → investment). Market yield is not tracked.',
 			'fiftyThirtyTwenty.editTargets' => 'Edit targets',
 			'fiftyThirtyTwenty.editTargetsHint' => 'Set the percentage for each bucket. The three must add up to 100%.',
 			'fiftyThirtyTwenty.resetToClassic' => 'Reset to 50/30/20',
@@ -2496,22 +2347,14 @@ extension on Translations {
 			'fiftyThirtyTwenty.bucketEmpty' => 'No expenses in this bucket this month.',
 			'fiftyThirtyTwenty.historyTitle' => 'Last 3 months',
 			'fiftyThirtyTwenty.historyEmpty' => 'No history to show yet.',
-			'fiftyThirtyTwenty.navLabel' => 'Planning',
 			'fiftyThirtyTwenty.subTabBudgets' => 'Budgets',
 			'fiftyThirtyTwenty.subTabFiftyThirtyTwenty' => '50/30/20',
-			'transactions.title' => 'Transactions',
-			'transactions.empty' => 'No transactions. Add your first transaction to get started.',
 			'transactions.addTransaction' => 'New Transaction',
 			'transactions.editTransaction' => 'Edit Transaction',
-			'transactions.confirmPaymentTitle' => 'Confirm payment',
-			'transactions.confirmReceiptTitle' => 'Confirm receipt',
-			'transactions.transactionDetails' => 'Transaction Details',
 			'transactions.transaction' => 'Transaction',
-			'transactions.transactionNotFound' => 'Transaction not found',
 			'transactions.type' => 'Type',
 			'transactions.income' => 'Income',
 			'transactions.expense' => 'Expense',
-			'transactions.amount' => 'Amount',
 			'transactions.amountLabel' => 'Amount',
 			'transactions.amountHint' => '0.00',
 			'transactions.description' => 'Description',
@@ -2552,7 +2395,6 @@ extension on Translations {
 			'transactions.sequenceDeleteMessage' => 'This transaction is part of a sequence. Choose whether to delete only this occurrence or this and the following pending occurrences.',
 			'transactions.sequenceDeleteOnlyThis' => 'Delete only this one',
 			'transactions.sequenceDeleteThisAndFollowing' => 'Delete this and following',
-			'transactions.saved' => 'Transaction saved!',
 			'transactions.deleted' => 'Transaction deleted.',
 			'transactions.importCsv' => 'Import transactions',
 			'transactions.importCsvIntroTitle' => 'Import transactions from CSV',
@@ -2565,15 +2407,9 @@ extension on Translations {
 			'transactions.importInProgressTitle' => 'Importing transactions...',
 			'transactions.importProgressCounter' => ({required Object processed, required Object total}) => '${processed} of ${total}',
 			'transactions.importMissingFields' => ({required Object fields}) => 'Fill in: ${fields}',
-			'transactions.importReview' => ({required Object count}) => 'Review import: ${count} transactions will be created.',
 			'transactions.importMissingCategories' => 'Missing categories:',
 			'transactions.importMissingAccounts' => 'Missing accounts:',
-			'transactions.importSkippedRows' => ({required Object count}) => '${count} rows were skipped (invalid format).',
 			'transactions.importSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} transactions. Skipped ${skipped} rows.',
-			'transactions.importBlocked' => 'Cannot import: some categories or accounts were not found.',
-			'transactions.importTransfers' => ({required Object count}) => '${count} transfers',
-			'transactions.importExpenses' => ({required Object count}) => '${count} expenses',
-			'transactions.importIncomes' => ({required Object count}) => '${count} incomes',
 			'transactions.importPageTitle' => 'Review import',
 			'transactions.importPageSubtitle' => 'Tap a row to edit · trash to remove',
 			'transactions.importTabExpense' => ({required Object count}) => 'Expense (${count})',
@@ -2588,8 +2424,6 @@ extension on Translations {
 			'accounts.title' => 'Accounts',
 			'accounts.addAccount' => 'New Account',
 			'accounts.editAccount' => 'Edit Account',
-			'accounts.account' => 'Account',
-			'accounts.accountNotFound' => 'Account not found',
 			'accounts.checking' => 'Checking Account',
 			'accounts.creditCard' => 'Credit Card',
 			'accounts.investment' => 'Savings Account',
@@ -2600,8 +2434,6 @@ extension on Translations {
 			'accounts.name' => 'Account Nickname',
 			'accounts.nameHint' => 'e.g. Nubank Gui',
 			'accounts.bank' => 'Bank',
-			'accounts.bankHint' => 'e.g. Nubank',
-			'accounts.bankOthers' => 'Others',
 			'accounts.linkedAccount' => 'Linked Checking Account',
 			'accounts.balance' => 'Balance',
 			'accounts.currentBalance' => 'Current Balance',
@@ -2613,14 +2445,10 @@ extension on Translations {
 			'accounts.closingDay' => 'Closing Day',
 			'accounts.dueDay' => 'Due Day',
 			'accounts.availableCredit' => 'Available Credit',
-			'accounts.currentBill' => 'Current bill',
-			'accounts.type' => 'Type',
 			'accounts.empty' => 'No accounts. Add your first bank account or credit card.',
 			'accounts.emptySubtitle' => 'Add your bank accounts and credit cards.',
 			'accounts.accountUpdated' => 'Account updated',
 			'accounts.accountCreated' => 'Account created',
-			'accounts.saved' => 'Account saved!',
-			'accounts.deleted' => 'Account deleted.',
 			'accounts.deleteConfirm' => 'Are you sure you want to delete this account?',
 			'accounts.statement' => 'Monthly Summary',
 			'accounts.monthIncome' => 'Income',
@@ -2668,15 +2496,10 @@ extension on Translations {
 			'categories.nameHint' => 'e.g. Groceries',
 			'categories.incomeType' => 'Income',
 			'categories.expenseType' => 'Expense',
-			'categories.bothType' => 'Both',
 			'categories.empty' => 'No categories. Categories will appear here.',
-			'categories.saved' => 'Category saved!',
-			'categories.deleted' => 'Category deleted.',
-			'categories.deleteConfirm' => 'Are you sure you want to delete this category?',
 			'categories.reassignPrompt' => 'Select a category to reassign transactions to:',
 			'categories.categoryUpdated' => 'Category updated',
 			'categories.categoryCreated' => 'Category created',
-			'categories.cannotDeleteDefault' => 'Default categories cannot be deleted.',
 			'categories.cannotDeleteLast' => 'Create another category before deleting this one.',
 			'categories.selectIcon' => 'Select icon',
 			'categories.selectColor' => 'Select color',
@@ -2695,9 +2518,6 @@ extension on Translations {
 			'categories.importCsvExampleDownloaded' => 'Example saved.',
 			'categories.importCsvExampleFailed' => 'Couldn\'t save the example file.',
 			'categories.importCsvErrorTitle' => 'Couldn\'t import the CSV',
-			'categories.importSuccess' => ({required Object count}) => 'Imported ${count} categories.',
-			'categories.importReview' => ({required Object arg}) => 'Review import: ${arg} new items will be created.',
-			'categories.importDuplicates' => ({required Object arg}) => '${arg} duplicate items will be skipped.',
 			'categories.importSuccessDetailed' => ({required Object imported, required Object duplicates}) => 'Imported ${imported} items. Skipped ${duplicates} duplicates.',
 			'categories.importPageTitle' => 'Review import',
 			'categories.importPageSubtitle' => 'Tap an item to edit · swipe trash to remove',
@@ -2732,14 +2552,9 @@ extension on Translations {
 			'categories.uncategorized' => 'Uncategorized',
 			'categories.demoteBlockedChildren' => 'This category has subcategories. Promote or remove them before turning it into a subcategory.',
 			'categories.demoteBlockedBudget' => 'This category has a budget. Delete the budget before turning it into a subcategory.',
-			'chat.title' => 'AI Assistant',
 			'chat.placeholder' => 'Type a message...',
 			'chat.welcomeTitle' => 'Hi! I\'m your financial assistant.',
 			'chat.welcomeBody' => 'Tell me about your transactions and I\'ll help you record them.',
-			'chat.confirmPrompt' => 'I detected the following transaction. Does this look correct?',
-			'chat.confirmed' => 'Transaction saved!',
-			'chat.cancelled' => 'Transaction cancelled.',
-			'chat.error' => 'Sorry, I couldn\'t understand that. Could you try again?',
 			'chat.aiName' => 'Financo AI',
 			'chat.online' => 'Online',
 			'chat.today' => 'Today',
@@ -2761,8 +2576,6 @@ extension on Translations {
 			'chat.action.budgetCreate' => 'Create budget',
 			'chat.action.budgetUpdate' => 'Update budget',
 			'chat.action.budgetDelete' => 'Delete budget',
-			'chat.action.fieldAmount' => 'Amount',
-			'chat.action.fieldDescription' => 'Description',
 			'chat.action.fieldCategory' => 'Category',
 			'chat.action.fieldAccount' => 'Account',
 			'chat.action.fieldDate' => 'Date',
@@ -2771,12 +2584,8 @@ extension on Translations {
 			'chat.action.fieldCreditLimit' => 'Credit limit',
 			'chat.action.fieldClosingDay' => 'Closing day',
 			'chat.action.fieldDueDay' => 'Due day',
-			'chat.action.fieldDueDate' => 'Due date',
-			'chat.action.fieldRecurrence' => 'Recurrence',
-			'chat.action.fieldName' => 'Name',
 			'chat.action.fieldLinkedAccount' => 'Linked account',
 			'chat.action.fieldBalance' => 'Initial balance',
-			'chat.action.fieldNotes' => 'Notes',
 			'chat.action.confirm' => 'Confirm',
 			'chat.action.cancel' => 'Cancel',
 			'chat.action.statusConfirmed' => 'Confirmed',
@@ -2784,14 +2593,12 @@ extension on Translations {
 			'chat.audio.start' => 'Record voice message',
 			'chat.audio.stop' => 'Stop recording',
 			'chat.audio.cancel' => 'Cancel',
-			'chat.audio.recording' => 'Recording',
 			'chat.audio.transcribing' => 'Transcribing...',
 			'chat.audio.permissionDenied' => 'Microphone permission required to record voice.',
 			'chat.audio.recordError' => 'Failed to record audio',
 			'chat.image.attach' => 'Attach image',
 			'chat.image.takePhoto' => 'Take photo',
 			'chat.image.fromGallery' => 'Choose from gallery',
-			'chat.image.remove' => 'Remove image',
 			'chat.image.pickError' => 'Could not pick image',
 			'chat.image.missing' => 'Image not available',
 			'chat.handlers.imageAttached' => 'Image attached.',
@@ -2862,7 +2669,6 @@ extension on Translations {
 			'budgets.summarySpent' => 'Spent',
 			'budgets.summaryRemaining' => 'Available',
 			'budgets.spentOf' => ({required Object spent, required Object cap}) => '${spent} of ${cap}',
-			'budgets.percentageUsed' => ({required Object value}) => '${value}% used',
 			'budgets.remainingOf' => ({required Object value}) => '${value} remaining',
 			'budgets.overBy' => ({required Object value}) => 'Over by ${value}',
 			'budgets.statusSafe' => 'On track',
@@ -2875,8 +2681,6 @@ extension on Translations {
 			'budgets.duplicateCategory' => 'There\'s already a budget for this category.',
 			'budgets.noExpenseCategory' => 'Create at least one expense category first.',
 			'budgets.allCategoriesBudgeted' => 'All categories already have a budget.',
-			_ => null,
-		} ?? switch (path) {
 			'budgets.emptyTitle' => 'Take control of your spending',
 			'budgets.emptyBody' => 'Set a monthly cap per expense category. Financo tracks how much you\'ve spent, how much is left, and warns you upfront when you\'re about to go over.',
 			'budgets.emptyExample' => 'Ex: R\$ 1,500 on Food, R\$ 400 on Leisure, R\$ 200 on Transport.',
@@ -2893,17 +2697,14 @@ extension on Translations {
 			'budgets.importCsvErrorTitle' => 'Couldn\'t import the CSV',
 			'budgets.importCsvSuccess' => ({required Object imported, required Object skipped}) => 'Imported ${imported} budgets. Skipped ${skipped} (unknown or duplicate category).',
 			'profile.title' => 'Profile',
-			'profile.editProfile' => 'Edit Profile',
 			'profile.accounts' => 'Accounts',
 			'profile.categories' => 'Categories',
-			'profile.theme' => 'Theme',
 			'profile.themeLight' => 'Light',
 			'profile.themeDark' => 'Dark',
 			'profile.themeSystem' => 'System',
 			'profile.signOutConfirm' => 'Are you sure you want to sign out?',
 			'profile.clearData' => 'Clear all my data',
 			'profile.clearDataDescription' => 'Delete transactions, chat, categories and accounts',
-			'profile.clearDataConfirm' => 'This will permanently delete all data from your account. Continue?',
 			'profile.clearDataConfirmHeadline' => 'This action is permanent',
 			'profile.clearDataConfirmBody' => 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.',
 			'profile.clearDataConfirmField' => 'Type your email to confirm',
@@ -2935,6 +2736,8 @@ extension on Translations {
 			'startup.errorRetry' => 'Try again',
 			'investments.title' => 'Investments',
 			'investments.heroTitle' => 'INVESTED CAPITAL',
+			_ => null,
+		} ?? switch (path) {
 			'investments.heroAllocated' => 'Allocated',
 			'investments.heroPending' => 'Pending',
 			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} unallocated',
@@ -2988,9 +2791,7 @@ extension on Translations {
 			'investments.pickParentClass' => 'Pick a parent class',
 			'investments.parentPickerEmpty' => 'Create a root class first.',
 			'investments.parentPickerNone' => 'None (root class)',
-			'investments.subclassInheritsHint' => ({required Object parent}) => 'Subclass inherits icon and color from ${parent}.',
 			'investments.subclassOf' => ({required Object parent}) => 'Subclass of ${parent}',
-			'investments.subclassRowSubtitle' => ({required Object percent}) => '${percent} of class',
 			'investments.addSubclass' => 'Add subclass',
 			'investments.classRowNoSubclasses' => 'No subclasses yet — tap to add one.',
 			'investments.classDetailTitle' => 'Class',
@@ -3029,12 +2830,20 @@ extension on Translations {
 			'investments.fabAddHolding' => 'New holding',
 			'investments.fabAddHoldingSubtitle' => 'Tell us how a slice of the balance is invested.',
 			'investments.fabAddHoldingNoAccount' => 'Create an investment account first.',
-			'investments.fabAddHoldingNoClass' => 'Create a class first.',
 			'investments.fabAddHoldingNoSubclass' => 'Add a subclass before allocating — classes are organisers only.',
 			'investments.allocationExceedsBalance' => ({required Object available}) => 'Allocation exceeds the available balance on this account (${available}).',
 			'investments.targetSumExceedsRoot' => ({required Object available}) => 'Target percent sum exceeds 100% for root classes. Available: ${available}.',
 			'investments.targetSumExceedsSub' => ({required Object available}) => 'Target percent sum exceeds 100% for subclasses of this class. Available: ${available}.',
-			'payablesReceivables.title' => 'Payables and receivables',
+			'investments.targetPercentOutOfRange' => 'Target percent must be between 0 and 100.',
+			'investments.parentClassNotFound' => 'Parent class not found.',
+			'investments.subclassCannotBeParent' => 'A subclass cannot be the parent of another subclass.',
+			'investments.classCannotBeOwnParent' => 'A class cannot be its own parent.',
+			'investments.classOwnsSubclasses' => 'This class owns subclasses — remove or re-parent them before turning it into a subclass.',
+			'investments.deleteBlockedBySubclasses' => ({required Object count}) => 'Can\'t delete: ${count} subclass(es) still reference this class.',
+			'investments.deleteBlockedByHoldings' => ({required Object count}) => 'Can\'t delete: ${count} holding(s) still reference this class.',
+			'investments.assetClassNotFound' => 'Asset class not found.',
+			'investments.holdingAccountNotInvestment' => 'Holdings can only be attached to investment accounts.',
+			'investments.holdingRequiresSubclass' => 'Holdings must point at a subclass. Add a subclass to the chosen class first.',
 			'payablesReceivables.empty' => 'No movements found in this period.',
 			'payablesReceivables.typePayable' => 'To pay',
 			'payablesReceivables.typeReceivable' => 'To receive',
@@ -3050,7 +2859,6 @@ extension on Translations {
 			'payablesReceivables.overdueGroup' => 'Overdue',
 			'payablesReceivables.todayGroup' => 'Today',
 			'payablesReceivables.upcomingGroup' => 'Upcoming',
-			'payablesReceivables.deleteConfirm' => 'Are you sure you want to delete this transaction?',
 			'payablesReceivables.transactionPaid' => 'Transaction marked as paid',
 			'payablesReceivables.transactionReceived' => 'Receipt marked as received',
 			'payablesReceivables.noExpenseCategory' => 'Create at least one expense category first.',

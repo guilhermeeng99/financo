@@ -38,8 +38,13 @@ Factories: `fromFirestore(DocumentSnapshot)`, `fromEntity(ChatMessageEntity)`, `
 ### ChatBackendDataSource (abstract)
 
 ```
-sendMessage(userId, content, history) → Future<ChatMessageModel>
+sendMessage({userId, content, history, ChatImageAttachment? image})
+    → Future<ChatMessageModel>
+transcribeAudio({base64Data, mimeType}) → Future<String>
 ```
+
+The optional `image` (base64 + mimeType) is forwarded to `chatSend` so Gemini
+receives it as an inline part — see "Image input" below.
 
 ### ChatBackendDataSourceImpl
 
@@ -125,7 +130,7 @@ Thin delegators:
 |-------|--------|-------|
 | ChatInitial | — | Before load |
 | ChatLoading | — | Loading history |
-| ChatLoaded | messages, isTyping, shouldRefreshTransactions, isTranscribing | Main state. `isTranscribing` shows transcribing spinner in the input while the audio is being converted to text; once the transcript is ready it is dispatched as a regular `ChatMessageSent` turn — there is no editable preview. |
+| ChatLoaded | messages, isTyping, shouldRefreshTransactions, shouldRefreshBudgets, isTranscribing | Main state. `isTranscribing` shows transcribing spinner in the input while the audio is being converted to text; once the transcript is ready it is dispatched as a regular `ChatMessageSent` turn — there is no editable preview. |
 | ChatError | failure: Failure | Load failure only |
 
 ### Transitions
@@ -152,7 +157,7 @@ Thin delegators:
 2. Route to handler: `account` | `category` | `transaction` | `budget` | `transfer` | default → "Unknown action type." (handlers registered in `injection_container.dart`)
 3. Create assistant message with result text
 4. Add to list, persist (non-blocking — failure swallowed)
-5. Emit `ChatLoaded(shouldRefreshTransactions: actionType == 'transaction')`
+5. Emit `ChatLoaded(shouldRefreshTransactions: actionType == 'transaction' || actionType == 'transfer', shouldRefreshBudgets: actionType == 'budget')`. The page listener refreshes `TransactionsBloc` + `DashboardBloc` on the former and `BudgetsCubit` on the latter.
 
 **ChatAudioTranscriptionRequested:**
 1. Emit `ChatLoaded(isTranscribing: true)`
@@ -164,7 +169,7 @@ Thin delegators:
 ### Action Handlers
 
 **Account create:**
-- Parse bank: lowercase → `nubank` or `others`
+- Parse bank via `BankBrand.resolveAlias` (case/accent-insensitive labels, enum names, and curated short aliases); unresolved values fall back to `BankType.others`
 - Parse type: `creditCard` → `AccountType.creditCard`, else `checking`
 - For credit cards: parse `creditLimit`, `closingDay`, `dueDay`, resolve `linkedAccountName` → `linkedAccountId` via `getAccounts` lookup
 - Call `createAccount` → success/failure message
@@ -211,13 +216,32 @@ Thin delegators:
 
 ## Voice input (audio)
 
-1. The user taps the microphone button in the message input. The widget uses the `record` package to capture AAC audio to a temp file.
-2. User taps stop. The widget reads the file bytes, base64-encodes them, fires `ChatAudioTranscriptionRequested`, and deletes the temp file.
+1. The user taps the microphone button in the message input. `chat_input` delegates all audio IO to the `ChatAudioRecorder` service (see below) — the widget keeps only UI state.
+2. User taps stop. The recorder returns a `ChatRecordedAudio` (base64 audio + mimeType) and the widget fires `ChatAudioTranscriptionRequested`; the temporary capture is cleaned up by the service.
 3. Backend `transcribeChatAudio` callable passes the audio inline to Gemini (multimodal) with a transcription-only instruction; returns the transcript text. The instruction includes a small glossary of canonical Brazilian-finance terms (Nubank, Itaú, Bradesco, PicPay, etc.) that the speech model frequently breaks apart phonetically (e.g. "Nubank" → "No Bank Geek") — biasing the decoder toward the right spelling.
 4. Bloc dispatches the transcript as a regular `ChatMessageSent` turn (see ChatAudioTranscriptionRequested transition). The user sees their bubble appear with the transcript, and the AI replies normally — including any action card needed to confirm the request.
 5. The audio bytes are never persisted; only the transcript text hits Firestore via the regular user-message save path. There is no review/edit step — if the transcript is wrong, the user can send a follow-up message correcting it.
-6. Web is supported — `record_web` uses `MediaRecorder`. On web `AudioRecorder.start` ignores the `path` parameter and `stop()` returns a blob URL; the widget fetches the bytes via `http.get(Uri.parse(blobUrl))` and tags them as `audio/webm`. On mobile/desktop the widget writes to a temp file (`path_provider` + `dart:io File`) and deletes it after reading, tagging the mimetype as `audio/mp4`.
+6. Web is supported — `record_web` uses `MediaRecorder`. On web `AudioRecorder.start` ignores the `path` parameter and `stop()` returns a blob URL; the recorder service fetches the bytes via `http.get(Uri.parse(blobUrl))` and tags them as `audio/webm`. On mobile/desktop the service writes to a temp file (`path_provider` + `dart:io File`) and deletes it after reading (fire-and-forget — a leftover temp file is harmless), tagging the mimetype as `audio/mp4`.
 7. Platform permissions: Android `RECORD_AUDIO`, iOS `NSMicrophoneUsageDescription`, macOS `com.apple.security.device.audio-input`.
+
+### ChatAudioRecorder service
+
+- **Interface** — `lib/features/chat/domain/services/chat_audio_recorder.dart`.
+  Project-owned contract that hides all platform IO (recorder plugin, temp
+  files, blob URLs, base64 encoding) so the input widget keeps only UI state.
+  API: `hasPermission()`, `start()`, `stop() → ChatRecordedAudio?` (null when
+  nothing was captured), `cancel()` (stop + discard), `dispose()`.
+- **`ChatRecordedAudio`** — value object `{ base64Data, mimeType }`: the
+  captured voice note already encoded for the `transcribeChatAudio` callable
+  (`audio/webm` on web, `audio/mp4` on mobile).
+- **Implementation** — `lib/features/chat/data/services/chat_audio_recorder_impl.dart`
+  wraps the `record` plugin for capture, `path_provider` + `dart:io` for the
+  mobile temp file, and `http` to fetch the blob URL `record_web` hands back
+  on web. Importing `dart:io` is safe on web because every `File` touch sits
+  behind a `kIsWeb` guard.
+- **DI** — `registerFactory<ChatAudioRecorder>(ChatAudioRecorderImpl.new)` in
+  `injection_container.dart`; `chat_input.dart` resolves it via `GetIt` and
+  delegates start/stop/cancel to it.
 
 ## Edge Cases
 

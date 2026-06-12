@@ -1,3 +1,4 @@
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/category_icon_catalog.dart';
@@ -53,84 +54,30 @@ class _CategoryIconPickerSheetState extends State<_CategoryIconPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final filtered = searchCategoryIcons(_query, categoryIconCatalog);
-    return DraggableScrollableSheet(
+    return FinancoPickerSheet(
+      title: t.categories.selectIcon,
       initialChildSize: 0.85,
       minChildSize: 0.5,
       maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      header: [
+        FinancoSearchField(
+          controller: _queryController,
+          onChanged: (v) => setState(() => _query = v),
+          hintText: t.categories.iconSearchHint,
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            _DragHandle(color: colors.onBackgroundLight),
-            _Header(label: t.categories.selectIcon),
-            FinancoSearchField(
-              controller: _queryController,
-              onChanged: (v) => setState(() => _query = v),
-              hintText: t.categories.iconSearchHint,
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: filtered.isEmpty
-                  ? _EmptyResults()
-                  : _IconGrid(
-                      options: filtered,
-                      selectedIcon: widget.selectedIcon,
-                      color: widget.color,
-                      scrollController: scrollController,
-                      onTap: (code) => Navigator.pop(context, code),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DragHandle extends StatelessWidget {
-  const _DragHandle({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 4,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          label,
-          style: context.textTheme.titleLarge?.copyWith(
-            color: context.appColors.onBackground,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+        const SizedBox(height: 8),
+      ],
+      bodyBuilder: (scrollController) {
+        if (filtered.isEmpty) return _EmptyResults();
+        return _IconGrid(
+          options: filtered,
+          selectedIcon: widget.selectedIcon,
+          color: widget.color,
+          scrollController: scrollController,
+          onTap: (code) => Navigator.pop(context, code),
+        );
+      },
     );
   }
 }

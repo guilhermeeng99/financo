@@ -82,8 +82,9 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) =>
+            expect(failure, isA<HoldingAccountNotInvestmentFailure>()),
+        (_) => fail('Expected HoldingAccountNotInvestmentFailure'),
       );
       verifyNever(() => holdingRepository.createAssetHolding(any()));
     });
@@ -94,6 +95,10 @@ void main() {
       final result = await useCase(holding);
 
       expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<NegativeAmountFailure>()),
+        (_) => fail('Expected NegativeAmountFailure'),
+      );
       verifyNever(() => accountRepository.getAccount(any()));
     });
 
@@ -109,8 +114,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<HoldingRequiresSubclassFailure>()),
+        (_) => fail('Expected HoldingRequiresSubclassFailure'),
       );
       // Account repo never queried — class guard short-circuits first.
       verifyNever(() => accountRepository.getAccount(any()));

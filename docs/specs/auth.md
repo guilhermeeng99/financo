@@ -9,10 +9,15 @@ UserEntity {
   email:     String    (required)
   photoUrl:  String?   (nullable, Google profile picture URL)
   createdAt: DateTime  (required, set on sign-up)
+  fiftyThirtyTwentyTargets: FiftyThirtyTwentyTargets? (nullable; null means
+             the user never customised the 50/30/20 split — callers fall back
+             to FiftyThirtyTwentyTargets.classic)
 }
 ```
 
-No computed properties. Equatable by all fields.
+No computed properties. Equatable by all fields. `copyWith` supports a
+`clearFiftyThirtyTwentyTargets: true` flag to reset the targets back to `null`
+(a plain `copyWith(fiftyThirtyTwentyTargets: null)` would be a no-op).
 
 ## Business Rules
 
@@ -67,11 +72,14 @@ abstract class AuthRepository {
 | `email` | `email` | `String` |
 | `photoUrl` | `photoUrl` | `String?` |
 | `createdAt` | `createdAt` | `Timestamp → DateTime` |
+| `fiftyThirtyTwentyTargets` | `fiftyThirtyTwentyTargets` | `Map {needs, wants, savings} → FiftyThirtyTwentyTargets?` — defensive parse: absent/non-map field → `null`; a partial map fills missing components from `FiftyThirtyTwentyTargets.classic` |
 
 **Model → Firestore (`toJson`):**
 - Serializes all fields except `id` (Firestore doc ID is separate).
 - `createdAt` serialized as `Timestamp`.
 - `photoUrl` included even when null.
+- `fiftyThirtyTwentyTargets` written as a `{needs, wants, savings}` map only
+  when non-null (absent field = never customised).
 
 **fromEntity:** direct field copy, preserving all values.
 
@@ -122,13 +130,17 @@ Lives in its own feature; see [startup.md](./startup.md). It subscribes to `Auth
 abstract class ProfileRepository {
   Future<Either<Failure, UserEntity>> getProfile(String userId);
   Future<Either<Failure, UserEntity>> updateProfile(UserEntity user);
+  Future<Either<Failure, void>> clearAccountData(String userId);
 }
 ```
 
 **Behavior:**
 - `getProfile` → local-first: try `UsersDao.getUser()`, fallback to Firestore + upsert local.
 - `updateProfile` → remote-first: update Firestore, then upsert local. Uses `UserModel.fromEntity()` for serialization.
-- Both return `Left(ServerFailure)` on exception.
+- `clearAccountData` → wipes every user-scoped document on the backend and
+  clears the local cache. Idempotent — re-running after success is a no-op
+  because the remote collections are already empty.
+- All return `Left(ServerFailure)` on exception.
 
 ### ProfileCubit
 
@@ -164,6 +176,6 @@ Loaded ──loadProfile(forceRefresh: true)──→ Loading → ...
 
 **Collection:** `users/{userId}`
 
-Fields: `name`, `email`, `photoUrl`, `createdAt`
+Fields: `name`, `email`, `photoUrl`, `createdAt`, `fiftyThirtyTwentyTargets?` (`{needs, wants, savings}` map, present only after the user customises the split)
 
 No composite indexes needed — queries are by document ID only.

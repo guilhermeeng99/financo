@@ -10,8 +10,35 @@ import 'package:financo/features/categories/domain/repositories/category_reposit
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:financo/features/transactions/domain/usecases/transaction_import_models.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 
 export 'package:financo/features/transactions/domain/usecases/transaction_import_models.dart';
+
+/// Transactions header synonyms for [mapCsvHeaderColumns] — tolerates
+/// extra columns (e.g. an `Observações` column added by another finance
+/// app) and reordered/English layouts.
+const _transactionHeaderSynonyms = <String, List<String>>{
+  'type': ['tipo', 'type', 'kind'],
+  'date': ['data', 'date'],
+  'amount': ['valor', 'value', 'amount'],
+  'description': [
+    'descricao',
+    'description',
+    'descrição',
+    'memo',
+    'notes',
+  ],
+  'category': ['categoria', 'category'],
+  'account': ['conta', 'account', 'source account', 'origem'],
+  'destination': [
+    'conta transferencia',
+    'conta transferência',
+    'conta destino',
+    'destination',
+    'destination account',
+    'transfer account',
+  ],
+};
 
 class ImportTransactionsCsvUseCase {
   const ImportTransactionsCsvUseCase(
@@ -76,7 +103,9 @@ class ImportTransactionsCsvUseCase {
         ];
         return Left(
           ValidationFailure(
-            'Cannot import: missing ${missing.join(', ')}',
+            t.csvImport.errors.cannotImportMissing(
+              names: missing.join(', '),
+            ),
           ),
         );
       }
@@ -115,113 +144,170 @@ class ImportTransactionsCsvUseCase {
     );
 
     return categoriesResult.fold(Left.new, (categories) {
-      return accountsResult.fold(Left.new, (accounts) async {
-        final categoryLookup = _buildCategoryLookup(categories);
-        final accountLookup = _buildAccountLookup(accounts);
-        final now = DateTime.now();
-        final total = rows.length;
-        var processed = 0;
-        var importedCount = 0;
-
-        for (final row in rows) {
-          if (row.isTransfer) {
-            final sourceId = accountLookup[row.accountName.toLowerCase()];
-            final destId =
-                accountLookup[row.destinationAccountName?.toLowerCase() ?? ''];
-
-            if (sourceId == null || destId == null) {
-              processed++;
-              onProgress?.call(processed, total);
-              continue;
-            }
-
-            final expense = TransactionEntity(
-              id: '',
-              userId: userId,
-              accountId: sourceId,
-              categoryId: '',
-              type: TransactionType.expense,
-              amount: row.amount,
-              description: row.description,
-              date: row.date,
-              createdAt: now,
-              updatedAt: now,
-            );
-
-            final income = TransactionEntity(
-              id: '',
-              userId: userId,
-              accountId: destId,
-              categoryId: '',
-              type: TransactionType.income,
-              amount: row.amount,
-              description: row.description,
-              date: row.date,
-              createdAt: now,
-              updatedAt: now,
-            );
-
-            final result = await _transactionRepository.createTransfer(
-              expense: expense,
-              income: income,
-            );
-
-            final failure = result.fold<Failure?>((f) => f, (_) => null);
-            if (failure != null) return Left(failure);
-
-            importedCount += 2;
-          } else {
-            final categoryId = _resolveCategoryId(
-              categoryLookup: categoryLookup,
-              categoryName: row.categoryName,
-              subcategoryName: row.subcategoryName,
-            );
-
-            final accountId = accountLookup[row.accountName.toLowerCase()];
-            if (categoryId == null || accountId == null) {
-              processed++;
-              onProgress?.call(processed, total);
-              continue;
-            }
-
-            final type = row.csvType == CsvTransactionType.receita
-                ? TransactionType.income
-                : TransactionType.expense;
-
-            final transaction = TransactionEntity(
-              id: '',
-              userId: userId,
-              accountId: accountId,
-              categoryId: categoryId,
-              type: type,
-              amount: row.amount,
-              description: row.description,
-              date: row.date,
-              createdAt: now,
-              updatedAt: now,
-            );
-
-            final result = await _transactionRepository.createTransaction(
-              transaction,
-            );
-
-            final failure = result.fold<Failure?>((f) => f, (_) => null);
-            if (failure != null) return Left(failure);
-
-            importedCount++;
-          }
-          processed++;
-          onProgress?.call(processed, total);
-        }
-
-        return Right(
-          TransactionImportResult(
-            importedCount: importedCount,
-            skippedCount: skippedCount,
-          ),
+      return accountsResult.fold(Left.new, (accounts) {
+        return _importResolvedRows(
+          rows: rows,
+          userId: userId,
+          skippedCount: skippedCount,
+          categoryLookup: _buildCategoryLookup(categories),
+          accountLookup: _buildAccountLookup(accounts),
+          onProgress: onProgress,
         );
       });
     });
+  }
+
+  Future<Either<Failure, TransactionImportResult>> _importResolvedRows({
+    required List<TransactionImportRow> rows,
+    required String userId,
+    required int skippedCount,
+    required Map<String, Map<String?, String>> categoryLookup,
+    required Map<String, String> accountLookup,
+    void Function(int processed, int total)? onProgress,
+  }) async {
+    final now = DateTime.now();
+    final total = rows.length;
+    var processed = 0;
+    var importedCount = 0;
+
+    for (final row in rows) {
+      final rowResult = await _importRow(
+        row: row,
+        userId: userId,
+        categoryLookup: categoryLookup,
+        accountLookup: accountLookup,
+        now: now,
+      );
+      final failure = rowResult.fold<Failure?>((f) => f, (created) {
+        importedCount += created;
+        return null;
+      });
+      if (failure != null) return Left(failure);
+
+      processed++;
+      onProgress?.call(processed, total);
+    }
+
+    return Right(
+      TransactionImportResult(
+        importedCount: importedCount,
+        skippedCount: skippedCount,
+      ),
+    );
+  }
+
+  /// Imports a single row and returns how many transactions it created:
+  /// 2 for a transfer pair, 1 for a standard row, 0 when the row was
+  /// skipped because an account/category reference did not resolve.
+  Future<Either<Failure, int>> _importRow({
+    required TransactionImportRow row,
+    required String userId,
+    required Map<String, Map<String?, String>> categoryLookup,
+    required Map<String, String> accountLookup,
+    required DateTime now,
+  }) {
+    if (row.isTransfer) {
+      return _importTransferRow(
+        row: row,
+        userId: userId,
+        accountLookup: accountLookup,
+        now: now,
+      );
+    }
+    return _importStandardRow(
+      row: row,
+      userId: userId,
+      categoryLookup: categoryLookup,
+      accountLookup: accountLookup,
+      now: now,
+    );
+  }
+
+  Future<Either<Failure, int>> _importTransferRow({
+    required TransactionImportRow row,
+    required String userId,
+    required Map<String, String> accountLookup,
+    required DateTime now,
+  }) async {
+    final sourceId = accountLookup[row.accountName.toLowerCase()];
+    final destId =
+        accountLookup[row.destinationAccountName?.toLowerCase() ?? ''];
+    if (sourceId == null || destId == null) return const Right(0);
+
+    final result = await _transactionRepository.createTransfer(
+      expense: _transactionFromRow(
+        row,
+        userId: userId,
+        accountId: sourceId,
+        categoryId: '',
+        type: TransactionType.expense,
+        now: now,
+      ),
+      income: _transactionFromRow(
+        row,
+        userId: userId,
+        accountId: destId,
+        categoryId: '',
+        type: TransactionType.income,
+        now: now,
+      ),
+    );
+    return result.fold(Left.new, (_) => const Right(2));
+  }
+
+  Future<Either<Failure, int>> _importStandardRow({
+    required TransactionImportRow row,
+    required String userId,
+    required Map<String, Map<String?, String>> categoryLookup,
+    required Map<String, String> accountLookup,
+    required DateTime now,
+  }) async {
+    final categoryId = _resolveCategoryId(
+      categoryLookup: categoryLookup,
+      categoryName: row.categoryName,
+      subcategoryName: row.subcategoryName,
+    );
+    final accountId = accountLookup[row.accountName.toLowerCase()];
+    if (categoryId == null || accountId == null) return const Right(0);
+
+    final type = row.csvType == CsvTransactionType.receita
+        ? TransactionType.income
+        : TransactionType.expense;
+    final result = await _transactionRepository.createTransaction(
+      _transactionFromRow(
+        row,
+        userId: userId,
+        accountId: accountId,
+        categoryId: categoryId,
+        type: type,
+        now: now,
+      ),
+    );
+    return result.fold(Left.new, (_) => const Right(1));
+  }
+
+  /// Shared entity assembly for transfer legs and standard rows — keeps
+  /// the CSV-row → [TransactionEntity] field mapping in one place.
+  TransactionEntity _transactionFromRow(
+    TransactionImportRow row, {
+    required String userId,
+    required String accountId,
+    required String categoryId,
+    required TransactionType type,
+    required DateTime now,
+  }) {
+    return TransactionEntity(
+      id: '',
+      userId: userId,
+      accountId: accountId,
+      categoryId: categoryId,
+      type: type,
+      amount: row.amount,
+      description: row.description,
+      date: row.date,
+      createdAt: now,
+      updatedAt: now,
+    );
   }
 
   ({List<TransactionImportRow> rows, int skippedRows}) _parseCsv(
@@ -229,14 +315,17 @@ class ImportTransactionsCsvUseCase {
   ) {
     final decoded = Csv().decode(csvContent.trim());
     if (decoded.length < 2) {
-      throw const FormatException('CSV file is empty or invalid.');
+      throw FormatException(t.csvImport.errors.emptyFile);
     }
 
-    final colIndex = _mapHeaderColumns(decoded.first);
+    final colIndex = mapCsvHeaderColumns(
+      decoded.first,
+      synonyms: _transactionHeaderSynonyms,
+    );
     for (final required in const ['type', 'date', 'amount', 'account']) {
       if (!colIndex.containsKey(required)) {
         throw FormatException(
-          'CSV is missing the required "$required" column.',
+          t.csvImport.errors.missingColumn(column: required),
         );
       }
     }
@@ -277,14 +366,14 @@ class ImportTransactionsCsvUseCase {
 
       if (contaStr.isEmpty) {
         throw FormatException(
-          'Row $rowNumber: account column is empty.',
+          t.csvImport.errors.accountColumnEmpty(row: rowNumber),
         );
       }
 
       final amount = parseCsvAmount(valorStr, absolute: true);
       if (amount <= 0) {
         throw FormatException(
-          'Row $rowNumber: invalid or zero amount "$valorStr".',
+          t.csvImport.errors.invalidAmount(row: rowNumber, value: valorStr),
         );
       }
       final wasNegative = valorStr.replaceAll('"', '').trim().startsWith('-');
@@ -292,7 +381,7 @@ class ImportTransactionsCsvUseCase {
       final date = parseDmyDate(dataStr);
       if (date == null) {
         throw FormatException(
-          'Row $rowNumber: invalid date "$dataStr". Use DD/MM/YYYY.',
+          t.csvImport.errors.invalidDate(row: rowNumber, value: dataStr),
         );
       }
 
@@ -376,7 +465,7 @@ class ImportTransactionsCsvUseCase {
     }
 
     if (rows.isEmpty) {
-      throw const FormatException('CSV file has no valid transactions.');
+      throw FormatException(t.csvImport.errors.noValidTransactions);
     }
 
     return (rows: rows, skippedRows: skippedRows);
@@ -399,49 +488,6 @@ class ImportTransactionsCsvUseCase {
     final accounts = [source.toLowerCase(), destination.toLowerCase()]..sort();
     return '$dateKey|${amount.toStringAsFixed(2)}|'
         '${accounts[0]}|${accounts[1]}';
-  }
-
-  /// Resolves header columns to logical field keys so the parser tolerates
-  /// extra columns (e.g. an `Observações` column added by another finance
-  /// app) and reordered/English layouts. Matching is accent- and
-  /// case-insensitive via [normalizeForMatch].
-  Map<String, int> _mapHeaderColumns(List<dynamic> header) {
-    const synonyms = <String, List<String>>{
-      'type': ['tipo', 'type', 'kind'],
-      'date': ['data', 'date'],
-      'amount': ['valor', 'value', 'amount'],
-      'description': [
-        'descricao',
-        'description',
-        'descrição',
-        'memo',
-        'notes',
-      ],
-      'category': ['categoria', 'category'],
-      'account': ['conta', 'account', 'source account', 'origem'],
-      'destination': [
-        'conta transferencia',
-        'conta transferência',
-        'conta destino',
-        'destination',
-        'destination account',
-        'transfer account',
-      ],
-    };
-
-    final out = <String, int>{};
-    for (var i = 0; i < header.length; i++) {
-      final norm = normalizeForMatch('${header[i] ?? ''}');
-      if (norm.isEmpty) continue;
-      for (final entry in synonyms.entries) {
-        if (out.containsKey(entry.key)) continue;
-        if (entry.value.contains(norm)) {
-          out[entry.key] = i;
-          break;
-        }
-      }
-    }
-    return out;
   }
 
   /// Maps the `Tipo` column to a [CsvTransactionType]. Accepts PT-BR
@@ -468,13 +514,11 @@ class ImportTransactionsCsvUseCase {
     }
     if (normalized.isEmpty) {
       throw FormatException(
-        'Row $csvRow: type column is empty. '
-        'Use Despesa, Receita, Transferência or Pagamento.',
+        t.csvImport.errors.transactionTypeEmpty(row: csvRow),
       );
     }
     throw FormatException(
-      'Row $csvRow: invalid type "$tipo". '
-      'Use Despesa, Receita, Transferência or Pagamento.',
+      t.csvImport.errors.transactionTypeInvalid(row: csvRow, value: tipo),
     );
   }
 

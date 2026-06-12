@@ -1,7 +1,7 @@
 # Budgets Feature Spec
 
 > **Status**: Implemented (shipped)
-> **Last updated**: 2026-05-13
+> **Last updated**: 2026-06-12
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases
 
 A **budget** is a user-defined monthly cap on spending for a single root
@@ -91,14 +91,18 @@ Color mapping at the UI layer (re-uses theme tokens, no new color constants):
      `AND date ∈ [startOfMonth, endOfMonth]`
      `AND (categoryId == budget.categoryId OR category.parentId == budget.categoryId)`
    - Sum the `amount` field. That's `spent`.
-6. **MVP shows the current real month only** — the dedicated `Orçamento` page
-   does not have month navigation in V1. Past-month inspection is deferred to
-   a later iteration.
+6. **Month navigation is supported** — `loadBudgets` takes an optional
+   `month` and the page drives it from the global `DateFilterCubit`, so the
+   user can inspect past/future months. The cubit caches the last requested
+   month (`_lastMonth`) so dependent reloads (post-delete, post-import) keep
+   the user's month context.
 7. **Cascade delete**: when a category is deleted, every budget referencing
-   it is also deleted. Implementation lives in the *category delete cubit
-   action*, which dispatches a budget delete after the category delete
-   succeeds. Categories repository stays unaware of budgets (no reverse
-   dependency).
+   it is also deleted. Implementation lives in
+   `DeleteCategoryWithReassignmentUseCase` (categories feature), which
+   reassigns the category's transactions, then cascade-deletes its budgets
+   (best-effort — failures logged, never fatal), then deletes the category.
+   Neither `CategoriesCubit` nor the categories repository knows about
+   budgets (no reverse dependency).
 8. **Orphan tolerance**: if a budget's `categoryId` no longer resolves
    (e.g. category deleted via another device before sync), the overview
    use case skips that budget silently and emits a debug log. The orphan
@@ -228,51 +232,72 @@ States:
   BudgetsError(failure: Failure)
 
 Transitions:
-  loadBudgets({forceRefresh = false}):
-    Initial          → Loading → Loaded | Error
-    Loaded + !force  → no-op (returns early)
-    Loaded + force   → Loading → Loaded | Error
+  loadBudgets({DateTime? month, forceRefresh = false}):
+    target = month ?? _lastMonth ?? DateTime.now()
+    Loaded(same year+month) + !force → no-op (records _lastMonth, returns)
+    otherwise                        → Loading → Loaded(overviews, target)
+                                               | Error
 
   deleteBudget(id):
     Loaded → call DeleteBudgetUseCase
-           → on success: re-dispatch loadBudgets(forceRefresh: true)
+           → on success: loadBudgets(forceRefresh: true)  // same _lastMonth
            → on failure: emit BudgetsError, then re-emit prior Loaded
                           so the page stays usable
+
+  importCsv(csvContent):
+    delegates to ImportBudgetsCsvUseCase; on success reloads via
+    loadBudgets(forceRefresh: true) and returns the Either to the dialog
 ```
 
-The cubit does **not** own a `month` selector in MVP — `month` is always
-`DateTime.now()` at load time. When month navigation lands later, this becomes
-a public method `selectMonth(DateTime)` that re-runs the overview pipeline.
+The cubit caches the last requested month in a private `_lastMonth` field so
+delete/import reloads stay on the user's selected month. The page calls
+`loadBudgets(month: ...)` whenever the global `DateFilterCubit` changes
+(pass `forceRefresh: true` when the month changed externally — the in-state
+short-circuit only trusts a same-month reload). `BudgetsLoaded` also exposes
+`totalCap` / `totalSpent` / `totalRemaining` getters for the summary header.
 
 ### BudgetFormCubit (form management)
 
 ```
 FormStatus enum: initial | submitting | success | failure
 
+Dependencies:
+  CreateBudgetUseCase, UpdateBudgetUseCase, GetBudgetsUseCase
+
 State fields:
-  userId, categoryId?, amount, status, existingId?, failure?
+  userId, categoryId?, amount, status, budgetedCategoryIds (Set<String>),
+  existingId?, existingCreatedAt?, failure?
 
 Computed:
   isEditing = existingId != null
-  isValid = categoryId != null && amount > 0 && (!isEditing || true)
+  isValid = categoryId != null && categoryId.isNotEmpty && amount > 0
+
+loadBudgetedCategoryIds():
+  called once when the form opens. Fetches the user's budgets via
+  GetBudgetsUseCase and stores their categoryIds in budgetedCategoryIds so
+  the picker can hide already-budgeted categories in create mode (rule 1).
+  Failures degrade to an empty set — the repository re-enforces uniqueness
+  on submit anyway. In edit mode the page excludes the form's own current
+  categoryId from the set so re-saving doesn't fight itself.
 
 Field updates:
-  updateCategoryId(String?)  // create mode only — hidden in edit
-  updateAmount(double)
+  updateCategoryId(String?)  // no-op in edit mode (immutable post-creation)
+  updateAmount(String)       // parsed via parseDecimalAmount (BR/EN styles)
 
 submit():
   if !isValid → no-op
   → emit(submitting)
   → isEditing ? UpdateBudgetUseCase : CreateBudgetUseCase
+    (edit preserves existingCreatedAt; updatedAt = now)
   → success → emit(success)
   → failure → emit(failure + Failure)
 
 Initial state (create mode):
-  categoryId: null, amount: 0, status: initial
+  categoryId: null, amount: 0, status: initial, budgetedCategoryIds: {}
 
 Initial state (edit mode):
   categoryId: existing.categoryId, amount: existing.amount,
-  existingId: existing.id
+  existingId: existing.id, existingCreatedAt: existing.createdAt
   Category selector is HIDDEN (immutable post-creation)
 ```
 
@@ -308,14 +333,15 @@ fromEntity(BudgetEntity) → BudgetModel:
   orders by `createdAt` for stable retrieval. Mirrors the same composite
   shape used by `accounts` and `chat_messages` in `firestore.indexes.json`.
 
-**Security rules** (drop in alongside the existing user-owned collections):
+**Security rules** (actual shape in `firestore.rules` — uses the shared
+`isAllowed()` allowlist gate, `isMaster()` override, and `ownsResource()` /
+`ownsCreate()` ownership helpers):
 
 ```
-match /budgets/{id} {
-  allow read, write: if request.auth != null
-                     && request.auth.uid == resource.data.userId;
-  allow create: if request.auth != null
-                && request.auth.uid == request.resource.data.userId;
+match /budgets/{budgetId} {
+  allow create: if isAllowed() && ownsCreate();
+  allow read, update, delete: if (isAllowed() && ownsResource())
+    || isMaster();
 }
 ```
 
@@ -379,12 +405,19 @@ A single row showing:
 
 ### Cascade delete (categories)
 
-`CategoriesCubit.deleteCategory` is extended to also dispatch
-`DeleteBudgetUseCase` for every budget whose `categoryId` matches the deleted
-category. The categories cubit takes a `BudgetRepository` (or `GetBudgetsUseCase`
-+ `DeleteBudgetUseCase`) injection. Failures during budget cascade are
-**logged but not surfaced** — the category deletion is the user's primary
-intent and budgets being orphaned is recoverable (rule 8).
+The cascade lives in `DeleteCategoryWithReassignmentUseCase`
+(`lib/features/categories/domain/usecases/delete_category_with_reassignment_usecase.dart`),
+which takes `GetBudgetsUseCase` + `DeleteBudgetUseCase` as dependencies:
+
+1. reassign the category's transactions to the chosen target category
+   (fatal on failure — the category stays intact);
+2. cascade-delete every budget whose `categoryId` matches — **best-effort**,
+   failures are logged but not surfaced (the category deletion is the user's
+   primary intent and orphaned budgets are recoverable per rule 8);
+3. delete the category itself.
+
+`CategoriesCubit` has **no** budget or delete dependencies — pages invoke the
+use case directly.
 
 ---
 
@@ -428,13 +461,17 @@ intent and budgets being orphaned is recoverable (rule 8).
 - **BudgetsCubit** (`bloc_test`):
   - `loadBudgets` happy path emits `Loading → Loaded`.
   - `loadBudgets` failure emits `Loading → Error`.
-  - `loadBudgets` no-ops when already loaded and `!forceRefresh`.
-  - `deleteBudget` triggers a force-refresh on success.
+  - `loadBudgets` no-ops when already loaded **for the same month** and
+    `!forceRefresh`.
+  - `loadBudgets(month: ...)` reloads when the month changes.
+  - `deleteBudget` triggers a force-refresh on success (keeping `_lastMonth`).
 - **BudgetFormCubit**:
   - `isValid` reflects `categoryId != null && amount > 0`.
+  - `loadBudgetedCategoryIds` populates the exclusion set (and degrades to
+    empty on failure).
   - Submit dispatches Create vs Update based on `existingId`.
   - Failure preserves form state.
-- **CategoriesCubit cascade**:
+- **DeleteCategoryWithReassignmentUseCase cascade**:
   - Deleting a category with a budget deletes the budget.
   - Deleting a category without a budget is unaffected.
   - Budget cascade failure does not abort the category deletion.
@@ -528,5 +565,6 @@ real usage signal:
 - **Income / savings targets** — separate "Metas" feature in roadmap P1.
 - **Push notifications on threshold** — uses existing FCM infra, but
   intentionally postponed.
-- **Month navigation on the budgets page** — current month only.
 - **Budget templates** ("default budget" applied to new categories).
+
+*(Month navigation, originally deferred, has since shipped — see rule 6.)*

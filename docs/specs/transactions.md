@@ -29,8 +29,16 @@ TransactionEntity {
 }
 
 bool get isTransfer => linkedTransactionId != null
+bool get isRecurring => recurrence != single
 bool get isPending => settlementStatus == pending
 bool get isPaid => settlementStatus == paid
+bool get isPayable => type == expense
+bool get isReceivable => type == income
+bool get isOverdue => isPending && day(dueDate) < day(now)
+bool get isDueToday => isPending && day(dueDate) == day(now)
+
+// Scope selector passed to sequence-aware edit/delete flows (rule 18):
+enum TransactionSequenceScope { onlyThis, thisAndFollowing }
 ```
 
 ## Business Rules
@@ -50,18 +58,18 @@ bool get isPaid => settlementStatus == paid
 13. **Repetition modes** — normal transactions support `single`, `installment`, and `fixed`. Transfers are always single and paid.
 14. **Installments use the total purchase amount** — the form amount is split into per-installment rows. Cents are distributed from the first installment onward so the row sum equals the original total.
 15. **Installment descriptions include markers** — generated rows append `1/N`, `2/N`, ... to the base description.
-16. **Fixed transactions are materialized as a rolling window** — the user intent is permanent, but the app only creates occurrences through the next 12 months. A generator can later fill the next window without creating unbounded Firestore documents.
+16. **Fixed transactions are materialized as a rolling window** — the user intent is permanent, but the app only creates occurrences through the next 12 months. `EnsureFixedRecurrencesUseCase` tops up the window on each transactions/dashboard load, so the series stays filled without creating unbounded Firestore documents.
 17. **Only the first occurrence follows the current paid/pending toggle** — generated future occurrences are always pending/scheduled.
 18. **Sequence edits/deletes are scoped** — editing/deleting a sequence row asks whether to affect only this row or this row and following rows. The following scope only changes pending rows with `dueDate >= selected.dueDate`; paid rows are not changed financially.
 
 ### Transfer Rules
 
-11. **Transfers create two linked transactions** — an expense on the source account and an income on the destination account, linked by `linkedTransactionId`.
-12. **Transfers have no category** — `categoryId` is empty string for both sides.
-13. **Deleting one side of a transfer deletes both** — cascading delete at the repository level.
-14. **Editing a transfer updates both legs** — amount, date, description, notes, **source account, and destination account** can all be changed; type stays immutable (the pill toggle is disabled in edit mode). Both the expense and income legs are rewritten so they never diverge. Each leg keeps its own `createdAt` (audit trail). The two writes are sequential, not atomic — a failure between them can leave the legs inconsistent (mirrors the non-batched create path; a repository-level transfer update is the proper fix).
-15. **Transfer edit resolves the counterpart leg on open** — the form receives only the tapped leg. It fetches the linked leg (`GetTransactionUseCase`) to populate both source (expense leg) and destination (income leg) accounts, regardless of which leg was tapped. `existingId` is normalized to the expense leg, `linkedTransactionId` to the income leg. On fetch failure the unknown account stays empty (form invalid) rather than guessing.
-16. **Source and destination accounts must differ** — validated in form state.
+19. **Transfers create two linked transactions** — an expense on the source account and an income on the destination account, linked by `linkedTransactionId`.
+20. **Transfers have no category** — `categoryId` is empty string for both sides.
+21. **Deleting one side of a transfer deletes both** — cascading delete at the repository level.
+22. **Editing a transfer updates both legs** — amount, date, description, notes, **source account, and destination account** can all be changed; type stays immutable (the pill toggle is disabled in edit mode). Both the expense and income legs are rewritten so they never diverge. Each leg keeps its own `createdAt` (audit trail). The two writes are sequential, not atomic — a failure between them can leave the legs inconsistent (mirrors the non-batched create path; a repository-level transfer update is the proper fix).
+23. **Transfer edit resolves the counterpart leg on open** — the form receives only the tapped leg. It fetches the linked leg (`GetTransactionUseCase`) to populate both source (expense leg) and destination (income leg) accounts, regardless of which leg was tapped. `existingId` is normalized to the expense leg, `linkedTransactionId` to the income leg. On fetch failure the unknown account stays empty (form invalid) rather than guessing.
+24. **Source and destination accounts must differ** — validated in form state.
 
 ## Repository Contract
 
@@ -111,16 +119,17 @@ Settlement use case:
 
 ```dart
 class SettleTransactionUseCase {
-  Future<Either<Failure, TransactionEntity>> call({
-    required TransactionEntity transaction,
+  Future<Either<Failure, TransactionEntity>> call(
+    TransactionEntity transaction, {
     DateTime? settledAt,
   });
 }
 ```
 
 It rejects transfers, then updates the same transaction to `paid`, sets
-`date = settledAt ?? DateTime.now()`, `settledAt` to the same value, and writes
-the updated row through `TransactionRepository.updateTransaction`.
+`date = settledAt ?? DateTime.now()`, and sets `settledAt` and `updatedAt` to
+that same value, writing the updated row through
+`TransactionRepository.updateTransaction`.
 
 **Cache strategy:**
 - `forceRefresh: false` → read from local Drift cache only (with filters).
@@ -182,7 +191,9 @@ States:
 
 Load behavior:
   - If already Loaded for same year/month AND !forceRefresh → no-op
-  - Otherwise → Loading → fetch with date range [startOfMonth, endOfMonth] → Loaded or Error
+  - Otherwise → Loading → EnsureFixedRecurrencesUseCase tops up the fixed
+    rolling window (optional dep; awaited before the fetch, result ignored)
+    → fetch with date range [startOfMonth, endOfMonth] → Loaded or Error
 
 Delete behavior:
   - Delete the transaction (cascades if transfer) → on success, re-dispatch LoadRequested(forceRefresh: true)
@@ -213,7 +224,7 @@ isTransfer = state.isTransfer flag (or linkedTransactionId != null on existing)
 On construct (editing a transfer):
   fetch the linked leg via getTransaction → fill the unknown account so
   accountId = source (expense leg), destinationAccountId = destination
-  (income leg). See Transfer Rule 15.
+  (income leg). See Transfer Rule 23.
 
 isValid (normal):
   amount > 0 && accountId.isNotEmpty && categoryId.isNotEmpty
@@ -380,10 +391,11 @@ The CSV import flow has two stages: **parse + preview** and **confirm**. The pre
   documents as legacy audit fields, but they are not part of `TransactionEntity`
   or the Drift cache in V1.
 
-**Indexes:**
-- `userId` + `date` (descending)
-- `accountId` + `userId` + `date` (descending)
-- `userId` + `settlementStatus` + `dueDate` (ascending)
-- `userId` + `settlementStatus` + `type` + `dueDate` (ascending)
-- `userId` + `settlementStatus` + `date` (descending)
-- `accountId` + `userId` + `settlementStatus` + `date` (descending)
+**Indexes** (the `transactions` composites in `firestore.indexes.json`):
+- `userId` ASC + `date` DESC
+- `accountId` ASC + `userId` ASC + `date` DESC
+- `userId` ASC + `recurrence` ASC + `date` DESC
+- `userId` ASC + `recurrenceGroupId` ASC + `dueDate` DESC
+- `settlementStatus` ASC + `dueDate` ASC — serves the cross-user
+  `notifyTransactionsDue` scheduled function (`settlementStatus == 'pending'`
+  + `dueDate <= end of today`; deliberately not scoped by `userId`)

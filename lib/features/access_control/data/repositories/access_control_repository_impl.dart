@@ -46,12 +46,12 @@ class AccessControlRepositoryImpl implements AccessControlRepository {
   }) async {
     final normalized = normalizeEmail(email);
     if (normalized.isEmpty || !_emailRegex.hasMatch(normalized)) {
-      return const Left(ValidationFailure('Email inválido.'));
+      return const Left(InvalidEmailFormatFailure());
     }
     if (isMasterEmail(normalized)) {
       // Master is implicit — adding is a no-op but we surface a clear error
       // so the UI can communicate the situation.
-      return const Left(ValidationFailure('O master já tem acesso.'));
+      return const Left(MasterEmailAlreadyAllowedFailure());
     }
     try {
       await _remote.addAllowedEmail(email: normalized, note: note);

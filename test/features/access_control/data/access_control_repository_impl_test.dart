@@ -59,12 +59,13 @@ void main() {
   });
 
   group('addAllowedEmail', () {
-    test('rejects invalid email format with ValidationFailure', () async {
+    test('rejects invalid email format with InvalidEmailFormatFailure',
+        () async {
       final result = await repository.addAllowedEmail(email: 'not-an-email');
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
+        (failure) => expect(failure, isA<InvalidEmailFormatFailure>()),
         (_) => fail('Expected Left'),
       );
       verifyNever(
@@ -75,11 +76,16 @@ void main() {
       );
     });
 
-    test('rejects master email with ValidationFailure', () async {
+    test('rejects master email with MasterEmailAlreadyAllowedFailure',
+        () async {
       final result =
           await repository.addAllowedEmail(email: 'guilhermeeng99@gmail.com');
 
       expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<MasterEmailAlreadyAllowedFailure>()),
+        (_) => fail('Expected Left'),
+      );
     });
 
     test('lowercases email before delegating to remote', () async {

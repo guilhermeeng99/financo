@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/feature_empty_state.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_section_header.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
@@ -21,7 +22,6 @@ import 'package:financo/features/investments/presentation/widgets/investment_cla
 import 'package:financo/features/investments/presentation/widgets/investment_hero_card.dart';
 import 'package:financo/features/investments/presentation/widgets/investment_pending_banner.dart';
 import 'package:financo/features/investments/presentation/widgets/investment_rebalance_row.dart';
-import 'package:financo/features/investments/presentation/widgets/investments_empty_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -342,11 +342,13 @@ class _LoadedBody extends StatelessWidget {
     final colors = context.appColors;
 
     if (!_hasInvestmentAccounts) {
-      return InvestmentsEmptyState(
+      return FeatureEmptyState(
         icon: FontAwesomeIcons.piggyBank,
         title: t.investments.emptyNoAccountTitle,
-        body: t.investments.emptyNoAccountMessage,
+        message: t.investments.emptyNoAccountMessage,
         example: t.investments.emptyNoAccountExample,
+        messageLineHeight: 1.5,
+        actionGap: 28,
         actionLabel: t.investments.emptyNoAccountAction,
         onAction: () async {
           await context.push(AppRoutes.addAccount);
@@ -365,11 +367,13 @@ class _LoadedBody extends StatelessWidget {
     }
 
     if (state.classes.isEmpty) {
-      return InvestmentsEmptyState(
+      return FeatureEmptyState(
         icon: FontAwesomeIcons.layerGroup,
         title: t.investments.emptyNoClassesTitle,
-        body: t.investments.emptyNoClassesMessage,
+        message: t.investments.emptyNoClassesMessage,
         example: t.investments.emptyNoClassesExample,
+        messageLineHeight: 1.5,
+        actionGap: 28,
         actionLabel: t.investments.emptyNoClassesAction,
         onAction: () => unawaited(onOpenClassForm()),
       );

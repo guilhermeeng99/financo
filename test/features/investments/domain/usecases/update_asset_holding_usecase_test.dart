@@ -73,8 +73,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<NegativeAmountFailure>()),
+        (_) => fail('Expected NegativeAmountFailure'),
       );
       verifyNever(() => accountRepository.getAccount(any()));
       verifyNever(() => holdingRepository.updateAssetHolding(any()));
@@ -90,8 +90,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<HoldingRequiresSubclassFailure>()),
+        (_) => fail('Expected HoldingRequiresSubclassFailure'),
       );
       // Class guard short-circuits before the account lookup.
       verifyNever(() => accountRepository.getAccount(any()));
@@ -115,8 +115,8 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) => expect(failure, isA<AssetClassNotFoundFailure>()),
+        (_) => fail('Expected AssetClassNotFoundFailure'),
       );
       verifyNever(() => accountRepository.getAccount(any()));
     });
@@ -136,8 +136,9 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) =>
+            expect(failure, isA<HoldingAccountNotInvestmentFailure>()),
+        (_) => fail('Expected HoldingAccountNotInvestmentFailure'),
       );
       verifyNever(() => holdingRepository.updateAssetHolding(any()));
     });

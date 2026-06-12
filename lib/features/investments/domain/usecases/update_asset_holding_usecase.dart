@@ -30,7 +30,7 @@ class UpdateAssetHoldingUseCase {
     AssetHoldingEntity holding,
   ) async {
     if (holding.amount < 0) {
-      return const Left(ValidationFailure('Amount must be at least zero.'));
+      return const Left(NegativeAmountFailure());
     }
 
     // Holdings must point at a subclass — see docs/specs/investments.md §2.
@@ -45,9 +45,7 @@ class UpdateAssetHoldingUseCase {
       (failure) => failure,
       (account) {
         if (account.type != AccountType.investment) {
-          return const ValidationFailure(
-            'Holdings can only be attached to investment accounts.',
-          );
+          return const HoldingAccountNotInvestmentFailure();
         }
         return null;
       },
@@ -105,13 +103,10 @@ class UpdateAssetHoldingUseCase {
         }
       }
       if (klass == null) {
-        return const ValidationFailure('Asset class not found.');
+        return const AssetClassNotFoundFailure();
       }
       if (klass.parentId == null) {
-        return const ValidationFailure(
-          'Holdings must point at a subclass. Add a subclass to the '
-          'chosen class first.',
-        );
+        return const HoldingRequiresSubclassFailure();
       }
       return null;
     });

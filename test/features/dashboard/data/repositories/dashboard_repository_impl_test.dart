@@ -8,6 +8,8 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../harness/factories/account_factory.dart';
+import '../../../../harness/factories/category_factory.dart';
 import '../../../../harness/factories/transaction_factory.dart';
 import '../../../../harness/mocks.dart';
 
@@ -72,71 +74,37 @@ void main() {
 
   group('getDashboardSummary', () {
     test('should compute summary correctly with all data', () async {
-      final account = AccountEntity(
+      final account = AccountFactory.checking(
         id: 'acc-1',
-        userId: userId,
         name: 'Nubank',
-        type: AccountType.checking,
-        bank: BankType.nubank,
-        initialBalance: 1000,
-        createdAt: DateTime(2024),
       );
 
       // Two transactions in March (period), one in Feb (cumulative only)
       final transactions = [
-        TransactionEntity(
+        TransactionFactory.income(
           id: 'tx-feb',
-          userId: userId,
-          accountId: 'acc-1',
           categoryId: 'cat-salary',
-          type: TransactionType.income,
           amount: 500,
           description: 'Feb salary',
           date: DateTime(2024, 2, 15),
-          createdAt: DateTime(2024, 2, 15),
-          updatedAt: DateTime(2024, 2, 16),
         ),
-        TransactionEntity(
+        TransactionFactory.income(
           id: 'tx-income',
-          userId: userId,
-          accountId: 'acc-1',
           categoryId: 'cat-salary',
-          type: TransactionType.income,
-          amount: 3000,
           description: 'March salary',
           date: DateTime(2024, 3, 5),
-          createdAt: DateTime(2024, 3, 5),
-          updatedAt: DateTime(2024, 3, 6),
         ),
-        TransactionEntity(
+        TransactionFactory.expense(
           id: 'tx-expense',
-          userId: userId,
-          accountId: 'acc-1',
           categoryId: 'cat-food',
-          type: TransactionType.expense,
           amount: 200,
-          description: 'Groceries',
           date: DateTime(2024, 3, 10),
-          createdAt: DateTime(2024, 3, 10),
-          updatedAt: DateTime(2024, 3, 11),
         ),
       ];
 
-      const categories = [
-        CategoryEntity(
-          id: 'cat-salary',
-          name: 'Salary',
-          icon: 58332,
-          color: 4283215696,
-          type: CategoryType.income,
-        ),
-        CategoryEntity(
-          id: 'cat-food',
-          name: 'Food',
-          icon: 58746,
-          color: 4294198070,
-          type: CategoryType.expense,
-        ),
+      final categories = [
+        CategoryFactory.income(id: 'cat-salary'),
+        CategoryFactory.expense(id: 'cat-food'),
       ];
 
       stubAccounts([account]);
@@ -191,21 +159,9 @@ void main() {
           amount: 300,
         ),
       ]);
-      stubCategories(const [
-        CategoryEntity(
-          id: 'cat-food',
-          name: 'Food',
-          icon: 58332,
-          color: 4280391411,
-          type: CategoryType.expense,
-        ),
-        CategoryEntity(
-          id: 'cat-transport',
-          name: 'Transport',
-          icon: 58332,
-          color: 4294198070,
-          type: CategoryType.expense,
-        ),
+      stubCategories([
+        CategoryFactory.expense(id: 'cat-food'),
+        CategoryFactory.expense(id: 'cat-transport', name: 'Transport'),
       ]);
 
       final result = await repository.getDashboardSummary(
@@ -292,117 +248,68 @@ void main() {
 
     test('should populate fiftyThirtyTwenty from period data', () async {
       final accounts = [
-        AccountEntity(
+        AccountFactory.checking(
           id: 'acc-chk',
-          userId: userId,
           name: 'Nubank',
-          type: AccountType.checking,
-          bank: BankType.nubank,
           initialBalance: 0,
-          createdAt: DateTime(2024),
         ),
-        AccountEntity(
+        AccountFactory.investment(
           id: 'acc-inv',
-          userId: userId,
           name: 'XP',
-          type: AccountType.investment,
-          bank: BankType.xp,
           initialBalance: 0,
-          createdAt: DateTime(2024),
         ),
       ];
 
       // March: income 5000, needs 2500 (cat-needs), wants 1500 (cat-wants),
       // savings 1000 (checking → investment transfer).
+      final transfer = TransactionFactory.transfer(
+        sourceAccountId: 'acc-chk',
+        destinationAccountId: 'acc-inv',
+        amount: 1000,
+        description: 'Aporte',
+        date: DateTime(2024, 3, 15),
+      );
       final transactions = [
-        TransactionEntity(
+        TransactionFactory.income(
           id: 'tx-income',
-          userId: userId,
           accountId: 'acc-chk',
           categoryId: 'cat-salary',
-          type: TransactionType.income,
           amount: 5000,
           description: 'Salário',
           date: DateTime(2024, 3, 5),
-          createdAt: DateTime(2024, 3, 5),
-          updatedAt: DateTime(2024, 3, 5),
         ),
-        TransactionEntity(
+        TransactionFactory.expense(
           id: 'tx-needs',
-          userId: userId,
           accountId: 'acc-chk',
           categoryId: 'cat-needs',
-          type: TransactionType.expense,
           amount: 2500,
           description: 'Aluguel',
           date: DateTime(2024, 3, 10),
-          createdAt: DateTime(2024, 3, 10),
-          updatedAt: DateTime(2024, 3, 10),
         ),
-        TransactionEntity(
+        TransactionFactory.expense(
           id: 'tx-wants',
-          userId: userId,
           accountId: 'acc-chk',
           categoryId: 'cat-wants',
-          type: TransactionType.expense,
           amount: 1500,
           description: 'Lazer',
           date: DateTime(2024, 3, 12),
-          createdAt: DateTime(2024, 3, 12),
-          updatedAt: DateTime(2024, 3, 12),
         ),
-        TransactionEntity(
-          id: 'tx-transfer-exp',
-          userId: userId,
-          accountId: 'acc-chk',
-          categoryId: '',
-          type: TransactionType.expense,
-          amount: 1000,
-          description: 'Aporte',
-          date: DateTime(2024, 3, 15),
-          linkedTransactionId: 'tx-transfer-inc',
-          createdAt: DateTime(2024, 3, 15),
-          updatedAt: DateTime(2024, 3, 15),
-        ),
-        TransactionEntity(
-          id: 'tx-transfer-inc',
-          userId: userId,
-          accountId: 'acc-inv',
-          categoryId: '',
-          type: TransactionType.income,
-          amount: 1000,
-          description: 'Aporte',
-          date: DateTime(2024, 3, 15),
-          linkedTransactionId: 'tx-transfer-exp',
-          createdAt: DateTime(2024, 3, 15),
-          updatedAt: DateTime(2024, 3, 15),
-        ),
+        transfer.expense,
+        transfer.income,
       ];
 
       stubAccounts(accounts);
       stubTransactions(transactions);
-      stubCategories(const [
-        CategoryEntity(
-          id: 'cat-salary',
-          name: 'Salário',
-          icon: 58332,
-          color: 4283215696,
-          type: CategoryType.income,
-        ),
-        CategoryEntity(
+      stubCategories([
+        CategoryFactory.income(id: 'cat-salary', name: 'Salário'),
+        CategoryFactory.expense(
           id: 'cat-needs',
           name: 'Aluguel',
-          icon: 58332,
-          color: 4280391411,
-          type: CategoryType.expense,
           bucket: CategoryBucket.needs,
         ),
-        CategoryEntity(
+        CategoryFactory.expense(
           id: 'cat-wants',
           name: 'Lazer',
-          icon: 58332,
-          color: 4280391411,
-          type: CategoryType.expense,
           bucket: CategoryBucket.wants,
         ),
       ]);
@@ -500,63 +407,39 @@ void main() {
       'should compute cumulative balance for multiple accounts',
       () async {
         final accounts = [
-          AccountEntity(
+          AccountFactory.checking(
             id: 'acc-1',
-            userId: userId,
             name: 'Nubank',
-            type: AccountType.checking,
-            bank: BankType.nubank,
-            initialBalance: 1000,
-            createdAt: DateTime(2024),
           ),
-          AccountEntity(
+          AccountFactory.checking(
             id: 'acc-2',
-            userId: userId,
             name: 'Other Bank',
-            type: AccountType.checking,
             bank: BankType.others,
             initialBalance: 2000,
-            createdAt: DateTime(2024),
           ),
         ];
 
         final transactions = [
-          TransactionEntity(
+          TransactionFactory.income(
             id: 'tx-1',
-            userId: userId,
-            accountId: 'acc-1',
             categoryId: 'cat-1',
-            type: TransactionType.income,
             amount: 500,
             description: 'Income acc-1',
             date: DateTime(2024, 3, 5),
-            createdAt: DateTime(2024, 3, 5),
-            updatedAt: DateTime(2024, 3, 5),
           ),
-          TransactionEntity(
+          TransactionFactory.expense(
             id: 'tx-2',
-            userId: userId,
             accountId: 'acc-2',
-            categoryId: 'cat-1',
-            type: TransactionType.expense,
             amount: 300,
             description: 'Expense acc-2',
             date: DateTime(2024, 3, 10),
-            createdAt: DateTime(2024, 3, 10),
-            updatedAt: DateTime(2024, 3, 10),
           ),
         ];
 
         stubAccounts(accounts);
         stubTransactions(transactions);
-        stubCategories(const [
-          CategoryEntity(
-            id: 'cat-1',
-            name: 'General',
-            icon: 58332,
-            color: 4280391411,
-            type: CategoryType.expense,
-          ),
+        stubCategories([
+          CategoryFactory.expense(id: 'cat-1', name: 'General'),
         ]);
 
         final result = await repository.getDashboardSummary(
@@ -589,53 +472,33 @@ void main() {
     test(
       'should not include prior month transactions in period totals',
       () async {
-        final account = AccountEntity(
+        final account = AccountFactory.checking(
           id: 'acc-1',
-          userId: userId,
           name: 'Nubank',
-          type: AccountType.checking,
-          bank: BankType.nubank,
           initialBalance: 0,
-          createdAt: DateTime(2024),
         );
 
         final transactions = [
-          TransactionEntity(
+          TransactionFactory.income(
             id: 'tx-feb',
-            userId: userId,
-            accountId: 'acc-1',
             categoryId: 'cat-1',
-            type: TransactionType.income,
             amount: 1000,
             description: 'Feb income',
             date: DateTime(2024, 2, 15),
-            createdAt: DateTime(2024, 2, 15),
-            updatedAt: DateTime(2024, 2, 15),
           ),
-          TransactionEntity(
+          TransactionFactory.income(
             id: 'tx-mar',
-            userId: userId,
-            accountId: 'acc-1',
             categoryId: 'cat-1',
-            type: TransactionType.income,
             amount: 500,
             description: 'Mar income',
             date: DateTime(2024, 3, 5),
-            createdAt: DateTime(2024, 3, 5),
-            updatedAt: DateTime(2024, 3, 5),
           ),
         ];
 
         stubAccounts([account]);
         stubTransactions(transactions);
-        stubCategories(const [
-          CategoryEntity(
-            id: 'cat-1',
-            name: 'Salary',
-            icon: 58332,
-            color: 4280391411,
-            type: CategoryType.income,
-          ),
+        stubCategories([
+          CategoryFactory.income(id: 'cat-1'),
         ]);
 
         final result = await repository.getDashboardSummary(
@@ -659,23 +522,15 @@ void main() {
       'should exclude transfers from totals and category breakdowns',
       () async {
         final accounts = [
-          AccountEntity(
+          AccountFactory.checking(
             id: 'acc-1',
-            userId: userId,
             name: 'Nubank',
-            type: AccountType.checking,
-            bank: BankType.nubank,
             initialBalance: 5000,
-            createdAt: DateTime(2024),
           ),
-          AccountEntity(
+          AccountFactory.checking(
             id: 'acc-2',
-            userId: userId,
             name: 'Inter',
-            type: AccountType.checking,
             bank: BankType.others,
-            initialBalance: 1000,
-            createdAt: DateTime(2024),
           ),
         ];
 
@@ -697,14 +552,8 @@ void main() {
 
         stubAccounts(accounts);
         stubTransactions(transactions);
-        stubCategories(const [
-          CategoryEntity(
-            id: 'cat-food',
-            name: 'Food',
-            icon: 58332,
-            color: 4294198070,
-            type: CategoryType.expense,
-          ),
+        stubCategories([
+          CategoryFactory.expense(id: 'cat-food'),
         ]);
 
         final result = await repository.getDashboardSummary(

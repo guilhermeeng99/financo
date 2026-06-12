@@ -1,7 +1,7 @@
 import 'package:financo/gen/i18n/strings.g.dart';
 
 /// Handler interface for a chat action type (account, category, transaction,
-/// transfer, bill, budget). Each implementation owns:
+/// transfer, budget). Each implementation owns:
 ///
 /// - `preflight` — runs BEFORE the action card is shown. Returns a
 ///   user-friendly error string when the action is doomed (e.g. category

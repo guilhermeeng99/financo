@@ -2,24 +2,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
-class _MockGoogleSignIn extends Mock implements GoogleSignIn {}
+import '../../../../harness/mocks.dart';
 
 void main() {
-  late _MockFirebaseAuth firebaseAuth;
-  late _MockGoogleSignIn googleSignIn;
+  late MockFirebaseAuth firebaseAuth;
+  late MockGoogleSignIn googleSignIn;
   late FirebaseFirestore firestore;
   late AuthRemoteDataSourceImpl dataSource;
 
   setUp(() {
-    firebaseAuth = _MockFirebaseAuth();
-    googleSignIn = _MockGoogleSignIn();
+    firebaseAuth = MockFirebaseAuth();
+    googleSignIn = MockGoogleSignIn();
     firestore = FakeFirebaseFirestore();
     dataSource = AuthRemoteDataSourceImpl(
       firebaseAuth: firebaseAuth,

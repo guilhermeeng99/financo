@@ -7,8 +7,8 @@ import 'package:financo/features/investments/domain/repositories/asset_holding_r
 /// Deletes an asset class. Rule 5 of `docs/specs/investments.md`: refuses
 /// to delete when holdings still reference the class. The user must
 /// either reassign or delete the holdings first. We return the
-/// blocking holding count in the failure message so the UI can build
-/// a helpful confirm-or-cleanup prompt.
+/// blocking count inside the typed failure so the UI can build a
+/// helpful, localised confirm-or-cleanup prompt.
 class DeleteAssetClassUseCase {
   const DeleteAssetClassUseCase({
     required AssetClassRepository assetClassRepository,
@@ -33,10 +33,7 @@ class DeleteAssetClassUseCase {
       (classes) {
         final subs = classes.where((c) => c.parentId == id).toList();
         if (subs.isEmpty) return null;
-        return ValidationFailure(
-          'Cannot delete: ${subs.length} subclass(es) still reference '
-          'this class.',
-        );
+        return AssetClassHasSubclassesFailure(subs.length);
       },
     );
     if (subclassFailure != null) return Left(subclassFailure);
@@ -49,10 +46,7 @@ class DeleteAssetClassUseCase {
       (holdings) async {
         final tied = holdings.where((h) => h.assetClassId == id).toList();
         if (tied.isEmpty) return null;
-        return ValidationFailure(
-          'Cannot delete: ${tied.length} holding(s) still reference '
-          'this class.',
-        );
+        return AssetClassHasHoldingsFailure(tied.length);
       },
     );
     if (blockingFailure != null) return Left(blockingFailure);

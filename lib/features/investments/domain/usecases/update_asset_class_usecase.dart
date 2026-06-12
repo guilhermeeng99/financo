@@ -14,14 +14,10 @@ class UpdateAssetClassUseCase {
     AssetClassEntity assetClass,
   ) async {
     if (assetClass.name.trim().isEmpty) {
-      return const Left(
-        ValidationFailure('Asset class name must not be empty.'),
-      );
+      return const Left(EmptyNameFailure());
     }
     if (assetClass.targetPercent < 0 || assetClass.targetPercent > 100) {
-      return const Left(
-        ValidationFailure('Target percent must be between 0 and 100.'),
-      );
+      return const Left(TargetPercentOutOfRangeFailure());
     }
     // Same one-nesting-level rule as create (docs/specs/investments.md §1).
     // Also blocks demoting a root that already owns subclasses, since
@@ -37,27 +33,23 @@ class UpdateAssetClassUseCase {
           }
         }
         if (parent == null) {
-          return const ValidationFailure('Parent class not found.');
+          return const ParentAssetClassNotFoundFailure();
+        }
+        // Self-parenting guard — must run before the nesting check: a
+        // self-referencing class also carries a non-null parentId, which
+        // would otherwise trip SubclassCannotBeParentFailure and surface
+        // misleading copy to the user.
+        if (parent.id == assetClass.id) {
+          return const SelfParentAssetClassFailure();
         }
         if (parent.parentId != null) {
-          return const ValidationFailure(
-            'A subclass cannot be the parent of another subclass.',
-          );
-        }
-        // Self-parenting guard.
-        if (parent.id == assetClass.id) {
-          return const ValidationFailure(
-            'A class cannot be its own parent.',
-          );
+          return const SubclassCannotBeParentFailure();
         }
         // Demoting a root that owns subclasses → would create a chain.
         final hasOwnSubclasses =
             classes.any((c) => c.parentId == assetClass.id);
         if (hasOwnSubclasses) {
-          return const ValidationFailure(
-            'This class owns subclasses — remove or re-parent them '
-            'before turning it into a subclass.',
-          );
+          return const ClassOwnsSubclassesFailure();
         }
       }
       return validateSiblingTargetSum(

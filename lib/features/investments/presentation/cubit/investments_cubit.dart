@@ -4,7 +4,6 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/entities/asset_holding_entity.dart';
 import 'package:financo/features/investments/domain/entities/investment_overview.dart';
-import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,15 +14,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class InvestmentsCubit extends Cubit<InvestmentsState> {
   InvestmentsCubit({
     required GetInvestmentOverviewUseCase getOverview,
-    required AssetHoldingRepository assetHoldingRepository,
     required String userId,
   }) : _getOverview = getOverview,
-       _holdingRepository = assetHoldingRepository,
        _userId = userId,
        super(const InvestmentsInitial());
 
   final GetInvestmentOverviewUseCase _getOverview;
-  final AssetHoldingRepository _holdingRepository;
   final String _userId;
 
   Future<void> refresh({bool forceRefresh = false}) async {
@@ -45,15 +41,6 @@ class InvestmentsCubit extends Cubit<InvestmentsState> {
     );
   }
 
-  /// Cascade-delete called by AccountsCubit after a successful account
-  /// delete. Best-effort: errors are emitted only as a state so the
-  /// caller never blocks an account delete on holding cleanup. Returns
-  /// once the local + remote cleanup attempt completes so the caller
-  /// can chain its own refresh.
-  Future<void> removeHoldingsForAccount(String accountId) async {
-    await _holdingRepository.deleteHoldingsForAccount(accountId);
-    await refresh(forceRefresh: true);
-  }
 }
 
 sealed class InvestmentsState extends Equatable {

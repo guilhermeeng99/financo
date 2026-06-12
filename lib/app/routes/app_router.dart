@@ -43,7 +43,6 @@ import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twent
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
-import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/features/investments/presentation/pages/asset_class_detail_page.dart';
@@ -218,7 +217,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = InvestmentsCubit(
                   getOverview: GetIt.I<GetInvestmentOverviewUseCase>(),
-                  assetHoldingRepository: GetIt.I<AssetHoldingRepository>(),
                   userId: userId,
                 );
                 unawaited(cubit.refresh());
@@ -479,7 +477,8 @@ class GoRouterRefreshStream extends ChangeNotifier {
 
 /// Mobile shell. Bottom bar and month filter visibility are driven by
 /// [SubPageScope]: any sub-page (accounts, categories, account detail,
-/// add bill, etc.) wraps itself in `SubPageScope`, which increments a
+/// add transaction, etc.) wraps itself in `SubPageScope`, which increments
+/// a
 /// global depth counter. While depth > 0, the bar is hidden.
 ///
 /// We use this explicit signal because go_router's `state.matchedLocation`

@@ -14,6 +14,7 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockCreateAccountUseCase mockCreate;
   late MockUpdateAccountUseCase mockUpdate;
+  late MockGetAccountsUseCase mockGetAccounts;
 
   const userId = 'user-1';
 
@@ -22,11 +23,13 @@ void main() {
   setUp(() {
     mockCreate = MockCreateAccountUseCase();
     mockUpdate = MockUpdateAccountUseCase();
+    mockGetAccounts = MockGetAccountsUseCase();
   });
 
   AccountFormCubit buildCubit({AccountEntity? existing}) => AccountFormCubit(
     createAccount: mockCreate,
     updateAccount: mockUpdate,
+    getAccounts: mockGetAccounts,
     userId: userId,
     existingAccount: existing,
   );
@@ -200,16 +203,67 @@ void main() {
       );
 
       blocTest<AccountFormCubit, AccountFormState>(
-        'updateLinkedAccountId emits state with new id',
+        'updateLinkedAccount emits state with new id and display name',
         build: buildCubit,
-        act: (cubit) => cubit.updateLinkedAccountId('acc-linked'),
+        act: (cubit) =>
+            cubit.updateLinkedAccount(id: 'acc-linked', name: 'Nubank'),
+        expect: () => [
+          isA<AccountFormState>()
+              .having(
+                (s) => s.linkedAccountId,
+                'linkedAccountId',
+                'acc-linked',
+              )
+              .having(
+                (s) => s.linkedAccountName,
+                'linkedAccountName',
+                'Nubank',
+              ),
+        ],
+      );
+    });
+
+    group('loadLinkedAccountName', () {
+      blocTest<AccountFormCubit, AccountFormState>(
+        'resolves the linked account name when editing a credit card',
+        setUp: () {
+          when(() => mockGetAccounts(userId: userId)).thenAnswer(
+            (_) async => Right([AccountFactory.checking()]),
+          );
+        },
+        build: () => buildCubit(existing: AccountFactory.creditCard()),
+        act: (cubit) async => cubit.loadLinkedAccountName(),
         expect: () => [
           isA<AccountFormState>().having(
-            (s) => s.linkedAccountId,
-            'linkedAccountId',
-            'acc-linked',
+            (s) => s.linkedAccountName,
+            'linkedAccountName',
+            'Nubank Checking',
           ),
         ],
+      );
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'is a no-op in create mode',
+        build: buildCubit,
+        act: (cubit) async => cubit.loadLinkedAccountName(),
+        expect: () => <AccountFormState>[],
+        verify: (_) {
+          verifyNever(
+            () => mockGetAccounts(userId: any(named: 'userId')),
+          );
+        },
+      );
+
+      blocTest<AccountFormCubit, AccountFormState>(
+        'emits nothing when the linked account is gone',
+        setUp: () {
+          when(() => mockGetAccounts(userId: userId)).thenAnswer(
+            (_) async => const Right(<AccountEntity>[]),
+          );
+        },
+        build: () => buildCubit(existing: AccountFactory.creditCard()),
+        act: (cubit) async => cubit.loadLinkedAccountName(),
+        expect: () => <AccountFormState>[],
       );
     });
 
@@ -232,7 +286,7 @@ void main() {
         final cubit = buildCubit()
           ..updateName('CC')
           ..updateType(AccountType.creditCard)
-          ..updateLinkedAccountId('acc-1');
+          ..updateLinkedAccount(id: 'acc-1', name: 'Checking');
         expect(cubit.state.isValid, isTrue);
         addTearDown(cubit.close);
       });

@@ -45,10 +45,17 @@ service cloud.firestore {
     }
 
     // ─── Allowlist ─────────────────────────────────────────
-    // Only master may read or mutate the full allowlist.
-    // Other users verify themselves via the get() call inside isAllowed().
+    // Only master may list or mutate the allowlist. A signed-in user may
+    // `get` ONLY their own email doc: the client sign-in gate
+    // (AuthRepositoryImpl._gate) reads allowed_emails/{selfEmail} directly,
+    // and the gate fails open on errors — so a blanket deny here would
+    // silently disable the allowlist for every non-master user.
     match /allowed_emails/{email} {
-      allow read: if isMaster();
+      allow get: if isMaster()
+        || (request.auth != null
+            && request.auth.token.email != null
+            && request.auth.token.email.lower() == email);
+      allow list: if isMaster();
       allow create, update, delete: if isMaster();
     }
 

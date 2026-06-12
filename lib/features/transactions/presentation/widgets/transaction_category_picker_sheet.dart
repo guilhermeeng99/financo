@@ -1,4 +1,5 @@
 import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
@@ -55,7 +56,6 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final wantedType = widget.transactionType == TransactionType.income
         ? CategoryType.income
         : CategoryType.expense;
@@ -68,76 +68,57 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
     final filtered = filterCategoriesByQuery(all: allOfType, query: _query);
     final categories = organizeCategoriesForDisplay(filtered);
     final hasNoCategoriesAtAll = allOfType.isEmpty;
-    final hasNoSearchResults = !hasNoCategoriesAtAll && categories.isEmpty;
 
-    return DraggableScrollableSheet(
-      minChildSize: 0.3,
-      maxChildSize: 0.85,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  t.payablesReceivables.pickCategory,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            if (!hasNoCategoriesAtAll)
-              FinancoSearchField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _query = value),
-                hintText: t.categories.searchHint,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              ),
-            Expanded(
-              child: hasNoCategoriesAtAll
-                  ? _Empty(
-                      message: widget.transactionType == TransactionType.income
-                          ? t.payablesReceivables.noIncomeCategory
-                          : t.payablesReceivables.noExpenseCategory,
-                    )
-                  : hasNoSearchResults
-                  ? _Empty(message: t.categories.searchNoResults)
-                  : ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 4),
-                      itemBuilder: (_, i) {
-                        final c = categories[i];
-                        return _CategoryRow(
-                          category: c,
-                          allCategories: allOfType,
-                          isSelected: c.id == widget.selectedId,
-                          onTap: () => Navigator.pop(context, c.id),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+    return FinancoPickerSheet(
+      title: t.payablesReceivables.pickCategory,
+      header: [
+        if (!hasNoCategoriesAtAll)
+          FinancoSearchField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _query = value),
+            hintText: t.categories.searchHint,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          ),
+      ],
+      bodyBuilder: (scrollController) => _buildBody(
+        scrollController: scrollController,
+        allOfType: allOfType,
+        categories: categories,
+        hasNoCategoriesAtAll: hasNoCategoriesAtAll,
       ),
+    );
+  }
+
+  Widget _buildBody({
+    required ScrollController scrollController,
+    required List<CategoryEntity> allOfType,
+    required List<CategoryEntity> categories,
+    required bool hasNoCategoriesAtAll,
+  }) {
+    if (hasNoCategoriesAtAll) {
+      return FinancoPickerSheetEmpty(
+        message: widget.transactionType == TransactionType.income
+            ? t.payablesReceivables.noIncomeCategory
+            : t.payablesReceivables.noExpenseCategory,
+      );
+    }
+    if (categories.isEmpty) {
+      return FinancoPickerSheetEmpty(message: t.categories.searchNoResults);
+    }
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+      itemCount: categories.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 4),
+      itemBuilder: (_, i) {
+        final c = categories[i];
+        return _CategoryRow(
+          category: c,
+          allCategories: allOfType,
+          isSelected: c.id == widget.selectedId,
+          onTap: () => Navigator.pop(context, c.id),
+        );
+      },
     );
   }
 }
@@ -198,28 +179,6 @@ class _CategoryRow extends StatelessWidget {
                   color: colors.primary,
                 ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Empty extends StatelessWidget {
-  const _Empty({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: context.appColors.onBackgroundLight,
           ),
         ),
       ),

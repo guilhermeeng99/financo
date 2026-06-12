@@ -88,9 +88,7 @@ class _FiftyThirtyTwentyTargetsSheetState
     if (!mounted) return;
     final state = cubit.state;
     if (state.failure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(state.failure))),
-      );
+      context.showSnack(localizedFailure(state.failure));
       return;
     }
     Navigator.of(context).pop();

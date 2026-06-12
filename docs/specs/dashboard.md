@@ -34,7 +34,11 @@ Extends `Equatable`.
 
 | Method | Parameters | Return |
 |--------|-----------|--------|
-| getDashboardSummary | userId, month, forceRefresh? | `Either<Failure, DashboardSummary>` |
+| getDashboardSummary | userId, month, forceRefresh?, fiftyThirtyTwentyTargets? | `Either<Failure, DashboardSummary>` |
+
+`fiftyThirtyTwentyTargets` feeds the 50/30/20 overview slice and defaults to
+`FiftyThirtyTwentyTargets.classic` so legacy callers and unit tests don't need
+to plumb it through.
 
 ### DashboardRepositoryImpl
 
@@ -62,7 +66,7 @@ Extends `Equatable`.
 
 ## Use Case
 
-`GetDashboardSummaryUseCase.call(userId, month, forceRefresh?)` — thin delegator to repository.
+`GetDashboardSummaryUseCase.call(userId, month, forceRefresh?, fiftyThirtyTwentyTargets?)` — thin delegator to repository (same `FiftyThirtyTwentyTargets.classic` default).
 
 ## DashboardBloc State Machine
 
@@ -79,19 +83,28 @@ Extends `Equatable`.
 |-------|--------|
 | DashboardInitial | — |
 | DashboardLoading | — |
-| DashboardLoaded | summary, periodTransactions (full list for the selected month), selectedYear, selectedMonth |
+| DashboardLoaded | summary, periodTransactions (PAID rows only for the selected month), selectedYear, selectedMonth |
 | DashboardError | failure |
 
 ### Transitions
 
 **DashboardLoadRequested:**
-1. If already `DashboardLoaded` with same year/month and !forceRefresh → no-op (return)
-2. Emit `DashboardLoading`
-3. Call `getDashboardSummary(userId, month, forceRefresh)`
-4. Call `getTransactions(userId, startDate, endDate, forceRefresh)` for period
-5. If summary fails → emit `DashboardError`
-6. If transactions fail → emit `DashboardError`
-7. Otherwise → emit `DashboardLoaded` with the full list of period transactions (used by the per-category drill-down dialog)
+1. Always reloads — there is no same-month no-op. Only the `DashboardLoading`
+   emission is skipped when the state is already `DashboardLoaded` and
+   !forceRefresh (avoids flicker on tab focus; the cache re-read is a cheap
+   Drift round-trip)
+2. Otherwise emit `DashboardLoading`
+3. Top up fixed recurrences via `EnsureFixedRecurrencesUseCase(userId)`
+   (optional dependency; best-effort, result ignored)
+4. Call `getDashboardSummary(userId, month, forceRefresh, fiftyThirtyTwentyTargets)` —
+   targets read from `FiftyThirtyTwentyTargetsCubit.state.targets`
+5. Call `getTransactions(userId, startDate, endDate, forceRefresh)` for period —
+   in parallel with the summary fetch (halves first-load latency on cold cache)
+6. If summary fails → emit `DashboardError`
+7. If transactions fail → emit `DashboardError`
+8. Otherwise → emit `DashboardLoaded` with the period transactions filtered to
+   `isPaid` only (used by the per-category drill-down dialog; pending rows are
+   excluded)
 
 **DashboardRefreshRequested:**
 1. Use current year/month if loaded, else DateTime.now()
@@ -103,7 +116,7 @@ Extends `Equatable`.
 1. **Empty accounts**: totalBalance = 0, accounts list empty.
 2. **Empty transactions**: all totals = 0, no category breakdowns.
 3. **Missing category**: uses "Sem categoria" fallback with grey color.
-4. **Same month no-op**: DashboardLoadRequested with same year/month skipped unless forceRefresh.
+4. **Repeat load of same month**: still refetches (cache read); only the Loading emission is suppressed when already Loaded and !forceRefresh.
 5. **Account with no transactions**: adjustment = 0, balance stays as initialBalance.
 
 ## Account selection (dashboard "Total")

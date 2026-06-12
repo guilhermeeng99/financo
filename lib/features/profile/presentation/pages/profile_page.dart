@@ -71,9 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
 
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
       (_) {
         unawaited(
           context.read<CategoriesCubit>().loadCategories(forceRefresh: true),
@@ -81,9 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
         unawaited(
           context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
         );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(t.profile.clearDataSuccess)),
-        );
+        context.showSnack(t.profile.clearDataSuccess);
       },
     );
   }
@@ -95,14 +91,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _onTransactionsState(BuildContext context, TransactionsState state) {
     if (state is TransactionsImported) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            t.transactions.importSuccess(
-              imported: state.importedCount,
-              skipped: state.skippedCount,
-            ),
-          ),
+      context.showSnack(
+        t.transactions.importSuccess(
+          imported: state.importedCount,
+          skipped: state.skippedCount,
         ),
       );
       final filter = context.read<DateFilterCubit>().state;
@@ -122,9 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
       );
     }
     if (state is TransactionsError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(state.failure))),
-      );
+      context.showSnack(localizedFailure(state.failure));
     }
   }
 

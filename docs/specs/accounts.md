@@ -59,7 +59,24 @@ Adding a new bank means: append a value to `BankType` and add a matching entry i
    - `linkedAccountId` must reference an existing checking account.
 4. **Validation for credit cards:** an account form is valid when `name.isNotEmpty && (type != creditCard || linkedAccountId.isNotEmpty)`.
 5. **All accounts are deletable** — no concept of system/default accounts.
-6. **Deleting an account cascades** — all transactions linked to the account are also deleted.
+6. **Deleting an account cascades** via `DeleteAccountWithDependentsUseCase`
+   (`lib/features/accounts/domain/usecases/delete_account_with_dependents_usecase.dart`):
+   1. every transaction on the account is deleted first (transfers cascade to
+      their linked leg via the transaction repository) — any failure
+      short-circuits to `Left`;
+   2. then the account itself — failure also short-circuits;
+   3. then, **best-effort**, the investment holdings tied to the account
+      (`AssetHoldingRepository.deleteHoldingsForAccount`) — a failure here is
+      ignored because the account is already gone and the investments overview
+      filters out orphan holdings.
+
+   Navigation contract: `AddAccountPage` is mounted on the root navigator,
+   **outside** the shell's providers, so it cannot touch shell-scoped cubits.
+   On successful create/update/delete it signals via `pop(true)`;
+   `AccountsPage` (inside the shell) reacts to the `true` result by
+   force-refreshing `AccountsCubit` **and** `InvestmentsCubit`, so a
+   deleted/created investment account's holdings drop in or out of the
+   overview immediately.
 7. **Accounts are ordered by creation date** (ascending) in both Firestore and local cache.
 8. **Default bank is Nubank** for new accounts.
 9. **Default type is checking** for new accounts.
@@ -127,33 +144,54 @@ Note: Firestore field is `balance`, Dart field is `initialBalance`.
 Initial ──loadAccounts──→ Loading ──success──→ Loaded
                                   ──failure──→ Error
 
-Loaded ──loadAccounts(forceRefresh: false)──→ (no-op, stays Loaded)
+Loaded ──loadAccounts(forceRefresh: false)──→ refetches (cache read), but the
+                                              Loading emission is skipped —
+                                              re-emits Loaded/Error directly
 Loaded ──loadAccounts(forceRefresh: true)──→ Loading → ...
 ```
+
+`loadAccounts` always re-runs the enriched load (accounts + all-time
+transactions fetched in parallel, balances applied via
+`applyTransactionsToAccounts`); only the `AccountsLoading` emission is
+conditional, to avoid flicker when data is already on screen.
 
 ### AccountFormCubit
 
 ```
 State: { userId, name, type, bank, balance, creditLimit,
-         closingDay, dueDay, linkedAccountId, status, existingId?, failure? }
+         closingDay, dueDay, linkedAccountId, linkedAccountName?,
+         status, existingId?, originalCreatedAt?, failure? }
 
-isEditing = existingId != null
-isValid   = name.isNotEmpty && (type != creditCard || linkedAccountId.isNotEmpty)
+isEditing     = existingId != null
+isValid       = name.isNotEmpty && (type != creditCard || linkedAccountId.isNotEmpty)
+canChangeType = !isEditing   (type is locked once the account exists)
 
 Field update methods:
   updateName, updateType, updateBalance, updateCreditLimit,
-  updateClosingDay, updateDueDay, updateBank, updateLinkedAccountId
+  updateClosingDay, updateDueDay, updateBank,
+  updateLinkedAccount({required String id, required String name})
+    — records both the persisted id and the display name shown in the form row
+
+loadLinkedAccountName():
+  edit-mode only; no-op in create mode or when nothing is linked. Resolves the
+  linked checking account's display name via GetAccountsUseCase (the form page
+  is mounted on the root navigator, outside the shell's AccountsCubit scope,
+  so the name can't come from cached shell state).
 
 submit():
   if !isValid → no-op
   → emit(submitting)
   → isEditing ? updateAccount : createAccount
+    (edit preserves originalCreatedAt instead of overwriting with now)
   → success: emit(success)
   → failure: emit(failure + Failure)
 
-Credit card fields stripped on submit when type == checking:
+Credit card fields stripped on submit when type != creditCard:
   creditLimit, closingDay, dueDay, linkedAccountId → null
 ```
+
+Dependencies: `CreateAccountUseCase`, `UpdateAccountUseCase`,
+`GetAccountsUseCase` (for `loadLinkedAccountName`).
 
 ### AccountStatementCubit
 

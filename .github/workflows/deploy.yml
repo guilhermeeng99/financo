@@ -31,9 +31,9 @@ jobs:
       - name: Download Drift web assets
         run: |
           curl -L -o web/sqlite3.wasm \
-            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.1/sqlite3.wasm"
+            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.2/sqlite3.wasm"
           curl -L -o web/drift_worker.dart.js \
-            "https://github.com/simolus3/drift/releases/download/drift-2.32.1/drift_worker.js"
+            "https://github.com/simolus3/drift/releases/download/drift-2.34.0/drift_worker.js"
       - name: Build web
         env:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}

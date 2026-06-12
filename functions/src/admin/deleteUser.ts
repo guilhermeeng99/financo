@@ -27,6 +27,13 @@ interface DeleteUserAsAdminResponse {
   deletedCounts: DeletedCounts;
 }
 
+/** What `resolveTargetUser` learned about the user being deleted. */
+interface TargetUser {
+  userDocExists: boolean;
+  /** Normalized email, or '' when the user doc is missing it. */
+  email: string;
+}
+
 const FIRESTORE_BATCH_LIMIT = 500;
 
 // Every top-level collection scoped by `userId` that a full user delete must
@@ -67,6 +74,29 @@ export async function deleteUserAsAdmin(
   callerEmail: string | undefined,
   callerUid: string,
 ): Promise<DeleteUserAsAdminResponse> {
+  const targetUid = validateDeleteRequest(data, callerEmail, callerUid);
+  const db = admin.firestore();
+
+  const target = await resolveTargetUser(db, targetUid);
+  assertTargetIsNotMaster(target.email);
+
+  const counts = await cascadeDeleteUserData(db, targetUid, target.userDocExists);
+  await removeAllowlistEntry(db, target.email);
+  await deleteAuthUser(targetUid);
+
+  return { deletedCounts: counts };
+}
+
+/**
+ * Guard step: master-only caller, well-formed targetUid, and the master
+ * cannot delete their own account (uid-level self-delete check; the
+ * email-level one happens after the target's email is resolved).
+ */
+function validateDeleteRequest(
+  data: DeleteUserAsAdminRequest,
+  callerEmail: string | undefined,
+  callerUid: string,
+): string {
   if (!isMasterEmail(callerEmail)) {
     throw new HttpsError('permission-denied', 'Master access required.');
   }
@@ -81,35 +111,60 @@ export async function deleteUserAsAdmin(
       'Master cannot delete their own account.',
     );
   }
+  return targetUid;
+}
 
-  const db = admin.firestore();
-
-  // Resolve the target's email — needed for the allowlist cleanup and
-  // for the master self-delete defense in depth. Missing user doc is OK
-  // (the user may have been partially deleted already).
+/**
+ * Resolves the target's email — needed for the allowlist cleanup and
+ * for the master self-delete defense in depth. Missing user doc is OK
+ * (the user may have been partially deleted already).
+ */
+async function resolveTargetUser(
+  db: admin.firestore.Firestore,
+  targetUid: string,
+): Promise<TargetUser> {
   const userDoc = await db.collection('users').doc(targetUid).get();
-  const targetEmail = userDoc.exists
+  const email = userDoc.exists
     ? normalizeEmail((userDoc.get('email') as string | undefined) ?? '')
     : '';
+  return { userDocExists: userDoc.exists, email };
+}
 
+/**
+ * Defense in depth on top of the uid check: even if the master's data
+ * were targeted via a different uid, refuse to delete the master account.
+ */
+function assertTargetIsNotMaster(targetEmail: string): void {
   if (targetEmail && isMasterEmail(targetEmail)) {
     throw new HttpsError(
       'failed-precondition',
       'Cannot delete the master account.',
     );
   }
+}
 
-  const counts: DeletedCounts = {
-    accounts: 0,
-    transactions: 0,
-    categories: 0,
-    bills: 0,
-    budgets: 0,
-    asset_classes: 0,
-    asset_holdings: 0,
-    chat_messages: 0,
-    fcm_tokens: 0,
-  };
+const emptyDeletedCounts = (): DeletedCounts => ({
+  accounts: 0,
+  transactions: 0,
+  categories: 0,
+  bills: 0,
+  budgets: 0,
+  asset_classes: 0,
+  asset_holdings: 0,
+  chat_messages: 0,
+  fcm_tokens: 0,
+});
+
+/**
+ * Cascade steps 1-10: sweep every per-user top-level collection, the
+ * fcmTokens subcollection, and finally the user doc itself.
+ */
+async function cascadeDeleteUserData(
+  db: admin.firestore.Firestore,
+  targetUid: string,
+  userDocExists: boolean,
+): Promise<DeletedCounts> {
+  const counts = emptyDeletedCounts();
 
   for (const collection of PER_USER_COLLECTIONS) {
     counts[collection] = await deleteWhere(
@@ -121,20 +176,37 @@ export async function deleteUserAsAdmin(
     db.collection('users').doc(targetUid).collection('fcmTokens'),
   );
 
-  if (userDoc.exists) {
+  if (userDocExists) {
     await db.collection('users').doc(targetUid).delete();
   }
+  return counts;
+}
 
-  if (targetEmail) {
-    const allowedRef = db
-      .collection(ALLOWED_EMAILS_COLLECTION)
-      .doc(targetEmail);
-    const allowedSnap = await allowedRef.get();
-    if (allowedSnap.exists) {
-      await allowedRef.delete();
-    }
+/**
+ * Allowlist cleanup (step 11): revoke access so the deleted user cannot
+ * simply sign in again and recreate their account.
+ */
+async function removeAllowlistEntry(
+  db: admin.firestore.Firestore,
+  targetEmail: string,
+): Promise<void> {
+  if (!targetEmail) return;
+  const allowedRef = db
+    .collection(ALLOWED_EMAILS_COLLECTION)
+    .doc(targetEmail);
+  const allowedSnap = await allowedRef.get();
+  if (allowedSnap.exists) {
+    await allowedRef.delete();
   }
+}
 
+/**
+ * Auth deletion (step 12) runs last so a partial failure leaves Auth
+ * alive and the whole cascade re-runnable. 'auth/user-not-found' is
+ * tolerated for the same reason: a retry after a prior partial success
+ * must not fail.
+ */
+async function deleteAuthUser(targetUid: string): Promise<void> {
   try {
     await admin.auth().deleteUser(targetUid);
   } catch (error: unknown) {
@@ -144,8 +216,6 @@ export async function deleteUserAsAdmin(
       throw new HttpsError('internal', 'Failed to delete Auth user.');
     }
   }
-
-  return { deletedCounts: counts };
 }
 
 /**

@@ -1,3 +1,4 @@
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 
@@ -27,63 +28,27 @@ class _DayPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  title,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 7,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                    ),
-                itemCount: 28,
-                itemBuilder: (_, i) {
-                  final day = i + 1;
-                  final isSelected = day == selected;
-                  return _DayButton(
-                    day: day,
-                    isSelected: isSelected,
-                    onTap: () => Navigator.pop(context, day),
-                  );
-                },
-              ),
-            ),
-          ],
+    return FinancoPickerSheet.fixed(
+      title: title,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+          ),
+          itemCount: 28,
+          itemBuilder: (_, i) {
+            final day = i + 1;
+            return _DayButton(
+              day: day,
+              isSelected: day == selected,
+              onTap: () => Navigator.pop(context, day),
+            );
+          },
         ),
       ),
     );

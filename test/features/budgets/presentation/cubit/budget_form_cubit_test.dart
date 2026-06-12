@@ -13,6 +13,7 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockCreateBudgetUseCase createBudget;
   late MockUpdateBudgetUseCase updateBudget;
+  late MockGetBudgetsUseCase getBudgets;
 
   const userId = 'user-1';
 
@@ -21,6 +22,7 @@ void main() {
   setUp(() {
     createBudget = MockCreateBudgetUseCase();
     updateBudget = MockUpdateBudgetUseCase();
+    getBudgets = MockGetBudgetsUseCase();
   });
 
   BudgetFormCubit buildCubit({
@@ -28,6 +30,7 @@ void main() {
   }) => BudgetFormCubit(
     createBudget: createBudget,
     updateBudget: updateBudget,
+    getBudgets: getBudgets,
     userId: userId,
     existingBudget: editMode ? BudgetFactory.make() : null,
   );
@@ -75,6 +78,45 @@ void main() {
       build: buildCubit,
       act: (c) async => c.submit(),
       expect: () => <BudgetFormState>[],
+    );
+
+    blocTest<BudgetFormCubit, BudgetFormState>(
+      'loadBudgetedCategoryIds exposes already-budgeted categories',
+      setUp: () {
+        when(() => getBudgets(userId: userId)).thenAnswer(
+          (_) async => Right([
+            BudgetFactory.make(),
+            BudgetFactory.make(id: 'b-2', categoryId: 'cat-2'),
+          ]),
+        );
+      },
+      build: buildCubit,
+      act: (cubit) async => cubit.loadBudgetedCategoryIds(),
+      expect: () => [
+        isA<BudgetFormState>().having(
+          (s) => s.budgetedCategoryIds,
+          'budgetedCategoryIds',
+          {'cat-1', 'cat-2'},
+        ),
+      ],
+    );
+
+    blocTest<BudgetFormCubit, BudgetFormState>(
+      'loadBudgetedCategoryIds degrades to an empty set on failure',
+      setUp: () {
+        when(() => getBudgets(userId: userId)).thenAnswer(
+          (_) async => const Left(ServerFailure('boom')),
+        );
+      },
+      build: buildCubit,
+      act: (cubit) async => cubit.loadBudgetedCategoryIds(),
+      expect: () => [
+        isA<BudgetFormState>().having(
+          (s) => s.budgetedCategoryIds,
+          'budgetedCategoryIds',
+          isEmpty,
+        ),
+      ],
     );
 
     blocTest<BudgetFormCubit, BudgetFormState>(
@@ -145,8 +187,7 @@ void main() {
       'submit emits failure with the failure object on error',
       setUp: () {
         when(() => createBudget(any())).thenAnswer(
-          (_) async =>
-              const Left(ValidationFailure('Já existe um orçamento')),
+          (_) async => const Left(DuplicateBudgetCategoryFailure()),
         );
       },
       build: buildCubit,
@@ -168,7 +209,7 @@ void main() {
             .having(
               (s) => s.failure,
               'failure',
-              isA<ValidationFailure>(),
+              isA<DuplicateBudgetCategoryFailure>(),
             ),
       ],
     );

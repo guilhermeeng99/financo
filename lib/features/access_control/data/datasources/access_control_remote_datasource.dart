@@ -27,6 +27,13 @@ class AccessControlRemoteDataSourceImpl
       if (isMasterEmail(normalized)) return true;
       final doc = await _collection.doc(normalized).get();
       return doc.exists;
+    } on FirebaseException catch (e) {
+      // permission-denied is a deterministic policy answer, not an outage.
+      // The auth gate fails OPEN on thrown errors (so a Firestore outage
+      // doesn't lock everyone out) — mapping this code to `false` keeps a
+      // rules misconfiguration fail-CLOSED instead of admitting everyone.
+      if (e.code == 'permission-denied') return false;
+      throw ServerException('Failed to check allowlist: $e');
     } on Exception catch (e) {
       throw ServerException('Failed to check allowlist: $e');
     }

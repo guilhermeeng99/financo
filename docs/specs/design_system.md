@@ -187,6 +187,8 @@ comment in its source.
 | `FinancoCurrencyField` | BRL "cents-grow-from-the-right" money input, `R$` prefix, value as `2.000,00`. `controller`, `onChanged`, `autofocus`. |
 | `FinancoDateField` | Read-only date tile (`InputDecorator` look) that opens a picker on tap. `label`, `value`, `onTap`. |
 | `FinancoPickerField` | Tap-to-open "row selector" tile: leading icon, label, value/placeholder, chevron. Backs Account/Category pickers. |
+| `FinancoPickerSheet` | Design-system chrome for modal picker bottom sheets: rounded surface, drag handle, left-aligned title. Draggable variant takes a `bodyBuilder(scrollController)` (+ optional `header` widgets, e.g. a search field); `FinancoPickerSheet.fixed` is a shrink-wrapped column for short content (day grid, short lists). |
+| `FinancoPickerSheetEmpty` | Centered muted placeholder for picker bodies with nothing to list (no data or no search hits). `message`. |
 | `FinancoPillToggle<T>` | Segmented control (e.g. Expense/Income/Transfer). `options`, `selected`, `onChanged`, `disabled`. |
 | `FinancoSearchField` | App-wide search input used by every search-as-you-type sheet. |
 | `FinancoSubmitBar` | Sticky bottom bar with the primary submit action (+ optional secondary "save & add another"). `label`, `isLoading`, `isEnabled`, `onSubmit`, `onSecondarySubmit`. |
@@ -210,9 +212,14 @@ comment in its source.
 | `FinancoCategoryAvatar` | Category icon on its tinted disc. |
 | `BankAvatar` | Bank brand disc (color + abbreviation from `BankBrand`). |
 | `FinancoDialog` | App dialog: icon badge, title, message, weighted action buttons (`FinancoDialogAction`). Use `showFinancoConfirmDialog` for confirms. |
+| `showTypeEmailToConfirmDialog` | Type-to-confirm dialog for destructive, irreversible actions: the user must type the given `email` exactly (case-insensitive, trimmed) before the error-tinted CTA enables. Resolves `true` only on confirm. |
+| `FeatureEmptyState` | Shared first-impression empty state: tinted icon disc (or custom `leading`), headline, message, optional muted `example` chip, primary CTA (`actionLabel`/`onAction`) and `footer`. |
 | `LoadingShimmer` | Standard loading placeholder. Show while a bloc/cubit is in its loading state. |
 | `ErrorView` | Full-screen error + retry from a domain `Failure`. Standard error state. |
 | `import_widgets.dart` | Shared CSV import-preview chrome (progress overlay, empty tab, picker row). |
+| `runCsvImportFlow` + `CsvImportFlowConfig<T>` | One entry point for every feature's CSV import (accounts, categories, transactions, budgets): intro dialog (select file / download example) → file pick → the feature's `parseCsv` step (usually a cubit `previewCsv`) → shared error dialog on `Left`, or the feature's `onParsed` follow-up (push preview route / snackbar) on `Right`. (`csv_import_flow.dart`) |
+| `ImportPreviewScaffold<B, S>` | Shared chrome for CSV import-preview pages: large app bar, type pill toggle, optional notice banners, the row list, importing progress overlay, bottom submit bar. Pages supply state handling (`onStateChanged`) and the toggle/notices/list; the scaffold owns layout and bloc wiring. |
+| `context.showSnack(message)` | Extension on `BuildContext` (`lib/core/extensions/context_extensions.dart`) — the project's default feedback channel for plain-text snackbars. Snackbars needing actions, custom content, or durations still call `ScaffoldMessenger` directly. |
 
 **Feature-level shared widget:** `DashboardSection`
 (`lib/features/dashboard/.../widgets/dashboard_section.dart`) — section header
@@ -276,13 +283,15 @@ cubit `isValid`; show `isLoading` during submit.
 
 ### State screens
 - Loading → `LoadingShimmer`. Error → `ErrorView(failure, onRetry)`.
-- Empty → a centered muted (`onBackgroundLight`) message, padding ~`24`.
+- Empty → `FeatureEmptyState` (icon disc, headline, message, optional example
+  chip + CTA). Inside picker sheets use `FinancoPickerSheetEmpty`.
 - Drive all three from the bloc/cubit state in a single `BlocBuilder`.
 
 ### Pickers
-Selection of an account/category/etc. opens a **bottom sheet** (search-as-you-
-type via `FinancoSearchField`); the trigger on the form is a
-`FinancoPickerField`.
+Selection of an account/category/etc. opens a **bottom sheet** built on
+`FinancoPickerSheet` (drag handle + title chrome; search-as-you-type via a
+`FinancoSearchField` in the `header` slot); the trigger on the form is a
+`FinancoPickerField`. Empty/no-hits bodies render `FinancoPickerSheetEmpty`.
 
 ---
 

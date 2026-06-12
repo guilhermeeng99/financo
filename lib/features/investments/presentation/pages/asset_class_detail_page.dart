@@ -5,14 +5,16 @@ import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/currency_formatter.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/entities/investment_overview.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/features/investments/presentation/pages/asset_class_form_page.dart';
 import 'package:financo/features/investments/presentation/pages/asset_holding_sheet.dart';
+import 'package:financo/features/investments/presentation/widgets/add_subclass_button.dart';
+import 'package:financo/features/investments/presentation/widgets/asset_class_hero_card.dart';
+import 'package:financo/features/investments/presentation/widgets/asset_subclass_card.dart';
+import 'package:financo/features/investments/presentation/widgets/asset_subclass_empty_state.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -193,7 +195,7 @@ class _DetailView extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
         children: [
-          _HeroCard(
+          AssetClassHeroCard(
             slice: slice,
             tint: tint,
             actualPercent: actualPercent,
@@ -203,12 +205,12 @@ class _DetailView extends StatelessWidget {
           _SectionHeader(text: t.investments.detailSubclassesSection),
           const SizedBox(height: 8),
           if (slice.subclasses.isEmpty)
-            _NoSubclasses(
+            AssetSubclassEmptyState(
               onAdd: () => unawaited(_addSubclass(context)),
             )
           else ...[
             for (final sub in slice.subclasses) ...[
-              _SubclassCard(
+              AssetSubclassCard(
                 slice: sub,
                 parentTint: tint,
                 suggestedTarget: suggestedFor(sub),
@@ -222,245 +224,11 @@ class _DetailView extends StatelessWidget {
               const SizedBox(height: 10),
             ],
             const SizedBox(height: 8),
-            _AddSubclassButton(
+            AddSubclassButton(
               onPressed: () => unawaited(_addSubclass(context)),
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({
-    required this.slice,
-    required this.tint,
-    required this.actualPercent,
-    required this.targetPercent,
-  });
-
-  final InvestmentClassSlice slice;
-  final Color tint;
-  final String actualPercent;
-  final String targetPercent;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final deltaColor = slice.deltaAmount.abs() < 1
-        ? colors.success
-        : (slice.isUnderTarget ? colors.warning : colors.expense);
-    final deltaLabel = slice.deltaAmount.abs() < 1
-        ? t.investments.classRowOnTarget
-        : (slice.isUnderTarget
-            ? t.investments.classRowUnderTarget(
-                amount: formatCurrency(slice.deltaAmount.abs()),
-              )
-            : t.investments.classRowOverTarget(
-                amount: formatCurrency(slice.deltaAmount.abs()),
-              ));
-    final targetFraction = slice.targetPercent / 100;
-    final progress = targetFraction <= 0
-        ? slice.currentPercent.clamp(0.0, 1.0)
-        : (slice.currentPercent / targetFraction).clamp(0.0, 1.0);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: tint.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Icon(
-                    materialIconFor(slice.icon),
-                    size: 22,
-                    color: tint,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      formatCurrency(slice.currentAmount),
-                      style: context.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      t.investments.classRowSubtitle(
-                        actual: '$actualPercent%',
-                        target: '$targetPercent%',
-                      ),
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              backgroundColor: colors.surfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(tint),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                t.investments.detailTargetAmount(
-                  amount: formatCurrency(slice.targetAmount),
-                ),
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: colors.onBackgroundLight,
-                ),
-              ),
-              Text(
-                deltaLabel,
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: deltaColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SubclassCard extends StatelessWidget {
-  const _SubclassCard({
-    required this.slice,
-    required this.parentTint,
-    required this.suggestedTarget,
-    required this.onAllocate,
-    required this.onEdit,
-  });
-
-  final InvestmentSubclassSlice slice;
-  final Color parentTint;
-  final double suggestedTarget;
-  final VoidCallback onAllocate;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final actualPercent = (slice.percentOfClass * 100).toStringAsFixed(0);
-    final targetPercent = slice.targetPercent.toStringAsFixed(0);
-    final hasTarget = slice.targetPercent > 0;
-    final delta = suggestedTarget - slice.currentAmount;
-    final isBelow = hasTarget && delta > 1;
-    final isAbove = hasTarget && delta < -1;
-    final suggestionColor = !hasTarget
-        ? colors.onBackgroundLight
-        : isBelow
-            ? colors.warning
-            : (isAbove ? colors.expense : colors.success);
-    final suggestionLabel = !hasTarget
-        ? t.investments.subclassSuggestionNoTarget
-        : isBelow
-            ? t.investments.subclassSuggestionAdd(
-                amount: formatCurrency(delta),
-              )
-            : (isAbove
-                ? t.investments.subclassSuggestionTrim(
-                    amount: formatCurrency(delta.abs()),
-                  )
-                : t.investments.subclassSuggestionBalanced);
-    // "16% of 30%" makes the gap between what this subclass holds and
-    // what it should hold readable at a glance. Falls back to plain
-    // share-of-class when no target has been set.
-    final detailLine = hasTarget
-        ? t.investments.subclassDetailLineTarget(
-            amount: formatCurrency(slice.currentAmount),
-            actual: '$actualPercent%',
-            target: '$targetPercent%',
-          )
-        : t.investments.subclassDetailLine(
-            amount: formatCurrency(slice.currentAmount),
-            percent: '$actualPercent%',
-          );
-    return Material(
-      color: colors.surface,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        // The Allocate chip is its own InkWell — taps over it absorb
-        // first and never reach this outer one. Anywhere else opens
-        // the subclass edit form.
-        onTap: onEdit,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 12, 14),
-          child: Row(
-            children: [
-              Container(
-                width: 6,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: parentTint.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      slice.name,
-                      style: context.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      detailLine,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      suggestionLabel,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: suggestionColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              _AllocateChip(onTap: onAllocate),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -501,50 +269,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _NoSubclasses extends StatelessWidget {
-  const _NoSubclasses({required this.onAdd});
-
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          FaIcon(
-            FontAwesomeIcons.layerGroup,
-            size: 24,
-            color: colors.onBackgroundLight,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            t.investments.detailNoSubclassesTitle,
-            style: context.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            t.investments.detailNoSubclassesBody,
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: colors.onBackgroundLight,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _AddSubclassButton(onPressed: onAdd),
-        ],
-      ),
-    );
-  }
-}
-
 /// Circular pill housing the "edit class" pencil in the app bar.
 /// Matches the look of the `_BackChip` shipped with
 /// `FinancoLargeAppBar`: 36×36 surface-variant circle with a primary
@@ -576,85 +300,6 @@ class _EditChip extends StatelessWidget {
                 color: colors.primary,
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact filled pill for the per-subclass "Allocate" action. Same
-/// primary fill / 12px radius / 32px height as the project's other
-/// inline actions (matches the chips used elsewhere by `FinancoSubmitBar`
-/// at a smaller scale).
-class _AllocateChip extends StatelessWidget {
-  const _AllocateChip({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: colors.primary.withValues(alpha: 0.14),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FaIcon(
-                FontAwesomeIcons.plus,
-                size: 11,
-                color: colors.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                t.investments.allocateAction,
-                style: context.textTheme.labelMedium?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Full-width primary action used by both the "no subclasses" empty
-/// state and the trailing CTA under the subclass list. Mirrors the
-/// dimensions of `FinancoSubmitBar` (52 high, 14px radius, primary
-/// fill, white text) so it reads as a real submit and not a
-/// decoration.
-class _AddSubclassButton extends StatelessWidget {
-  const _AddSubclassButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: FilledButton.icon(
-        onPressed: onPressed,
-        icon: const FaIcon(FontAwesomeIcons.plus, size: 14),
-        label: Text(
-          t.investments.addSubclass,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        style: FilledButton.styleFrom(
-          backgroundColor: colors.primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),

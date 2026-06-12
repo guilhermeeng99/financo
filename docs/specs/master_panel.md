@@ -1,7 +1,7 @@
 # Master Panel Feature Spec
 
 > **Status**: Implemented (shipped)
-> **Last updated**: 2026-05-13
+> **Last updated**: 2026-06-12
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases
 
 The **Master Panel** is a privileged administration screen reachable only
@@ -50,19 +50,21 @@ The master identity is **derived from `email`**, not persisted as a flag on
 
 ## 2. Business Rules
 
-1. **Master gate.** The page is only routable when
-   `isMasterEmail(auth.user.email)` is `true`. The route guard in
-   `app_router.dart` does not enforce this — the navigation menu hides
-   the link, and the page itself short-circuits to a permission error
-   if hit directly. This is defence-in-depth, not the primary control;
-   the **authoritative gate** is the Firestore security rule
-   (`firestore.rules`) and the `deleteUserAsAdmin` Cloud Function —
-   both must verify that `request.auth.token.email` (lower-cased) equals
-   the master email constant.
+1. **Master gate.** The route is reachable only through the profile
+   section link, which is hidden unless `isMasterEmail(auth.user.email)`
+   is `true`. Neither the route guard in `app_router.dart` nor the page
+   enforces the gate — a non-master who lands here still triggers
+   `load()`, and the backend permission denials surface as
+   `MasterPanelError`. That is acceptable because the **authoritative
+   gate** is the Firestore security rule (`firestore.rules`) and the
+   `deleteUserAsAdmin` Cloud Function — both must verify that
+   `request.auth.token.email` (lower-cased) equals the master email
+   constant.
 2. **Allowlist is the onboarding gate.** A new sign-in is allowed through
    `Authenticated` only when the user's email matches an entry in
-   `allowed_emails/` (see `access_control.md`). Removing an entry does
-   NOT sign the existing user out — it only blocks future sign-ins.
+   `allowed_emails/` (see `access_control.md`). Removing an entry also
+   ends a live session: the target's next `authStateChanges` tick fails
+   the gate and signs them out (access_control rule 3).
 3. **Deleting a user is irreversible.** Triggers the
    `deleteUserAsAdmin` Cloud Function which:
    - Removes every document owned by that `userId` across the eight
@@ -122,34 +124,43 @@ collapse the screen back to a spinner:
 sealed class MasterPanelState {}
 class MasterPanelLoaded extends MasterPanelState {
   final List<UserEntity> users;
-  final List<AllowedEmail> allowlist;
+  final List<AllowedEmailEntity> allowedEmails;
   final bool busy;
 }
 ```
 
 Transitions:
 
-- `load()` → `MasterPanelLoading` → fetch users + allowlist in parallel
-  → `MasterPanelLoaded`, or `MasterPanelError` on failure
-- `addEmail(email, note)` → optimistic append → call repository →
-  rollback on failure
-- `removeEmail(email)` → optimistic remove → rollback on failure
-- `deleteUser(userId)` → call function → on success, remove from `users`
+- `load()` → `MasterPanelLoading` → `_loadBoth()` fetches users then
+  allowed emails **sequentially** (first failure short-circuits) →
+  `MasterPanelLoaded`, or `MasterPanelError` on failure
+- `addEmail(email, note)` / `removeEmail(email)` / `deleteUser(uid)` →
+  re-emit current `MasterPanelLoaded` with `busy: true` → call use case →
+  - **success**: full `_refresh()` — re-runs `_loadBoth` and emits a
+    fresh `MasterPanelLoaded` (`busy` back to `false`), or
+    `MasterPanelError` if the refetch itself fails
+  - **failure**: re-emit the previous `MasterPanelLoaded` with
+    `busy: false` (lists untouched)
 
-The cubit does NOT auto-refresh: every mutation re-emits the optimistic
-list. Stale data is corrected on next manual reload.
+There is no optimistic append/remove/rollback: successful mutations always
+refetch from the backend, so the lists never drift from Firestore. Each
+mutation also returns its `Either<Failure, void>` so the page can show a
+success or error snackbar directly.
 
 ---
 
 ## 5. UI Contract
 
 - **`MasterPanelPage`** — `DefaultTabController` with two tabs:
-  - **Users** — list each `UserEntity`, render a `MASTER` chip for masters,
-    long-press / overflow exposes the delete action.
+  - **Users** — list each `UserEntity`, render a `MASTER` chip for masters;
+    a trash icon exposes the delete action (hidden for master and self
+    rows).
   - **Allowlist** — list of `AllowedEmail` entries with note + remove
-    action; FAB opens `AddAllowedEmailDialog`.
-- **`AddAllowedEmailDialog`** — email validator + optional note. Submits
-  through `AddAllowedEmailUseCase`.
+    action; FAB (allowlist tab only, disabled while `busy`) opens
+    `AddAllowedEmailDialog`.
+- **`AddAllowedEmailDialog`** — email validator + optional note. Returns
+  the typed values to the page, which submits via
+  `MasterPanelCubit.addEmail`.
 - **`DeleteUserDialog`** — destructive double-confirm. Disables the
   delete button until the typed email exactly matches the target.
 
@@ -159,9 +170,11 @@ All copy lives under `t.masterPanel.*` in slang.
 
 ## 6. Edge Cases
 
-1. **Non-master opens the route directly.** `isMasterEmail(auth.user.email)`
-   is `false`, so the page short-circuits to the restricted-access state and
-   the cubit refuses to load. Backend rules block the queries regardless.
+1. **Non-master opens the route directly.** The page does not gate on
+   `isMasterEmail` — `load()` runs as usual, the Firestore rules deny the
+   `users/` and `allowed_emails/` queries, and the failure surfaces as
+   `MasterPanelError` (error view with retry). No data leaks because the
+   backend rules are the authoritative gate.
 2. **Removing the only master.** Master identity is a code constant, not a
    per-user flag, so it cannot be "removed" from the UI — only deletion is
    exposed, and `deleteUserAsAdmin` rejects self-delete. Changing who is
@@ -174,7 +187,8 @@ All copy lives under `t.masterPanel.*` in slang.
    Cloud Function.
 5. **Delete with offline network.** The function call fails; the user
    list is unchanged. The admin can retry.
-6. **Removing an email while the target is signed in.** Their current
-   session keeps working (sessions don't check the allowlist on every
-   request). Next cold start, the access gate kicks in and redirects to
-   `AccessRestrictedPage`.
+6. **Removing an email while the target is signed in.** Their session ends
+   on the next `authStateChanges` tick: the gate re-checks the allowlist,
+   fails, and routes them to `AccessRestrictedPage` (access_control
+   rule 3). Requests admitted by the rules before the removal still
+   complete.

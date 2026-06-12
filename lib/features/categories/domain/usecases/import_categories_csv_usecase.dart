@@ -5,6 +5,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 
 class CategoryImportPreviewItem extends Equatable {
   const CategoryImportPreviewItem({
@@ -230,7 +231,7 @@ class ImportCategoriesCsvUseCase {
   List<CategoryImportPreviewItem> _parseCsv(String csvContent) {
     final rows = Csv().decode(csvContent);
     if (rows.length < 2) {
-      throw const FormatException('CSV file is empty or invalid.');
+      throw FormatException(t.csvImport.errors.emptyFile);
     }
 
     final items = <CategoryImportPreviewItem>[];
@@ -275,7 +276,7 @@ class ImportCategoriesCsvUseCase {
     }
 
     if (items.isEmpty) {
-      throw const FormatException('CSV file has no valid categories.');
+      throw FormatException(t.csvImport.errors.noValidCategories);
     }
 
     return items;
@@ -336,11 +337,13 @@ class ImportCategoriesCsvUseCase {
       case 'despesa':
         return CategoryType.expense;
     }
-    final detail = raw.isEmpty
-        ? 'type column is empty'
-        : 'invalid type "$raw"';
+    if (raw.isEmpty) {
+      throw FormatException(
+        t.csvImport.errors.categoryTypeEmpty(row: csvRow),
+      );
+    }
     throw FormatException(
-      'Row $csvRow: $detail. Use Receita, Despesa, Income or Expense.',
+      t.csvImport.errors.categoryTypeInvalid(row: csvRow, value: raw),
     );
   }
 

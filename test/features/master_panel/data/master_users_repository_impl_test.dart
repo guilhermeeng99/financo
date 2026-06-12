@@ -1,22 +1,19 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/core/errors/failures.dart';
-import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
 import 'package:financo/features/master_panel/data/repositories/master_users_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../harness/factories/user_factory.dart';
-
-class _MockMasterUsersRemoteDataSource extends Mock
-    implements MasterUsersRemoteDataSource {}
+import '../../../harness/mocks.dart';
 
 void main() {
   late MasterUsersRepositoryImpl repository;
-  late _MockMasterUsersRemoteDataSource mockRemote;
+  late MockMasterUsersRemoteDataSource mockRemote;
 
   setUp(() {
-    mockRemote = _MockMasterUsersRemoteDataSource();
+    mockRemote = MockMasterUsersRemoteDataSource();
     repository = MasterUsersRepositoryImpl(remoteDataSource: mockRemote);
   });
 

@@ -161,13 +161,15 @@ Events `AuthSignInRequested` and `AuthSignUpRequested` are **removed**.
 States:
 - `MasterPanelInitial`
 - `MasterPanelLoading`
-- `MasterPanelLoaded({ users, allowedEmails })`
+- `MasterPanelLoaded({ users, allowedEmails, busy })`
 - `MasterPanelError(failure)`
 
-Actions emit `MasterPanelLoading` while running, then re-load:
-- `addEmail(email, note?)` → on success, refetch list
-- `removeEmail(email)` → on success, refetch list
-- `deleteUser(uid, email)` → on success, refetch users list
+Mutations keep the loaded lists on screen (`busy: true`), then re-load:
+- `addEmail(email, note?)` → on success, refetch both lists
+- `removeEmail(email)` → on success, refetch both lists
+- `deleteUser(targetUid)` → on success, refetch both lists
+
+See [master_panel.md](./master_panel.md) §4 for the full transition table.
 
 ## Routes
 
@@ -178,7 +180,7 @@ Actions emit `MasterPanelLoading` while running, then re-load:
 
 Router redirect:
 - `AccessDenied` state → push `/access-restricted` regardless of current location, except when already there.
-- Non-master attempting `/master-panel` → redirect to `/profile`.
+- There is **no** `/master-panel` redirect guard: the route is reachable only via the profile "Master" section, which is hidden for non-masters. A non-master who deep-links there just sees backend permission failures surfaced as `MasterPanelError` — the Firestore rules deny the data.
 
 ## UI
 
@@ -241,8 +243,11 @@ For `users/{userId}`:
 - `users/{userId}/fcmTokens/{tokenId}`: `(isAllowed() && request.auth.uid == userId) || isMaster()`
 
 For `allowed_emails/{email}`:
-- `read`: `isAllowed()`  *(any allowed user can read — needed by client gate; cheap)*
+- `get`: `isMaster()` OR the requester's own doc (`request.auth.token.email.lower() == email`). The client sign-in gate reads `allowed_emails/{selfEmail}` directly and fails open on thrown errors, so denying this read would silently disable the allowlist. Self-get is deliberately narrower than `isAllowed()`: a user can check only their own entry, never browse the list.
+- `list`: `isMaster()`
 - `create, update, delete`: `isMaster()`
+
+Client-side hardening: `AccessControlRemoteDataSourceImpl.isEmailAllowed` maps `permission-denied` to `false` (fail-closed) instead of throwing, because the auth gate treats thrown errors as fail-open (outage tolerance). A rules misconfiguration therefore blocks sign-in rather than admitting everyone.
 
 For listing `users/` (master panel): the read rule above allows master to list since master matches the `isMaster()` branch on every doc.
 
@@ -277,4 +282,4 @@ Tests live under `test/features/access_control/` mirroring the source tree. Bug-
 2. Add a friend's email in the allowlist tab → friend signs in with Google → enters the app.
 3. Remove that friend → friend's app tick → AccessRestrictedPage → sign out.
 4. Master deletes a friend with data → all collections cleaned, Auth user gone, allowlist row removed.
-5. Non-master tries `/master-panel` URL directly → redirected to `/profile`.
+5. Non-master tries `/master-panel` URL directly → page loads, backend rules deny the queries, error view renders (no data exposed).

@@ -1,7 +1,7 @@
 # Categories Feature Spec
 
 > **Status**: Active
-> **Last updated**: 2026-06-10
+> **Last updated**: 2026-06-12
 > **Coverage**: Entity, Business Rules, Repository, State Machines, Edge Cases
 
 ## 1. Entity Contract
@@ -18,6 +18,7 @@
 | type     | CategoryType     | No       | `income` or `expense`                                                                                |
 | parentId | String?          | Yes      | References another category's ID; `null` = root category                                             |
 | bucket   | CategoryBucket?  | Yes      | Only meaningful when `type == expense`. Drives the 50/30/20 overview. `null` = unclassified.         |
+| countsIn50_30_20 | bool     | No (default `true`) | Only meaningful on **root income** categories — whether their transactions feed the 50/30/20 base income (rule 22). |
 
 ### CategoryType (enum)
 - `income`
@@ -135,45 +136,77 @@ Transitions:
 ```
 FormStatus enum: initial | submitting | success | failure
 
+Dependencies:
+  CreateCategoryUseCase, UpdateCategoryUseCase, GetCategoriesUseCase,
+  GetBudgetsUseCase
+
 State fields:
-  userId, name, type, icon, color, status, existingId?, failure?, parentId?, bucket?
+  userId, name, type, icon, color, status, countsIn50_30_20,
+  hasChildren, hasBudget, allCategories (List<CategoryEntity>),
+  isLoadingCategories, existingId?, parentId?, originalParentId?,
+  bucket?, failure?
 
 Computed:
-  isEditing = existingId != null
-  isValid = name.isNotEmpty
+  isEditing      = existingId != null
+  isValid        = name.isNotEmpty
+  rootCategories = allCategories.where(canBeParent)
+  isDemoting     = isEditing && originalParentId == null && parentId != null
+  isPromoting    = isEditing && originalParentId != null && parentId == null
+
+loadFormData():   // single load entry point, run once when the form opens
+  fetches the user's categories (parent-picker options, delete-reassignment
+  targets, palette index for the default color) and flips
+  isLoadingCategories to false.
+  create mode: re-seeds color = CategoryColors.forIndex(allCategories.length)
+               so new categories cycle through the palette
+  edit mode:   also loads the demote guardrails — hasChildren (any category
+               whose parentId == this id) and hasBudget (any budget bound to
+               this id, via GetBudgetsUseCase) — and re-applies parent
+               icon/color inheritance for subcategories so legacy rows snap
+               back into the visual family on save
 
 Actions:
-  updateName(String)  → emits state with new name
-  updateType(CategoryType) → emits state with new type
-                              (sets bucket to null when type becomes income)
-  updateIcon(int)     → emits state with new icon
-  updateColor(int)    → emits state with new color
-  updateParentId(String?, parent?) → emits state with new parentId
-                            (sets bucket to null when a parent is chosen —
-                             subcategories inherit per rule 20; when parent is
-                             provided, copies parent icon/color per rule 23)
-  updateBucket(CategoryBucket?) → emits state with new bucket
-                                   (input is silently ignored when type == income
-                                    OR parentId != null — see rule 21)
+  updateName(String)
+  updateType(CategoryType) → clears parentId (picker is type-scoped);
+                              clears bucket when type becomes income
+  updateIcon(int)
+  updateColor(int)
+  updateParentId(String?, {CategoryEntity? parent})
+       → null clears the parent (promote); otherwise sets parentId, clears
+         bucket (subcategories inherit per rule 20) and copies the parent's
+         icon/color when the entity is provided (rule 23)
+  updateBucket(CategoryBucket?) → silently ignored when type == income
+                                   OR parentId != null (rule 21)
+  updateCountsIn50_30_20({required bool value})
+       → silently ignored unless type == income AND parentId == null
+         (rule 22)
 
   submit():
     if !isValid → no-op
+    demote guardrails (rule 17): when isDemoting,
+      hasChildren → ValidationFailure (demoteBlockedChildren), no write
+      hasBudget   → ValidationFailure (demoteBlockedBudget), no write
     emits status: submitting
     bucket is only written when type == expense AND parentId == null
+    countsIn50_30_20 is meaningful only on root income categories; expense
+      and sub-income rows always persist `true` (the neutral default)
     isEditing ? updateCategory : createCategory
     success → emits status: success
     failure → emits status: failure + failure object
 
 Initial state (create mode):
-  name: '', type: expense, icon: 58332, color: 4280391411,
-  status: initial, parentId: null, bucket: null
+  name: '', type: expense, icon: 58332,
+  color: CategoryColors.forIndex(0) as a placeholder — loadFormData re-seeds
+  it to CategoryColors.forIndex(existingCategoryCount),
+  status: initial, parentId: null, bucket: null, countsIn50_30_20: true,
+  isLoadingCategories: true
 
 Initial state (edit mode):
-  name: existing.name, type: existing.type, icon: existing.icon,
-  color: existing.color, existingId: existing.id, parentId: existing.parentId,
-  bucket: existing.bucket
+  name/type/icon/color/parentId/bucket/countsIn50_30_20 copied from existing,
+  existingId: existing.id, originalParentId: existing.parentId
   Type selector is DISABLED (type immutable after creation)
-  Parent selector is HIDDEN (parentId immutable after creation)
+  Parent selector IS EDITABLE — re-parent / promote / demote per rule 17;
+  demote is blocked at submit by the hasChildren / hasBudget guardrails
   Bucket selector is shown when type == expense AND parentId == null (rule 21)
 ```
 
@@ -189,7 +222,7 @@ Initial state (edit mode):
 | Submit with empty name | Form validation blocks submission |
 | forceRefresh with empty remote | Local cache is cleared, returns empty list |
 | loadCategories called when already loaded | Returns cached data (no network call) |
-| Edit existing category | Type selector disabled, parent selector hidden, all other fields editable |
+| Edit existing category | Type selector disabled; parent selector editable (re-parent/promote/demote per rule 17, demote guarded); all other fields editable |
 | Delete category with children | Deletion blocked, show message to remove subcategories first |
 | Select parent category | Only root categories of same type shown; selecting parent locks type |
 | Change type when parent selected | Parent is reset to null, dropdown re-filtered |
@@ -268,14 +301,22 @@ The form's "Appearance" section is composed of three controls:
 
 ```
 toJson() → Map<String, dynamic>:
-  { userId, name, icon, color, type: type.name, parentId (if not null) }
+  { userId, name, icon, color, type: type.name,
+    parentId (if not null),
+    bucket: bucket.name (if not null),
+    countsIn50_30_20: false (ONLY when false — the `true` default is not
+                             persisted, saving space on every doc) }
   Note: 'id' is NOT included (Firestore doc ID is separate)
 
 fromFirestore(DocumentSnapshot) → CategoryModel:
   Reads doc.id as id, all other fields from doc.data()
   type: parsed from string via enum name matching, defaults to expense
   parentId: read as String?, null if absent
+  bucket: parsed from string via enum name matching; null when absent,
+          non-string, or unknown
+  countsIn50_30_20: read as bool? with `?? true` fallback — legacy docs
+          written before the flag existed keep feeding the 50/30/20 income
 
 fromEntity(CategoryEntity) → CategoryModel:
-  Direct field mapping (including parentId)
+  Direct field mapping (including parentId, bucket, countsIn50_30_20)
 ```

@@ -15,9 +15,7 @@ import 'package:financo/gen/i18n/strings.g.dart';
 ///
 /// Example:
 /// ```dart
-/// ScaffoldMessenger.of(context).showSnackBar(
-///   SnackBar(content: Text(localizedFailure(state.failure))),
-/// );
+/// context.showSnack(localizedFailure(state.failure));
 /// ```
 String localizedFailure(Failure? failure) {
   return switch (failure) {
@@ -36,6 +34,25 @@ String localizedFailure(Failure? failure) {
         : t.investments.targetSumExceedsSub(
             available: '${failure.availablePercent.toStringAsFixed(0)}%',
           ),
+    EmptyNameFailure() => t.errors.emptyName,
+    NegativeAmountFailure() => t.errors.negativeAmount,
+    TargetPercentOutOfRangeFailure() => t.investments.targetPercentOutOfRange,
+    ParentAssetClassNotFoundFailure() => t.investments.parentClassNotFound,
+    SubclassCannotBeParentFailure() => t.investments.subclassCannotBeParent,
+    SelfParentAssetClassFailure() => t.investments.classCannotBeOwnParent,
+    ClassOwnsSubclassesFailure() => t.investments.classOwnsSubclasses,
+    AssetClassHasSubclassesFailure() => t.investments
+        .deleteBlockedBySubclasses(count: failure.count),
+    AssetClassHasHoldingsFailure() => t.investments.deleteBlockedByHoldings(
+      count: failure.count,
+    ),
+    AssetClassNotFoundFailure() => t.investments.assetClassNotFound,
+    HoldingAccountNotInvestmentFailure() =>
+      t.investments.holdingAccountNotInvestment,
+    HoldingRequiresSubclassFailure() => t.investments.holdingRequiresSubclass,
+    InvalidEmailFormatFailure() => t.validators.emailInvalid,
+    MasterEmailAlreadyAllowedFailure() => t.masterPanel.masterAlreadyAllowed,
+    DuplicateBudgetCategoryFailure() => t.budgets.duplicateCategory,
     ServerFailure() => t.errors.server,
   };
 }

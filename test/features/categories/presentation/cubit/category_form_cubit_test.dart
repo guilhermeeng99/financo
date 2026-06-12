@@ -8,6 +8,7 @@ import 'package:financo/features/categories/presentation/cubit/category_form_cub
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../harness/factories/budget_factory.dart';
 import '../../../../harness/factories/category_factory.dart';
 import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
@@ -15,6 +16,8 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockCreateCategoryUseCase mockCreate;
   late MockUpdateCategoryUseCase mockUpdate;
+  late MockGetCategoriesUseCase mockGetCategories;
+  late MockGetBudgetsUseCase mockGetBudgets;
 
   const userId = 'user-1';
 
@@ -23,11 +26,15 @@ void main() {
   setUp(() {
     mockCreate = MockCreateCategoryUseCase();
     mockUpdate = MockUpdateCategoryUseCase();
+    mockGetCategories = MockGetCategoriesUseCase();
+    mockGetBudgets = MockGetBudgetsUseCase();
   });
 
   CategoryFormCubit buildCubit({CategoryEntity? existing}) => CategoryFormCubit(
     createCategory: mockCreate,
     updateCategory: mockUpdate,
+    getCategories: mockGetCategories,
+    getBudgets: mockGetBudgets,
     userId: userId,
     existingCategory: existing,
   );
@@ -378,13 +385,114 @@ void main() {
         },
       );
 
-      test('setMetadata updates hasChildren and hasBudget', () {
-        final cubit = buildCubit(existing: CategoryFactory.expense())
-          ..setMetadata(hasChildren: true, hasBudget: false);
-        expect(cubit.state.hasChildren, isTrue);
-        expect(cubit.state.hasBudget, isFalse);
-        addTearDown(cubit.close);
-      });
+    });
+
+    group('loadFormData', () {
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'create mode: exposes categories and seeds color from count',
+        setUp: () {
+          when(() => mockGetCategories(userId: userId)).thenAnswer(
+            (_) async => Right(CategoryFactory.list()),
+          );
+        },
+        build: buildCubit,
+        act: (cubit) async => cubit.loadFormData(),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.isLoadingCategories, 'loading', isFalse)
+              .having((s) => s.allCategories.length, 'allCategories', 4)
+              .having(
+                (s) => s.color,
+                'color',
+                CategoryColors.forIndex(4),
+              ),
+        ],
+        verify: (_) {
+          // Budgets are edit-mode-only metadata.
+          verifyNever(() => mockGetBudgets(userId: any(named: 'userId')));
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'edit mode: keeps the existing color and sets demote guardrails',
+        setUp: () {
+          when(() => mockGetCategories(userId: userId)).thenAnswer(
+            (_) async => Right([
+              CategoryFactory.expense(),
+              CategoryFactory.subcategory(),
+            ]),
+          );
+          when(() => mockGetBudgets(userId: userId)).thenAnswer(
+            (_) async => Right([BudgetFactory.make(categoryId: 'other-cat')]),
+          );
+        },
+        // 'cat-expense-1' owns subcategory 'cat-sub-1' → hasChildren.
+        build: () => buildCubit(existing: CategoryFactory.expense()),
+        act: (cubit) async => cubit.loadFormData(),
+        expect: () => [
+          isA<CategoryFormState>()
+              .having((s) => s.isLoadingCategories, 'loading', isFalse)
+              .having((s) => s.color, 'color', 4294198070),
+          isA<CategoryFormState>()
+              .having((s) => s.hasChildren, 'hasChildren', isTrue)
+              .having((s) => s.hasBudget, 'hasBudget', isFalse),
+        ],
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'edit mode: hasBudget true when a budget binds the category',
+        setUp: () {
+          when(() => mockGetCategories(userId: userId)).thenAnswer(
+            (_) async => Right([CategoryFactory.expense()]),
+          );
+          when(() => mockGetBudgets(userId: userId)).thenAnswer(
+            (_) async =>
+                Right([BudgetFactory.make(categoryId: 'cat-expense-1')]),
+          );
+        },
+        build: () => buildCubit(existing: CategoryFactory.expense()),
+        act: (cubit) async => cubit.loadFormData(),
+        verify: (cubit) {
+          expect(cubit.state.hasBudget, isTrue);
+          expect(cubit.state.hasChildren, isFalse);
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        're-applies parent icon/color when editing a subcategory',
+        setUp: () {
+          when(() => mockGetCategories(userId: userId)).thenAnswer(
+            (_) async => Right([
+              CategoryFactory.expense(icon: 11111, color: 22222),
+              CategoryFactory.subcategory(),
+            ]),
+          );
+          when(() => mockGetBudgets(userId: userId)).thenAnswer(
+            (_) async => const Right([]),
+          );
+        },
+        build: () => buildCubit(existing: CategoryFactory.subcategory()),
+        act: (cubit) async => cubit.loadFormData(),
+        verify: (cubit) {
+          expect(cubit.state.icon, 11111);
+          expect(cubit.state.color, 22222);
+        },
+      );
+
+      blocTest<CategoryFormCubit, CategoryFormState>(
+        'degrades to an empty list when the fetch fails',
+        setUp: () {
+          when(() => mockGetCategories(userId: userId)).thenAnswer(
+            (_) async => const Left(ServerFailure('boom')),
+          );
+        },
+        build: buildCubit,
+        act: (cubit) async => cubit.loadFormData(),
+        verify: (cubit) {
+          expect(cubit.state.isLoadingCategories, isFalse);
+          expect(cubit.state.allCategories, isEmpty);
+        },
+      );
     });
 
     group('submit', () {

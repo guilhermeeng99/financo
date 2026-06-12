@@ -56,9 +56,7 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
           listenWhen: (previous, current) => current is MasterPanelError,
           listener: (context, state) {
             if (state is MasterPanelError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(localizedFailure(state.failure))),
-              );
+              context.showSnack(localizedFailure(state.failure));
             }
           },
           builder: (context, state) {
@@ -118,12 +116,8 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
     );
     if (!context.mounted) return;
     outcome.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.masterPanel.addEmailSuccess)),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
+      (_) => context.showSnack(t.masterPanel.addEmailSuccess),
     );
   }
 }
@@ -249,12 +243,8 @@ class _UserTile extends StatelessWidget {
     final result = await cubit.deleteUser(user.id);
     if (!context.mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.masterPanel.deleteUserSuccess)),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
+      (_) => context.showSnack(t.masterPanel.deleteUserSuccess),
     );
   }
 
@@ -391,12 +381,8 @@ class _AllowedEmailTile extends StatelessWidget {
         await context.read<MasterPanelCubit>().removeEmail(entry.email);
     if (!context.mounted) return;
     result.fold(
-      (failure) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizedFailure(failure))),
-      ),
-      (_) => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.masterPanel.removeEmailSuccess)),
-      ),
+      (failure) => context.showSnack(localizedFailure(failure)),
+      (_) => context.showSnack(t.masterPanel.removeEmailSuccess),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/error_view.dart';
+import 'package:financo/app/widgets/feature_empty_state.dart';
 import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_month_filter_pill.dart';
@@ -14,7 +15,6 @@ import 'package:financo/features/budgets/domain/entities/budget_overview.dart';
 import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/budgets/presentation/widgets/budget_tile.dart';
 import 'package:financo/features/budgets/presentation/widgets/budgets_csv_import_dialog.dart';
-import 'package:financo/features/budgets/presentation/widgets/budgets_empty_state.dart';
 import 'package:financo/features/budgets/presentation/widgets/budgets_summary_card.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -91,9 +91,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
     if (!confirmed || !mounted) return;
     await context.read<BudgetsCubit>().deleteBudget(overview.budget.id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(t.budgets.budgetDeleted)),
-    );
+    context.showSnack(t.budgets.budgetDeleted);
   }
 
   @override
@@ -178,7 +176,18 @@ class _BudgetsPageState extends State<BudgetsPage> {
             }
             if (state is BudgetsLoaded) {
               if (state.overviews.isEmpty) {
-                return BudgetsEmptyState(onAddPressed: _openAdd);
+                // Body + example chip pitch what budgets *do* with a
+                // concrete case so first-time users get the concept.
+                return FeatureEmptyState(
+                  icon: FontAwesomeIcons.bullseye,
+                  title: t.budgets.emptyTitle,
+                  message: t.budgets.emptyBody,
+                  example: t.budgets.emptyExample,
+                  messageLineHeight: 1.5,
+                  actionGap: 28,
+                  actionLabel: t.budgets.emptyAction,
+                  onAction: _openAdd,
+                );
               }
               return _BudgetsBody(
                 state: state,

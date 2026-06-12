@@ -55,8 +55,11 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) {
+          expect(failure, isA<AssetClassHasHoldingsFailure>());
+          expect((failure as AssetClassHasHoldingsFailure).count, 1);
+        },
+        (_) => fail('Expected AssetClassHasHoldingsFailure'),
       );
       verifyNever(() => classRepository.deleteAssetClass(any()));
     });
@@ -97,8 +100,11 @@ void main() {
 
       expect(result.isLeft(), isTrue);
       result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected ValidationFailure'),
+        (failure) {
+          expect(failure, isA<AssetClassHasSubclassesFailure>());
+          expect((failure as AssetClassHasSubclassesFailure).count, 1);
+        },
+        (_) => fail('Expected AssetClassHasSubclassesFailure'),
       );
       verifyNever(() => classRepository.deleteAssetClass(any()));
       verifyNever(

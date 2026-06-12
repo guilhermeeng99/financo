@@ -4,6 +4,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,10 +12,12 @@ class AccountFormCubit extends Cubit<AccountFormState> {
   AccountFormCubit({
     required CreateAccountUseCase createAccount,
     required UpdateAccountUseCase updateAccount,
+    required GetAccountsUseCase getAccounts,
     required String userId,
     AccountEntity? existingAccount,
   }) : _createAccount = createAccount,
        _updateAccount = updateAccount,
+       _getAccounts = getAccounts,
        super(
          AccountFormState.initial(
            userId: userId,
@@ -24,6 +27,24 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   final CreateAccountUseCase _createAccount;
   final UpdateAccountUseCase _updateAccount;
+  final GetAccountsUseCase _getAccounts;
+
+  /// Resolves the display name of the linked checking account when editing
+  /// a credit card. The form page is mounted on the root navigator, outside
+  /// the shell's `AccountsCubit` scope, so the name can't come from cached
+  /// shell state — the cubit looks it up via `GetAccountsUseCase` instead.
+  /// No-op in create mode or when no account is linked.
+  Future<void> loadLinkedAccountName() async {
+    if (!state.isEditing || state.linkedAccountId.isEmpty) return;
+    final result = await _getAccounts(userId: state.userId);
+    if (isClosed) return;
+    final match = result
+        .fold<List<AccountEntity>>((_) => const [], (all) => all)
+        .where((a) => a.id == state.linkedAccountId)
+        .firstOrNull;
+    if (match == null) return;
+    emit(state.copyWith(linkedAccountName: match.name));
+  }
 
   void updateName(String value) => emit(state.copyWith(name: value));
 
@@ -48,8 +69,10 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   void updateBank(BankType value) => emit(state.copyWith(bank: value));
 
-  void updateLinkedAccountId(String value) =>
-      emit(state.copyWith(linkedAccountId: value));
+  /// Records the picker's selection: both the id (persisted) and the
+  /// display name (shown in the form row).
+  void updateLinkedAccount({required String id, required String name}) =>
+      emit(state.copyWith(linkedAccountId: id, linkedAccountName: name));
 
   Future<void> submit() async {
     if (!state.isValid) return;
@@ -105,6 +128,7 @@ class AccountFormState extends Equatable {
     required this.dueDay,
     required this.linkedAccountId,
     required this.status,
+    this.linkedAccountName,
     this.existingId,
     this.originalCreatedAt,
     this.failure,
@@ -140,6 +164,11 @@ class AccountFormState extends Equatable {
   final int dueDay;
   final String linkedAccountId;
   final FormStatus status;
+
+  /// Display name for the linked checking account. Populated by the
+  /// picker on selection and, in edit mode, by
+  /// [AccountFormCubit.loadLinkedAccountName].
+  final String? linkedAccountName;
   final String? existingId;
 
   /// Captured at form open time on edit so `submit` can preserve the
@@ -169,6 +198,7 @@ class AccountFormState extends Equatable {
     int? closingDay,
     int? dueDay,
     String? linkedAccountId,
+    String? linkedAccountName,
     FormStatus? status,
     Failure? failure,
   }) {
@@ -182,6 +212,7 @@ class AccountFormState extends Equatable {
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
       linkedAccountId: linkedAccountId ?? this.linkedAccountId,
+      linkedAccountName: linkedAccountName ?? this.linkedAccountName,
       status: status ?? this.status,
       existingId: existingId,
       originalCreatedAt: originalCreatedAt,
@@ -200,6 +231,7 @@ class AccountFormState extends Equatable {
     closingDay,
     dueDay,
     linkedAccountId,
+    linkedAccountName,
     status,
     existingId,
     originalCreatedAt,

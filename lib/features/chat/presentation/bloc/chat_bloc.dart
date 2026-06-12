@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
+import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
@@ -231,126 +232,145 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatMessageSent event,
     Emitter<ChatState> emit,
   ) async {
-    final hasImage = event.image != null;
+    final userMessage = _buildUserMessage(event);
+    final afterUser = [..._currentMessages(), userMessage];
+    emit(ChatLoaded(messages: List.unmodifiable(afterUser), isTyping: true));
+    await _saveMessageNonBlocking(userMessage);
+
+    final result = await _callBackend(event, afterUser);
+    final response = result.fold((_) => null, (r) => r);
+    if (response == null) {
+      final failure = result.fold((f) => f, (_) => null)!;
+      _emitAiFailure(emit, afterUser, event.content, failure);
+      return;
+    }
+    await _emitResponseWithPreflight(emit, afterUser, response);
+  }
+
+  /// Caption stored in the user's bubble. When there's an image, the
+  /// bubble renders a thumbnail above the text — an empty caption renders
+  /// as just the image, no placeholder needed. The placeholder string only
+  /// kicks in when an image somehow arrives without thumbnail bytes
+  /// (defensive — shouldn't happen in normal flow).
+  String _userDisplayContent(ChatMessageSent event) {
+    if (event.content.trim().isNotEmpty) return event.content;
+    final needsPlaceholder = event.image != null && event.imageBytes == null;
+    if (!needsPlaceholder) return event.content;
     // Use the language of the user's typed content as the hint for the
     // placeholder caption — the AI hasn't replied yet, so the chat-history
     // heuristic would fall back to the previous turn (wrong if the user
     // switched languages mid-conversation).
     final inputLocale = _chatLocale(hintText: event.content);
-    // When there's an image, the bubble renders a thumbnail above the text —
-    // an empty caption renders as just the image, no placeholder needed.
-    // The placeholder string only kicks in when an image somehow arrives
-    // without thumbnail bytes (defensive — shouldn't happen in normal flow).
-    final displayContent = event.content.trim().isNotEmpty
-        ? event.content
-        : hasImage && event.imageBytes == null
-            ? inputLocale.translations.chat.handlers.imageAttached
-            : event.content;
+    return inputLocale.translations.chat.handlers.imageAttached;
+  }
 
-    // Flag the message as "had an image" so reloads can render a small
-    // placeholder tile instead of an empty bubble — the original bytes are
-    // never persisted (per spec), but this tag tells the UI there was one.
-    final userMetadata = hasImage ? <String, dynamic>{'hadImage': true} : null;
-
-    final userMessage = ChatMessageEntity(
+  ChatMessageEntity _buildUserMessage(ChatMessageSent event) {
+    final hasImage = event.image != null;
+    return ChatMessageEntity(
       id: _uuid.v4(),
       userId: _userId,
       role: ChatRole.user,
-      content: displayContent,
+      content: _userDisplayContent(event),
       createdAt: DateTime.now(),
-      metadata: userMetadata,
+      // Flag the message as "had an image" so reloads can render a small
+      // placeholder tile instead of an empty bubble — the original bytes
+      // are never persisted (per spec), but this tag tells the UI there
+      // was one.
+      metadata: hasImage ? <String, dynamic>{'hadImage': true} : null,
       inlineImageBytes: event.imageBytes,
     );
+  }
 
-    final afterUser = [..._currentMessages(), userMessage];
-    emit(
-      ChatLoaded(
-        messages: List.unmodifiable(afterUser),
-        isTyping: true,
-      ),
-    );
-
-    await _saveMessageNonBlocking(userMessage);
-
-    // Pass history WITHOUT the current user message to avoid duplicating
-    // the user turn in Gemini's context (startChat + sendMessage).
-    final historyBeforeCurrent = afterUser.sublist(0, afterUser.length - 1);
-
-    final result = await _sendMessage(
+  /// Sends the user turn to the AI backend. History is passed WITHOUT the
+  /// current user message to avoid duplicating the user turn in Gemini's
+  /// context (startChat + sendMessage).
+  Future<Either<Failure, ChatMessageEntity>> _callBackend(
+    ChatMessageSent event,
+    List<ChatMessageEntity> afterUser,
+  ) {
+    return _sendMessage(
       userId: _userId,
       content: event.content,
-      history: historyBeforeCurrent,
+      history: afterUser.sublist(0, afterUser.length - 1),
       image: event.image,
     );
+  }
 
-    if (result.isLeft()) {
-      final failure = result.fold((f) => f, (_) => null)!;
-      log(
-        'ChatBloc: AI call failed — ${failure.message}',
-        name: 'ChatBloc',
-        error: failure,
-      );
-      final isQuota =
-          failure.message.toLowerCase().contains('quota') ||
-          failure.message.toLowerCase().contains('rate');
-      // Use the user's typed content as the language hint — the AI's reply
-      // didn't arrive (that's the whole reason we're in this branch), so
-      // the chat-history heuristic would be a turn behind.
-      final errorStrings = _chatLocale(hintText: event.content).translations;
-      final errorText = isQuota
+  void _emitAiFailure(
+    Emitter<ChatState> emit,
+    List<ChatMessageEntity> afterUser,
+    String userContent,
+    Failure failure,
+  ) {
+    log(
+      'ChatBloc: AI call failed — ${failure.message}',
+      name: 'ChatBloc',
+      error: failure,
+    );
+    final isQuota =
+        failure.message.toLowerCase().contains('quota') ||
+        failure.message.toLowerCase().contains('rate');
+    // Use the user's typed content as the language hint — the AI's reply
+    // didn't arrive (that's the whole reason we're in this branch), so
+    // the chat-history heuristic would be a turn behind.
+    final errorStrings = _chatLocale(hintText: userContent).translations;
+    final errorMessage = ChatMessageEntity(
+      id: _uuid.v4(),
+      userId: _userId,
+      role: ChatRole.assistant,
+      content: isQuota
           ? errorStrings.chat.handlers.errorQuota
-          : errorStrings.chat.handlers.errorGeneric;
-      final errorMessage = ChatMessageEntity(
-        id: _uuid.v4(),
-        userId: _userId,
-        role: ChatRole.assistant,
-        content: errorText,
-        createdAt: DateTime.now(),
-      );
-      emit(
-        ChatLoaded(
-          messages: List.unmodifiable([...afterUser, errorMessage]),
-        ),
-      );
-      return;
-    }
+          : errorStrings.chat.handlers.errorGeneric,
+      createdAt: DateTime.now(),
+    );
+    emit(
+      ChatLoaded(messages: List.unmodifiable([...afterUser, errorMessage])),
+    );
+  }
 
-    final response = result.fold((_) => null, (r) => r)!;
-    var afterResponse = [...afterUser, response];
-
-    // Preflight: validate the action against current data before showing
-    // the card. Confirming a card and then seeing an error message breaks
-    // the contract the card sets up — if the user got to Confirm, all
-    // checks should already have passed.
+  /// Preflight: validate the action against current data before showing
+  /// the card. Confirming a card and then seeing an error message breaks
+  /// the contract the card sets up — if the user got to Confirm, all
+  /// checks should already have passed. Returns the rejection bubble to
+  /// append, or `null` when the proposal is valid (or not an action).
+  Future<ChatMessageEntity?> _preflightRejection(
+    ChatMessageEntity response,
+  ) async {
     final actionType = response.metadata?['actionType'] as String?;
-    if (actionType != null) {
-      final handler = _handlers[actionType];
-      // Preflight uses the AI's reply language so rejection text matches
-      // the surrounding conversation, even when the app UI is in en.
-      final preflightLocale = _chatLocale(hintText: response.content);
-      final preflightError = await handler?.preflight(
-        userId: _userId,
-        meta: response.metadata!,
-        locale: preflightLocale,
-      );
-      if (preflightError != null) {
-        final rejection = ChatMessageEntity(
-          id: _uuid.v4(),
-          userId: _userId,
-          role: ChatRole.assistant,
-          content: '⚠️ $preflightError',
-          metadata: {
-            'kind': 'actionRejected',
-            'originActionId': response.id,
-          },
-          createdAt: DateTime.now(),
-        );
-        afterResponse = [...afterResponse, rejection];
-        await _saveMessageNonBlocking(rejection);
-      }
-    }
+    if (actionType == null) return null;
+    // Preflight uses the AI's reply language so rejection text matches
+    // the surrounding conversation, even when the app UI is in en.
+    final preflightError = await _handlers[actionType]?.preflight(
+      userId: _userId,
+      meta: response.metadata!,
+      locale: _chatLocale(hintText: response.content),
+    );
+    if (preflightError == null) return null;
+    return ChatMessageEntity(
+      id: _uuid.v4(),
+      userId: _userId,
+      role: ChatRole.assistant,
+      content: '⚠️ $preflightError',
+      metadata: {
+        'kind': 'actionRejected',
+        'originActionId': response.id,
+      },
+      createdAt: DateTime.now(),
+    );
+  }
 
-    emit(ChatLoaded(messages: List.unmodifiable(afterResponse)));
+  Future<void> _emitResponseWithPreflight(
+    Emitter<ChatState> emit,
+    List<ChatMessageEntity> afterUser,
+    ChatMessageEntity response,
+  ) async {
+    final rejection = await _preflightRejection(response);
+    if (rejection != null) await _saveMessageNonBlocking(rejection);
+    emit(
+      ChatLoaded(
+        messages: List.unmodifiable([...afterUser, response, ?rejection]),
+      ),
+    );
   }
 
   Future<void> _onActionConfirmed(

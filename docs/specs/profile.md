@@ -1,7 +1,7 @@
 # Profile Feature Spec
 
 > **Status**: Implemented (shipped)
-> **Last updated**: 2026-05-13
+> **Last updated**: 2026-06-12
 > **Coverage**: Entity, Business Rules, Repository, State Machines, UI, Edge Cases
 
 The **Profile** feature surfaces the signed-in user's read-only identity
@@ -26,6 +26,7 @@ profile-specific entity. The renderer reads:
 | `email`     | `String`   | Account email                               |
 | `photoUrl`  | `String?`  | Provider-issued avatar URL (Google)         |
 | `createdAt` | `DateTime` | First sign-in timestamp                     |
+| `fiftyThirtyTwentyTargets` | `FiftyThirtyTwentyTargets?` | Custom 50/30/20 split; `null` = never customised (see `fifty_thirty_twenty.md` §12.1) |
 
 **Invariants**
 
@@ -123,8 +124,10 @@ doesn't leave a stale `Loaded` state hanging on a defunct user id.
   - **Get the app** — download Android APK (web only)
   - **Account** — sign out
   - **Danger zone** — clear data
-  - **Master** — visible only when `AuthBloc.state.user.isMaster` is true;
-    links to `MasterPanelPage` (see `master_panel.md`).
+  - **Master** — visible only when `isMasterEmail(state.user.email)` is true
+    (free function in `lib/core/constants/access_control.dart`; there is no
+    `isMaster` property on `UserEntity`); links to `MasterPanelPage`
+    (see `master_panel.md`).
 - **`ClearAccountDataDialog`** — two-step confirm: a typed email match
   unlocks the destructive button. Disables itself while the wipe runs to
   prevent double-tap.
@@ -143,10 +146,11 @@ doesn't leave a stale `Loaded` state hanging on a defunct user id.
    If the app is killed mid-batch, some collections may be empty while
    others still hold data; the next "clear" call is idempotent and will
    finish the job.
-4. **Master user wipes their own data.** Their `allowlist`/`isMaster`
-   metadata lives under `users/{id}` and **survives** the wipe — only the
-   eight user-scoped collections are touched (this is intentional: master
-   privileges must persist across personal wipes).
+4. **Master user wipes their own data.** Master identity is a hardcoded code
+   constant (`kMasterEmail` in `lib/core/constants/access_control.dart`,
+   mirrored in `firestore.rules` and `functions/src/config.ts`) — nothing
+   master-related is stored on `users/{id}`. The wipe touches only the eight
+   user-scoped collections, so master privileges are untouchable by design.
 5. **Concurrent updateProfile.** Last-write-wins (Firestore
    `update`). The local cache is overwritten with whatever shape the last
    call had — no manual conflict resolution.

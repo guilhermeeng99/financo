@@ -187,14 +187,15 @@ enum RebalanceDirection { buy, sell }
    pointing to it is reassigned or deleted. Error surfaces as
    `ValidationFailure`. The form lists the impacted holdings in the
    error sheet so the user can act.
-6. **Deleting an investment account cascades** — all holdings on that
-   account are deleted by the accounts cubit through a hook
-   (`InvestmentsCubit.removeHoldingsForAccount(accountId)` called from
-   the accounts cubit's delete success path). Cascade is best-effort:
-   the account delete still succeeds even if holding cleanup fails;
-   stale holdings simply surface as "orphan holding — account missing"
-   on the next investments refresh and are filtered out of the
-   overview.
+6. **Deleting an investment account cascades** — the cascade lives in
+   `DeleteAccountWithDependentsUseCase` (accounts feature): transactions
+   first, then the account, then — best-effort —
+   `AssetHoldingRepository.deleteHoldingsForAccount(accountId)`. The
+   account delete still succeeds even if holding cleanup fails; stale
+   holdings simply surface as "orphan holding — account missing" on the
+   next investments refresh and are filtered out of the overview.
+   (`InvestmentsCubit` has no `removeHoldingsForAccount` — the cubit does
+   not participate in the cascade.)
 7. **`targetPercent` sum is not enforced.** The UI computes
    `targetSumPercent` and shows a yellow banner ("Os alvos somam X% —
    ajuste para 100%") when it differs from 100 by more than 0.1. Edit
@@ -344,27 +345,28 @@ update writes to Firestore then upserts local; delete inverts.
 
 ## 7. State Machines
 
-### `InvestmentsCubit` (page-scoped)
+### `InvestmentsCubit` (session-scoped via the shell)
 
 ```text
-State: { status, overview?, classes, holdings, failure? }
+States: InvestmentsInitial | InvestmentsLoading
+      | InvestmentsLoaded(snapshot)   // InvestmentSnapshot: overview +
+                                      // accounts + classes + holdings
+      | InvestmentsError(failure)
 
-InvestmentsInitial
-  ──loadInvestments──→ InvestmentsLoading
-     → fetches accounts (forceRefresh), classes (forceRefresh), holdings (forceRefresh)
-     → if any fails → InvestmentsError(failure)
-     → composes via compute → InvestmentsLoaded(overview, classes, holdings)
-
-InvestmentsLoaded
-  ──refresh(forceRefresh)──→ InvestmentsLoading → ...
-  ──onClassMutated──→ refresh (no spinner)  // optimistic
-  ──onHoldingMutated──→ refresh (no spinner)
-  ──removeHoldingsForAccount──→ delegates to repo, then refresh
+refresh({forceRefresh = false}):
+  → emit InvestmentsLoading only when forceRefresh == true OR nothing is
+    Loaded yet — passive background refreshes (e.g. the shell preload at
+    session start) keep the previous snapshot visible to avoid flicker
+  → GetInvestmentOverviewUseCase(userId, forceRefresh)
+  → InvestmentsLoaded(snapshot) | InvestmentsError(failure)
 ```
 
-The cubit is created once per session by the shell (so the dashboard
-banner can read the pending sum without the user visiting the page).
-On mount of the page, it does a `forceRefresh` to pick up changes.
+`refresh` is the cubit's single method — class/holding mutations are
+followed by an explicit `refresh()` call from the page; there are no
+dedicated mutation hooks on the cubit. The cubit is created once per
+session by the shell (so the dashboard banner can read the pending sum
+without the user visiting the page). On page mount it does a
+`refresh(forceRefresh: true)` to pick up changes.
 
 ### `AssetClassFormCubit` (page-scoped per use)
 
@@ -478,17 +480,18 @@ breakdown; an early donut iteration was dropped as visual noise.
 
 | Scenario                                    | Render                                                            |
 |---------------------------------------------|-------------------------------------------------------------------|
-| No investment accounts at all               | Empty state with "Crie uma conta de investimento" CTA → /account/add. |
-| Investment accounts but no classes          | Empty state with "Crie sua primeira classe" CTA → /investments/class/add. |
+| No investment accounts at all               | Empty state with "Crie uma conta de investimento" CTA → /accounts/add. |
+| Investment accounts but no classes          | Empty state with "Crie sua primeira classe" CTA → /investments/class/edit. |
 | Classes defined but no holdings, total > 0  | All money flagged as pending, banner prominent.                  |
 | Classes defined and totalInvested == 0      | Donut + class rows render at 0% with "Comece a investir" hint.   |
 
 ### Forms
 
-- **Class form** (`/investments/class/add` and `/investments/class/edit`):
-  name, icon picker, color picker (same widgets as categories),
-  targetPercent slider/text. Submit gated on validity. On submit
-  success the page pops with `result == true` so the parent refreshes.
+- **Class form** (single route `/investments/class/edit`, used for both
+  add and edit — edit mode is driven by the `extra` payload): name, icon
+  picker, color picker (same widgets as categories), targetPercent
+  slider/text. Submit gated on validity. On submit success the page pops
+  with `result == true` so the parent refreshes.
 - **Holding sheet** (bottom sheet, opened from class row or from
   account pending row): account picker (investment accounts only),
   class picker (existing classes), amount field with "available"
@@ -512,7 +515,7 @@ self-contained.
 |---------------------------------------------------------------|-------------------------------------------------------------------------------------------|
 | User adds a holding then withdraws cash (balance drops below holding) | `hasOverflow == true` for that account. Banner: "Holdings excedem saldo — reconcilie."     |
 | User deletes an asset class with holdings                     | Blocked. `ValidationFailure` lists impacted holdings.                                     |
-| User deletes an investment account                            | Holdings cascade-delete via the accounts cubit hook (best-effort, see rule 6).            |
+| User deletes an investment account                            | Holdings cascade-delete inside `DeleteAccountWithDependentsUseCase` (best-effort, see rule 6). |
 | Class targets sum to 110%                                     | Banner shows. Overview still renders normally; rebalance amounts still use real percent. |
 | Holding with `amount == 0`                                    | Counted in totals (no effect). Shown in the list with a muted style.                     |
 | Orphan holding (accountId or classId missing)                 | Skipped by overview. Listed in the "Manutenção" section with a remove button.            |
@@ -522,10 +525,12 @@ self-contained.
 
 ## 10. Cross-feature wiring
 
-- **AccountsCubit** — after a successful `deleteAccount`, invokes
-  `InvestmentsCubit.removeHoldingsForAccount(deletedId)` (fire and
-  forget — failures are logged but do not block the account delete).
-  Provides the cascade required by rule 6.
+- **Account deletion** — flows through `DeleteAccountWithDependentsUseCase`,
+  which deletes the account's holdings best-effort after the account
+  (provides the cascade required by rule 6). The add/edit-account page pops
+  `true` on success and `AccountsPage` then force-refreshes both
+  `AccountsCubit` and `InvestmentsCubit`, so orphaned holdings drop out of
+  the overview immediately.
 - **Navigation refactor** — Bills/payables are no longer a Planning tab.
   Planning contains 50/30/20 and Orçamentos. Payables/receivables live as
   Dashboard sidebar children at `/payables-receivables` and
@@ -540,7 +545,7 @@ self-contained.
 ## 11. Firestore
 
 ```
-asset_classes/{id}     → userId, name, icon, color, targetPercent, createdAt
+asset_classes/{id}     → userId, name, icon, color, targetPercent, parentId?, createdAt
 asset_holdings/{id}    → userId, accountId, assetClassId, amount, notes, updatedAt
 ```
 

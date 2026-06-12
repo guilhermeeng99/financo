@@ -72,6 +72,30 @@ const brCurrency = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 });
 
+// Notification copy is hardcoded pt-BR because push payloads are built
+// server-side, where the app's slang i18n is unavailable.
+const singleTransactionTitle = (
+  isOverdue: boolean,
+  isReceivable: boolean,
+): string => {
+  if (isOverdue && isReceivable) return 'Recebimento atrasado';
+  if (isOverdue) return 'Conta atrasada';
+  if (isReceivable) return 'Recebimento vence hoje';
+  return 'Conta vence hoje';
+};
+
+// Plural noun for the "N <x> vencem hoje" summary: the specific word only
+// when the batch is homogeneous, the neutral 'itens' for mixed batches.
+const dueTodaySummaryLabel = (
+  payableCount: number,
+  receivableCount: number,
+  total: number,
+): string => {
+  if (payableCount === total) return 'contas';
+  if (receivableCount === total) return 'recebimentos';
+  return 'itens';
+};
+
 export const buildMessage = (
   transactions: PendingTransaction[],
 ): { title: string; body: string } => {
@@ -87,13 +111,7 @@ export const buildMessage = (
     const amount = brCurrency.format(transaction.amount);
     const desc = transaction.description.trim() || 'Sua conta';
     return {
-      title: isOverdue
-        ? isReceivable
-          ? 'Recebimento atrasado'
-          : 'Conta atrasada'
-        : isReceivable
-          ? 'Recebimento vence hoje'
-          : 'Conta vence hoje',
+      title: singleTransactionTitle(isOverdue, isReceivable),
       body: isOverdue
         ? `${desc} (${amount}) está atrasada.`
         : `${desc} (${amount}) vence hoje.`,
@@ -111,12 +129,11 @@ export const buildMessage = (
       : '',
   ].filter(Boolean);
   const dueTodayCount = transactions.length - overdue.length;
-  const dueTodayLabel =
-    payableCount === transactions.length
-      ? 'contas'
-      : receivableCount === transactions.length
-        ? 'recebimentos'
-        : 'itens';
+  const dueTodayLabel = dueTodaySummaryLabel(
+    payableCount,
+    receivableCount,
+    transactions.length,
+  );
 
   return {
     title: `Você tem ${titleParts.join(' e ')}`,
@@ -188,6 +205,9 @@ export const notifyTransactionsDue = onSchedule(
         if (tokens.length === 0) return;
 
         const { title, body } = buildMessage(transactions);
+        // Data-only message: clients render the notification themselves
+        // from `data`. Only Android and web are targets, so there is no
+        // apns config.
         const response = await messaging.sendEachForMulticast({
           tokens,
           data: {
@@ -200,19 +220,6 @@ export const notifyTransactionsDue = onSchedule(
           },
           android: {
             priority: 'high',
-          },
-          apns: {
-            payload: {
-              aps: {
-                'content-available': 1,
-                'sound': 'default',
-                'badge': transactions.length,
-              },
-            },
-            headers: {
-              'apns-priority': '5',
-              'apns-push-type': 'background',
-            },
           },
         });
 
