@@ -24,6 +24,14 @@ jobs:
           channel: stable
           cache: true
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.8
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart run slang
@@ -39,7 +47,7 @@ jobs:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: |
           flutter build web --release --no-tree-shake-icons \
-            --base-href /financo/ \
+            --base-href /financo/app/ \
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
@@ -69,14 +77,26 @@ jobs:
             --build-number=$GITHUB_RUN_NUMBER \
             --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
-      - name: Bundle APK with web build
-        run: cp build/app/outputs/flutter-apk/app-release.apk build/web/financo.apk
+      - name: Build landing site
+        run: |
+          pnpm -C site install
+          pnpm -C site build
+
+      - name: Assemble GitHub Pages bundle
+        run: |
+          # Landing page at the Pages root (/financo/), Flutter web app one level
+          # down (/financo/app/), signed APK at the root for the download button.
+          rm -rf public
+          mkdir -p public/app
+          cp -r site/dist/. public/
+          cp -r build/web/. public/app/
+          cp build/app/outputs/flutter-apk/app-release.apk public/financo.apk
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build/web
+          publish_dir: public
 
       - name: Generate release notes from commit
         id: release_notes

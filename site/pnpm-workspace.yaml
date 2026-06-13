@@ -1,0 +1,5 @@
+# Single-project pnpm root (pnpm reads build-script approvals from this file).
+# Not a workspace — no `packages:`; just allow the native build tools' install scripts.
+onlyBuiltDependencies:
+  - esbuild
+  - "@tailwindcss/oxide"

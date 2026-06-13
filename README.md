@@ -136,9 +136,9 @@ After every code change:
 GitHub Actions automates the client release on every push to `main` ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)):
 
 - Builds the Web release with the Drift web assets bundled
+- Builds the static landing site (`site/`, Vite + Tailwind)
 - Builds and signs the Android APK (uses `ANDROID_KEYSTORE_*` secrets)
 - Uploads the signed APK to Firebase App Distribution (`testers` group, release notes generated from the last commit)
-- Bundles the APK alongside the web build at `/financo.apk`
-- Publishes the result to GitHub Pages
+- Publishes to GitHub Pages: landing page at the root (`/financo/`), the web app at `/financo/app/`, and the signed APK at `/financo.apk`
 
 Cloud Functions deploys are manual: `firebase deploy --only functions` from the repo root, or `firebase deploy --only functions:<name>` for a single function.
