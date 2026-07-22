@@ -193,6 +193,7 @@
       "buy": "Buy",
       "sell": "Sell",
       "rebalance": "Rebalance",
+      "addClass": "New class",
       "targetsUnbalanced": "Your class targets add up to $percent, not 100%.",
       "unallocatedHint": "$amount isn't assigned to any class yet."
     },

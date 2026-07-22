@@ -11,7 +11,6 @@ import '../../../../harness/mocks.dart';
 void main() {
   late MockTransactionRepository txRepo;
   late MockAccountRepository accountRepo;
-  late MockAssetHoldingRepository holdingRepo;
   late DeleteAccountWithDependentsUseCase useCase;
 
   const userId = 'user-1';
@@ -20,11 +19,9 @@ void main() {
   setUp(() {
     txRepo = MockTransactionRepository();
     accountRepo = MockAccountRepository();
-    holdingRepo = MockAssetHoldingRepository();
     useCase = DeleteAccountWithDependentsUseCase(
       transactionRepository: txRepo,
       accountRepository: accountRepo,
-      assetHoldingRepository: holdingRepo,
     );
   });
 
@@ -42,13 +39,11 @@ void main() {
     ).thenAnswer((_) async => result);
   }
 
-  test('deletes every transaction, then the account, then holdings', () async {
+  test('deletes every transaction, then the account', () async {
     stubGetTransactions(Right(twoTransactions()));
     when(() => txRepo.deleteTransaction(any()))
         .thenAnswer((_) async => const Right<Failure, void>(null));
     when(() => accountRepo.deleteAccount(any()))
-        .thenAnswer((_) async => const Right<Failure, void>(null));
-    when(() => holdingRepo.deleteHoldingsForAccount(any()))
         .thenAnswer((_) async => const Right<Failure, void>(null));
 
     final result = await useCase(userId: userId, accountId: accountId);
@@ -57,7 +52,6 @@ void main() {
     verify(() => txRepo.deleteTransaction('tx-1')).called(1);
     verify(() => txRepo.deleteTransaction('tx-2')).called(1);
     verify(() => accountRepo.deleteAccount(accountId)).called(1);
-    verify(() => holdingRepo.deleteHoldingsForAccount(accountId)).called(1);
   });
 
   test('returns Left and never deletes the account if loading tx fails',
@@ -84,8 +78,7 @@ void main() {
     verifyNever(() => accountRepo.deleteAccount(any()));
   });
 
-  test('returns Left when the account delete fails (no holdings cleanup)',
-      () async {
+  test('returns Left when the account delete fails', () async {
     stubGetTransactions(const Right([]));
     when(() => accountRepo.deleteAccount(any()))
         .thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
@@ -93,18 +86,5 @@ void main() {
     final result = await useCase(userId: userId, accountId: accountId);
 
     expect(result, isA<Left<Failure, void>>());
-    verifyNever(() => holdingRepo.deleteHoldingsForAccount(any()));
-  });
-
-  test('still succeeds when best-effort holdings cleanup fails', () async {
-    stubGetTransactions(const Right([]));
-    when(() => accountRepo.deleteAccount(any()))
-        .thenAnswer((_) async => const Right<Failure, void>(null));
-    when(() => holdingRepo.deleteHoldingsForAccount(any()))
-        .thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
-
-    final result = await useCase(userId: userId, accountId: accountId);
-
-    expect(result, const Right<Failure, void>(null));
   });
 }

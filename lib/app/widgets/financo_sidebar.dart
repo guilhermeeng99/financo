@@ -119,13 +119,6 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                     location.startsWith(AppRoutes.paidAccounts) ||
                     location.startsWith(AppRoutes.receivedAccounts),
               ),
-              SidebarNavItem(
-                icon: FontAwesomeIcons.chartPie,
-                expanded: _expanded,
-                label: t.nav.investments,
-                onTap: () => context.go(AppRoutes.investments),
-                isActive: location.startsWith(AppRoutes.investments),
-              ),
               if (kInvestingV2) ...[
                 SidebarNavItem(
                   icon: FontAwesomeIcons.chartLine,

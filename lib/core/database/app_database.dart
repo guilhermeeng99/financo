@@ -2,7 +2,6 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
-import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/fx_rates_dao.dart';
@@ -16,7 +15,6 @@ import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
 import 'package:financo/core/database/tables/asset_classes_table.dart';
-import 'package:financo/core/database/tables/asset_holdings_table.dart';
 import 'package:financo/core/database/tables/budgets_table.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
 import 'package:financo/core/database/tables/fx_rates_table.dart';
@@ -39,7 +37,6 @@ part 'app_database.g.dart';
     LocalCategories,
     LocalBudgets,
     LocalAssetClasses,
-    LocalAssetHoldings,
     LocalInstitutions,
     LocalInvestmentAssets,
     LocalInvestmentTransactions,
@@ -55,7 +52,6 @@ part 'app_database.g.dart';
     CategoriesDao,
     BudgetsDao,
     AssetClassesDao,
-    AssetHoldingsDao,
     InstitutionsDao,
     InvestmentAssetsDao,
     InvestmentTransactionsDao,
@@ -71,11 +67,13 @@ class AppDatabase extends _$AppDatabase {
   // 12: V2 investing ledger (institutions, investment_assets,
   // investment_transactions). 13: derived market caches (quotes, fx_rates,
   // index_points) — device-local, never mirrored. 14: net-worth history
-  // (investment_snapshots) — mirrored. Local cache is disposable — the sync
-  // layer repopulates the mirrored tables from Firestore on next open.
+  // (investment_snapshots) — mirrored. 15: dropped the legacy
+  // local_asset_holdings table (V1 removed in F7; its data is discarded).
+  // Local cache is disposable — the sync layer repopulates the mirrored
+  // tables from Firestore on next open.
   // See docs/specs/investing.md §4 and docs/specs/valuation.md.
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

@@ -34,11 +34,11 @@ class AppRoutes {
   static const addBudget = '/budget/add';
   static const editBudget = '/budget/edit';
   static const fiftyThirtyTwenty = '/fifty-thirty-twenty';
-  static const investments = '/investments';
+  // Surviving allocation-class management (form reached from the V2
+  // allocation page); the rest of the legacy /investments module was removed.
   static const assetClass = '/investments/class/edit';
-  static const assetClassDetail = '/investments/class/:id';
 
-  // V2 investing module (gated by kInvestingV2).
+  // V2 investing module.
   static const investingOverview = '/investing/overview';
   static const investingAllocation = '/investing/allocation';
   static const institutions = '/investing/institutions';
@@ -52,8 +52,6 @@ class AppRoutes {
   static const editInvestingTransaction = '/investing/transaction/edit';
   static const importInvestingAssets = '/investing/assets/import';
   static const importInvestingTransactions = '/investing/transactions/import';
-
-  static String assetClassDetailById(String id) => '/investments/class/$id';
 
   static String accountById(String id) => '/account/$id';
 }

@@ -949,6 +949,7 @@ class _Translations$investing$allocation$pt_BR implements Translations$investing
 	@override String get buy => 'Comprar';
 	@override String get sell => 'Vender';
 	@override String get rebalance => 'Rebalancear';
+	@override String get addClass => 'Nova classe';
 	@override String targetsUnbalanced({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.';
 	@override String unallocatedHint({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.';
 }
@@ -1419,6 +1420,7 @@ extension on TranslationsPtBr {
 			'investing.allocation.buy' => 'Comprar',
 			'investing.allocation.sell' => 'Vender',
 			'investing.allocation.rebalance' => 'Rebalancear',
+			'investing.allocation.addClass' => 'Nova classe',
 			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.',
 			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.',
 			'investing.nav' => 'Investimentos',
@@ -1758,9 +1760,9 @@ extension on TranslationsPtBr {
 			'chat.suggestion4' => 'Criar uma categoria chamada Lazer',
 			'chat.action.transactionExpense' => 'Confirmar despesa',
 			'chat.action.transactionIncome' => 'Confirmar receita',
-			'chat.action.transfer' => 'Confirmar transferência',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transfer' => 'Confirmar transferência',
 			'chat.action.fieldFromAccount' => 'De',
 			'chat.action.fieldToAccount' => 'Para',
 			'chat.action.accountCreate' => 'Criar conta',

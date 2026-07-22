@@ -71,11 +71,7 @@ import 'package:financo/features/investing/presentation/pages/investing_transact
 import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
-import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
-import 'package:financo/features/investments/presentation/pages/asset_class_detail_page.dart';
 import 'package:financo/features/investments/presentation/pages/asset_class_form_page.dart';
-import 'package:financo/features/investments/presentation/pages/investments_page.dart';
 import 'package:financo/features/master_panel/domain/usecases/delete_user_as_admin_usecase.dart';
 import 'package:financo/features/master_panel/domain/usecases/list_all_users_usecase.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
@@ -238,18 +234,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 importBudgetsCsv: GetIt.I<ImportBudgetsCsvUseCase>(),
                 userId: userId,
               ),
-            ),
-            // Session-scoped so any tab can observe `totalPending` directly
-            // without re-fetching. Refreshing on mount is the page's job.
-            BlocProvider(
-              create: (_) {
-                final cubit = InvestmentsCubit(
-                  getOverview: GetIt.I<GetInvestmentOverviewUseCase>(),
-                  userId: userId,
-                );
-                unawaited(cubit.refresh());
-                return cubit;
-              },
             ),
             // V2 investing module (see docs/specs/investing.md).
             BlocProvider(
@@ -494,10 +478,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           },
         ),
         GoRoute(
-          path: AppRoutes.investments,
-          builder: (context, state) => const InvestmentsPage(),
-        ),
-        GoRoute(
           path: AppRoutes.assetClass,
           builder: (context, state) {
             // Two-shape `extra`: `AssetClassFormArgs` from the page
@@ -515,15 +495,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 existing: args.existing,
                 presetParent: args.presetParent,
               ),
-            );
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.assetClassDetail,
-          builder: (context, state) {
-            final id = state.pathParameters['id']!;
-            return SubPageScope(
-              child: AssetClassDetailPage(classId: id),
             );
           },
         ),

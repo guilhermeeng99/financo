@@ -2218,6 +2218,9 @@ class Translations$investing$allocation$en {
 	/// en: 'Rebalance'
 	String get rebalance => 'Rebalance';
 
+	/// en: 'New class'
+	String get addClass => 'New class';
+
 	/// en: 'Your class targets add up to $percent, not 100%.'
 	String targetsUnbalanced({required Object percent}) => 'Your class targets add up to ${percent}, not 100%.';
 
@@ -3047,6 +3050,7 @@ extension on Translations {
 			'investing.allocation.buy' => 'Buy',
 			'investing.allocation.sell' => 'Sell',
 			'investing.allocation.rebalance' => 'Rebalance',
+			'investing.allocation.addClass' => 'New class',
 			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Your class targets add up to ${percent}, not 100%.',
 			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} isn\'t assigned to any class yet.',
 			'investing.nav' => 'Investing',
@@ -3386,9 +3390,9 @@ extension on Translations {
 			'chat.suggestion4' => 'Create a category called Leisure',
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
-			'chat.action.transfer' => 'Confirm transfer',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transfer' => 'Confirm transfer',
 			'chat.action.fieldFromAccount' => 'From',
 			'chat.action.fieldToAccount' => 'To',
 			'chat.action.accountCreate' => 'Create account',

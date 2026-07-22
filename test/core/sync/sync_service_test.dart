@@ -19,10 +19,20 @@ void main() {
   late MockTransactionRemoteDataSource transactionRemote;
   late MockCategoryRemoteDataSource categoryRemote;
   late MockBudgetRemoteDataSource budgetRemote;
+  late MockAssetClassRemoteDataSource assetClassRemote;
+  late MockInstitutionRemoteDataSource institutionRemote;
+  late MockAssetRemoteDataSource assetRemote;
+  late MockAssetTransactionRemoteDataSource assetTransactionRemote;
+  late MockSnapshotRemoteDataSource snapshotRemote;
   late MockAccountsDao accountsDao;
   late MockTransactionsDao transactionsDao;
   late MockCategoriesDao categoriesDao;
   late MockBudgetsDao budgetsDao;
+  late MockAssetClassesDao assetClassesDao;
+  late MockInstitutionsDao institutionsDao;
+  late MockInvestmentAssetsDao investmentAssetsDao;
+  late MockInvestmentTransactionsDao investmentTransactionsDao;
+  late MockInvestmentSnapshotsDao investmentSnapshotsDao;
   late MockUsersDao usersDao;
   late MockAppDatabase database;
   late SyncService service;
@@ -50,10 +60,20 @@ void main() {
     transactionRemote = MockTransactionRemoteDataSource();
     categoryRemote = MockCategoryRemoteDataSource();
     budgetRemote = MockBudgetRemoteDataSource();
+    assetClassRemote = MockAssetClassRemoteDataSource();
+    institutionRemote = MockInstitutionRemoteDataSource();
+    assetRemote = MockAssetRemoteDataSource();
+    assetTransactionRemote = MockAssetTransactionRemoteDataSource();
+    snapshotRemote = MockSnapshotRemoteDataSource();
     accountsDao = MockAccountsDao();
     transactionsDao = MockTransactionsDao();
     categoriesDao = MockCategoriesDao();
     budgetsDao = MockBudgetsDao();
+    assetClassesDao = MockAssetClassesDao();
+    institutionsDao = MockInstitutionsDao();
+    investmentAssetsDao = MockInvestmentAssetsDao();
+    investmentTransactionsDao = MockInvestmentTransactionsDao();
+    investmentSnapshotsDao = MockInvestmentSnapshotsDao();
     usersDao = MockUsersDao();
     database = MockAppDatabase();
     service = SyncService(
@@ -61,10 +81,20 @@ void main() {
       transactionRemote: transactionRemote,
       categoryRemote: categoryRemote,
       budgetRemote: budgetRemote,
+      assetClassRemote: assetClassRemote,
+      institutionRemote: institutionRemote,
+      assetRemote: assetRemote,
+      assetTransactionRemote: assetTransactionRemote,
+      snapshotRemote: snapshotRemote,
       accountsDao: accountsDao,
       transactionsDao: transactionsDao,
       categoriesDao: categoriesDao,
       budgetsDao: budgetsDao,
+      assetClassesDao: assetClassesDao,
+      institutionsDao: institutionsDao,
+      investmentAssetsDao: investmentAssetsDao,
+      investmentTransactionsDao: investmentTransactionsDao,
+      investmentSnapshotsDao: investmentSnapshotsDao,
       usersDao: usersDao,
       database: database,
     );
@@ -77,6 +107,19 @@ void main() {
     when(() => transactionsDao.insertAllTransactions(any()))
         .thenAnswer((_) async {});
     when(() => budgetsDao.insertAllBudgets(any())).thenAnswer((_) async {});
+
+    // Investing side defaults to empty so the guarded Drift inserts stay
+    // no-ops and the existing cash-side assertions are unaffected.
+    when(() => assetClassRemote.getAssetClasses(userId: userId))
+        .thenAnswer((_) async => []);
+    when(() => institutionRemote.getInstitutions(userId: userId))
+        .thenAnswer((_) async => []);
+    when(() => assetRemote.getAssets(userId: userId))
+        .thenAnswer((_) async => []);
+    when(() => assetTransactionRemote.getTransactions(userId: userId))
+        .thenAnswer((_) async => []);
+    when(() => snapshotRemote.getSnapshots(userId: userId))
+        .thenAnswer((_) async => []);
   });
 
   void stubRemotes({

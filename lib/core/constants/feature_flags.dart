@@ -4,10 +4,12 @@
 /// `flutter run --dart-define=INVESTING_V2=true`.
 library;
 
-/// Gates the V2 investing module (real buy/sell transactions, market-valued
-/// multi-currency holdings, quotes/FX, snapshots) while it is built out in
-/// phases. Defaults to `false` so the legacy tracking-only investments module
-/// keeps serving `/investments` until the port is complete and this flips.
+/// Whether the V2 investing module (real buy/sell transactions, market-valued
+/// multi-currency holdings, quotes/FX, snapshots, allocation, CSV import) is
+/// live. The rollout is complete — the legacy tracking-only investments module
+/// has been removed (F7), so this is now `true` unconditionally. Kept as a
+/// named constant so the nav guards read intentionally rather than being
+/// silently unconditional.
 ///
-/// See `docs/specs/investing.md` §0.9 and `docs/investanco-integration-plan.md`.
-const bool kInvestingV2 = bool.fromEnvironment('INVESTING_V2');
+/// See `docs/specs/investing.md` and `docs/investanco-integration-plan.md`.
+const bool kInvestingV2 = true;

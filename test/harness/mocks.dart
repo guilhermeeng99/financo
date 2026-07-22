@@ -4,7 +4,6 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
-import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
 import 'package:financo/core/database/daos/fx_rates_dao.dart';
@@ -93,18 +92,11 @@ import 'package:financo/features/investing/domain/usecases/record_daily_snapshot
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
-import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
-import 'package:financo/features/investments/domain/repositories/asset_holding_repository.dart';
 import 'package:financo/features/investments/domain/usecases/create_asset_class_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/create_asset_holding_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/delete_asset_class_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/delete_asset_holding_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/get_asset_holdings_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/update_asset_class_usecase.dart';
-import 'package:financo/features/investments/domain/usecases/update_asset_holding_usecase.dart';
 import 'package:financo/features/master_panel/data/datasources/master_users_remote_datasource.dart';
 import 'package:financo/features/master_panel/domain/repositories/master_users_repository.dart';
 import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
@@ -399,21 +391,13 @@ class MockGetFiftyThirtyTwentyHistoryUseCase extends Mock
 class MockUpdateFiftyThirtyTwentyTargetsUseCase extends Mock
     implements UpdateFiftyThirtyTwentyTargetsUseCase {}
 
-// ── Investments ──
+// ── Investments (allocation classes) ──
 class MockAssetClassRepository extends Mock implements AssetClassRepository {}
-
-class MockAssetHoldingRepository extends Mock
-    implements AssetHoldingRepository {}
 
 class MockAssetClassRemoteDataSource extends Mock
     implements AssetClassRemoteDataSource {}
 
-class MockAssetHoldingRemoteDataSource extends Mock
-    implements AssetHoldingRemoteDataSource {}
-
 class MockAssetClassesDao extends Mock implements AssetClassesDao {}
-
-class MockAssetHoldingsDao extends Mock implements AssetHoldingsDao {}
 
 class MockGetAssetClassesUseCase extends Mock
     implements GetAssetClassesUseCase {}
@@ -426,21 +410,6 @@ class MockUpdateAssetClassUseCase extends Mock
 
 class MockDeleteAssetClassUseCase extends Mock
     implements DeleteAssetClassUseCase {}
-
-class MockGetAssetHoldingsUseCase extends Mock
-    implements GetAssetHoldingsUseCase {}
-
-class MockCreateAssetHoldingUseCase extends Mock
-    implements CreateAssetHoldingUseCase {}
-
-class MockUpdateAssetHoldingUseCase extends Mock
-    implements UpdateAssetHoldingUseCase {}
-
-class MockDeleteAssetHoldingUseCase extends Mock
-    implements DeleteAssetHoldingUseCase {}
-
-class MockGetInvestmentOverviewUseCase extends Mock
-    implements GetInvestmentOverviewUseCase {}
 
 // ── Master Panel ──
 class MockMasterUsersRepository extends Mock implements MasterUsersRepository {}

@@ -13,7 +13,6 @@ import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/account_card.dart';
 import 'package:financo/features/accounts/presentation/widgets/accounts_csv_import_dialog.dart';
-import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,14 +46,9 @@ class _AccountsPageState extends State<AccountsPage> {
   /// The add-account page lives on the root navigator, outside the shell's
   /// providers, so it can't touch shell-scoped cubits itself — it signals
   /// success via `pop(true)` and this page (inside the shell) refreshes.
-  /// InvestmentsCubit is included so a deleted/created investment
-  /// account's holdings drop in or out of the overview immediately.
   void _refreshAfterAccountChange() {
     unawaited(
       context.read<AccountsCubit>().loadAccounts(forceRefresh: true),
-    );
-    unawaited(
-      context.read<InvestmentsCubit>().refresh(forceRefresh: true),
     );
   }
 
