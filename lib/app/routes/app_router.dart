@@ -42,6 +42,11 @@ import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
+import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
+import 'package:financo/features/investing/presentation/cubit/institutions_cubit.dart';
+import 'package:financo/features/investing/presentation/pages/institution_form_page.dart';
+import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
@@ -220,6 +225,17 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                   userId: userId,
                 );
                 unawaited(cubit.refresh());
+                return cubit;
+              },
+            ),
+            // V2 investing module (see docs/specs/investing.md).
+            BlocProvider(
+              create: (_) {
+                final cubit = InstitutionsCubit(
+                  getInstitutions: GetIt.I<GetInstitutionsUseCase>(),
+                  userId: userId,
+                );
+                unawaited(cubit.load());
                 return cubit;
               },
             ),
@@ -435,6 +451,11 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
             );
           },
         ),
+        GoRoute(
+          path: AppRoutes.institutions,
+          builder: (context, state) =>
+              const SubPageScope(child: InstitutionsPage()),
+        ),
       ],
     ),
     GoRoute(
@@ -457,6 +478,17 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         final extra = state.extra! as CategoryEntity;
         return AddCategoryPage(existingCategory: extra);
       },
+    ),
+    GoRoute(
+      path: AppRoutes.addInstitution,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const InstitutionFormPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.editInstitution,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) =>
+          InstitutionFormPage(existing: state.extra! as Institution),
     ),
   ],
 );

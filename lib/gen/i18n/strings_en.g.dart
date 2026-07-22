@@ -137,6 +137,7 @@ class Translations$investing$en {
 
 	// Translations
 	late final Translations$investing$errors$en errors = Translations$investing$errors$en._(_root);
+	late final Translations$investing$institutions$en institutions = Translations$investing$institutions$en._(_root);
 }
 
 // Path: csvImport
@@ -1891,6 +1892,59 @@ class Translations$investing$errors$en {
 	String get futureTransactionDate => 'The date can\'t be in the future.';
 }
 
+// Path: investing.institutions
+class Translations$investing$institutions$en {
+	Translations$investing$institutions$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Institutions'
+	String get title => 'Institutions';
+
+	/// en: 'No institutions yet'
+	String get emptyTitle => 'No institutions yet';
+
+	/// en: 'Add where you custody your investments (Nubank, Avenue, …).'
+	String get empty => 'Add where you custody your investments (Nubank, Avenue, …).';
+
+	/// en: 'Add institution'
+	String get addFirst => 'Add institution';
+
+	/// en: 'New institution'
+	String get add => 'New institution';
+
+	/// en: 'Edit institution'
+	String get edit => 'Edit institution';
+
+	/// en: 'Name'
+	String get name => 'Name';
+
+	/// en: 'Nubank, Avenue, Wise…'
+	String get nameHint => 'Nubank, Avenue, Wise…';
+
+	/// en: 'Type'
+	String get kind => 'Type';
+
+	/// en: 'Default currency'
+	String get currency => 'Default currency';
+
+	/// en: 'Institution created'
+	String get created => 'Institution created';
+
+	/// en: 'Institution updated'
+	String get updated => 'Institution updated';
+
+	/// en: 'Institution deleted'
+	String get deleted => 'Institution deleted';
+
+	/// en: 'Delete this institution?'
+	String get deleteConfirm => 'Delete this institution?';
+
+	late final Translations$investing$institutions$kinds$en kinds = Translations$investing$institutions$kinds$en._(_root);
+}
+
 // Path: csvImport.errors
 class Translations$csvImport$errors$en {
 	Translations$csvImport$errors$en._(this._root);
@@ -2263,6 +2317,30 @@ class Translations$chat$handlers$en {
 	String resolveAccountMultiple({required Object query, required Object names}) => 'Multiple accounts match "${query}": ${names}. Please be more specific.';
 }
 
+// Path: investing.institutions.kinds
+class Translations$investing$institutions$kinds$en {
+	Translations$investing$institutions$kinds$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Bank'
+	String get bank => 'Bank';
+
+	/// en: 'Broker'
+	String get broker => 'Broker';
+
+	/// en: 'International broker'
+	String get internationalBroker => 'International broker';
+
+	/// en: 'Crypto exchange'
+	String get crypto => 'Crypto exchange';
+
+	/// en: 'Other'
+	String get other => 'Other';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2296,6 +2374,25 @@ extension on Translations {
 			'investing.errors.nonPositiveQuantity' => 'Quantity must be greater than zero.',
 			'investing.errors.oversell' => 'You can\'t sell more than you hold on that date.',
 			'investing.errors.futureTransactionDate' => 'The date can\'t be in the future.',
+			'investing.institutions.title' => 'Institutions',
+			'investing.institutions.emptyTitle' => 'No institutions yet',
+			'investing.institutions.empty' => 'Add where you custody your investments (Nubank, Avenue, …).',
+			'investing.institutions.addFirst' => 'Add institution',
+			'investing.institutions.add' => 'New institution',
+			'investing.institutions.edit' => 'Edit institution',
+			'investing.institutions.name' => 'Name',
+			'investing.institutions.nameHint' => 'Nubank, Avenue, Wise…',
+			'investing.institutions.kind' => 'Type',
+			'investing.institutions.currency' => 'Default currency',
+			'investing.institutions.created' => 'Institution created',
+			'investing.institutions.updated' => 'Institution updated',
+			'investing.institutions.deleted' => 'Institution deleted',
+			'investing.institutions.deleteConfirm' => 'Delete this institution?',
+			'investing.institutions.kinds.bank' => 'Bank',
+			'investing.institutions.kinds.broker' => 'Broker',
+			'investing.institutions.kinds.internationalBroker' => 'International broker',
+			'investing.institutions.kinds.crypto' => 'Crypto exchange',
+			'investing.institutions.kinds.other' => 'Other',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
 			'csvImport.errors.noValidAccounts' => 'CSV file has no valid accounts.',
@@ -2764,6 +2861,8 @@ extension on Translations {
 			'profile.clearDataConfirmHeadline' => 'This action is permanent',
 			'profile.clearDataConfirmBody' => 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.',
 			'profile.clearDataConfirmField' => 'Type your email to confirm',
+			_ => null,
+		} ?? switch (path) {
 			'profile.clearDataSuccess' => 'Your account data was cleared.',
 			'profile.downloadApk' => 'Download Android app',
 			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',
@@ -2783,8 +2882,6 @@ extension on Translations {
 			'profile.languageSystem' => 'System',
 			'profile.languageEnglish' => 'English',
 			'profile.languagePortuguese' => 'Português',
-			_ => null,
-		} ?? switch (path) {
 			'startup.tagline' => 'Your finances, in flow.',
 			'startup.stepCheckingAuth' => 'Checking your account',
 			'startup.stepSyncingData' => 'Syncing your data',

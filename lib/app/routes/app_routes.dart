@@ -38,6 +38,11 @@ class AppRoutes {
   static const assetClass = '/investments/class/edit';
   static const assetClassDetail = '/investments/class/:id';
 
+  // V2 investing module (gated by kInvestingV2).
+  static const institutions = '/investing/institutions';
+  static const addInstitution = '/investing/institution/add';
+  static const editInstitution = '/investing/institution/edit';
+
   static String assetClassDetailById(String id) => '/investments/class/$id';
 
   static String accountById(String id) => '/account/$id';

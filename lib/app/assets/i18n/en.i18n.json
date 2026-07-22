@@ -30,6 +30,29 @@
       "nonPositiveQuantity": "Quantity must be greater than zero.",
       "oversell": "You can't sell more than you hold on that date.",
       "futureTransactionDate": "The date can't be in the future."
+    },
+    "institutions": {
+      "title": "Institutions",
+      "emptyTitle": "No institutions yet",
+      "empty": "Add where you custody your investments (Nubank, Avenue, …).",
+      "addFirst": "Add institution",
+      "add": "New institution",
+      "edit": "Edit institution",
+      "name": "Name",
+      "nameHint": "Nubank, Avenue, Wise…",
+      "kind": "Type",
+      "currency": "Default currency",
+      "created": "Institution created",
+      "updated": "Institution updated",
+      "deleted": "Institution deleted",
+      "deleteConfirm": "Delete this institution?",
+      "kinds": {
+        "bank": "Bank",
+        "broker": "Broker",
+        "internationalBroker": "International broker",
+        "crypto": "Crypto exchange",
+        "other": "Other"
+      }
     }
   },
   "csvImport": {

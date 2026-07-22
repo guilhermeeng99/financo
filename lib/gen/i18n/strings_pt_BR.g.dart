@@ -102,6 +102,7 @@ class _Translations$investing$pt_BR implements Translations$investing$en {
 
 	// Translations
 	@override late final _Translations$investing$errors$pt_BR errors = _Translations$investing$errors$pt_BR._(_root);
+	@override late final _Translations$investing$institutions$pt_BR institutions = _Translations$investing$institutions$pt_BR._(_root);
 }
 
 // Path: csvImport
@@ -805,6 +806,30 @@ class _Translations$investing$errors$pt_BR implements Translations$investing$err
 	@override String get futureTransactionDate => 'A data não pode estar no futuro.';
 }
 
+// Path: investing.institutions
+class _Translations$investing$institutions$pt_BR implements Translations$investing$institutions$en {
+	_Translations$investing$institutions$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Instituições';
+	@override String get emptyTitle => 'Nenhuma instituição ainda';
+	@override String get empty => 'Adicione onde você custodia seus investimentos (Nubank, Avenue, …).';
+	@override String get addFirst => 'Adicionar instituição';
+	@override String get add => 'Nova instituição';
+	@override String get edit => 'Editar instituição';
+	@override String get name => 'Nome';
+	@override String get nameHint => 'Nubank, Avenue, Wise…';
+	@override String get kind => 'Tipo';
+	@override String get currency => 'Moeda padrão';
+	@override String get created => 'Instituição criada';
+	@override String get updated => 'Instituição atualizada';
+	@override String get deleted => 'Instituição removida';
+	@override String get deleteConfirm => 'Remover esta instituição?';
+	@override late final _Translations$investing$institutions$kinds$pt_BR kinds = _Translations$investing$institutions$kinds$pt_BR._(_root);
+}
+
 // Path: csvImport.errors
 class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
 	_Translations$csvImport$errors$pt_BR._(this._root);
@@ -959,6 +984,20 @@ class _Translations$chat$handlers$pt_BR implements Translations$chat$handlers$en
 	@override String resolveAccountMultiple({required Object query, required Object names}) => 'Várias contas correspondem a "${query}": ${names}. Seja mais específico.';
 }
 
+// Path: investing.institutions.kinds
+class _Translations$investing$institutions$kinds$pt_BR implements Translations$investing$institutions$kinds$en {
+	_Translations$investing$institutions$kinds$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get bank => 'Banco';
+	@override String get broker => 'Corretora';
+	@override String get internationalBroker => 'Corretora internacional';
+	@override String get crypto => 'Exchange de cripto';
+	@override String get other => 'Outro';
+}
+
 /// The flat map containing all translations for locale <pt-BR>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -992,6 +1031,25 @@ extension on TranslationsPtBr {
 			'investing.errors.nonPositiveQuantity' => 'A quantidade deve ser maior que zero.',
 			'investing.errors.oversell' => 'Você não pode vender mais do que possui nesta data.',
 			'investing.errors.futureTransactionDate' => 'A data não pode estar no futuro.',
+			'investing.institutions.title' => 'Instituições',
+			'investing.institutions.emptyTitle' => 'Nenhuma instituição ainda',
+			'investing.institutions.empty' => 'Adicione onde você custodia seus investimentos (Nubank, Avenue, …).',
+			'investing.institutions.addFirst' => 'Adicionar instituição',
+			'investing.institutions.add' => 'Nova instituição',
+			'investing.institutions.edit' => 'Editar instituição',
+			'investing.institutions.name' => 'Nome',
+			'investing.institutions.nameHint' => 'Nubank, Avenue, Wise…',
+			'investing.institutions.kind' => 'Tipo',
+			'investing.institutions.currency' => 'Moeda padrão',
+			'investing.institutions.created' => 'Instituição criada',
+			'investing.institutions.updated' => 'Instituição atualizada',
+			'investing.institutions.deleted' => 'Instituição removida',
+			'investing.institutions.deleteConfirm' => 'Remover esta instituição?',
+			'investing.institutions.kinds.bank' => 'Banco',
+			'investing.institutions.kinds.broker' => 'Corretora',
+			'investing.institutions.kinds.internationalBroker' => 'Corretora internacional',
+			'investing.institutions.kinds.crypto' => 'Exchange de cripto',
+			'investing.institutions.kinds.other' => 'Outro',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
 			'csvImport.errors.noValidAccounts' => 'O arquivo CSV não tem contas válidas.',
@@ -1460,6 +1518,8 @@ extension on TranslationsPtBr {
 			'profile.clearDataConfirmHeadline' => 'Esta ação é permanente',
 			'profile.clearDataConfirmBody' => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.',
 			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
+			_ => null,
+		} ?? switch (path) {
 			'profile.clearDataSuccess' => 'Os dados da sua conta foram limpos.',
 			'profile.downloadApk' => 'Baixar app Android',
 			'profile.downloadApkDescription' => 'Instale a versão mobile no seu dispositivo Android',
@@ -1479,8 +1539,6 @@ extension on TranslationsPtBr {
 			'profile.languageSystem' => 'Sistema',
 			'profile.languageEnglish' => 'English',
 			'profile.languagePortuguese' => 'Português',
-			_ => null,
-		} ?? switch (path) {
 			'startup.tagline' => 'Suas finanças, em sintonia.',
 			'startup.stepCheckingAuth' => 'Verificando sua conta',
 			'startup.stepSyncingData' => 'Sincronizando seus dados',
