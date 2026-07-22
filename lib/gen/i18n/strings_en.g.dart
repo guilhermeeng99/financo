@@ -139,6 +139,10 @@ class Translations$investing$en {
 	late final Translations$investing$errors$en errors = Translations$investing$errors$en._(_root);
 	late final Translations$investing$institutions$en institutions = Translations$investing$institutions$en._(_root);
 	late final Translations$investing$assets$en assets = Translations$investing$assets$en._(_root);
+	late final Translations$investing$transactions$en transactions = Translations$investing$transactions$en._(_root);
+
+	/// en: 'Investing'
+	String get nav => 'Investing';
 }
 
 // Path: csvImport
@@ -2034,6 +2038,74 @@ class Translations$investing$assets$en {
 	late final Translations$investing$assets$fiBases$en fiBases = Translations$investing$assets$fiBases$en._(_root);
 }
 
+// Path: investing.transactions
+class Translations$investing$transactions$en {
+	Translations$investing$transactions$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Transactions'
+	String get title => 'Transactions';
+
+	/// en: 'No transactions yet'
+	String get emptyTitle => 'No transactions yet';
+
+	/// en: 'Record a buy, sell or dividend to build your positions.'
+	String get empty => 'Record a buy, sell or dividend to build your positions.';
+
+	/// en: 'Add transaction'
+	String get addFirst => 'Add transaction';
+
+	/// en: 'New transaction'
+	String get add => 'New transaction';
+
+	/// en: 'Edit transaction'
+	String get edit => 'Edit transaction';
+
+	/// en: 'Type'
+	String get kind => 'Type';
+
+	/// en: 'Asset'
+	String get asset => 'Asset';
+
+	/// en: 'Select…'
+	String get pickAsset => 'Select…';
+
+	/// en: 'Create an asset first'
+	String get noAssets => 'Create an asset first';
+
+	/// en: 'Quantity'
+	String get quantity => 'Quantity';
+
+	/// en: 'Unit price'
+	String get unitPrice => 'Unit price';
+
+	/// en: 'Fees'
+	String get fees => 'Fees';
+
+	/// en: 'Amount'
+	String get amount => 'Amount';
+
+	/// en: 'Date'
+	String get date => 'Date';
+
+	/// en: 'Notes'
+	String get notes => 'Notes';
+
+	/// en: 'Optional'
+	String get notesHint => 'Optional';
+
+	/// en: 'Transaction saved'
+	String get saved => 'Transaction saved';
+
+	/// en: 'Transaction deleted'
+	String get deleted => 'Transaction deleted';
+
+	late final Translations$investing$transactions$kinds$en kinds = Translations$investing$transactions$kinds$en._(_root);
+}
+
 // Path: csvImport.errors
 class Translations$csvImport$errors$en {
 	Translations$csvImport$errors$en._(this._root);
@@ -2511,6 +2583,24 @@ class Translations$investing$assets$fiBases$en {
 	String get ipca => 'IPCA+';
 }
 
+// Path: investing.transactions.kinds
+class Translations$investing$transactions$kinds$en {
+	Translations$investing$transactions$kinds$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Buy'
+	String get buy => 'Buy';
+
+	/// en: 'Sell'
+	String get sell => 'Sell';
+
+	/// en: 'Dividend'
+	String get dividend => 'Dividend';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2606,6 +2696,29 @@ extension on Translations {
 			'investing.assets.fiBases.selic' => 'Selic',
 			'investing.assets.fiBases.prefixed' => 'Prefixed',
 			'investing.assets.fiBases.ipca' => 'IPCA+',
+			'investing.transactions.title' => 'Transactions',
+			'investing.transactions.emptyTitle' => 'No transactions yet',
+			'investing.transactions.empty' => 'Record a buy, sell or dividend to build your positions.',
+			'investing.transactions.addFirst' => 'Add transaction',
+			'investing.transactions.add' => 'New transaction',
+			'investing.transactions.edit' => 'Edit transaction',
+			'investing.transactions.kind' => 'Type',
+			'investing.transactions.asset' => 'Asset',
+			'investing.transactions.pickAsset' => 'Select…',
+			'investing.transactions.noAssets' => 'Create an asset first',
+			'investing.transactions.quantity' => 'Quantity',
+			'investing.transactions.unitPrice' => 'Unit price',
+			'investing.transactions.fees' => 'Fees',
+			'investing.transactions.amount' => 'Amount',
+			'investing.transactions.date' => 'Date',
+			'investing.transactions.notes' => 'Notes',
+			'investing.transactions.notesHint' => 'Optional',
+			'investing.transactions.saved' => 'Transaction saved',
+			'investing.transactions.deleted' => 'Transaction deleted',
+			'investing.transactions.kinds.buy' => 'Buy',
+			'investing.transactions.kinds.sell' => 'Sell',
+			'investing.transactions.kinds.dividend' => 'Dividend',
+			'investing.nav' => 'Investing',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
 			'csvImport.errors.noValidAccounts' => 'CSV file has no valid accounts.',
@@ -3008,6 +3121,8 @@ extension on Translations {
 			'chat.handlers.budgetExpenseOnly' => 'Budgets are only available for expense categories.',
 			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Budgets can only be set on root categories. Use the root "${name}".',
 			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'There\'s already a budget for "${name}". Use "update" to change the value.',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'No budget for "${name}" yet. Use "create" to define one.',
 			'chat.handlers.budgetAmountPositive' => 'Budget amount must be greater than zero.',
 			'chat.handlers.budgetLoadFailed' => 'Couldn\'t load budgets.',
@@ -3031,8 +3146,6 @@ extension on Translations {
 			'budgets.amount' => 'Monthly cap',
 			'budgets.amountHint' => '0.00',
 			'budgets.summaryTitle' => 'This month',
-			_ => null,
-		} ?? switch (path) {
 			'budgets.summaryCap' => 'Total budgeted',
 			'budgets.summarySpent' => 'Spent',
 			'budgets.summaryRemaining' => 'Available',

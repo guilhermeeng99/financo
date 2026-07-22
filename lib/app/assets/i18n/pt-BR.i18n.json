@@ -100,7 +100,30 @@
         "prefixed": "Prefixado",
         "ipca": "IPCA+"
       }
-    }
+    },
+    "transactions": {
+      "title": "Transações",
+      "emptyTitle": "Nenhuma transação ainda",
+      "empty": "Registre uma compra, venda ou dividendo para montar suas posições.",
+      "addFirst": "Adicionar transação",
+      "add": "Nova transação",
+      "edit": "Editar transação",
+      "kind": "Tipo",
+      "asset": "Ativo",
+      "pickAsset": "Selecionar…",
+      "noAssets": "Crie um ativo primeiro",
+      "quantity": "Quantidade",
+      "unitPrice": "Preço unitário",
+      "fees": "Taxas",
+      "amount": "Valor",
+      "date": "Data",
+      "notes": "Notas",
+      "notesHint": "Opcional",
+      "saved": "Transação salva",
+      "deleted": "Transação removida",
+      "kinds": {"buy": "Compra", "sell": "Venda", "dividend": "Dividendo"}
+    },
+    "nav": "Investimentos"
   },
   "csvImport": {
     "errors": {

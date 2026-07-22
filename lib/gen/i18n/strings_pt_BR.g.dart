@@ -104,6 +104,8 @@ class _Translations$investing$pt_BR implements Translations$investing$en {
 	@override late final _Translations$investing$errors$pt_BR errors = _Translations$investing$errors$pt_BR._(_root);
 	@override late final _Translations$investing$institutions$pt_BR institutions = _Translations$investing$institutions$pt_BR._(_root);
 	@override late final _Translations$investing$assets$pt_BR assets = _Translations$investing$assets$pt_BR._(_root);
+	@override late final _Translations$investing$transactions$pt_BR transactions = _Translations$investing$transactions$pt_BR._(_root);
+	@override String get nav => 'Investimentos';
 }
 
 // Path: csvImport
@@ -868,6 +870,35 @@ class _Translations$investing$assets$pt_BR implements Translations$investing$ass
 	@override late final _Translations$investing$assets$fiBases$pt_BR fiBases = _Translations$investing$assets$fiBases$pt_BR._(_root);
 }
 
+// Path: investing.transactions
+class _Translations$investing$transactions$pt_BR implements Translations$investing$transactions$en {
+	_Translations$investing$transactions$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Transações';
+	@override String get emptyTitle => 'Nenhuma transação ainda';
+	@override String get empty => 'Registre uma compra, venda ou dividendo para montar suas posições.';
+	@override String get addFirst => 'Adicionar transação';
+	@override String get add => 'Nova transação';
+	@override String get edit => 'Editar transação';
+	@override String get kind => 'Tipo';
+	@override String get asset => 'Ativo';
+	@override String get pickAsset => 'Selecionar…';
+	@override String get noAssets => 'Crie um ativo primeiro';
+	@override String get quantity => 'Quantidade';
+	@override String get unitPrice => 'Preço unitário';
+	@override String get fees => 'Taxas';
+	@override String get amount => 'Valor';
+	@override String get date => 'Data';
+	@override String get notes => 'Notas';
+	@override String get notesHint => 'Opcional';
+	@override String get saved => 'Transação salva';
+	@override String get deleted => 'Transação removida';
+	@override late final _Translations$investing$transactions$kinds$pt_BR kinds = _Translations$investing$transactions$kinds$pt_BR._(_root);
+}
+
 // Path: csvImport.errors
 class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
 	_Translations$csvImport$errors$pt_BR._(this._root);
@@ -1081,6 +1112,18 @@ class _Translations$investing$assets$fiBases$pt_BR implements Translations$inves
 	@override String get ipca => 'IPCA+';
 }
 
+// Path: investing.transactions.kinds
+class _Translations$investing$transactions$kinds$pt_BR implements Translations$investing$transactions$kinds$en {
+	_Translations$investing$transactions$kinds$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get buy => 'Compra';
+	@override String get sell => 'Venda';
+	@override String get dividend => 'Dividendo';
+}
+
 /// The flat map containing all translations for locale <pt-BR>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -1176,6 +1219,29 @@ extension on TranslationsPtBr {
 			'investing.assets.fiBases.selic' => 'Selic',
 			'investing.assets.fiBases.prefixed' => 'Prefixado',
 			'investing.assets.fiBases.ipca' => 'IPCA+',
+			'investing.transactions.title' => 'Transações',
+			'investing.transactions.emptyTitle' => 'Nenhuma transação ainda',
+			'investing.transactions.empty' => 'Registre uma compra, venda ou dividendo para montar suas posições.',
+			'investing.transactions.addFirst' => 'Adicionar transação',
+			'investing.transactions.add' => 'Nova transação',
+			'investing.transactions.edit' => 'Editar transação',
+			'investing.transactions.kind' => 'Tipo',
+			'investing.transactions.asset' => 'Ativo',
+			'investing.transactions.pickAsset' => 'Selecionar…',
+			'investing.transactions.noAssets' => 'Crie um ativo primeiro',
+			'investing.transactions.quantity' => 'Quantidade',
+			'investing.transactions.unitPrice' => 'Preço unitário',
+			'investing.transactions.fees' => 'Taxas',
+			'investing.transactions.amount' => 'Valor',
+			'investing.transactions.date' => 'Data',
+			'investing.transactions.notes' => 'Notas',
+			'investing.transactions.notesHint' => 'Opcional',
+			'investing.transactions.saved' => 'Transação salva',
+			'investing.transactions.deleted' => 'Transação removida',
+			'investing.transactions.kinds.buy' => 'Compra',
+			'investing.transactions.kinds.sell' => 'Venda',
+			'investing.transactions.kinds.dividend' => 'Dividendo',
+			'investing.nav' => 'Investimentos',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
 			'csvImport.errors.noValidAccounts' => 'O arquivo CSV não tem contas válidas.',
@@ -1578,6 +1644,8 @@ extension on TranslationsPtBr {
 			'chat.handlers.budgetExpenseOnly' => 'Orçamento só vale para categorias de despesa.',
 			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Orçamento só pode ser criado em categoria-pai. Use a categoria raiz "${name}".',
 			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'Já existe um orçamento para "${name}". Use "atualizar" para mudar o valor.',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'Não existe orçamento para "${name}" ainda. Use "criar" para definir um.',
 			'chat.handlers.budgetAmountPositive' => 'Valor do orçamento deve ser maior que zero.',
 			'chat.handlers.budgetLoadFailed' => 'Não foi possível carregar orçamentos.',
@@ -1601,8 +1669,6 @@ extension on TranslationsPtBr {
 			'budgets.amount' => 'Valor mensal',
 			'budgets.amountHint' => '0,00',
 			'budgets.summaryTitle' => 'Resumo do mês',
-			_ => null,
-		} ?? switch (path) {
 			'budgets.summaryCap' => 'Total orçado',
 			'budgets.summarySpent' => 'Gasto',
 			'budgets.summaryRemaining' => 'Disponível',

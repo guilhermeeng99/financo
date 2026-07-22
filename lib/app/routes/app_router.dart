@@ -43,15 +43,20 @@ import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twent
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
+import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/assets_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/institutions_cubit.dart';
+import 'package:financo/features/investing/presentation/cubit/investing_transactions_cubit.dart';
 import 'package:financo/features/investing/presentation/pages/asset_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/assets_page.dart';
 import 'package:financo/features/investing/presentation/pages/institution_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
+import 'package:financo/features/investing/presentation/pages/investing_transaction_form_page.dart';
+import 'package:financo/features/investing/presentation/pages/investing_transactions_page.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
@@ -248,6 +253,18 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = AssetsCubit(
                   getAssets: GetIt.I<GetAssetsUseCase>(),
+                  userId: userId,
+                );
+                unawaited(cubit.load());
+                return cubit;
+              },
+            ),
+            BlocProvider(
+              create: (_) {
+                final cubit = InvestingTransactionsCubit(
+                  getTransactions: GetIt.I<GetAssetTransactionsUseCase>(),
+                  getAssets: GetIt.I<GetAssetsUseCase>(),
+                  getInstitutions: GetIt.I<GetInstitutionsUseCase>(),
                   userId: userId,
                 );
                 unawaited(cubit.load());
@@ -475,6 +492,11 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.assets,
           builder: (context, state) => const SubPageScope(child: AssetsPage()),
         ),
+        GoRoute(
+          path: AppRoutes.investingTransactions,
+          builder: (context, state) =>
+              const SubPageScope(child: InvestingTransactionsPage()),
+        ),
       ],
     ),
     GoRoute(
@@ -519,6 +541,18 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) =>
           AssetFormPage(existing: state.extra! as Asset),
+    ),
+    GoRoute(
+      path: AppRoutes.addInvestingTransaction,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const InvestingTransactionFormPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.editInvestingTransaction,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => InvestingTransactionFormPage(
+        existing: state.extra! as AssetTransaction,
+      ),
     ),
   ],
 );

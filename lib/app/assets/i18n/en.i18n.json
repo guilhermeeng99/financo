@@ -100,7 +100,30 @@
         "prefixed": "Prefixed",
         "ipca": "IPCA+"
       }
-    }
+    },
+    "transactions": {
+      "title": "Transactions",
+      "emptyTitle": "No transactions yet",
+      "empty": "Record a buy, sell or dividend to build your positions.",
+      "addFirst": "Add transaction",
+      "add": "New transaction",
+      "edit": "Edit transaction",
+      "kind": "Type",
+      "asset": "Asset",
+      "pickAsset": "Select…",
+      "noAssets": "Create an asset first",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "fees": "Fees",
+      "amount": "Amount",
+      "date": "Date",
+      "notes": "Notes",
+      "notesHint": "Optional",
+      "saved": "Transaction saved",
+      "deleted": "Transaction deleted",
+      "kinds": {"buy": "Buy", "sell": "Sell", "dividend": "Dividend"}
+    },
+    "nav": "Investing"
   },
   "csvImport": {
     "errors": {
