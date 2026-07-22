@@ -118,10 +118,11 @@ class Money extends Equatable {              // integer minor units — no doubl
 ```
 
 `Money + Money` across currencies **throws** — consolidation must go through FX
-first (`marketValueNative × fxToBase → marketValueBase`). `formatCurrency` gains a
-`Money` overload using `NumberFormat.currency(locale: m.currency.locale,
-symbol: m.currency.symbol)`; the existing `double`→BRL signature stays for the
-cash side.
+first (`marketValueNative × fxToBase → marketValueBase`). A dedicated
+`formatMoney(Money)` uses `NumberFormat.currency(locale: m.currency.locale,
+symbol: m.currency.symbol)`; the existing `formatCurrency(double)`→BRL stays for
+the cash side. (Separate names, not an overload — Dart has no function
+overloading.)
 
 ---
 
