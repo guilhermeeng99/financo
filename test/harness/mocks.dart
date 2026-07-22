@@ -7,9 +7,12 @@ import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
+import 'package:financo/core/database/daos/fx_rates_dao.dart';
+import 'package:financo/core/database/daos/index_points_dao.dart';
 import 'package:financo/core/database/daos/institutions_dao.dart';
 import 'package:financo/core/database/daos/investment_assets_dao.dart';
 import 'package:financo/core/database/daos/investment_transactions_dao.dart';
+import 'package:financo/core/database/daos/quotes_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/sync/sync_service.dart';
@@ -452,3 +455,9 @@ class MockInvestmentAssetsDao extends Mock implements InvestmentAssetsDao {}
 
 class MockInvestmentTransactionsDao extends Mock
     implements InvestmentTransactionsDao {}
+
+class MockQuotesDao extends Mock implements QuotesDao {}
+
+class MockFxRatesDao extends Mock implements FxRatesDao {}
+
+class MockIndexPointsDao extends Mock implements IndexPointsDao {}

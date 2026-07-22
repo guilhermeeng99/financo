@@ -44,15 +44,13 @@ class AssetHoldingsDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> deleteAllAssetHoldings() => delete(localAssetHoldings).go();
 
-  Future<void> deleteHoldingsForAccount(String accountId) =>
-      (delete(localAssetHoldings)
-            ..where((t) => t.accountId.equals(accountId)))
-          .go();
+  Future<void> deleteHoldingsForAccount(String accountId) => (delete(
+    localAssetHoldings,
+  )..where((t) => t.accountId.equals(accountId))).go();
 
-  Future<void> deleteHoldingsForClass(String classId) =>
-      (delete(localAssetHoldings)
-            ..where((t) => t.assetClassId.equals(classId)))
-          .go();
+  Future<void> deleteHoldingsForClass(String classId) => (delete(
+    localAssetHoldings,
+  )..where((t) => t.assetClassId.equals(classId))).go();
 
   LocalAssetHoldingsCompanion _toCompanion(AssetHoldingEntity e) =>
       LocalAssetHoldingsCompanion.insert(

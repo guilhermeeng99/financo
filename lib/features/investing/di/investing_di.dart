@@ -1,16 +1,21 @@
 import 'package:financo/core/database/app_database.dart';
+import 'package:financo/core/database/daos/fx_rates_dao.dart';
+import 'package:financo/core/database/daos/index_points_dao.dart';
 import 'package:financo/core/database/daos/institutions_dao.dart';
 import 'package:financo/core/database/daos/investment_assets_dao.dart';
 import 'package:financo/core/database/daos/investment_transactions_dao.dart';
+import 'package:financo/core/database/daos/quotes_dao.dart';
 import 'package:financo/features/investing/data/datasources/asset_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/asset_transaction_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/institution_remote_datasource.dart';
 import 'package:financo/features/investing/data/repositories/asset_repository_impl.dart';
 import 'package:financo/features/investing/data/repositories/asset_transaction_repository_impl.dart';
 import 'package:financo/features/investing/data/repositories/institution_repository_impl.dart';
+import 'package:financo/features/investing/data/repositories/market_cache_store_impl.dart';
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
+import 'package:financo/features/investing/domain/services/market_cache_store.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_transaction_usecase.dart';
@@ -37,6 +42,9 @@ void registerInvestingDependencies(GetIt sl) {
     ..registerLazySingleton(() => InstitutionsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => InvestmentAssetsDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => InvestmentTransactionsDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => QuotesDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => FxRatesDao(sl<AppDatabase>()))
+    ..registerLazySingleton(() => IndexPointsDao(sl<AppDatabase>()))
     // ─── Datasources ────────────────────────────────────────
     ..registerLazySingleton<InstitutionRemoteDataSource>(
       () => InstitutionRemoteDataSourceImpl(firestore: sl()),
@@ -62,6 +70,10 @@ void registerInvestingDependencies(GetIt sl) {
         remoteDataSource: sl(),
         transactionsDao: sl(),
       ),
+    )
+    // ─── Market data (F2b) ──────────────────────────────────
+    ..registerLazySingleton<MarketCacheStore>(
+      () => DriftMarketCacheStore(fxRatesDao: sl(), indexPointsDao: sl()),
     )
     // ─── Use cases ──────────────────────────────────────────
     ..registerLazySingleton(() => GetInstitutionsUseCase(sl()))

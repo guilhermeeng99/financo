@@ -5,9 +5,12 @@ import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
+import 'package:financo/core/database/daos/fx_rates_dao.dart';
+import 'package:financo/core/database/daos/index_points_dao.dart';
 import 'package:financo/core/database/daos/institutions_dao.dart';
 import 'package:financo/core/database/daos/investment_assets_dao.dart';
 import 'package:financo/core/database/daos/investment_transactions_dao.dart';
+import 'package:financo/core/database/daos/quotes_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
@@ -15,9 +18,12 @@ import 'package:financo/core/database/tables/asset_classes_table.dart';
 import 'package:financo/core/database/tables/asset_holdings_table.dart';
 import 'package:financo/core/database/tables/budgets_table.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
+import 'package:financo/core/database/tables/fx_rates_table.dart';
+import 'package:financo/core/database/tables/index_points_table.dart';
 import 'package:financo/core/database/tables/institutions_table.dart';
 import 'package:financo/core/database/tables/investment_assets_table.dart';
 import 'package:financo/core/database/tables/investment_transactions_table.dart';
+import 'package:financo/core/database/tables/quotes_table.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
 import 'package:financo/core/database/tables/users_table.dart';
 
@@ -35,6 +41,9 @@ part 'app_database.g.dart';
     LocalInstitutions,
     LocalInvestmentAssets,
     LocalInvestmentTransactions,
+    LocalQuotes,
+    LocalFxRates,
+    LocalIndexPoints,
   ],
   daos: [
     UsersDao,
@@ -47,16 +56,21 @@ part 'app_database.g.dart';
     InstitutionsDao,
     InvestmentAssetsDao,
     InvestmentTransactionsDao,
+    QuotesDao,
+    FxRatesDao,
+    IndexPointsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-  // Bumped to 12 for the V2 investing ledger (institutions, investment_assets,
-  // investment_transactions). Local cache is disposable — the sync layer
-  // repopulates from Firestore on next open. See docs/specs/investing.md §4.
+  // 12: V2 investing ledger (institutions, investment_assets,
+  // investment_transactions). 13: derived market caches (quotes, fx_rates,
+  // index_points) — device-local, never mirrored. Local cache is disposable —
+  // the sync layer repopulates the mirrored tables from Firestore on next open.
+  // See docs/specs/investing.md §4 and docs/specs/quotes.md.
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

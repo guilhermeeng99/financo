@@ -6285,6 +6285,1008 @@ class LocalInvestmentTransactionsCompanion
   }
 }
 
+class $LocalQuotesTable extends LocalQuotes
+    with TableInfo<$LocalQuotesTable, LocalQuote> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalQuotesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _assetIdMeta = const VerificationMeta(
+    'assetId',
+  );
+  @override
+  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
+    'asset_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitPriceMinorMeta = const VerificationMeta(
+    'unitPriceMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unitPriceMinor = GeneratedColumn<int>(
+    'unit_price_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _previousCloseMinorMeta =
+      const VerificationMeta('previousCloseMinor');
+  @override
+  late final GeneratedColumn<int> previousCloseMinor = GeneratedColumn<int>(
+    'previous_close_minor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _asOfMeta = const VerificationMeta('asOf');
+  @override
+  late final GeneratedColumn<DateTime> asOf = GeneratedColumn<DateTime>(
+    'as_of',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    unitPriceMinor,
+    previousCloseMinor,
+    currency,
+    asOf,
+    fetchedAt,
+    source,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_quotes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalQuote> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('asset_id')) {
+      context.handle(
+        _assetIdMeta,
+        assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_assetIdMeta);
+    }
+    if (data.containsKey('unit_price_minor')) {
+      context.handle(
+        _unitPriceMinorMeta,
+        unitPriceMinor.isAcceptableOrUnknown(
+          data['unit_price_minor']!,
+          _unitPriceMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitPriceMinorMeta);
+    }
+    if (data.containsKey('previous_close_minor')) {
+      context.handle(
+        _previousCloseMinorMeta,
+        previousCloseMinor.isAcceptableOrUnknown(
+          data['previous_close_minor']!,
+          _previousCloseMinorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    if (data.containsKey('as_of')) {
+      context.handle(
+        _asOfMeta,
+        asOf.isAcceptableOrUnknown(data['as_of']!, _asOfMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_asOfMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {assetId};
+  @override
+  LocalQuote map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalQuote(
+      assetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      unitPriceMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_price_minor'],
+      )!,
+      previousCloseMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}previous_close_minor'],
+      ),
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+      asOf: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}as_of'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalQuotesTable createAlias(String alias) {
+    return $LocalQuotesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalQuote extends DataClass implements Insertable<LocalQuote> {
+  final String assetId;
+  final int unitPriceMinor;
+  final int? previousCloseMinor;
+  final String currency;
+  final DateTime asOf;
+  final DateTime fetchedAt;
+  final String source;
+  const LocalQuote({
+    required this.assetId,
+    required this.unitPriceMinor,
+    this.previousCloseMinor,
+    required this.currency,
+    required this.asOf,
+    required this.fetchedAt,
+    required this.source,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['asset_id'] = Variable<String>(assetId);
+    map['unit_price_minor'] = Variable<int>(unitPriceMinor);
+    if (!nullToAbsent || previousCloseMinor != null) {
+      map['previous_close_minor'] = Variable<int>(previousCloseMinor);
+    }
+    map['currency'] = Variable<String>(currency);
+    map['as_of'] = Variable<DateTime>(asOf);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    map['source'] = Variable<String>(source);
+    return map;
+  }
+
+  LocalQuotesCompanion toCompanion(bool nullToAbsent) {
+    return LocalQuotesCompanion(
+      assetId: Value(assetId),
+      unitPriceMinor: Value(unitPriceMinor),
+      previousCloseMinor: previousCloseMinor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previousCloseMinor),
+      currency: Value(currency),
+      asOf: Value(asOf),
+      fetchedAt: Value(fetchedAt),
+      source: Value(source),
+    );
+  }
+
+  factory LocalQuote.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalQuote(
+      assetId: serializer.fromJson<String>(json['assetId']),
+      unitPriceMinor: serializer.fromJson<int>(json['unitPriceMinor']),
+      previousCloseMinor: serializer.fromJson<int?>(json['previousCloseMinor']),
+      currency: serializer.fromJson<String>(json['currency']),
+      asOf: serializer.fromJson<DateTime>(json['asOf']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+      source: serializer.fromJson<String>(json['source']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'assetId': serializer.toJson<String>(assetId),
+      'unitPriceMinor': serializer.toJson<int>(unitPriceMinor),
+      'previousCloseMinor': serializer.toJson<int?>(previousCloseMinor),
+      'currency': serializer.toJson<String>(currency),
+      'asOf': serializer.toJson<DateTime>(asOf),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+      'source': serializer.toJson<String>(source),
+    };
+  }
+
+  LocalQuote copyWith({
+    String? assetId,
+    int? unitPriceMinor,
+    Value<int?> previousCloseMinor = const Value.absent(),
+    String? currency,
+    DateTime? asOf,
+    DateTime? fetchedAt,
+    String? source,
+  }) => LocalQuote(
+    assetId: assetId ?? this.assetId,
+    unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+    previousCloseMinor: previousCloseMinor.present
+        ? previousCloseMinor.value
+        : this.previousCloseMinor,
+    currency: currency ?? this.currency,
+    asOf: asOf ?? this.asOf,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+    source: source ?? this.source,
+  );
+  LocalQuote copyWithCompanion(LocalQuotesCompanion data) {
+    return LocalQuote(
+      assetId: data.assetId.present ? data.assetId.value : this.assetId,
+      unitPriceMinor: data.unitPriceMinor.present
+          ? data.unitPriceMinor.value
+          : this.unitPriceMinor,
+      previousCloseMinor: data.previousCloseMinor.present
+          ? data.previousCloseMinor.value
+          : this.previousCloseMinor,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      asOf: data.asOf.present ? data.asOf.value : this.asOf,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+      source: data.source.present ? data.source.value : this.source,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQuote(')
+          ..write('assetId: $assetId, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('previousCloseMinor: $previousCloseMinor, ')
+          ..write('currency: $currency, ')
+          ..write('asOf: $asOf, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('source: $source')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    assetId,
+    unitPriceMinor,
+    previousCloseMinor,
+    currency,
+    asOf,
+    fetchedAt,
+    source,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalQuote &&
+          other.assetId == this.assetId &&
+          other.unitPriceMinor == this.unitPriceMinor &&
+          other.previousCloseMinor == this.previousCloseMinor &&
+          other.currency == this.currency &&
+          other.asOf == this.asOf &&
+          other.fetchedAt == this.fetchedAt &&
+          other.source == this.source);
+}
+
+class LocalQuotesCompanion extends UpdateCompanion<LocalQuote> {
+  final Value<String> assetId;
+  final Value<int> unitPriceMinor;
+  final Value<int?> previousCloseMinor;
+  final Value<String> currency;
+  final Value<DateTime> asOf;
+  final Value<DateTime> fetchedAt;
+  final Value<String> source;
+  final Value<int> rowid;
+  const LocalQuotesCompanion({
+    this.assetId = const Value.absent(),
+    this.unitPriceMinor = const Value.absent(),
+    this.previousCloseMinor = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.asOf = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.source = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalQuotesCompanion.insert({
+    required String assetId,
+    required int unitPriceMinor,
+    this.previousCloseMinor = const Value.absent(),
+    required String currency,
+    required DateTime asOf,
+    required DateTime fetchedAt,
+    required String source,
+    this.rowid = const Value.absent(),
+  }) : assetId = Value(assetId),
+       unitPriceMinor = Value(unitPriceMinor),
+       currency = Value(currency),
+       asOf = Value(asOf),
+       fetchedAt = Value(fetchedAt),
+       source = Value(source);
+  static Insertable<LocalQuote> custom({
+    Expression<String>? assetId,
+    Expression<int>? unitPriceMinor,
+    Expression<int>? previousCloseMinor,
+    Expression<String>? currency,
+    Expression<DateTime>? asOf,
+    Expression<DateTime>? fetchedAt,
+    Expression<String>? source,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (assetId != null) 'asset_id': assetId,
+      if (unitPriceMinor != null) 'unit_price_minor': unitPriceMinor,
+      if (previousCloseMinor != null)
+        'previous_close_minor': previousCloseMinor,
+      if (currency != null) 'currency': currency,
+      if (asOf != null) 'as_of': asOf,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (source != null) 'source': source,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalQuotesCompanion copyWith({
+    Value<String>? assetId,
+    Value<int>? unitPriceMinor,
+    Value<int?>? previousCloseMinor,
+    Value<String>? currency,
+    Value<DateTime>? asOf,
+    Value<DateTime>? fetchedAt,
+    Value<String>? source,
+    Value<int>? rowid,
+  }) {
+    return LocalQuotesCompanion(
+      assetId: assetId ?? this.assetId,
+      unitPriceMinor: unitPriceMinor ?? this.unitPriceMinor,
+      previousCloseMinor: previousCloseMinor ?? this.previousCloseMinor,
+      currency: currency ?? this.currency,
+      asOf: asOf ?? this.asOf,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      source: source ?? this.source,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (assetId.present) {
+      map['asset_id'] = Variable<String>(assetId.value);
+    }
+    if (unitPriceMinor.present) {
+      map['unit_price_minor'] = Variable<int>(unitPriceMinor.value);
+    }
+    if (previousCloseMinor.present) {
+      map['previous_close_minor'] = Variable<int>(previousCloseMinor.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (asOf.present) {
+      map['as_of'] = Variable<DateTime>(asOf.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQuotesCompanion(')
+          ..write('assetId: $assetId, ')
+          ..write('unitPriceMinor: $unitPriceMinor, ')
+          ..write('previousCloseMinor: $previousCloseMinor, ')
+          ..write('currency: $currency, ')
+          ..write('asOf: $asOf, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('source: $source, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalFxRatesTable extends LocalFxRates
+    with TableInfo<$LocalFxRatesTable, LocalFxRate> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalFxRatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _pairMeta = const VerificationMeta('pair');
+  @override
+  late final GeneratedColumn<String> pair = GeneratedColumn<String>(
+    'pair',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rateMeta = const VerificationMeta('rate');
+  @override
+  late final GeneratedColumn<double> rate = GeneratedColumn<double>(
+    'rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [pair, rate, fetchedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_fx_rates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalFxRate> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('pair')) {
+      context.handle(
+        _pairMeta,
+        pair.isAcceptableOrUnknown(data['pair']!, _pairMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pairMeta);
+    }
+    if (data.containsKey('rate')) {
+      context.handle(
+        _rateMeta,
+        rate.isAcceptableOrUnknown(data['rate']!, _rateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rateMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {pair};
+  @override
+  LocalFxRate map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalFxRate(
+      pair: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pair'],
+      )!,
+      rate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}rate'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalFxRatesTable createAlias(String alias) {
+    return $LocalFxRatesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalFxRate extends DataClass implements Insertable<LocalFxRate> {
+  final String pair;
+  final double rate;
+  final DateTime fetchedAt;
+  const LocalFxRate({
+    required this.pair,
+    required this.rate,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['pair'] = Variable<String>(pair);
+    map['rate'] = Variable<double>(rate);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  LocalFxRatesCompanion toCompanion(bool nullToAbsent) {
+    return LocalFxRatesCompanion(
+      pair: Value(pair),
+      rate: Value(rate),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory LocalFxRate.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalFxRate(
+      pair: serializer.fromJson<String>(json['pair']),
+      rate: serializer.fromJson<double>(json['rate']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'pair': serializer.toJson<String>(pair),
+      'rate': serializer.toJson<double>(rate),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  LocalFxRate copyWith({String? pair, double? rate, DateTime? fetchedAt}) =>
+      LocalFxRate(
+        pair: pair ?? this.pair,
+        rate: rate ?? this.rate,
+        fetchedAt: fetchedAt ?? this.fetchedAt,
+      );
+  LocalFxRate copyWithCompanion(LocalFxRatesCompanion data) {
+    return LocalFxRate(
+      pair: data.pair.present ? data.pair.value : this.pair,
+      rate: data.rate.present ? data.rate.value : this.rate,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFxRate(')
+          ..write('pair: $pair, ')
+          ..write('rate: $rate, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(pair, rate, fetchedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalFxRate &&
+          other.pair == this.pair &&
+          other.rate == this.rate &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class LocalFxRatesCompanion extends UpdateCompanion<LocalFxRate> {
+  final Value<String> pair;
+  final Value<double> rate;
+  final Value<DateTime> fetchedAt;
+  final Value<int> rowid;
+  const LocalFxRatesCompanion({
+    this.pair = const Value.absent(),
+    this.rate = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalFxRatesCompanion.insert({
+    required String pair,
+    required double rate,
+    required DateTime fetchedAt,
+    this.rowid = const Value.absent(),
+  }) : pair = Value(pair),
+       rate = Value(rate),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<LocalFxRate> custom({
+    Expression<String>? pair,
+    Expression<double>? rate,
+    Expression<DateTime>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (pair != null) 'pair': pair,
+      if (rate != null) 'rate': rate,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalFxRatesCompanion copyWith({
+    Value<String>? pair,
+    Value<double>? rate,
+    Value<DateTime>? fetchedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalFxRatesCompanion(
+      pair: pair ?? this.pair,
+      rate: rate ?? this.rate,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (pair.present) {
+      map['pair'] = Variable<String>(pair.value);
+    }
+    if (rate.present) {
+      map['rate'] = Variable<double>(rate.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalFxRatesCompanion(')
+          ..write('pair: $pair, ')
+          ..write('rate: $rate, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalIndexPointsTable extends LocalIndexPoints
+    with TableInfo<$LocalIndexPointsTable, LocalIndexPoint> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalIndexPointsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _indexNameMeta = const VerificationMeta(
+    'indexName',
+  );
+  @override
+  late final GeneratedColumn<String> indexName = GeneratedColumn<String>(
+    'index_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rateMeta = const VerificationMeta('rate');
+  @override
+  late final GeneratedColumn<double> rate = GeneratedColumn<double>(
+    'rate',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [indexName, date, rate];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_index_points';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalIndexPoint> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('index_name')) {
+      context.handle(
+        _indexNameMeta,
+        indexName.isAcceptableOrUnknown(data['index_name']!, _indexNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_indexNameMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('rate')) {
+      context.handle(
+        _rateMeta,
+        rate.isAcceptableOrUnknown(data['rate']!, _rateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {indexName, date};
+  @override
+  LocalIndexPoint map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalIndexPoint(
+      indexName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}index_name'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      rate: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}rate'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalIndexPointsTable createAlias(String alias) {
+    return $LocalIndexPointsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalIndexPoint extends DataClass implements Insertable<LocalIndexPoint> {
+  final String indexName;
+  final DateTime date;
+  final double rate;
+  const LocalIndexPoint({
+    required this.indexName,
+    required this.date,
+    required this.rate,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['index_name'] = Variable<String>(indexName);
+    map['date'] = Variable<DateTime>(date);
+    map['rate'] = Variable<double>(rate);
+    return map;
+  }
+
+  LocalIndexPointsCompanion toCompanion(bool nullToAbsent) {
+    return LocalIndexPointsCompanion(
+      indexName: Value(indexName),
+      date: Value(date),
+      rate: Value(rate),
+    );
+  }
+
+  factory LocalIndexPoint.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalIndexPoint(
+      indexName: serializer.fromJson<String>(json['indexName']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      rate: serializer.fromJson<double>(json['rate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'indexName': serializer.toJson<String>(indexName),
+      'date': serializer.toJson<DateTime>(date),
+      'rate': serializer.toJson<double>(rate),
+    };
+  }
+
+  LocalIndexPoint copyWith({String? indexName, DateTime? date, double? rate}) =>
+      LocalIndexPoint(
+        indexName: indexName ?? this.indexName,
+        date: date ?? this.date,
+        rate: rate ?? this.rate,
+      );
+  LocalIndexPoint copyWithCompanion(LocalIndexPointsCompanion data) {
+    return LocalIndexPoint(
+      indexName: data.indexName.present ? data.indexName.value : this.indexName,
+      date: data.date.present ? data.date.value : this.date,
+      rate: data.rate.present ? data.rate.value : this.rate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalIndexPoint(')
+          ..write('indexName: $indexName, ')
+          ..write('date: $date, ')
+          ..write('rate: $rate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(indexName, date, rate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalIndexPoint &&
+          other.indexName == this.indexName &&
+          other.date == this.date &&
+          other.rate == this.rate);
+}
+
+class LocalIndexPointsCompanion extends UpdateCompanion<LocalIndexPoint> {
+  final Value<String> indexName;
+  final Value<DateTime> date;
+  final Value<double> rate;
+  final Value<int> rowid;
+  const LocalIndexPointsCompanion({
+    this.indexName = const Value.absent(),
+    this.date = const Value.absent(),
+    this.rate = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalIndexPointsCompanion.insert({
+    required String indexName,
+    required DateTime date,
+    required double rate,
+    this.rowid = const Value.absent(),
+  }) : indexName = Value(indexName),
+       date = Value(date),
+       rate = Value(rate);
+  static Insertable<LocalIndexPoint> custom({
+    Expression<String>? indexName,
+    Expression<DateTime>? date,
+    Expression<double>? rate,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (indexName != null) 'index_name': indexName,
+      if (date != null) 'date': date,
+      if (rate != null) 'rate': rate,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalIndexPointsCompanion copyWith({
+    Value<String>? indexName,
+    Value<DateTime>? date,
+    Value<double>? rate,
+    Value<int>? rowid,
+  }) {
+    return LocalIndexPointsCompanion(
+      indexName: indexName ?? this.indexName,
+      date: date ?? this.date,
+      rate: rate ?? this.rate,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (indexName.present) {
+      map['index_name'] = Variable<String>(indexName.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (rate.present) {
+      map['rate'] = Variable<double>(rate.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalIndexPointsCompanion(')
+          ..write('indexName: $indexName, ')
+          ..write('date: $date, ')
+          ..write('rate: $rate, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6306,6 +7308,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalInvestmentAssetsTable(this);
   late final $LocalInvestmentTransactionsTable localInvestmentTransactions =
       $LocalInvestmentTransactionsTable(this);
+  late final $LocalQuotesTable localQuotes = $LocalQuotesTable(this);
+  late final $LocalFxRatesTable localFxRates = $LocalFxRatesTable(this);
+  late final $LocalIndexPointsTable localIndexPoints = $LocalIndexPointsTable(
+    this,
+  );
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final AccountsDao accountsDao = AccountsDao(this as AppDatabase);
   late final TransactionsDao transactionsDao = TransactionsDao(
@@ -6327,6 +7334,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final InvestmentTransactionsDao investmentTransactionsDao =
       InvestmentTransactionsDao(this as AppDatabase);
+  late final QuotesDao quotesDao = QuotesDao(this as AppDatabase);
+  late final FxRatesDao fxRatesDao = FxRatesDao(this as AppDatabase);
+  late final IndexPointsDao indexPointsDao = IndexPointsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6342,6 +7354,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localInstitutions,
     localInvestmentAssets,
     localInvestmentTransactions,
+    localQuotes,
+    localFxRates,
+    localIndexPoints,
   ];
 }
 
@@ -9455,6 +10470,578 @@ typedef $$LocalInvestmentTransactionsTableProcessedTableManager =
       LocalInvestmentTransaction,
       PrefetchHooks Function()
     >;
+typedef $$LocalQuotesTableCreateCompanionBuilder =
+    LocalQuotesCompanion Function({
+      required String assetId,
+      required int unitPriceMinor,
+      Value<int?> previousCloseMinor,
+      required String currency,
+      required DateTime asOf,
+      required DateTime fetchedAt,
+      required String source,
+      Value<int> rowid,
+    });
+typedef $$LocalQuotesTableUpdateCompanionBuilder =
+    LocalQuotesCompanion Function({
+      Value<String> assetId,
+      Value<int> unitPriceMinor,
+      Value<int?> previousCloseMinor,
+      Value<String> currency,
+      Value<DateTime> asOf,
+      Value<DateTime> fetchedAt,
+      Value<String> source,
+      Value<int> rowid,
+    });
+
+class $$LocalQuotesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalQuotesTable> {
+  $$LocalQuotesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get asOf => $composableBuilder(
+    column: $table.asOf,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalQuotesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalQuotesTable> {
+  $$LocalQuotesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get asOf => $composableBuilder(
+    column: $table.asOf,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalQuotesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalQuotesTable> {
+  $$LocalQuotesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get assetId =>
+      $composableBuilder(column: $table.assetId, builder: (column) => column);
+
+  GeneratedColumn<int> get unitPriceMinor => $composableBuilder(
+    column: $table.unitPriceMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get previousCloseMinor => $composableBuilder(
+    column: $table.previousCloseMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get asOf =>
+      $composableBuilder(column: $table.asOf, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+}
+
+class $$LocalQuotesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalQuotesTable,
+          LocalQuote,
+          $$LocalQuotesTableFilterComposer,
+          $$LocalQuotesTableOrderingComposer,
+          $$LocalQuotesTableAnnotationComposer,
+          $$LocalQuotesTableCreateCompanionBuilder,
+          $$LocalQuotesTableUpdateCompanionBuilder,
+          (
+            LocalQuote,
+            BaseReferences<_$AppDatabase, $LocalQuotesTable, LocalQuote>,
+          ),
+          LocalQuote,
+          PrefetchHooks Function()
+        > {
+  $$LocalQuotesTableTableManager(_$AppDatabase db, $LocalQuotesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalQuotesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalQuotesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalQuotesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> assetId = const Value.absent(),
+                Value<int> unitPriceMinor = const Value.absent(),
+                Value<int?> previousCloseMinor = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<DateTime> asOf = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQuotesCompanion(
+                assetId: assetId,
+                unitPriceMinor: unitPriceMinor,
+                previousCloseMinor: previousCloseMinor,
+                currency: currency,
+                asOf: asOf,
+                fetchedAt: fetchedAt,
+                source: source,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String assetId,
+                required int unitPriceMinor,
+                Value<int?> previousCloseMinor = const Value.absent(),
+                required String currency,
+                required DateTime asOf,
+                required DateTime fetchedAt,
+                required String source,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQuotesCompanion.insert(
+                assetId: assetId,
+                unitPriceMinor: unitPriceMinor,
+                previousCloseMinor: previousCloseMinor,
+                currency: currency,
+                asOf: asOf,
+                fetchedAt: fetchedAt,
+                source: source,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalQuotesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalQuotesTable,
+      LocalQuote,
+      $$LocalQuotesTableFilterComposer,
+      $$LocalQuotesTableOrderingComposer,
+      $$LocalQuotesTableAnnotationComposer,
+      $$LocalQuotesTableCreateCompanionBuilder,
+      $$LocalQuotesTableUpdateCompanionBuilder,
+      (
+        LocalQuote,
+        BaseReferences<_$AppDatabase, $LocalQuotesTable, LocalQuote>,
+      ),
+      LocalQuote,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalFxRatesTableCreateCompanionBuilder =
+    LocalFxRatesCompanion Function({
+      required String pair,
+      required double rate,
+      required DateTime fetchedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalFxRatesTableUpdateCompanionBuilder =
+    LocalFxRatesCompanion Function({
+      Value<String> pair,
+      Value<double> rate,
+      Value<DateTime> fetchedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalFxRatesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalFxRatesTable> {
+  $$LocalFxRatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get pair => $composableBuilder(
+    column: $table.pair,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalFxRatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalFxRatesTable> {
+  $$LocalFxRatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get pair => $composableBuilder(
+    column: $table.pair,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalFxRatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalFxRatesTable> {
+  $$LocalFxRatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get pair =>
+      $composableBuilder(column: $table.pair, builder: (column) => column);
+
+  GeneratedColumn<double> get rate =>
+      $composableBuilder(column: $table.rate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$LocalFxRatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalFxRatesTable,
+          LocalFxRate,
+          $$LocalFxRatesTableFilterComposer,
+          $$LocalFxRatesTableOrderingComposer,
+          $$LocalFxRatesTableAnnotationComposer,
+          $$LocalFxRatesTableCreateCompanionBuilder,
+          $$LocalFxRatesTableUpdateCompanionBuilder,
+          (
+            LocalFxRate,
+            BaseReferences<_$AppDatabase, $LocalFxRatesTable, LocalFxRate>,
+          ),
+          LocalFxRate,
+          PrefetchHooks Function()
+        > {
+  $$LocalFxRatesTableTableManager(_$AppDatabase db, $LocalFxRatesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalFxRatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalFxRatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalFxRatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> pair = const Value.absent(),
+                Value<double> rate = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalFxRatesCompanion(
+                pair: pair,
+                rate: rate,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String pair,
+                required double rate,
+                required DateTime fetchedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalFxRatesCompanion.insert(
+                pair: pair,
+                rate: rate,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalFxRatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalFxRatesTable,
+      LocalFxRate,
+      $$LocalFxRatesTableFilterComposer,
+      $$LocalFxRatesTableOrderingComposer,
+      $$LocalFxRatesTableAnnotationComposer,
+      $$LocalFxRatesTableCreateCompanionBuilder,
+      $$LocalFxRatesTableUpdateCompanionBuilder,
+      (
+        LocalFxRate,
+        BaseReferences<_$AppDatabase, $LocalFxRatesTable, LocalFxRate>,
+      ),
+      LocalFxRate,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalIndexPointsTableCreateCompanionBuilder =
+    LocalIndexPointsCompanion Function({
+      required String indexName,
+      required DateTime date,
+      required double rate,
+      Value<int> rowid,
+    });
+typedef $$LocalIndexPointsTableUpdateCompanionBuilder =
+    LocalIndexPointsCompanion Function({
+      Value<String> indexName,
+      Value<DateTime> date,
+      Value<double> rate,
+      Value<int> rowid,
+    });
+
+class $$LocalIndexPointsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalIndexPointsTable> {
+  $$LocalIndexPointsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get indexName => $composableBuilder(
+    column: $table.indexName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalIndexPointsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalIndexPointsTable> {
+  $$LocalIndexPointsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get indexName => $composableBuilder(
+    column: $table.indexName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get rate => $composableBuilder(
+    column: $table.rate,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalIndexPointsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalIndexPointsTable> {
+  $$LocalIndexPointsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get indexName =>
+      $composableBuilder(column: $table.indexName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<double> get rate =>
+      $composableBuilder(column: $table.rate, builder: (column) => column);
+}
+
+class $$LocalIndexPointsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalIndexPointsTable,
+          LocalIndexPoint,
+          $$LocalIndexPointsTableFilterComposer,
+          $$LocalIndexPointsTableOrderingComposer,
+          $$LocalIndexPointsTableAnnotationComposer,
+          $$LocalIndexPointsTableCreateCompanionBuilder,
+          $$LocalIndexPointsTableUpdateCompanionBuilder,
+          (
+            LocalIndexPoint,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalIndexPointsTable,
+              LocalIndexPoint
+            >,
+          ),
+          LocalIndexPoint,
+          PrefetchHooks Function()
+        > {
+  $$LocalIndexPointsTableTableManager(
+    _$AppDatabase db,
+    $LocalIndexPointsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalIndexPointsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalIndexPointsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalIndexPointsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> indexName = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<double> rate = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalIndexPointsCompanion(
+                indexName: indexName,
+                date: date,
+                rate: rate,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String indexName,
+                required DateTime date,
+                required double rate,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalIndexPointsCompanion.insert(
+                indexName: indexName,
+                date: date,
+                rate: rate,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalIndexPointsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalIndexPointsTable,
+      LocalIndexPoint,
+      $$LocalIndexPointsTableFilterComposer,
+      $$LocalIndexPointsTableOrderingComposer,
+      $$LocalIndexPointsTableAnnotationComposer,
+      $$LocalIndexPointsTableCreateCompanionBuilder,
+      $$LocalIndexPointsTableUpdateCompanionBuilder,
+      (
+        LocalIndexPoint,
+        BaseReferences<_$AppDatabase, $LocalIndexPointsTable, LocalIndexPoint>,
+      ),
+      LocalIndexPoint,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9483,4 +11070,10 @@ class $AppDatabaseManager {
         _db,
         _db.localInvestmentTransactions,
       );
+  $$LocalQuotesTableTableManager get localQuotes =>
+      $$LocalQuotesTableTableManager(_db, _db.localQuotes);
+  $$LocalFxRatesTableTableManager get localFxRates =>
+      $$LocalFxRatesTableTableManager(_db, _db.localFxRates);
+  $$LocalIndexPointsTableTableManager get localIndexPoints =>
+      $$LocalIndexPointsTableTableManager(_db, _db.localIndexPoints);
 }

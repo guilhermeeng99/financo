@@ -78,9 +78,7 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     // them as unclassified rather than crashing.
     bucket: row.bucket == null
         ? null
-        : CategoryBucket.values
-              .where((b) => b.name == row.bucket)
-              .firstOrNull,
+        : CategoryBucket.values.where((b) => b.name == row.bucket).firstOrNull,
     countsIn50_30_20: row.countsInFiftyThirtyTwenty,
   );
 }
