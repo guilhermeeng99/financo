@@ -12,6 +12,7 @@ import 'package:financo/features/investing/data/repositories/asset_repository_im
 import 'package:financo/features/investing/data/repositories/asset_transaction_repository_impl.dart';
 import 'package:financo/features/investing/data/repositories/institution_repository_impl.dart';
 import 'package:financo/features/investing/data/repositories/market_cache_store_impl.dart';
+import 'package:financo/features/investing/di/market_data_di.dart';
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
@@ -104,4 +105,7 @@ void registerInvestingDependencies(GetIt sl) {
     )
     ..registerLazySingleton(() => DeleteAssetTransactionUseCase(sl()))
     ..registerLazySingleton(() => GetHoldingsUseCase(sl()));
+
+  // Market-data layer (adapters, caching, QuoteRepository) — F2b.
+  registerMarketDataDependencies(sl);
 }

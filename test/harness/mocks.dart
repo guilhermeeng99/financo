@@ -114,6 +114,7 @@ import 'package:financo/features/transactions/presentation/bloc/transactions_blo
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 
 // ── Repositories ──
@@ -461,3 +462,5 @@ class MockQuotesDao extends Mock implements QuotesDao {}
 class MockFxRatesDao extends Mock implements FxRatesDao {}
 
 class MockIndexPointsDao extends Mock implements IndexPointsDao {}
+
+class MockHttpClient extends Mock implements http.Client {}
