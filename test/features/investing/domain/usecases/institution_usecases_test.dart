@@ -100,8 +100,7 @@ void main() {
 
     test('blocks deletion when an asset references it', () async {
       when(() => assets.getAssets(userId: 'user-1')).thenAnswer(
-        (_) async =>
-            Right([AssetFactory.stockBr()]),
+        (_) async => Right([AssetFactory.stockBr()]),
       );
       when(
         () => transactions.getTransactions(userId: 'user-1'),

@@ -78,8 +78,7 @@ void main() {
 
     test('blocks deletion when a transaction references it', () async {
       when(() => transactions.getTransactions(userId: 'user-1')).thenAnswer(
-        (_) async =>
-            Right([AssetTransactionFactory.buy()]),
+        (_) async => Right([AssetTransactionFactory.buy()]),
       );
       final result = await useCase(AssetFactory.stockUs());
       result.leftMap((f) => expect(f, isA<AssetInUseFailure>()));
