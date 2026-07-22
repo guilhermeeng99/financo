@@ -10,8 +10,18 @@ import '../../../../harness/mocks.dart';
 
 void main() {
   late MockGetAssetsUseCase getAssets;
+  late MockImportAssetsCsvUseCase importAssetsCsv;
 
-  setUp(() => getAssets = MockGetAssetsUseCase());
+  setUp(() {
+    getAssets = MockGetAssetsUseCase();
+    importAssetsCsv = MockImportAssetsCsvUseCase();
+  });
+
+  AssetsCubit build() => AssetsCubit(
+    getAssets: getAssets,
+    importAssetsCsv: importAssetsCsv,
+    userId: 'user-1',
+  );
 
   blocTest<AssetsCubit, AssetsState>(
     'emits [Loading, Loaded] when the load succeeds',
@@ -19,7 +29,7 @@ void main() {
       when(
         () => getAssets(userId: 'user-1'),
       ).thenAnswer((_) async => Right([AssetFactory.stockUs()]));
-      return AssetsCubit(getAssets: getAssets, userId: 'user-1');
+      return build();
     },
     act: (cubit) => cubit.load(),
     expect: () => [
@@ -34,7 +44,7 @@ void main() {
       when(
         () => getAssets(userId: 'user-1'),
       ).thenAnswer((_) async => const Left(ServerFailure()));
-      return AssetsCubit(getAssets: getAssets, userId: 'user-1');
+      return build();
     },
     act: (cubit) => cubit.load(),
     expect: () => [

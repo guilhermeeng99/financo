@@ -11,6 +11,7 @@ import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_transactions_cubit.dart';
+import 'package:financo/features/investing/presentation/widgets/investing_transactions_csv_import_dialog.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,6 +54,14 @@ class _InvestingTransactionsPageState extends State<InvestingTransactionsPage> {
       appBar: FinancoLargeAppBar(
         title: t.investing.transactions.title,
         showBack: true,
+        actions: [
+          IconButton(
+            tooltip: t.investing.transactions.import.cta,
+            icon: const FaIcon(FontAwesomeIcons.fileImport, size: 18),
+            onPressed: () =>
+                unawaited(showInvestingTransactionsCsvImportDialog(context)),
+          ),
+        ],
       ),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
@@ -63,7 +72,8 @@ class _InvestingTransactionsPageState extends State<InvestingTransactionsPage> {
       ),
       body: BlocBuilder<InvestingTransactionsCubit, InvestingTransactionsState>(
         builder: (context, state) {
-          if (state is InvestingTransactionsLoading) {
+          if (state is InvestingTransactionsLoading ||
+              state is InvestingTransactionsImporting) {
             return const LoadingShimmer();
           }
           if (state is InvestingTransactionsError) {

@@ -12,17 +12,20 @@ void main() {
   late MockGetAssetTransactionsUseCase getTransactions;
   late MockGetAssetsUseCase getAssets;
   late MockGetInstitutionsUseCase getInstitutions;
+  late MockImportInvestingTransactionsCsvUseCase importTransactionsCsv;
 
   setUp(() {
     getTransactions = MockGetAssetTransactionsUseCase();
     getAssets = MockGetAssetsUseCase();
     getInstitutions = MockGetInstitutionsUseCase();
+    importTransactionsCsv = MockImportInvestingTransactionsCsvUseCase();
   });
 
   InvestingTransactionsCubit build() => InvestingTransactionsCubit(
     getTransactions: getTransactions,
     getAssets: getAssets,
     getInstitutions: getInstitutions,
+    importTransactionsCsv: importTransactionsCsv,
     userId: 'user-1',
   );
 

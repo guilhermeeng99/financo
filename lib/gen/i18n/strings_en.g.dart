@@ -2002,6 +2002,8 @@ class Translations$investing$assets$en {
 	/// en: 'Create an asset class first'
 	String get noClasses => 'Create an asset class first';
 
+	late final Translations$investing$assets$import$en import = Translations$investing$assets$import$en._(_root);
+
 	/// en: 'Ticker'
 	String get ticker => 'Ticker';
 
@@ -2121,6 +2123,7 @@ class Translations$investing$transactions$en {
 	String get deleted => 'Transaction deleted';
 
 	late final Translations$investing$transactions$kinds$en kinds = Translations$investing$transactions$kinds$en._(_root);
+	late final Translations$investing$transactions$import$en import = Translations$investing$transactions$import$en._(_root);
 }
 
 // Path: investing.overview
@@ -2280,6 +2283,36 @@ class Translations$csvImport$errors$en {
 
 	/// en: 'Cannot import: missing $names'
 	String cannotImportMissing({required Object names}) => 'Cannot import: missing ${names}';
+
+	/// en: 'No valid assets found in the file.'
+	String get noValidAssets => 'No valid assets found in the file.';
+
+	/// en: 'Row $row: the asset type is empty.'
+	String assetKindEmpty({required Object row}) => 'Row ${row}: the asset type is empty.';
+
+	/// en: 'Row $row: unknown asset type "$value".'
+	String assetKindInvalid({required Object row, required Object value}) => 'Row ${row}: unknown asset type "${value}".';
+
+	/// en: 'Row $row: unknown market "$value".'
+	String marketInvalid({required Object row, required Object value}) => 'Row ${row}: unknown market "${value}".';
+
+	/// en: 'Row $row: unknown currency "$value".'
+	String currencyInvalid({required Object row, required Object value}) => 'Row ${row}: unknown currency "${value}".';
+
+	/// en: 'Row $row: unknown operation "$value". Use buy, sell or dividend.'
+	String operationInvalid({required Object row, required Object value}) => 'Row ${row}: unknown operation "${value}". Use buy, sell or dividend.';
+
+	/// en: 'Row $row: the institution is empty.'
+	String institutionEmpty({required Object row}) => 'Row ${row}: the institution is empty.';
+
+	/// en: 'Row $row: quantity must be greater than zero.'
+	String quantityRequired({required Object row}) => 'Row ${row}: quantity must be greater than zero.';
+
+	/// en: 'Row $row: a unit price is required.'
+	String priceRequired({required Object row}) => 'Row ${row}: a unit price is required.';
+
+	/// en: 'Row $row: a dividend needs an amount.'
+	String dividendAmountRequired({required Object row}) => 'Row ${row}: a dividend needs an amount.';
 }
 
 // Path: chat.action
@@ -2618,6 +2651,60 @@ class Translations$investing$institutions$kinds$en {
 	String get other => 'Other';
 }
 
+// Path: investing.assets.import
+class Translations$investing$assets$import$en {
+	Translations$investing$assets$import$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Import CSV'
+	String get cta => 'Import CSV';
+
+	/// en: 'Import assets'
+	String get introTitle => 'Import assets';
+
+	/// en: 'Upload a CSV with columns ticker, kind and institution (market and currency are optional). Missing institutions are created automatically.'
+	String get introBody => 'Upload a CSV with columns ticker, kind and institution (market and currency are optional). Missing institutions are created automatically.';
+
+	/// en: 'Download example'
+	String get download => 'Download example';
+
+	/// en: 'Select file'
+	String get select => 'Select file';
+
+	/// en: 'Couldn't import assets'
+	String get errorTitle => 'Couldn\'t import assets';
+
+	/// en: 'Example CSV saved.'
+	String get exampleDownloaded => 'Example CSV saved.';
+
+	/// en: 'Couldn't save the example.'
+	String get exampleFailed => 'Couldn\'t save the example.';
+
+	/// en: 'Review assets'
+	String get previewTitle => 'Review assets';
+
+	/// en: 'To import'
+	String get toCreate => 'To import';
+
+	/// en: 'Already exist'
+	String get duplicates => 'Already exist';
+
+	/// en: 'Import'
+	String get confirm => 'Import';
+
+	/// en: 'Nothing new to import — every asset already exists.'
+	String get empty => 'Nothing new to import — every asset already exists.';
+
+	/// en: '$imported assets imported.'
+	String success({required Object imported}) => '${imported} assets imported.';
+
+	/// en: '$count new institution(s) created.'
+	String institutionsCreated({required Object count}) => '${count} new institution(s) created.';
+}
+
 // Path: investing.assets.kinds
 class Translations$investing$assets$kinds$en {
 	Translations$investing$assets$kinds$en._(this._root);
@@ -2717,6 +2804,69 @@ class Translations$investing$transactions$kinds$en {
 	String get dividend => 'Dividend';
 }
 
+// Path: investing.transactions.import
+class Translations$investing$transactions$import$en {
+	Translations$investing$transactions$import$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Import CSV'
+	String get cta => 'Import CSV';
+
+	/// en: 'Import transactions'
+	String get introTitle => 'Import transactions';
+
+	/// en: 'Upload a CSV with columns ticker and operation (buy, sell or dividend). The asset must already exist; unmatched rows are skipped.'
+	String get introBody => 'Upload a CSV with columns ticker and operation (buy, sell or dividend). The asset must already exist; unmatched rows are skipped.';
+
+	/// en: 'Download example'
+	String get download => 'Download example';
+
+	/// en: 'Select file'
+	String get select => 'Select file';
+
+	/// en: 'Couldn't import transactions'
+	String get errorTitle => 'Couldn\'t import transactions';
+
+	/// en: 'Example CSV saved.'
+	String get exampleDownloaded => 'Example CSV saved.';
+
+	/// en: 'Couldn't save the example.'
+	String get exampleFailed => 'Couldn\'t save the example.';
+
+	/// en: 'Review transactions'
+	String get previewTitle => 'Review transactions';
+
+	/// en: 'To import'
+	String get toImport => 'To import';
+
+	/// en: 'Skipped'
+	String get skipped => 'Skipped';
+
+	/// en: 'Import'
+	String get confirm => 'Import';
+
+	/// en: 'No rows can be imported — check the skipped list.'
+	String get empty => 'No rows can be imported — check the skipped list.';
+
+	/// en: '$imported transactions imported.'
+	String success({required Object imported}) => '${imported} transactions imported.';
+
+	/// en: '$count row(s) skipped.'
+	String skippedCount({required Object count}) => '${count} row(s) skipped.';
+
+	/// en: 'No matching asset'
+	String get problemAssetNotFound => 'No matching asset';
+
+	/// en: 'Ticker matches several assets — add a market column'
+	String get problemAssetAmbiguous => 'Ticker matches several assets — add a market column';
+
+	/// en: 'Asset has no institution'
+	String get problemAssetNoInstitution => 'Asset has no institution';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2783,6 +2933,21 @@ extension on Translations {
 			'investing.assets.pickClass' => 'Select…',
 			'investing.assets.noClass' => 'None',
 			'investing.assets.noClasses' => 'Create an asset class first',
+			'investing.assets.import.cta' => 'Import CSV',
+			'investing.assets.import.introTitle' => 'Import assets',
+			'investing.assets.import.introBody' => 'Upload a CSV with columns ticker, kind and institution (market and currency are optional). Missing institutions are created automatically.',
+			'investing.assets.import.download' => 'Download example',
+			'investing.assets.import.select' => 'Select file',
+			'investing.assets.import.errorTitle' => 'Couldn\'t import assets',
+			'investing.assets.import.exampleDownloaded' => 'Example CSV saved.',
+			'investing.assets.import.exampleFailed' => 'Couldn\'t save the example.',
+			'investing.assets.import.previewTitle' => 'Review assets',
+			'investing.assets.import.toCreate' => 'To import',
+			'investing.assets.import.duplicates' => 'Already exist',
+			'investing.assets.import.confirm' => 'Import',
+			'investing.assets.import.empty' => 'Nothing new to import — every asset already exists.',
+			'investing.assets.import.success' => ({required Object imported}) => '${imported} assets imported.',
+			'investing.assets.import.institutionsCreated' => ({required Object count}) => '${count} new institution(s) created.',
 			'investing.assets.ticker' => 'Ticker',
 			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
 			'investing.assets.name' => 'Name',
@@ -2839,6 +3004,24 @@ extension on Translations {
 			'investing.transactions.kinds.buy' => 'Buy',
 			'investing.transactions.kinds.sell' => 'Sell',
 			'investing.transactions.kinds.dividend' => 'Dividend',
+			'investing.transactions.import.cta' => 'Import CSV',
+			'investing.transactions.import.introTitle' => 'Import transactions',
+			'investing.transactions.import.introBody' => 'Upload a CSV with columns ticker and operation (buy, sell or dividend). The asset must already exist; unmatched rows are skipped.',
+			'investing.transactions.import.download' => 'Download example',
+			'investing.transactions.import.select' => 'Select file',
+			'investing.transactions.import.errorTitle' => 'Couldn\'t import transactions',
+			'investing.transactions.import.exampleDownloaded' => 'Example CSV saved.',
+			'investing.transactions.import.exampleFailed' => 'Couldn\'t save the example.',
+			'investing.transactions.import.previewTitle' => 'Review transactions',
+			'investing.transactions.import.toImport' => 'To import',
+			'investing.transactions.import.skipped' => 'Skipped',
+			'investing.transactions.import.confirm' => 'Import',
+			'investing.transactions.import.empty' => 'No rows can be imported — check the skipped list.',
+			'investing.transactions.import.success' => ({required Object imported}) => '${imported} transactions imported.',
+			'investing.transactions.import.skippedCount' => ({required Object count}) => '${count} row(s) skipped.',
+			'investing.transactions.import.problemAssetNotFound' => 'No matching asset',
+			'investing.transactions.import.problemAssetAmbiguous' => 'Ticker matches several assets — add a market column',
+			'investing.transactions.import.problemAssetNoInstitution' => 'Asset has no institution',
 			'investing.overview.title' => 'Portfolio',
 			'investing.overview.netWorth' => 'Net worth',
 			'investing.overview.invested' => 'Invested',
@@ -2884,6 +3067,16 @@ extension on Translations {
 			'csvImport.errors.invalidAmount' => ({required Object row, required Object value}) => 'Row ${row}: invalid or zero amount "${value}".',
 			'csvImport.errors.invalidDate' => ({required Object row, required Object value}) => 'Row ${row}: invalid date "${value}". Use DD/MM/YYYY.',
 			'csvImport.errors.cannotImportMissing' => ({required Object names}) => 'Cannot import: missing ${names}',
+			'csvImport.errors.noValidAssets' => 'No valid assets found in the file.',
+			'csvImport.errors.assetKindEmpty' => ({required Object row}) => 'Row ${row}: the asset type is empty.',
+			'csvImport.errors.assetKindInvalid' => ({required Object row, required Object value}) => 'Row ${row}: unknown asset type "${value}".',
+			'csvImport.errors.marketInvalid' => ({required Object row, required Object value}) => 'Row ${row}: unknown market "${value}".',
+			'csvImport.errors.currencyInvalid' => ({required Object row, required Object value}) => 'Row ${row}: unknown currency "${value}".',
+			'csvImport.errors.operationInvalid' => ({required Object row, required Object value}) => 'Row ${row}: unknown operation "${value}". Use buy, sell or dividend.',
+			'csvImport.errors.institutionEmpty' => ({required Object row}) => 'Row ${row}: the institution is empty.',
+			'csvImport.errors.quantityRequired' => ({required Object row}) => 'Row ${row}: quantity must be greater than zero.',
+			'csvImport.errors.priceRequired' => ({required Object row}) => 'Row ${row}: a unit price is required.',
+			'csvImport.errors.dividendAmountRequired' => ({required Object row}) => 'Row ${row}: a dividend needs an amount.',
 			'validators.required' => 'This field is required.',
 			'validators.emailRequired' => 'Email is required.',
 			'validators.emailInvalid' => 'Enter a valid email.',
@@ -3194,6 +3387,8 @@ extension on Translations {
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
 			'chat.action.transfer' => 'Confirm transfer',
+			_ => null,
+		} ?? switch (path) {
 			'chat.action.fieldFromAccount' => 'From',
 			'chat.action.fieldToAccount' => 'To',
 			'chat.action.accountCreate' => 'Create account',
@@ -3237,8 +3432,6 @@ extension on Translations {
 			'chat.handlers.unknownBudgetAction' => 'Unknown budget action.',
 			'chat.handlers.invalidAmount' => 'Invalid amount.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Failed to create account: ${error}',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.accountCreated' => ({required Object name}) => 'Account "${name}" created successfully!',
 			'chat.handlers.accountNotFound' => ({required Object name}) => 'No account named "${name}" found.',
 			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Failed to find account: ${error}',

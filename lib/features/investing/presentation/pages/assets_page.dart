@@ -10,6 +10,7 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/fixed_income_terms.dart';
 import 'package:financo/features/investing/presentation/cubit/assets_cubit.dart';
+import 'package:financo/features/investing/presentation/widgets/investing_assets_csv_import_dialog.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,6 +46,14 @@ class _AssetsPageState extends State<AssetsPage> {
       appBar: FinancoLargeAppBar(
         title: t.investing.assets.title,
         showBack: true,
+        actions: [
+          IconButton(
+            tooltip: t.investing.assets.import.cta,
+            icon: const FaIcon(FontAwesomeIcons.fileImport, size: 18),
+            onPressed: () =>
+                unawaited(showInvestingAssetsCsvImportDialog(context)),
+          ),
+        ],
       ),
       floatingActionButton: LiftedFab(
         child: FloatingActionButton(
@@ -55,7 +64,9 @@ class _AssetsPageState extends State<AssetsPage> {
       ),
       body: BlocBuilder<AssetsCubit, AssetsState>(
         builder: (context, state) {
-          if (state is AssetsLoading) return const LoadingShimmer();
+          if (state is AssetsLoading || state is AssetsImporting) {
+            return const LoadingShimmer();
+          }
           if (state is AssetsError) {
             return ErrorView(
               failure: state.failure,

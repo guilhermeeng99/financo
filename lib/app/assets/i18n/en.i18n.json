@@ -69,6 +69,23 @@
       "pickClass": "Select…",
       "noClass": "None",
       "noClasses": "Create an asset class first",
+      "import": {
+        "cta": "Import CSV",
+        "introTitle": "Import assets",
+        "introBody": "Upload a CSV with columns ticker, kind and institution (market and currency are optional). Missing institutions are created automatically.",
+        "download": "Download example",
+        "select": "Select file",
+        "errorTitle": "Couldn't import assets",
+        "exampleDownloaded": "Example CSV saved.",
+        "exampleFailed": "Couldn't save the example.",
+        "previewTitle": "Review assets",
+        "toCreate": "To import",
+        "duplicates": "Already exist",
+        "confirm": "Import",
+        "empty": "Nothing new to import — every asset already exists.",
+        "success": "$imported assets imported.",
+        "institutionsCreated": "$count new institution(s) created."
+      },
       "ticker": "Ticker",
       "tickerHint": "AAPL, PETR4, BTC…",
       "name": "Name",
@@ -126,7 +143,27 @@
       "notesHint": "Optional",
       "saved": "Transaction saved",
       "deleted": "Transaction deleted",
-      "kinds": {"buy": "Buy", "sell": "Sell", "dividend": "Dividend"}
+      "kinds": {"buy": "Buy", "sell": "Sell", "dividend": "Dividend"},
+      "import": {
+        "cta": "Import CSV",
+        "introTitle": "Import transactions",
+        "introBody": "Upload a CSV with columns ticker and operation (buy, sell or dividend). The asset must already exist; unmatched rows are skipped.",
+        "download": "Download example",
+        "select": "Select file",
+        "errorTitle": "Couldn't import transactions",
+        "exampleDownloaded": "Example CSV saved.",
+        "exampleFailed": "Couldn't save the example.",
+        "previewTitle": "Review transactions",
+        "toImport": "To import",
+        "skipped": "Skipped",
+        "confirm": "Import",
+        "empty": "No rows can be imported — check the skipped list.",
+        "success": "$imported transactions imported.",
+        "skippedCount": "$count row(s) skipped.",
+        "problemAssetNotFound": "No matching asset",
+        "problemAssetAmbiguous": "Ticker matches several assets — add a market column",
+        "problemAssetNoInstitution": "Asset has no institution"
+      }
     },
     "overview": {
       "title": "Portfolio",
@@ -179,7 +216,17 @@
       "accountColumnEmpty": "Row $row: account column is empty.",
       "invalidAmount": "Row $row: invalid or zero amount \"$value\".",
       "invalidDate": "Row $row: invalid date \"$value\". Use DD/MM/YYYY.",
-      "cannotImportMissing": "Cannot import: missing $names"
+      "cannotImportMissing": "Cannot import: missing $names",
+      "noValidAssets": "No valid assets found in the file.",
+      "assetKindEmpty": "Row $row: the asset type is empty.",
+      "assetKindInvalid": "Row $row: unknown asset type \"$value\".",
+      "marketInvalid": "Row $row: unknown market \"$value\".",
+      "currencyInvalid": "Row $row: unknown currency \"$value\".",
+      "operationInvalid": "Row $row: unknown operation \"$value\". Use buy, sell or dividend.",
+      "institutionEmpty": "Row $row: the institution is empty.",
+      "quantityRequired": "Row $row: quantity must be greater than zero.",
+      "priceRequired": "Row $row: a unit price is required.",
+      "dividendAmountRequired": "Row $row: a dividend needs an amount."
     }
   },
   "validators": {

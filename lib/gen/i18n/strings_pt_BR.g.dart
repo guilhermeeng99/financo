@@ -856,6 +856,7 @@ class _Translations$investing$assets$pt_BR implements Translations$investing$ass
 	@override String get pickClass => 'Selecionar…';
 	@override String get noClass => 'Nenhuma';
 	@override String get noClasses => 'Crie uma classe de ativo primeiro';
+	@override late final _Translations$investing$assets$import$pt_BR import = _Translations$investing$assets$import$pt_BR._(_root);
 	@override String get ticker => 'Ticker';
 	@override String get tickerHint => 'AAPL, PETR4, BTC…';
 	@override String get name => 'Nome';
@@ -904,6 +905,7 @@ class _Translations$investing$transactions$pt_BR implements Translations$investi
 	@override String get saved => 'Transação salva';
 	@override String get deleted => 'Transação removida';
 	@override late final _Translations$investing$transactions$kinds$pt_BR kinds = _Translations$investing$transactions$kinds$pt_BR._(_root);
+	@override late final _Translations$investing$transactions$import$pt_BR import = _Translations$investing$transactions$import$pt_BR._(_root);
 }
 
 // Path: investing.overview
@@ -975,6 +977,16 @@ class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$err
 	@override String invalidAmount({required Object row, required Object value}) => 'Linha ${row}: valor inválido ou zerado "${value}".';
 	@override String invalidDate({required Object row, required Object value}) => 'Linha ${row}: data inválida "${value}". Use DD/MM/AAAA.';
 	@override String cannotImportMissing({required Object names}) => 'Não foi possível importar: faltando ${names}';
+	@override String get noValidAssets => 'Nenhum ativo válido encontrado no arquivo.';
+	@override String assetKindEmpty({required Object row}) => 'Linha ${row}: o tipo do ativo está vazio.';
+	@override String assetKindInvalid({required Object row, required Object value}) => 'Linha ${row}: tipo de ativo desconhecido "${value}".';
+	@override String marketInvalid({required Object row, required Object value}) => 'Linha ${row}: mercado desconhecido "${value}".';
+	@override String currencyInvalid({required Object row, required Object value}) => 'Linha ${row}: moeda desconhecida "${value}".';
+	@override String operationInvalid({required Object row, required Object value}) => 'Linha ${row}: operação desconhecida "${value}". Use compra, venda ou dividendo.';
+	@override String institutionEmpty({required Object row}) => 'Linha ${row}: a instituição está vazia.';
+	@override String quantityRequired({required Object row}) => 'Linha ${row}: a quantidade deve ser maior que zero.';
+	@override String priceRequired({required Object row}) => 'Linha ${row}: o preço unitário é obrigatório.';
+	@override String dividendAmountRequired({required Object row}) => 'Linha ${row}: um dividendo precisa de um valor.';
 }
 
 // Path: chat.action
@@ -1119,6 +1131,30 @@ class _Translations$investing$institutions$kinds$pt_BR implements Translations$i
 	@override String get other => 'Outro';
 }
 
+// Path: investing.assets.import
+class _Translations$investing$assets$import$pt_BR implements Translations$investing$assets$import$en {
+	_Translations$investing$assets$import$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get cta => 'Importar CSV';
+	@override String get introTitle => 'Importar ativos';
+	@override String get introBody => 'Envie um CSV com as colunas ticker, tipo e instituição (mercado e moeda são opcionais). Instituições ausentes são criadas automaticamente.';
+	@override String get download => 'Baixar exemplo';
+	@override String get select => 'Selecionar arquivo';
+	@override String get errorTitle => 'Não foi possível importar ativos';
+	@override String get exampleDownloaded => 'CSV de exemplo salvo.';
+	@override String get exampleFailed => 'Não foi possível salvar o exemplo.';
+	@override String get previewTitle => 'Revisar ativos';
+	@override String get toCreate => 'A importar';
+	@override String get duplicates => 'Já existem';
+	@override String get confirm => 'Importar';
+	@override String get empty => 'Nada novo para importar — todos os ativos já existem.';
+	@override String success({required Object imported}) => '${imported} ativos importados.';
+	@override String institutionsCreated({required Object count}) => '${count} nova(s) instituição(ões) criada(s).';
+}
+
 // Path: investing.assets.kinds
 class _Translations$investing$assets$kinds$pt_BR implements Translations$investing$assets$kinds$en {
 	_Translations$investing$assets$kinds$pt_BR._(this._root);
@@ -1174,6 +1210,33 @@ class _Translations$investing$transactions$kinds$pt_BR implements Translations$i
 	@override String get buy => 'Compra';
 	@override String get sell => 'Venda';
 	@override String get dividend => 'Dividendo';
+}
+
+// Path: investing.transactions.import
+class _Translations$investing$transactions$import$pt_BR implements Translations$investing$transactions$import$en {
+	_Translations$investing$transactions$import$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get cta => 'Importar CSV';
+	@override String get introTitle => 'Importar transações';
+	@override String get introBody => 'Envie um CSV com as colunas ticker e operação (compra, venda ou dividendo). O ativo já deve existir; linhas sem correspondência são ignoradas.';
+	@override String get download => 'Baixar exemplo';
+	@override String get select => 'Selecionar arquivo';
+	@override String get errorTitle => 'Não foi possível importar transações';
+	@override String get exampleDownloaded => 'CSV de exemplo salvo.';
+	@override String get exampleFailed => 'Não foi possível salvar o exemplo.';
+	@override String get previewTitle => 'Revisar transações';
+	@override String get toImport => 'A importar';
+	@override String get skipped => 'Ignoradas';
+	@override String get confirm => 'Importar';
+	@override String get empty => 'Nenhuma linha pode ser importada — verifique as ignoradas.';
+	@override String success({required Object imported}) => '${imported} transações importadas.';
+	@override String skippedCount({required Object count}) => '${count} linha(s) ignorada(s).';
+	@override String get problemAssetNotFound => 'Nenhum ativo correspondente';
+	@override String get problemAssetAmbiguous => 'Ticker corresponde a vários ativos — adicione uma coluna de mercado';
+	@override String get problemAssetNoInstitution => 'Ativo sem instituição';
 }
 
 /// The flat map containing all translations for locale <pt-BR>.
@@ -1242,6 +1305,21 @@ extension on TranslationsPtBr {
 			'investing.assets.pickClass' => 'Selecionar…',
 			'investing.assets.noClass' => 'Nenhuma',
 			'investing.assets.noClasses' => 'Crie uma classe de ativo primeiro',
+			'investing.assets.import.cta' => 'Importar CSV',
+			'investing.assets.import.introTitle' => 'Importar ativos',
+			'investing.assets.import.introBody' => 'Envie um CSV com as colunas ticker, tipo e instituição (mercado e moeda são opcionais). Instituições ausentes são criadas automaticamente.',
+			'investing.assets.import.download' => 'Baixar exemplo',
+			'investing.assets.import.select' => 'Selecionar arquivo',
+			'investing.assets.import.errorTitle' => 'Não foi possível importar ativos',
+			'investing.assets.import.exampleDownloaded' => 'CSV de exemplo salvo.',
+			'investing.assets.import.exampleFailed' => 'Não foi possível salvar o exemplo.',
+			'investing.assets.import.previewTitle' => 'Revisar ativos',
+			'investing.assets.import.toCreate' => 'A importar',
+			'investing.assets.import.duplicates' => 'Já existem',
+			'investing.assets.import.confirm' => 'Importar',
+			'investing.assets.import.empty' => 'Nada novo para importar — todos os ativos já existem.',
+			'investing.assets.import.success' => ({required Object imported}) => '${imported} ativos importados.',
+			'investing.assets.import.institutionsCreated' => ({required Object count}) => '${count} nova(s) instituição(ões) criada(s).',
 			'investing.assets.ticker' => 'Ticker',
 			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
 			'investing.assets.name' => 'Nome',
@@ -1298,6 +1376,24 @@ extension on TranslationsPtBr {
 			'investing.transactions.kinds.buy' => 'Compra',
 			'investing.transactions.kinds.sell' => 'Venda',
 			'investing.transactions.kinds.dividend' => 'Dividendo',
+			'investing.transactions.import.cta' => 'Importar CSV',
+			'investing.transactions.import.introTitle' => 'Importar transações',
+			'investing.transactions.import.introBody' => 'Envie um CSV com as colunas ticker e operação (compra, venda ou dividendo). O ativo já deve existir; linhas sem correspondência são ignoradas.',
+			'investing.transactions.import.download' => 'Baixar exemplo',
+			'investing.transactions.import.select' => 'Selecionar arquivo',
+			'investing.transactions.import.errorTitle' => 'Não foi possível importar transações',
+			'investing.transactions.import.exampleDownloaded' => 'CSV de exemplo salvo.',
+			'investing.transactions.import.exampleFailed' => 'Não foi possível salvar o exemplo.',
+			'investing.transactions.import.previewTitle' => 'Revisar transações',
+			'investing.transactions.import.toImport' => 'A importar',
+			'investing.transactions.import.skipped' => 'Ignoradas',
+			'investing.transactions.import.confirm' => 'Importar',
+			'investing.transactions.import.empty' => 'Nenhuma linha pode ser importada — verifique as ignoradas.',
+			'investing.transactions.import.success' => ({required Object imported}) => '${imported} transações importadas.',
+			'investing.transactions.import.skippedCount' => ({required Object count}) => '${count} linha(s) ignorada(s).',
+			'investing.transactions.import.problemAssetNotFound' => 'Nenhum ativo correspondente',
+			'investing.transactions.import.problemAssetAmbiguous' => 'Ticker corresponde a vários ativos — adicione uma coluna de mercado',
+			'investing.transactions.import.problemAssetNoInstitution' => 'Ativo sem instituição',
 			'investing.overview.title' => 'Carteira',
 			'investing.overview.netWorth' => 'Patrimônio',
 			'investing.overview.invested' => 'Investido',
@@ -1343,6 +1439,16 @@ extension on TranslationsPtBr {
 			'csvImport.errors.invalidAmount' => ({required Object row, required Object value}) => 'Linha ${row}: valor inválido ou zerado "${value}".',
 			'csvImport.errors.invalidDate' => ({required Object row, required Object value}) => 'Linha ${row}: data inválida "${value}". Use DD/MM/AAAA.',
 			'csvImport.errors.cannotImportMissing' => ({required Object names}) => 'Não foi possível importar: faltando ${names}',
+			'csvImport.errors.noValidAssets' => 'Nenhum ativo válido encontrado no arquivo.',
+			'csvImport.errors.assetKindEmpty' => ({required Object row}) => 'Linha ${row}: o tipo do ativo está vazio.',
+			'csvImport.errors.assetKindInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: tipo de ativo desconhecido "${value}".',
+			'csvImport.errors.marketInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: mercado desconhecido "${value}".',
+			'csvImport.errors.currencyInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: moeda desconhecida "${value}".',
+			'csvImport.errors.operationInvalid' => ({required Object row, required Object value}) => 'Linha ${row}: operação desconhecida "${value}". Use compra, venda ou dividendo.',
+			'csvImport.errors.institutionEmpty' => ({required Object row}) => 'Linha ${row}: a instituição está vazia.',
+			'csvImport.errors.quantityRequired' => ({required Object row}) => 'Linha ${row}: a quantidade deve ser maior que zero.',
+			'csvImport.errors.priceRequired' => ({required Object row}) => 'Linha ${row}: o preço unitário é obrigatório.',
+			'csvImport.errors.dividendAmountRequired' => ({required Object row}) => 'Linha ${row}: um dividendo precisa de um valor.',
 			'validators.required' => 'Este campo é obrigatório.',
 			'validators.emailRequired' => 'O e-mail é obrigatório.',
 			'validators.emailInvalid' => 'Informe um e-mail válido.',
@@ -1653,6 +1759,8 @@ extension on TranslationsPtBr {
 			'chat.action.transactionExpense' => 'Confirmar despesa',
 			'chat.action.transactionIncome' => 'Confirmar receita',
 			'chat.action.transfer' => 'Confirmar transferência',
+			_ => null,
+		} ?? switch (path) {
 			'chat.action.fieldFromAccount' => 'De',
 			'chat.action.fieldToAccount' => 'Para',
 			'chat.action.accountCreate' => 'Criar conta',
@@ -1696,8 +1804,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.unknownBudgetAction' => 'Ação de orçamento desconhecida.',
 			'chat.handlers.invalidAmount' => 'Valor inválido.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Falha ao criar conta: ${error}',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.accountCreated' => ({required Object name}) => 'Conta "${name}" criada com sucesso!',
 			'chat.handlers.accountNotFound' => ({required Object name}) => 'Nenhuma conta chamada "${name}" encontrada.',
 			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Falha ao localizar conta: ${error}',

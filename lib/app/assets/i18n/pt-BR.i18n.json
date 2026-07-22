@@ -69,6 +69,23 @@
       "pickClass": "Selecionar…",
       "noClass": "Nenhuma",
       "noClasses": "Crie uma classe de ativo primeiro",
+      "import": {
+        "cta": "Importar CSV",
+        "introTitle": "Importar ativos",
+        "introBody": "Envie um CSV com as colunas ticker, tipo e instituição (mercado e moeda são opcionais). Instituições ausentes são criadas automaticamente.",
+        "download": "Baixar exemplo",
+        "select": "Selecionar arquivo",
+        "errorTitle": "Não foi possível importar ativos",
+        "exampleDownloaded": "CSV de exemplo salvo.",
+        "exampleFailed": "Não foi possível salvar o exemplo.",
+        "previewTitle": "Revisar ativos",
+        "toCreate": "A importar",
+        "duplicates": "Já existem",
+        "confirm": "Importar",
+        "empty": "Nada novo para importar — todos os ativos já existem.",
+        "success": "$imported ativos importados.",
+        "institutionsCreated": "$count nova(s) instituição(ões) criada(s)."
+      },
       "ticker": "Ticker",
       "tickerHint": "AAPL, PETR4, BTC…",
       "name": "Nome",
@@ -126,7 +143,27 @@
       "notesHint": "Opcional",
       "saved": "Transação salva",
       "deleted": "Transação removida",
-      "kinds": {"buy": "Compra", "sell": "Venda", "dividend": "Dividendo"}
+      "kinds": {"buy": "Compra", "sell": "Venda", "dividend": "Dividendo"},
+      "import": {
+        "cta": "Importar CSV",
+        "introTitle": "Importar transações",
+        "introBody": "Envie um CSV com as colunas ticker e operação (compra, venda ou dividendo). O ativo já deve existir; linhas sem correspondência são ignoradas.",
+        "download": "Baixar exemplo",
+        "select": "Selecionar arquivo",
+        "errorTitle": "Não foi possível importar transações",
+        "exampleDownloaded": "CSV de exemplo salvo.",
+        "exampleFailed": "Não foi possível salvar o exemplo.",
+        "previewTitle": "Revisar transações",
+        "toImport": "A importar",
+        "skipped": "Ignoradas",
+        "confirm": "Importar",
+        "empty": "Nenhuma linha pode ser importada — verifique as ignoradas.",
+        "success": "$imported transações importadas.",
+        "skippedCount": "$count linha(s) ignorada(s).",
+        "problemAssetNotFound": "Nenhum ativo correspondente",
+        "problemAssetAmbiguous": "Ticker corresponde a vários ativos — adicione uma coluna de mercado",
+        "problemAssetNoInstitution": "Ativo sem instituição"
+      }
     },
     "overview": {
       "title": "Carteira",
@@ -179,7 +216,17 @@
       "accountColumnEmpty": "Linha $row: a coluna de conta está vazia.",
       "invalidAmount": "Linha $row: valor inválido ou zerado \"$value\".",
       "invalidDate": "Linha $row: data inválida \"$value\". Use DD/MM/AAAA.",
-      "cannotImportMissing": "Não foi possível importar: faltando $names"
+      "cannotImportMissing": "Não foi possível importar: faltando $names",
+      "noValidAssets": "Nenhum ativo válido encontrado no arquivo.",
+      "assetKindEmpty": "Linha $row: o tipo do ativo está vazio.",
+      "assetKindInvalid": "Linha $row: tipo de ativo desconhecido \"$value\".",
+      "marketInvalid": "Linha $row: mercado desconhecido \"$value\".",
+      "currencyInvalid": "Linha $row: moeda desconhecida \"$value\".",
+      "operationInvalid": "Linha $row: operação desconhecida \"$value\". Use compra, venda ou dividendo.",
+      "institutionEmpty": "Linha $row: a instituição está vazia.",
+      "quantityRequired": "Linha $row: a quantidade deve ser maior que zero.",
+      "priceRequired": "Linha $row: o preço unitário é obrigatório.",
+      "dividendAmountRequired": "Linha $row: um dividendo precisa de um valor."
     }
   },
   "validators": {

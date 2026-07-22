@@ -1,0 +1,4 @@
+ticker,name,kind,market,currency,institution
+SOXX,iShares Semiconductor ETF,etfUs,us,usd,Avenue
+BTC,Bitcoin,crypto,global,usd,Binance
+Tesouro Selic 2029,Tesouro Selic 2029,fixedIncome,br,brl,Nubank

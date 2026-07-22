@@ -32,6 +32,8 @@ import 'package:financo/features/investing/domain/usecases/get_assets_usecase.da
 import 'package:financo/features/investing/domain/usecases/get_holdings_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_asset_usecase.dart';
@@ -122,7 +124,22 @@ void registerInvestingDependencies(GetIt sl) {
     ..registerLazySingleton(() => GetSnapshotsUseCase(sl()))
     ..registerLazySingleton(() => RecordDailySnapshotUseCase(sl()))
     // ─── Allocation (F5) ────────────────────────────────────
-    ..registerLazySingleton(AllocationService.new);
+    ..registerLazySingleton(AllocationService.new)
+    // ─── CSV import (F6) ────────────────────────────────────
+    ..registerLazySingleton(
+      () => ImportAssetsCsvUseCase(
+        getAssets: sl(),
+        getInstitutions: sl(),
+        createAsset: sl(),
+        createInstitution: sl(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => ImportInvestingTransactionsCsvUseCase(
+        getAssets: sl(),
+        saveTransaction: sl(),
+      ),
+    );
 
   // Market-data layer (adapters, caching, QuoteRepository) — F2b.
   registerMarketDataDependencies(sl);

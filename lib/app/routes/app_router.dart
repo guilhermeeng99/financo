@@ -50,6 +50,8 @@ import 'package:financo/features/investing/domain/usecases/get_asset_transaction
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/assets_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/institutions_cubit.dart';
@@ -58,6 +60,8 @@ import 'package:financo/features/investing/presentation/cubit/investing_overview
 import 'package:financo/features/investing/presentation/cubit/investing_transactions_cubit.dart';
 import 'package:financo/features/investing/presentation/pages/asset_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/assets_page.dart';
+import 'package:financo/features/investing/presentation/pages/import_investing_assets_page.dart';
+import 'package:financo/features/investing/presentation/pages/import_investing_transactions_page.dart';
 import 'package:financo/features/investing/presentation/pages/institution_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_allocation_page.dart';
@@ -262,6 +266,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               create: (_) {
                 final cubit = AssetsCubit(
                   getAssets: GetIt.I<GetAssetsUseCase>(),
+                  importAssetsCsv: GetIt.I<ImportAssetsCsvUseCase>(),
                   userId: userId,
                 );
                 unawaited(cubit.load());
@@ -274,6 +279,8 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                   getTransactions: GetIt.I<GetAssetTransactionsUseCase>(),
                   getAssets: GetIt.I<GetAssetsUseCase>(),
                   getInstitutions: GetIt.I<GetInstitutionsUseCase>(),
+                  importTransactionsCsv:
+                      GetIt.I<ImportInvestingTransactionsCsvUseCase>(),
                   userId: userId,
                 );
                 unawaited(cubit.load());
@@ -542,6 +549,24 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.investingTransactions,
           builder: (context, state) =>
               const SubPageScope(child: InvestingTransactionsPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.importInvestingAssets,
+          builder: (context, state) {
+            final preview = state.extra! as AssetImportPreview;
+            return SubPageScope(
+              child: ImportInvestingAssetsPage(preview: preview),
+            );
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.importInvestingTransactions,
+          builder: (context, state) {
+            final preview = state.extra! as InvestingTransactionImportPreview;
+            return SubPageScope(
+              child: ImportInvestingTransactionsPage(preview: preview),
+            );
+          },
         ),
       ],
     ),

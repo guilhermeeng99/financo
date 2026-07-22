@@ -81,11 +81,16 @@ import 'package:financo/features/investing/domain/repositories/asset_repository.
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
 import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
+import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
@@ -492,6 +497,20 @@ class MockGetAssetTransactionsUseCase extends Mock
 
 class MockPortfolioPricingEngine extends Mock
     implements PortfolioPricingEngine {}
+
+class MockCreateAssetUseCase extends Mock implements CreateAssetUseCase {}
+
+class MockCreateInstitutionUseCase extends Mock
+    implements CreateInstitutionUseCase {}
+
+class MockSaveAssetTransactionUseCase extends Mock
+    implements SaveAssetTransactionUseCase {}
+
+class MockImportAssetsCsvUseCase extends Mock
+    implements ImportAssetsCsvUseCase {}
+
+class MockImportInvestingTransactionsCsvUseCase extends Mock
+    implements ImportInvestingTransactionsCsvUseCase {}
 
 class MockGetSnapshotsUseCase extends Mock implements GetSnapshotsUseCase {}
 
