@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/sidebar_date_scope.dart';
 import 'package:financo/app/widgets/sidebar_nav_item.dart';
 import 'package:financo/app/widgets/sidebar_profile_tile.dart';
 import 'package:financo/app/widgets/sidebar_sub_nav_item.dart';
+import 'package:financo/core/constants/feature_flags.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
@@ -125,6 +126,38 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 onTap: () => context.go(AppRoutes.investments),
                 isActive: location.startsWith(AppRoutes.investments),
               ),
+              if (kInvestingV2) ...[
+                SidebarNavItem(
+                  icon: FontAwesomeIcons.chartLine,
+                  expanded: _expanded,
+                  label: t.investing.nav,
+                  onTap: () => context.go(AppRoutes.investingTransactions),
+                  isActive: location.startsWith('/investing'),
+                ),
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.rightLeft,
+                  expanded: _expanded,
+                  label: t.investing.transactions.title,
+                  onTap: () => context.go(AppRoutes.investingTransactions),
+                  isActive: location.startsWith(
+                    AppRoutes.investingTransactions,
+                  ),
+                ),
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.coins,
+                  expanded: _expanded,
+                  label: t.investing.assets.title,
+                  onTap: () => context.go(AppRoutes.assets),
+                  isActive: location.startsWith(AppRoutes.assets),
+                ),
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.buildingColumns,
+                  expanded: _expanded,
+                  label: t.investing.institutions.title,
+                  onTap: () => context.go(AppRoutes.institutions),
+                  isActive: location.startsWith(AppRoutes.institutions),
+                ),
+              ],
               SidebarNavItem(
                 icon: FontAwesomeIcons.bullseye,
                 expanded: _expanded,
