@@ -11,6 +11,7 @@ import 'package:financo/core/database/daos/fx_rates_dao.dart';
 import 'package:financo/core/database/daos/index_points_dao.dart';
 import 'package:financo/core/database/daos/institutions_dao.dart';
 import 'package:financo/core/database/daos/investment_assets_dao.dart';
+import 'package:financo/core/database/daos/investment_snapshots_dao.dart';
 import 'package:financo/core/database/daos/investment_transactions_dao.dart';
 import 'package:financo/core/database/daos/quotes_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
@@ -75,12 +76,17 @@ import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_sta
 import 'package:financo/features/investing/data/datasources/asset_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/asset_transaction_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/institution_remote_datasource.dart';
+import 'package:financo/features/investing/data/datasources/snapshot_remote_datasource.dart';
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
+import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
+import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
@@ -453,7 +459,15 @@ class MockAssetRemoteDataSource extends Mock implements AssetRemoteDataSource {}
 class MockAssetTransactionRemoteDataSource extends Mock
     implements AssetTransactionRemoteDataSource {}
 
+class MockSnapshotRemoteDataSource extends Mock
+    implements SnapshotRemoteDataSource {}
+
+class MockSnapshotRepository extends Mock implements SnapshotRepository {}
+
 class MockInstitutionsDao extends Mock implements InstitutionsDao {}
+
+class MockInvestmentSnapshotsDao extends Mock
+    implements InvestmentSnapshotsDao {}
 
 class MockInvestmentAssetsDao extends Mock implements InvestmentAssetsDao {}
 
@@ -475,3 +489,11 @@ class MockGetAssetsUseCase extends Mock implements GetAssetsUseCase {}
 
 class MockGetAssetTransactionsUseCase extends Mock
     implements GetAssetTransactionsUseCase {}
+
+class MockPortfolioPricingEngine extends Mock
+    implements PortfolioPricingEngine {}
+
+class MockGetSnapshotsUseCase extends Mock implements GetSnapshotsUseCase {}
+
+class MockRecordDailySnapshotUseCase extends Mock
+    implements RecordDailySnapshotUseCase {}

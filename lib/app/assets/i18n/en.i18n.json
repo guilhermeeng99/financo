@@ -123,6 +123,22 @@
       "deleted": "Transaction deleted",
       "kinds": {"buy": "Buy", "sell": "Sell", "dividend": "Dividend"}
     },
+    "overview": {
+      "title": "Portfolio",
+      "netWorth": "Net worth",
+      "invested": "Invested",
+      "unrealizedPl": "Unrealized P/L",
+      "returnLabel": "Return",
+      "holdings": "Holdings",
+      "history": "Net worth history",
+      "byCurrency": "By currency",
+      "emptyTitle": "Nothing invested yet",
+      "empty": "Record a buy to start tracking your portfolio.",
+      "refreshing": "Updating prices…",
+      "stale": "Stale",
+      "fxMissing": "No FX rate",
+      "units": "units"
+    },
     "nav": "Investing"
   },
   "csvImport": {

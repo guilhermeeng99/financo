@@ -3,6 +3,7 @@ import 'package:financo/core/money/money.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/entities/snapshot.dart';
 
 /// Test data builders for the V2 investing module. Never hardcode entities in
 /// tests — compose from these (project convention, CLAUDE.md Testing Rules).
@@ -198,6 +199,29 @@ class AssetTransactionFactory {
       createdAt: createdAt ?? when,
       updatedAt: createdAt ?? when,
       notes: notes,
+    );
+  }
+}
+
+class SnapshotFactory {
+  const SnapshotFactory._();
+
+  static Snapshot day({
+    String userId = 'user-1',
+    DateTime? date,
+    Money? totalValue,
+    Money? totalInvested,
+    Money? unrealizedPL,
+    Currency currency = Currency.brl,
+  }) {
+    final value = totalValue ?? Money.fromMajor(1000, currency);
+    final invested = totalInvested ?? Money.fromMajor(800, currency);
+    return Snapshot(
+      userId: userId,
+      date: date ?? DateTime(2024, 1, 10),
+      totalValue: value,
+      totalInvested: invested,
+      unrealizedPL: unrealizedPL ?? (value - invested),
     );
   }
 }

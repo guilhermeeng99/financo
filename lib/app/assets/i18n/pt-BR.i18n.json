@@ -123,6 +123,22 @@
       "deleted": "Transação removida",
       "kinds": {"buy": "Compra", "sell": "Venda", "dividend": "Dividendo"}
     },
+    "overview": {
+      "title": "Carteira",
+      "netWorth": "Patrimônio",
+      "invested": "Investido",
+      "unrealizedPl": "Lucro/Prejuízo",
+      "returnLabel": "Retorno",
+      "holdings": "Posições",
+      "history": "Histórico de patrimônio",
+      "byCurrency": "Por moeda",
+      "emptyTitle": "Nada investido ainda",
+      "empty": "Registre uma compra para acompanhar sua carteira.",
+      "refreshing": "Atualizando preços…",
+      "stale": "Desatualizado",
+      "fxMissing": "Sem câmbio",
+      "units": "unidades"
+    },
     "nav": "Investimentos"
   },
   "csvImport": {

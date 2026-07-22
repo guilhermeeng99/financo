@@ -140,6 +140,7 @@ class Translations$investing$en {
 	late final Translations$investing$institutions$en institutions = Translations$investing$institutions$en._(_root);
 	late final Translations$investing$assets$en assets = Translations$investing$assets$en._(_root);
 	late final Translations$investing$transactions$en transactions = Translations$investing$transactions$en._(_root);
+	late final Translations$investing$overview$en overview = Translations$investing$overview$en._(_root);
 
 	/// en: 'Investing'
 	String get nav => 'Investing';
@@ -2106,6 +2107,57 @@ class Translations$investing$transactions$en {
 	late final Translations$investing$transactions$kinds$en kinds = Translations$investing$transactions$kinds$en._(_root);
 }
 
+// Path: investing.overview
+class Translations$investing$overview$en {
+	Translations$investing$overview$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Portfolio'
+	String get title => 'Portfolio';
+
+	/// en: 'Net worth'
+	String get netWorth => 'Net worth';
+
+	/// en: 'Invested'
+	String get invested => 'Invested';
+
+	/// en: 'Unrealized P/L'
+	String get unrealizedPl => 'Unrealized P/L';
+
+	/// en: 'Return'
+	String get returnLabel => 'Return';
+
+	/// en: 'Holdings'
+	String get holdings => 'Holdings';
+
+	/// en: 'Net worth history'
+	String get history => 'Net worth history';
+
+	/// en: 'By currency'
+	String get byCurrency => 'By currency';
+
+	/// en: 'Nothing invested yet'
+	String get emptyTitle => 'Nothing invested yet';
+
+	/// en: 'Record a buy to start tracking your portfolio.'
+	String get empty => 'Record a buy to start tracking your portfolio.';
+
+	/// en: 'Updating prices…'
+	String get refreshing => 'Updating prices…';
+
+	/// en: 'Stale'
+	String get stale => 'Stale';
+
+	/// en: 'No FX rate'
+	String get fxMissing => 'No FX rate';
+
+	/// en: 'units'
+	String get units => 'units';
+}
+
 // Path: csvImport.errors
 class Translations$csvImport$errors$en {
 	Translations$csvImport$errors$en._(this._root);
@@ -2718,6 +2770,20 @@ extension on Translations {
 			'investing.transactions.kinds.buy' => 'Buy',
 			'investing.transactions.kinds.sell' => 'Sell',
 			'investing.transactions.kinds.dividend' => 'Dividend',
+			'investing.overview.title' => 'Portfolio',
+			'investing.overview.netWorth' => 'Net worth',
+			'investing.overview.invested' => 'Invested',
+			'investing.overview.unrealizedPl' => 'Unrealized P/L',
+			'investing.overview.returnLabel' => 'Return',
+			'investing.overview.holdings' => 'Holdings',
+			'investing.overview.history' => 'Net worth history',
+			'investing.overview.byCurrency' => 'By currency',
+			'investing.overview.emptyTitle' => 'Nothing invested yet',
+			'investing.overview.empty' => 'Record a buy to start tracking your portfolio.',
+			'investing.overview.refreshing' => 'Updating prices…',
+			'investing.overview.stale' => 'Stale',
+			'investing.overview.fxMissing' => 'No FX rate',
+			'investing.overview.units' => 'units',
 			'investing.nav' => 'Investing',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
@@ -3107,6 +3173,8 @@ extension on Translations {
 			'chat.handlers.transactionCreateAccountFirst' => 'Create an account first.',
 			'chat.handlers.transactionUnresolvedAccount' => 'Could not resolve account.',
 			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Failed to create transaction: ${error}',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transaction "${description}" of ${amount} created successfully!',
 			'chat.handlers.transferAccountsRequired' => 'Transfer needs both source and destination accounts.',
 			'chat.handlers.transferMinTwoAccounts' => 'Transfer requires at least two accounts.',
@@ -3121,8 +3189,6 @@ extension on Translations {
 			'chat.handlers.budgetExpenseOnly' => 'Budgets are only available for expense categories.',
 			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Budgets can only be set on root categories. Use the root "${name}".',
 			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'There\'s already a budget for "${name}". Use "update" to change the value.',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'No budget for "${name}" yet. Use "create" to define one.',
 			'chat.handlers.budgetAmountPositive' => 'Budget amount must be greater than zero.',
 			'chat.handlers.budgetLoadFailed' => 'Couldn\'t load budgets.',

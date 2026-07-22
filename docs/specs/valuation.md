@@ -75,3 +75,28 @@ UI can list excluded ones with a warning.
 `FixedIncomeMetadata` (`domain/services/fixed_income_metadata.dart`) reads/writes
 `fiBasis` + `fiRate` on `Asset.metadata`, centralizing the key names so the asset
 form (writer) and the valuation (reader) never drift.
+
+## Overview (net worth) — F4
+
+`InvestingOverviewCubit` owns a per-cubit `PortfolioPricingEngine` and prices the
+portfolio cache-first then network-refreshes (same warm-start → priceFromCache →
+refreshNetwork → re-price flow the engine documents). `InvestingOverviewPage`
+renders the base-currency net worth, invested + unrealized P/L, `byCurrency`
+subtotals (shown only when >1 currency), a per-holding list (stale / fx-missing
+badges), and the history sparkline.
+
+## Snapshots (net-worth history) — F4
+
+A `Snapshot` is the portfolio consolidated to base on a calendar day
+(`totalValue`, `totalInvested`, `unrealizedPL` — all base). One per user per day,
+**idempotent**: Firestore doc id is the deterministic `"${userId}_${dayKey}"`
+(`dayKey = yyyy-MM-dd`) written via `set()`, so re-recording a day overwrites
+rather than appending (a deliberate exception to the auto-id convention — daily
+idempotency requires a deterministic key). Mirrored + cached in the
+`investment_snapshots` Drift table (schema 14) as integer minor units + a base
+`currency`.
+
+`RecordDailySnapshotUseCase` runs at the end of every overview refresh from the
+already-priced portfolio; a zero-value **and** zero-invested portfolio is skipped
+so an empty/loading portfolio never writes a misleading flat line. Snapshots are
+read back via `GetSnapshotsUseCase` (cache-first; `forceRefresh` pulls remote).

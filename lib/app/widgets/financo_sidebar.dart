@@ -131,8 +131,15 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                   icon: FontAwesomeIcons.chartLine,
                   expanded: _expanded,
                   label: t.investing.nav,
-                  onTap: () => context.go(AppRoutes.investingTransactions),
+                  onTap: () => context.go(AppRoutes.investingOverview),
                   isActive: location.startsWith('/investing'),
+                ),
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.chartPie,
+                  expanded: _expanded,
+                  label: t.investing.overview.title,
+                  onTap: () => context.go(AppRoutes.investingOverview),
+                  isActive: location.startsWith(AppRoutes.investingOverview),
                 ),
                 SidebarSubNavItem(
                   icon: FontAwesomeIcons.rightLeft,

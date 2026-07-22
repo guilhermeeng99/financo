@@ -9,6 +9,7 @@ import 'package:financo/core/database/daos/fx_rates_dao.dart';
 import 'package:financo/core/database/daos/index_points_dao.dart';
 import 'package:financo/core/database/daos/institutions_dao.dart';
 import 'package:financo/core/database/daos/investment_assets_dao.dart';
+import 'package:financo/core/database/daos/investment_snapshots_dao.dart';
 import 'package:financo/core/database/daos/investment_transactions_dao.dart';
 import 'package:financo/core/database/daos/quotes_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
@@ -22,6 +23,7 @@ import 'package:financo/core/database/tables/fx_rates_table.dart';
 import 'package:financo/core/database/tables/index_points_table.dart';
 import 'package:financo/core/database/tables/institutions_table.dart';
 import 'package:financo/core/database/tables/investment_assets_table.dart';
+import 'package:financo/core/database/tables/investment_snapshots_table.dart';
 import 'package:financo/core/database/tables/investment_transactions_table.dart';
 import 'package:financo/core/database/tables/quotes_table.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
@@ -41,6 +43,7 @@ part 'app_database.g.dart';
     LocalInstitutions,
     LocalInvestmentAssets,
     LocalInvestmentTransactions,
+    LocalInvestmentSnapshots,
     LocalQuotes,
     LocalFxRates,
     LocalIndexPoints,
@@ -56,6 +59,7 @@ part 'app_database.g.dart';
     InstitutionsDao,
     InvestmentAssetsDao,
     InvestmentTransactionsDao,
+    InvestmentSnapshotsDao,
     QuotesDao,
     FxRatesDao,
     IndexPointsDao,
@@ -66,11 +70,12 @@ class AppDatabase extends _$AppDatabase {
 
   // 12: V2 investing ledger (institutions, investment_assets,
   // investment_transactions). 13: derived market caches (quotes, fx_rates,
-  // index_points) — device-local, never mirrored. Local cache is disposable —
-  // the sync layer repopulates the mirrored tables from Firestore on next open.
-  // See docs/specs/investing.md §4 and docs/specs/quotes.md.
+  // index_points) — device-local, never mirrored. 14: net-worth history
+  // (investment_snapshots) — mirrored. Local cache is disposable — the sync
+  // layer repopulates the mirrored tables from Firestore on next open.
+  // See docs/specs/investing.md §4 and docs/specs/valuation.md.
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

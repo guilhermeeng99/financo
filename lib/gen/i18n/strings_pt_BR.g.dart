@@ -105,6 +105,7 @@ class _Translations$investing$pt_BR implements Translations$investing$en {
 	@override late final _Translations$investing$institutions$pt_BR institutions = _Translations$investing$institutions$pt_BR._(_root);
 	@override late final _Translations$investing$assets$pt_BR assets = _Translations$investing$assets$pt_BR._(_root);
 	@override late final _Translations$investing$transactions$pt_BR transactions = _Translations$investing$transactions$pt_BR._(_root);
+	@override late final _Translations$investing$overview$pt_BR overview = _Translations$investing$overview$pt_BR._(_root);
 	@override String get nav => 'Investimentos';
 }
 
@@ -899,6 +900,29 @@ class _Translations$investing$transactions$pt_BR implements Translations$investi
 	@override late final _Translations$investing$transactions$kinds$pt_BR kinds = _Translations$investing$transactions$kinds$pt_BR._(_root);
 }
 
+// Path: investing.overview
+class _Translations$investing$overview$pt_BR implements Translations$investing$overview$en {
+	_Translations$investing$overview$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Carteira';
+	@override String get netWorth => 'Patrimônio';
+	@override String get invested => 'Investido';
+	@override String get unrealizedPl => 'Lucro/Prejuízo';
+	@override String get returnLabel => 'Retorno';
+	@override String get holdings => 'Posições';
+	@override String get history => 'Histórico de patrimônio';
+	@override String get byCurrency => 'Por moeda';
+	@override String get emptyTitle => 'Nada investido ainda';
+	@override String get empty => 'Registre uma compra para acompanhar sua carteira.';
+	@override String get refreshing => 'Atualizando preços…';
+	@override String get stale => 'Desatualizado';
+	@override String get fxMissing => 'Sem câmbio';
+	@override String get units => 'unidades';
+}
+
 // Path: csvImport.errors
 class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
 	_Translations$csvImport$errors$pt_BR._(this._root);
@@ -1241,6 +1265,20 @@ extension on TranslationsPtBr {
 			'investing.transactions.kinds.buy' => 'Compra',
 			'investing.transactions.kinds.sell' => 'Venda',
 			'investing.transactions.kinds.dividend' => 'Dividendo',
+			'investing.overview.title' => 'Carteira',
+			'investing.overview.netWorth' => 'Patrimônio',
+			'investing.overview.invested' => 'Investido',
+			'investing.overview.unrealizedPl' => 'Lucro/Prejuízo',
+			'investing.overview.returnLabel' => 'Retorno',
+			'investing.overview.holdings' => 'Posições',
+			'investing.overview.history' => 'Histórico de patrimônio',
+			'investing.overview.byCurrency' => 'Por moeda',
+			'investing.overview.emptyTitle' => 'Nada investido ainda',
+			'investing.overview.empty' => 'Registre uma compra para acompanhar sua carteira.',
+			'investing.overview.refreshing' => 'Atualizando preços…',
+			'investing.overview.stale' => 'Desatualizado',
+			'investing.overview.fxMissing' => 'Sem câmbio',
+			'investing.overview.units' => 'unidades',
 			'investing.nav' => 'Investimentos',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
@@ -1630,6 +1668,8 @@ extension on TranslationsPtBr {
 			'chat.handlers.transactionCreateAccountFirst' => 'Crie uma conta primeiro.',
 			'chat.handlers.transactionUnresolvedAccount' => 'Não foi possível resolver a conta.',
 			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Falha ao criar transação: ${error}',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transação "${description}" de ${amount} criada com sucesso!',
 			'chat.handlers.transferAccountsRequired' => 'Transferência precisa de origem e destino.',
 			'chat.handlers.transferMinTwoAccounts' => 'Transferência requer ao menos duas contas.',
@@ -1644,8 +1684,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.budgetExpenseOnly' => 'Orçamento só vale para categorias de despesa.',
 			'chat.handlers.budgetRootCategoryOnly' => ({required Object name}) => 'Orçamento só pode ser criado em categoria-pai. Use a categoria raiz "${name}".',
 			'chat.handlers.budgetAlreadyExists' => ({required Object name}) => 'Já existe um orçamento para "${name}". Use "atualizar" para mudar o valor.',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.budgetDoesNotExist' => ({required Object name}) => 'Não existe orçamento para "${name}" ainda. Use "criar" para definir um.',
 			'chat.handlers.budgetAmountPositive' => 'Valor do orçamento deve ser maior que zero.',
 			'chat.handlers.budgetLoadFailed' => 'Não foi possível carregar orçamentos.',

@@ -6285,6 +6285,488 @@ class LocalInvestmentTransactionsCompanion
   }
 }
 
+class $LocalInvestmentSnapshotsTable extends LocalInvestmentSnapshots
+    with TableInfo<$LocalInvestmentSnapshotsTable, LocalInvestmentSnapshot> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalInvestmentSnapshotsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalValueMinorMeta = const VerificationMeta(
+    'totalValueMinor',
+  );
+  @override
+  late final GeneratedColumn<int> totalValueMinor = GeneratedColumn<int>(
+    'total_value_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalInvestedMinorMeta =
+      const VerificationMeta('totalInvestedMinor');
+  @override
+  late final GeneratedColumn<int> totalInvestedMinor = GeneratedColumn<int>(
+    'total_invested_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unrealizedPlMinorMeta = const VerificationMeta(
+    'unrealizedPlMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unrealizedPlMinor = GeneratedColumn<int>(
+    'unrealized_pl_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    date,
+    totalValueMinor,
+    totalInvestedMinor,
+    unrealizedPlMinor,
+    currency,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_investment_snapshots';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalInvestmentSnapshot> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('total_value_minor')) {
+      context.handle(
+        _totalValueMinorMeta,
+        totalValueMinor.isAcceptableOrUnknown(
+          data['total_value_minor']!,
+          _totalValueMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalValueMinorMeta);
+    }
+    if (data.containsKey('total_invested_minor')) {
+      context.handle(
+        _totalInvestedMinorMeta,
+        totalInvestedMinor.isAcceptableOrUnknown(
+          data['total_invested_minor']!,
+          _totalInvestedMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalInvestedMinorMeta);
+    }
+    if (data.containsKey('unrealized_pl_minor')) {
+      context.handle(
+        _unrealizedPlMinorMeta,
+        unrealizedPlMinor.isAcceptableOrUnknown(
+          data['unrealized_pl_minor']!,
+          _unrealizedPlMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unrealizedPlMinorMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_currencyMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalInvestmentSnapshot map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalInvestmentSnapshot(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      totalValueMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_value_minor'],
+      )!,
+      totalInvestedMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_invested_minor'],
+      )!,
+      unrealizedPlMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unrealized_pl_minor'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalInvestmentSnapshotsTable createAlias(String alias) {
+    return $LocalInvestmentSnapshotsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalInvestmentSnapshot extends DataClass
+    implements Insertable<LocalInvestmentSnapshot> {
+  final String id;
+  final String userId;
+  final DateTime date;
+  final int totalValueMinor;
+  final int totalInvestedMinor;
+  final int unrealizedPlMinor;
+  final String currency;
+  const LocalInvestmentSnapshot({
+    required this.id,
+    required this.userId,
+    required this.date,
+    required this.totalValueMinor,
+    required this.totalInvestedMinor,
+    required this.unrealizedPlMinor,
+    required this.currency,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['date'] = Variable<DateTime>(date);
+    map['total_value_minor'] = Variable<int>(totalValueMinor);
+    map['total_invested_minor'] = Variable<int>(totalInvestedMinor);
+    map['unrealized_pl_minor'] = Variable<int>(unrealizedPlMinor);
+    map['currency'] = Variable<String>(currency);
+    return map;
+  }
+
+  LocalInvestmentSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LocalInvestmentSnapshotsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      date: Value(date),
+      totalValueMinor: Value(totalValueMinor),
+      totalInvestedMinor: Value(totalInvestedMinor),
+      unrealizedPlMinor: Value(unrealizedPlMinor),
+      currency: Value(currency),
+    );
+  }
+
+  factory LocalInvestmentSnapshot.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalInvestmentSnapshot(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      totalValueMinor: serializer.fromJson<int>(json['totalValueMinor']),
+      totalInvestedMinor: serializer.fromJson<int>(json['totalInvestedMinor']),
+      unrealizedPlMinor: serializer.fromJson<int>(json['unrealizedPlMinor']),
+      currency: serializer.fromJson<String>(json['currency']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'date': serializer.toJson<DateTime>(date),
+      'totalValueMinor': serializer.toJson<int>(totalValueMinor),
+      'totalInvestedMinor': serializer.toJson<int>(totalInvestedMinor),
+      'unrealizedPlMinor': serializer.toJson<int>(unrealizedPlMinor),
+      'currency': serializer.toJson<String>(currency),
+    };
+  }
+
+  LocalInvestmentSnapshot copyWith({
+    String? id,
+    String? userId,
+    DateTime? date,
+    int? totalValueMinor,
+    int? totalInvestedMinor,
+    int? unrealizedPlMinor,
+    String? currency,
+  }) => LocalInvestmentSnapshot(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    date: date ?? this.date,
+    totalValueMinor: totalValueMinor ?? this.totalValueMinor,
+    totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
+    unrealizedPlMinor: unrealizedPlMinor ?? this.unrealizedPlMinor,
+    currency: currency ?? this.currency,
+  );
+  LocalInvestmentSnapshot copyWithCompanion(
+    LocalInvestmentSnapshotsCompanion data,
+  ) {
+    return LocalInvestmentSnapshot(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      date: data.date.present ? data.date.value : this.date,
+      totalValueMinor: data.totalValueMinor.present
+          ? data.totalValueMinor.value
+          : this.totalValueMinor,
+      totalInvestedMinor: data.totalInvestedMinor.present
+          ? data.totalInvestedMinor.value
+          : this.totalInvestedMinor,
+      unrealizedPlMinor: data.unrealizedPlMinor.present
+          ? data.unrealizedPlMinor.value
+          : this.unrealizedPlMinor,
+      currency: data.currency.present ? data.currency.value : this.currency,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalInvestmentSnapshot(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('date: $date, ')
+          ..write('totalValueMinor: $totalValueMinor, ')
+          ..write('totalInvestedMinor: $totalInvestedMinor, ')
+          ..write('unrealizedPlMinor: $unrealizedPlMinor, ')
+          ..write('currency: $currency')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    date,
+    totalValueMinor,
+    totalInvestedMinor,
+    unrealizedPlMinor,
+    currency,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalInvestmentSnapshot &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.date == this.date &&
+          other.totalValueMinor == this.totalValueMinor &&
+          other.totalInvestedMinor == this.totalInvestedMinor &&
+          other.unrealizedPlMinor == this.unrealizedPlMinor &&
+          other.currency == this.currency);
+}
+
+class LocalInvestmentSnapshotsCompanion
+    extends UpdateCompanion<LocalInvestmentSnapshot> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<DateTime> date;
+  final Value<int> totalValueMinor;
+  final Value<int> totalInvestedMinor;
+  final Value<int> unrealizedPlMinor;
+  final Value<String> currency;
+  final Value<int> rowid;
+  const LocalInvestmentSnapshotsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.totalValueMinor = const Value.absent(),
+    this.totalInvestedMinor = const Value.absent(),
+    this.unrealizedPlMinor = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalInvestmentSnapshotsCompanion.insert({
+    required String id,
+    required String userId,
+    required DateTime date,
+    required int totalValueMinor,
+    required int totalInvestedMinor,
+    required int unrealizedPlMinor,
+    required String currency,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       date = Value(date),
+       totalValueMinor = Value(totalValueMinor),
+       totalInvestedMinor = Value(totalInvestedMinor),
+       unrealizedPlMinor = Value(unrealizedPlMinor),
+       currency = Value(currency);
+  static Insertable<LocalInvestmentSnapshot> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<DateTime>? date,
+    Expression<int>? totalValueMinor,
+    Expression<int>? totalInvestedMinor,
+    Expression<int>? unrealizedPlMinor,
+    Expression<String>? currency,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (date != null) 'date': date,
+      if (totalValueMinor != null) 'total_value_minor': totalValueMinor,
+      if (totalInvestedMinor != null)
+        'total_invested_minor': totalInvestedMinor,
+      if (unrealizedPlMinor != null) 'unrealized_pl_minor': unrealizedPlMinor,
+      if (currency != null) 'currency': currency,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalInvestmentSnapshotsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<DateTime>? date,
+    Value<int>? totalValueMinor,
+    Value<int>? totalInvestedMinor,
+    Value<int>? unrealizedPlMinor,
+    Value<String>? currency,
+    Value<int>? rowid,
+  }) {
+    return LocalInvestmentSnapshotsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      date: date ?? this.date,
+      totalValueMinor: totalValueMinor ?? this.totalValueMinor,
+      totalInvestedMinor: totalInvestedMinor ?? this.totalInvestedMinor,
+      unrealizedPlMinor: unrealizedPlMinor ?? this.unrealizedPlMinor,
+      currency: currency ?? this.currency,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (totalValueMinor.present) {
+      map['total_value_minor'] = Variable<int>(totalValueMinor.value);
+    }
+    if (totalInvestedMinor.present) {
+      map['total_invested_minor'] = Variable<int>(totalInvestedMinor.value);
+    }
+    if (unrealizedPlMinor.present) {
+      map['unrealized_pl_minor'] = Variable<int>(unrealizedPlMinor.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalInvestmentSnapshotsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('date: $date, ')
+          ..write('totalValueMinor: $totalValueMinor, ')
+          ..write('totalInvestedMinor: $totalInvestedMinor, ')
+          ..write('unrealizedPlMinor: $unrealizedPlMinor, ')
+          ..write('currency: $currency, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalQuotesTable extends LocalQuotes
     with TableInfo<$LocalQuotesTable, LocalQuote> {
   @override
@@ -7308,6 +7790,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalInvestmentAssetsTable(this);
   late final $LocalInvestmentTransactionsTable localInvestmentTransactions =
       $LocalInvestmentTransactionsTable(this);
+  late final $LocalInvestmentSnapshotsTable localInvestmentSnapshots =
+      $LocalInvestmentSnapshotsTable(this);
   late final $LocalQuotesTable localQuotes = $LocalQuotesTable(this);
   late final $LocalFxRatesTable localFxRates = $LocalFxRatesTable(this);
   late final $LocalIndexPointsTable localIndexPoints = $LocalIndexPointsTable(
@@ -7334,6 +7818,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final InvestmentTransactionsDao investmentTransactionsDao =
       InvestmentTransactionsDao(this as AppDatabase);
+  late final InvestmentSnapshotsDao investmentSnapshotsDao =
+      InvestmentSnapshotsDao(this as AppDatabase);
   late final QuotesDao quotesDao = QuotesDao(this as AppDatabase);
   late final FxRatesDao fxRatesDao = FxRatesDao(this as AppDatabase);
   late final IndexPointsDao indexPointsDao = IndexPointsDao(
@@ -7354,6 +7840,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localInstitutions,
     localInvestmentAssets,
     localInvestmentTransactions,
+    localInvestmentSnapshots,
     localQuotes,
     localFxRates,
     localIndexPoints,
@@ -10470,6 +10957,269 @@ typedef $$LocalInvestmentTransactionsTableProcessedTableManager =
       LocalInvestmentTransaction,
       PrefetchHooks Function()
     >;
+typedef $$LocalInvestmentSnapshotsTableCreateCompanionBuilder =
+    LocalInvestmentSnapshotsCompanion Function({
+      required String id,
+      required String userId,
+      required DateTime date,
+      required int totalValueMinor,
+      required int totalInvestedMinor,
+      required int unrealizedPlMinor,
+      required String currency,
+      Value<int> rowid,
+    });
+typedef $$LocalInvestmentSnapshotsTableUpdateCompanionBuilder =
+    LocalInvestmentSnapshotsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<DateTime> date,
+      Value<int> totalValueMinor,
+      Value<int> totalInvestedMinor,
+      Value<int> unrealizedPlMinor,
+      Value<String> currency,
+      Value<int> rowid,
+    });
+
+class $$LocalInvestmentSnapshotsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalInvestmentSnapshotsTable> {
+  $$LocalInvestmentSnapshotsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unrealizedPlMinor => $composableBuilder(
+    column: $table.unrealizedPlMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalInvestmentSnapshotsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalInvestmentSnapshotsTable> {
+  $$LocalInvestmentSnapshotsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unrealizedPlMinor => $composableBuilder(
+    column: $table.unrealizedPlMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalInvestmentSnapshotsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalInvestmentSnapshotsTable> {
+  $$LocalInvestmentSnapshotsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get totalValueMinor => $composableBuilder(
+    column: $table.totalValueMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalInvestedMinor => $composableBuilder(
+    column: $table.totalInvestedMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unrealizedPlMinor => $composableBuilder(
+    column: $table.unrealizedPlMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+}
+
+class $$LocalInvestmentSnapshotsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalInvestmentSnapshotsTable,
+          LocalInvestmentSnapshot,
+          $$LocalInvestmentSnapshotsTableFilterComposer,
+          $$LocalInvestmentSnapshotsTableOrderingComposer,
+          $$LocalInvestmentSnapshotsTableAnnotationComposer,
+          $$LocalInvestmentSnapshotsTableCreateCompanionBuilder,
+          $$LocalInvestmentSnapshotsTableUpdateCompanionBuilder,
+          (
+            LocalInvestmentSnapshot,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalInvestmentSnapshotsTable,
+              LocalInvestmentSnapshot
+            >,
+          ),
+          LocalInvestmentSnapshot,
+          PrefetchHooks Function()
+        > {
+  $$LocalInvestmentSnapshotsTableTableManager(
+    _$AppDatabase db,
+    $LocalInvestmentSnapshotsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalInvestmentSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalInvestmentSnapshotsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalInvestmentSnapshotsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<int> totalValueMinor = const Value.absent(),
+                Value<int> totalInvestedMinor = const Value.absent(),
+                Value<int> unrealizedPlMinor = const Value.absent(),
+                Value<String> currency = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalInvestmentSnapshotsCompanion(
+                id: id,
+                userId: userId,
+                date: date,
+                totalValueMinor: totalValueMinor,
+                totalInvestedMinor: totalInvestedMinor,
+                unrealizedPlMinor: unrealizedPlMinor,
+                currency: currency,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required DateTime date,
+                required int totalValueMinor,
+                required int totalInvestedMinor,
+                required int unrealizedPlMinor,
+                required String currency,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalInvestmentSnapshotsCompanion.insert(
+                id: id,
+                userId: userId,
+                date: date,
+                totalValueMinor: totalValueMinor,
+                totalInvestedMinor: totalInvestedMinor,
+                unrealizedPlMinor: unrealizedPlMinor,
+                currency: currency,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalInvestmentSnapshotsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalInvestmentSnapshotsTable,
+      LocalInvestmentSnapshot,
+      $$LocalInvestmentSnapshotsTableFilterComposer,
+      $$LocalInvestmentSnapshotsTableOrderingComposer,
+      $$LocalInvestmentSnapshotsTableAnnotationComposer,
+      $$LocalInvestmentSnapshotsTableCreateCompanionBuilder,
+      $$LocalInvestmentSnapshotsTableUpdateCompanionBuilder,
+      (
+        LocalInvestmentSnapshot,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalInvestmentSnapshotsTable,
+          LocalInvestmentSnapshot
+        >,
+      ),
+      LocalInvestmentSnapshot,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalQuotesTableCreateCompanionBuilder =
     LocalQuotesCompanion Function({
       required String assetId,
@@ -11069,6 +11819,11 @@ class $AppDatabaseManager {
       $$LocalInvestmentTransactionsTableTableManager(
         _db,
         _db.localInvestmentTransactions,
+      );
+  $$LocalInvestmentSnapshotsTableTableManager get localInvestmentSnapshots =>
+      $$LocalInvestmentSnapshotsTableTableManager(
+        _db,
+        _db.localInvestmentSnapshots,
       );
   $$LocalQuotesTableTableManager get localQuotes =>
       $$LocalQuotesTableTableManager(_db, _db.localQuotes);
