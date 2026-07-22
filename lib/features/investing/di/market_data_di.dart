@@ -1,13 +1,19 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:financo/features/investing/data/datasources/awesomeapi_fx_data_source.dart';
 import 'package:financo/features/investing/data/datasources/bcb_sgs_index_data_source.dart';
 import 'package:financo/features/investing/data/datasources/caching_fx_data_source.dart';
 import 'package:financo/features/investing/data/datasources/caching_index_data_source.dart';
 import 'package:financo/features/investing/data/datasources/coingecko_quote_data_source.dart';
+import 'package:financo/features/investing/data/datasources/proxy_market_quote_data_source.dart';
 import 'package:financo/features/investing/data/datasources/tesouro_direto_data_source.dart';
 import 'package:financo/features/investing/data/repositories/quote_repository_impl.dart';
 import 'package:financo/features/investing/domain/datasources/index_data_source.dart';
 import 'package:financo/features/investing/domain/datasources/quote_data_source.dart';
 import 'package:financo/features/investing/domain/repositories/quote_repository.dart';
+import 'package:financo/features/investing/domain/services/holding_calculator.dart';
+import 'package:financo/features/investing/domain/services/portfolio_inputs_builder.dart';
+import 'package:financo/features/investing/domain/services/valuation_service.dart';
+import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
@@ -30,7 +36,15 @@ void registerMarketDataDependencies(GetIt sl) {
         sources: [
           CoinGeckoQuoteDataSource(sl<http.Client>()),
           TesouroDiretoDataSource(sl<http.Client>()),
+          ProxyMarketQuoteDataSource(functions: sl<FirebaseFunctions>()),
         ],
       ),
+    )
+    // ─── Valuation composition (F2c) ────────────────────────
+    ..registerLazySingleton(ValuationService.new)
+    ..registerLazySingleton(HoldingCalculator.new)
+    ..registerLazySingleton(PortfolioInputsBuilder.new)
+    ..registerFactory(
+      () => PortfolioPricingEngine(sl(), sl(), sl(), sl(), sl(), sl(), sl()),
     );
 }

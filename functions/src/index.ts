@@ -10,6 +10,12 @@ import {
 } from './access/assertAllowedCaller';
 import { deleteUserAsAdmin as deleteUserAsAdminImpl } from './admin/deleteUser';
 import { notifyTransactionsDue } from './transactions/notifyTransactionsDue';
+import {
+  fetchInvestmentQuotes as fetchInvestmentQuotesImpl,
+  BRAPI_TOKEN,
+  FINNHUB_TOKEN,
+  type QuoteItem,
+} from './quotes/fetchInvestmentQuotes';
 
 admin.initializeApp();
 
@@ -104,6 +110,43 @@ export const deleteUserAsAdmin = onCall<DeleteUserAsAdminCallableRequest>(
     // is shared with the allowlisted user-facing callables.
     const caller = requireSignedInCaller(request);
     return deleteUserAsAdminImpl(request.data, caller.email, caller.uid);
+  },
+);
+
+interface FetchInvestmentQuotesRequest {
+  items: QuoteItem[];
+}
+
+/**
+ * Proxies the keyed market-data sources (brapi, Finnhub) so their API tokens
+ * stay backend secrets instead of shipping in the web bundle. Keyless sources
+ * (CoinGecko, Tesouro, BCB, AwesomeAPI FX) are fetched directly on the client.
+ * See docs/specs/quotes.md.
+ */
+export const fetchInvestmentQuotes = onCall<FetchInvestmentQuotesRequest>(
+  {
+    region: 'us-central1',
+    memory: '256MiB',
+    timeoutSeconds: 30,
+    invoker: 'public',
+    secrets: [BRAPI_TOKEN, FINNHUB_TOKEN],
+  },
+  async (request) => {
+    await assertAllowedCaller(request);
+    const rawItems = Array.isArray(request.data?.items) ? request.data.items : [];
+    const items: QuoteItem[] = rawItems
+      .filter(
+        (i): i is QuoteItem =>
+          !!i &&
+          typeof i.assetId === 'string' &&
+          typeof i.ticker === 'string' &&
+          (i.source === 'brapi' || i.source === 'finnhub'),
+      )
+      .slice(0, 100);
+    if (items.length === 0) return { quotes: [] };
+    return wrapCallableErrors('fetchInvestmentQuotes', 'Quote fetch failed', () =>
+      fetchInvestmentQuotesImpl(items),
+    );
   },
 );
 
