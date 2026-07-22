@@ -78,6 +78,9 @@ import 'package:financo/features/investing/data/datasources/institution_remote_d
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
+import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
@@ -464,3 +467,11 @@ class MockFxRatesDao extends Mock implements FxRatesDao {}
 class MockIndexPointsDao extends Mock implements IndexPointsDao {}
 
 class MockHttpClient extends Mock implements http.Client {}
+
+class MockGetInstitutionsUseCase extends Mock
+    implements GetInstitutionsUseCase {}
+
+class MockGetAssetsUseCase extends Mock implements GetAssetsUseCase {}
+
+class MockGetAssetTransactionsUseCase extends Mock
+    implements GetAssetTransactionsUseCase {}
