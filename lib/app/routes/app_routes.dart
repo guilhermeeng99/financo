@@ -42,6 +42,9 @@ class AppRoutes {
   static const institutions = '/investing/institutions';
   static const addInstitution = '/investing/institution/add';
   static const editInstitution = '/investing/institution/edit';
+  static const assets = '/investing/assets';
+  static const addAsset = '/investing/asset/add';
+  static const editAsset = '/investing/asset/edit';
 
   static String assetClassDetailById(String id) => '/investments/class/$id';
 

@@ -53,6 +53,53 @@
         "crypto": "Crypto exchange",
         "other": "Other"
       }
+    },
+    "assets": {
+      "title": "Assets",
+      "emptyTitle": "No assets yet",
+      "empty": "Add what you own — stocks, ETFs, crypto or fixed income.",
+      "addFirst": "Add asset",
+      "add": "New asset",
+      "edit": "Edit asset",
+      "sectionInstrument": "Instrument",
+      "sectionCustody": "Custody",
+      "sectionFixedIncome": "Fixed income",
+      "ticker": "Ticker",
+      "tickerHint": "AAPL, PETR4, BTC…",
+      "name": "Name",
+      "nameHint": "Apple Inc., Petrobras…",
+      "kind": "Type",
+      "market": "Market",
+      "currency": "Currency",
+      "institution": "Institution",
+      "pickInstitution": "Select…",
+      "noInstitutions": "Create an institution first",
+      "created": "Asset created",
+      "updated": "Asset updated",
+      "deleted": "Asset deleted",
+      "fiBasis": "Index",
+      "fiRate": "Rate (%)",
+      "fiRateHint": "110 = 110% of CDI · 12 = 12% p.a.",
+      "kinds": {
+        "stockBr": "BR stock",
+        "fiiBr": "FII",
+        "etfBr": "BR ETF",
+        "bdrBr": "BDR",
+        "stockUs": "US stock",
+        "etfUs": "US ETF",
+        "crypto": "Crypto",
+        "treasury": "Treasury",
+        "fixedIncome": "Fixed income",
+        "fund": "Fund",
+        "cash": "Cash"
+      },
+      "markets": {"br": "Brazil", "us": "United States", "global": "Global"},
+      "fiBases": {
+        "cdi": "CDI",
+        "selic": "Selic",
+        "prefixed": "Prefixed",
+        "ipca": "IPCA+"
+      }
     }
   },
   "csvImport": {

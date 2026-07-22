@@ -103,6 +103,7 @@ class _Translations$investing$pt_BR implements Translations$investing$en {
 	// Translations
 	@override late final _Translations$investing$errors$pt_BR errors = _Translations$investing$errors$pt_BR._(_root);
 	@override late final _Translations$investing$institutions$pt_BR institutions = _Translations$investing$institutions$pt_BR._(_root);
+	@override late final _Translations$investing$assets$pt_BR assets = _Translations$investing$assets$pt_BR._(_root);
 }
 
 // Path: csvImport
@@ -830,6 +831,43 @@ class _Translations$investing$institutions$pt_BR implements Translations$investi
 	@override late final _Translations$investing$institutions$kinds$pt_BR kinds = _Translations$investing$institutions$kinds$pt_BR._(_root);
 }
 
+// Path: investing.assets
+class _Translations$investing$assets$pt_BR implements Translations$investing$assets$en {
+	_Translations$investing$assets$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Ativos';
+	@override String get emptyTitle => 'Nenhum ativo ainda';
+	@override String get empty => 'Adicione o que você tem — ações, ETFs, cripto ou renda fixa.';
+	@override String get addFirst => 'Adicionar ativo';
+	@override String get add => 'Novo ativo';
+	@override String get edit => 'Editar ativo';
+	@override String get sectionInstrument => 'Instrumento';
+	@override String get sectionCustody => 'Custódia';
+	@override String get sectionFixedIncome => 'Renda fixa';
+	@override String get ticker => 'Ticker';
+	@override String get tickerHint => 'AAPL, PETR4, BTC…';
+	@override String get name => 'Nome';
+	@override String get nameHint => 'Apple Inc., Petrobras…';
+	@override String get kind => 'Tipo';
+	@override String get market => 'Mercado';
+	@override String get currency => 'Moeda';
+	@override String get institution => 'Instituição';
+	@override String get pickInstitution => 'Selecionar…';
+	@override String get noInstitutions => 'Crie uma instituição primeiro';
+	@override String get created => 'Ativo criado';
+	@override String get updated => 'Ativo atualizado';
+	@override String get deleted => 'Ativo removido';
+	@override String get fiBasis => 'Índice';
+	@override String get fiRate => 'Taxa (%)';
+	@override String get fiRateHint => '110 = 110% do CDI · 12 = 12% a.a.';
+	@override late final _Translations$investing$assets$kinds$pt_BR kinds = _Translations$investing$assets$kinds$pt_BR._(_root);
+	@override late final _Translations$investing$assets$markets$pt_BR markets = _Translations$investing$assets$markets$pt_BR._(_root);
+	@override late final _Translations$investing$assets$fiBases$pt_BR fiBases = _Translations$investing$assets$fiBases$pt_BR._(_root);
+}
+
 // Path: csvImport.errors
 class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
 	_Translations$csvImport$errors$pt_BR._(this._root);
@@ -998,6 +1036,51 @@ class _Translations$investing$institutions$kinds$pt_BR implements Translations$i
 	@override String get other => 'Outro';
 }
 
+// Path: investing.assets.kinds
+class _Translations$investing$assets$kinds$pt_BR implements Translations$investing$assets$kinds$en {
+	_Translations$investing$assets$kinds$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get stockBr => 'Ação BR';
+	@override String get fiiBr => 'FII';
+	@override String get etfBr => 'ETF BR';
+	@override String get bdrBr => 'BDR';
+	@override String get stockUs => 'Ação EUA';
+	@override String get etfUs => 'ETF EUA';
+	@override String get crypto => 'Cripto';
+	@override String get treasury => 'Tesouro';
+	@override String get fixedIncome => 'Renda fixa';
+	@override String get fund => 'Fundo';
+	@override String get cash => 'Caixa';
+}
+
+// Path: investing.assets.markets
+class _Translations$investing$assets$markets$pt_BR implements Translations$investing$assets$markets$en {
+	_Translations$investing$assets$markets$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get br => 'Brasil';
+	@override String get us => 'Estados Unidos';
+	@override String get global => 'Global';
+}
+
+// Path: investing.assets.fiBases
+class _Translations$investing$assets$fiBases$pt_BR implements Translations$investing$assets$fiBases$en {
+	_Translations$investing$assets$fiBases$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get cdi => 'CDI';
+	@override String get selic => 'Selic';
+	@override String get prefixed => 'Prefixado';
+	@override String get ipca => 'IPCA+';
+}
+
 /// The flat map containing all translations for locale <pt-BR>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -1050,6 +1133,49 @@ extension on TranslationsPtBr {
 			'investing.institutions.kinds.internationalBroker' => 'Corretora internacional',
 			'investing.institutions.kinds.crypto' => 'Exchange de cripto',
 			'investing.institutions.kinds.other' => 'Outro',
+			'investing.assets.title' => 'Ativos',
+			'investing.assets.emptyTitle' => 'Nenhum ativo ainda',
+			'investing.assets.empty' => 'Adicione o que você tem — ações, ETFs, cripto ou renda fixa.',
+			'investing.assets.addFirst' => 'Adicionar ativo',
+			'investing.assets.add' => 'Novo ativo',
+			'investing.assets.edit' => 'Editar ativo',
+			'investing.assets.sectionInstrument' => 'Instrumento',
+			'investing.assets.sectionCustody' => 'Custódia',
+			'investing.assets.sectionFixedIncome' => 'Renda fixa',
+			'investing.assets.ticker' => 'Ticker',
+			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
+			'investing.assets.name' => 'Nome',
+			'investing.assets.nameHint' => 'Apple Inc., Petrobras…',
+			'investing.assets.kind' => 'Tipo',
+			'investing.assets.market' => 'Mercado',
+			'investing.assets.currency' => 'Moeda',
+			'investing.assets.institution' => 'Instituição',
+			'investing.assets.pickInstitution' => 'Selecionar…',
+			'investing.assets.noInstitutions' => 'Crie uma instituição primeiro',
+			'investing.assets.created' => 'Ativo criado',
+			'investing.assets.updated' => 'Ativo atualizado',
+			'investing.assets.deleted' => 'Ativo removido',
+			'investing.assets.fiBasis' => 'Índice',
+			'investing.assets.fiRate' => 'Taxa (%)',
+			'investing.assets.fiRateHint' => '110 = 110% do CDI · 12 = 12% a.a.',
+			'investing.assets.kinds.stockBr' => 'Ação BR',
+			'investing.assets.kinds.fiiBr' => 'FII',
+			'investing.assets.kinds.etfBr' => 'ETF BR',
+			'investing.assets.kinds.bdrBr' => 'BDR',
+			'investing.assets.kinds.stockUs' => 'Ação EUA',
+			'investing.assets.kinds.etfUs' => 'ETF EUA',
+			'investing.assets.kinds.crypto' => 'Cripto',
+			'investing.assets.kinds.treasury' => 'Tesouro',
+			'investing.assets.kinds.fixedIncome' => 'Renda fixa',
+			'investing.assets.kinds.fund' => 'Fundo',
+			'investing.assets.kinds.cash' => 'Caixa',
+			'investing.assets.markets.br' => 'Brasil',
+			'investing.assets.markets.us' => 'Estados Unidos',
+			'investing.assets.markets.global' => 'Global',
+			'investing.assets.fiBases.cdi' => 'CDI',
+			'investing.assets.fiBases.selic' => 'Selic',
+			'investing.assets.fiBases.prefixed' => 'Prefixado',
+			'investing.assets.fiBases.ipca' => 'IPCA+',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
 			'csvImport.errors.noValidAccounts' => 'O arquivo CSV não tem contas válidas.',
@@ -1475,6 +1601,8 @@ extension on TranslationsPtBr {
 			'budgets.amount' => 'Valor mensal',
 			'budgets.amountHint' => '0,00',
 			'budgets.summaryTitle' => 'Resumo do mês',
+			_ => null,
+		} ?? switch (path) {
 			'budgets.summaryCap' => 'Total orçado',
 			'budgets.summarySpent' => 'Gasto',
 			'budgets.summaryRemaining' => 'Disponível',
@@ -1518,8 +1646,6 @@ extension on TranslationsPtBr {
 			'profile.clearDataConfirmHeadline' => 'Esta ação é permanente',
 			'profile.clearDataConfirmBody' => 'Todas as suas transações, contas, categorias, orçamentos, contas a pagar e histórico do chat serão apagados. Não é possível desfazer.',
 			'profile.clearDataConfirmField' => 'Digite seu e-mail para confirmar',
-			_ => null,
-		} ?? switch (path) {
 			'profile.clearDataSuccess' => 'Os dados da sua conta foram limpos.',
 			'profile.downloadApk' => 'Baixar app Android',
 			'profile.downloadApkDescription' => 'Instale a versão mobile no seu dispositivo Android',

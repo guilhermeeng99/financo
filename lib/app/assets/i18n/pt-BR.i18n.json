@@ -53,6 +53,53 @@
         "crypto": "Exchange de cripto",
         "other": "Outro"
       }
+    },
+    "assets": {
+      "title": "Ativos",
+      "emptyTitle": "Nenhum ativo ainda",
+      "empty": "Adicione o que você tem — ações, ETFs, cripto ou renda fixa.",
+      "addFirst": "Adicionar ativo",
+      "add": "Novo ativo",
+      "edit": "Editar ativo",
+      "sectionInstrument": "Instrumento",
+      "sectionCustody": "Custódia",
+      "sectionFixedIncome": "Renda fixa",
+      "ticker": "Ticker",
+      "tickerHint": "AAPL, PETR4, BTC…",
+      "name": "Nome",
+      "nameHint": "Apple Inc., Petrobras…",
+      "kind": "Tipo",
+      "market": "Mercado",
+      "currency": "Moeda",
+      "institution": "Instituição",
+      "pickInstitution": "Selecionar…",
+      "noInstitutions": "Crie uma instituição primeiro",
+      "created": "Ativo criado",
+      "updated": "Ativo atualizado",
+      "deleted": "Ativo removido",
+      "fiBasis": "Índice",
+      "fiRate": "Taxa (%)",
+      "fiRateHint": "110 = 110% do CDI · 12 = 12% a.a.",
+      "kinds": {
+        "stockBr": "Ação BR",
+        "fiiBr": "FII",
+        "etfBr": "ETF BR",
+        "bdrBr": "BDR",
+        "stockUs": "Ação EUA",
+        "etfUs": "ETF EUA",
+        "crypto": "Cripto",
+        "treasury": "Tesouro",
+        "fixedIncome": "Renda fixa",
+        "fund": "Fundo",
+        "cash": "Caixa"
+      },
+      "markets": {"br": "Brasil", "us": "Estados Unidos", "global": "Global"},
+      "fiBases": {
+        "cdi": "CDI",
+        "selic": "Selic",
+        "prefixed": "Prefixado",
+        "ipca": "IPCA+"
+      }
     }
   },
   "csvImport": {

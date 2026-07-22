@@ -138,6 +138,7 @@ class Translations$investing$en {
 	// Translations
 	late final Translations$investing$errors$en errors = Translations$investing$errors$en._(_root);
 	late final Translations$investing$institutions$en institutions = Translations$investing$institutions$en._(_root);
+	late final Translations$investing$assets$en assets = Translations$investing$assets$en._(_root);
 }
 
 // Path: csvImport
@@ -1945,6 +1946,94 @@ class Translations$investing$institutions$en {
 	late final Translations$investing$institutions$kinds$en kinds = Translations$investing$institutions$kinds$en._(_root);
 }
 
+// Path: investing.assets
+class Translations$investing$assets$en {
+	Translations$investing$assets$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Assets'
+	String get title => 'Assets';
+
+	/// en: 'No assets yet'
+	String get emptyTitle => 'No assets yet';
+
+	/// en: 'Add what you own — stocks, ETFs, crypto or fixed income.'
+	String get empty => 'Add what you own — stocks, ETFs, crypto or fixed income.';
+
+	/// en: 'Add asset'
+	String get addFirst => 'Add asset';
+
+	/// en: 'New asset'
+	String get add => 'New asset';
+
+	/// en: 'Edit asset'
+	String get edit => 'Edit asset';
+
+	/// en: 'Instrument'
+	String get sectionInstrument => 'Instrument';
+
+	/// en: 'Custody'
+	String get sectionCustody => 'Custody';
+
+	/// en: 'Fixed income'
+	String get sectionFixedIncome => 'Fixed income';
+
+	/// en: 'Ticker'
+	String get ticker => 'Ticker';
+
+	/// en: 'AAPL, PETR4, BTC…'
+	String get tickerHint => 'AAPL, PETR4, BTC…';
+
+	/// en: 'Name'
+	String get name => 'Name';
+
+	/// en: 'Apple Inc., Petrobras…'
+	String get nameHint => 'Apple Inc., Petrobras…';
+
+	/// en: 'Type'
+	String get kind => 'Type';
+
+	/// en: 'Market'
+	String get market => 'Market';
+
+	/// en: 'Currency'
+	String get currency => 'Currency';
+
+	/// en: 'Institution'
+	String get institution => 'Institution';
+
+	/// en: 'Select…'
+	String get pickInstitution => 'Select…';
+
+	/// en: 'Create an institution first'
+	String get noInstitutions => 'Create an institution first';
+
+	/// en: 'Asset created'
+	String get created => 'Asset created';
+
+	/// en: 'Asset updated'
+	String get updated => 'Asset updated';
+
+	/// en: 'Asset deleted'
+	String get deleted => 'Asset deleted';
+
+	/// en: 'Index'
+	String get fiBasis => 'Index';
+
+	/// en: 'Rate (%)'
+	String get fiRate => 'Rate (%)';
+
+	/// en: '110 = 110% of CDI · 12 = 12% p.a.'
+	String get fiRateHint => '110 = 110% of CDI · 12 = 12% p.a.';
+
+	late final Translations$investing$assets$kinds$en kinds = Translations$investing$assets$kinds$en._(_root);
+	late final Translations$investing$assets$markets$en markets = Translations$investing$assets$markets$en._(_root);
+	late final Translations$investing$assets$fiBases$en fiBases = Translations$investing$assets$fiBases$en._(_root);
+}
+
 // Path: csvImport.errors
 class Translations$csvImport$errors$en {
 	Translations$csvImport$errors$en._(this._root);
@@ -2341,6 +2430,87 @@ class Translations$investing$institutions$kinds$en {
 	String get other => 'Other';
 }
 
+// Path: investing.assets.kinds
+class Translations$investing$assets$kinds$en {
+	Translations$investing$assets$kinds$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'BR stock'
+	String get stockBr => 'BR stock';
+
+	/// en: 'FII'
+	String get fiiBr => 'FII';
+
+	/// en: 'BR ETF'
+	String get etfBr => 'BR ETF';
+
+	/// en: 'BDR'
+	String get bdrBr => 'BDR';
+
+	/// en: 'US stock'
+	String get stockUs => 'US stock';
+
+	/// en: 'US ETF'
+	String get etfUs => 'US ETF';
+
+	/// en: 'Crypto'
+	String get crypto => 'Crypto';
+
+	/// en: 'Treasury'
+	String get treasury => 'Treasury';
+
+	/// en: 'Fixed income'
+	String get fixedIncome => 'Fixed income';
+
+	/// en: 'Fund'
+	String get fund => 'Fund';
+
+	/// en: 'Cash'
+	String get cash => 'Cash';
+}
+
+// Path: investing.assets.markets
+class Translations$investing$assets$markets$en {
+	Translations$investing$assets$markets$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Brazil'
+	String get br => 'Brazil';
+
+	/// en: 'United States'
+	String get us => 'United States';
+
+	/// en: 'Global'
+	String get global => 'Global';
+}
+
+// Path: investing.assets.fiBases
+class Translations$investing$assets$fiBases$en {
+	Translations$investing$assets$fiBases$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'CDI'
+	String get cdi => 'CDI';
+
+	/// en: 'Selic'
+	String get selic => 'Selic';
+
+	/// en: 'Prefixed'
+	String get prefixed => 'Prefixed';
+
+	/// en: 'IPCA+'
+	String get ipca => 'IPCA+';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -2393,6 +2563,49 @@ extension on Translations {
 			'investing.institutions.kinds.internationalBroker' => 'International broker',
 			'investing.institutions.kinds.crypto' => 'Crypto exchange',
 			'investing.institutions.kinds.other' => 'Other',
+			'investing.assets.title' => 'Assets',
+			'investing.assets.emptyTitle' => 'No assets yet',
+			'investing.assets.empty' => 'Add what you own — stocks, ETFs, crypto or fixed income.',
+			'investing.assets.addFirst' => 'Add asset',
+			'investing.assets.add' => 'New asset',
+			'investing.assets.edit' => 'Edit asset',
+			'investing.assets.sectionInstrument' => 'Instrument',
+			'investing.assets.sectionCustody' => 'Custody',
+			'investing.assets.sectionFixedIncome' => 'Fixed income',
+			'investing.assets.ticker' => 'Ticker',
+			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
+			'investing.assets.name' => 'Name',
+			'investing.assets.nameHint' => 'Apple Inc., Petrobras…',
+			'investing.assets.kind' => 'Type',
+			'investing.assets.market' => 'Market',
+			'investing.assets.currency' => 'Currency',
+			'investing.assets.institution' => 'Institution',
+			'investing.assets.pickInstitution' => 'Select…',
+			'investing.assets.noInstitutions' => 'Create an institution first',
+			'investing.assets.created' => 'Asset created',
+			'investing.assets.updated' => 'Asset updated',
+			'investing.assets.deleted' => 'Asset deleted',
+			'investing.assets.fiBasis' => 'Index',
+			'investing.assets.fiRate' => 'Rate (%)',
+			'investing.assets.fiRateHint' => '110 = 110% of CDI · 12 = 12% p.a.',
+			'investing.assets.kinds.stockBr' => 'BR stock',
+			'investing.assets.kinds.fiiBr' => 'FII',
+			'investing.assets.kinds.etfBr' => 'BR ETF',
+			'investing.assets.kinds.bdrBr' => 'BDR',
+			'investing.assets.kinds.stockUs' => 'US stock',
+			'investing.assets.kinds.etfUs' => 'US ETF',
+			'investing.assets.kinds.crypto' => 'Crypto',
+			'investing.assets.kinds.treasury' => 'Treasury',
+			'investing.assets.kinds.fixedIncome' => 'Fixed income',
+			'investing.assets.kinds.fund' => 'Fund',
+			'investing.assets.kinds.cash' => 'Cash',
+			'investing.assets.markets.br' => 'Brazil',
+			'investing.assets.markets.us' => 'United States',
+			'investing.assets.markets.global' => 'Global',
+			'investing.assets.fiBases.cdi' => 'CDI',
+			'investing.assets.fiBases.selic' => 'Selic',
+			'investing.assets.fiBases.prefixed' => 'Prefixed',
+			'investing.assets.fiBases.ipca' => 'IPCA+',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
 			'csvImport.errors.noValidAccounts' => 'CSV file has no valid accounts.',
@@ -2818,6 +3031,8 @@ extension on Translations {
 			'budgets.amount' => 'Monthly cap',
 			'budgets.amountHint' => '0.00',
 			'budgets.summaryTitle' => 'This month',
+			_ => null,
+		} ?? switch (path) {
 			'budgets.summaryCap' => 'Total budgeted',
 			'budgets.summarySpent' => 'Spent',
 			'budgets.summaryRemaining' => 'Available',
@@ -2861,8 +3076,6 @@ extension on Translations {
 			'profile.clearDataConfirmHeadline' => 'This action is permanent',
 			'profile.clearDataConfirmBody' => 'All your transactions, accounts, categories, budgets, bills and chat history will be erased. This cannot be undone.',
 			'profile.clearDataConfirmField' => 'Type your email to confirm',
-			_ => null,
-		} ?? switch (path) {
 			'profile.clearDataSuccess' => 'Your account data was cleared.',
 			'profile.downloadApk' => 'Download Android app',
 			'profile.downloadApkDescription' => 'Install the mobile version on your Android device',
