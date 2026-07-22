@@ -27,13 +27,14 @@ String localizedFailure(Failure? failure) {
     AllocationExceedsBalanceFailure() => t.investments.allocationExceedsBalance(
       available: formatCurrency(failure.available),
     ),
-    TargetSumExceededFailure() => failure.isRoot
-        ? t.investments.targetSumExceedsRoot(
-            available: '${failure.availablePercent.toStringAsFixed(0)}%',
-          )
-        : t.investments.targetSumExceedsSub(
-            available: '${failure.availablePercent.toStringAsFixed(0)}%',
-          ),
+    TargetSumExceededFailure() =>
+      failure.isRoot
+          ? t.investments.targetSumExceedsRoot(
+              available: '${failure.availablePercent.toStringAsFixed(0)}%',
+            )
+          : t.investments.targetSumExceedsSub(
+              available: '${failure.availablePercent.toStringAsFixed(0)}%',
+            ),
     EmptyNameFailure() => t.errors.emptyName,
     NegativeAmountFailure() => t.errors.negativeAmount,
     TargetPercentOutOfRangeFailure() => t.investments.targetPercentOutOfRange,
@@ -41,8 +42,9 @@ String localizedFailure(Failure? failure) {
     SubclassCannotBeParentFailure() => t.investments.subclassCannotBeParent,
     SelfParentAssetClassFailure() => t.investments.classCannotBeOwnParent,
     ClassOwnsSubclassesFailure() => t.investments.classOwnsSubclasses,
-    AssetClassHasSubclassesFailure() => t.investments
-        .deleteBlockedBySubclasses(count: failure.count),
+    AssetClassHasSubclassesFailure() => t.investments.deleteBlockedBySubclasses(
+      count: failure.count,
+    ),
     AssetClassHasHoldingsFailure() => t.investments.deleteBlockedByHoldings(
       count: failure.count,
     ),
@@ -53,6 +55,20 @@ String localizedFailure(Failure? failure) {
     InvalidEmailFormatFailure() => t.validators.emailInvalid,
     MasterEmailAlreadyAllowedFailure() => t.masterPanel.masterAlreadyAllowed,
     DuplicateBudgetCategoryFailure() => t.budgets.duplicateCategory,
+    DuplicateInstitutionNameFailure() =>
+      t.investing.errors.duplicateInstitution(name: failure.name),
+    InstitutionInUseFailure() => t.investing.errors.institutionInUse,
+    DuplicateAssetFailure() => t.investing.errors.duplicateAsset(
+      ticker: failure.ticker,
+    ),
+    AssetInUseFailure() => t.investing.errors.assetInUse,
+    AssetInstitutionRequiredFailure() =>
+      t.investing.errors.assetInstitutionRequired,
+    TransactionInstitutionMismatchFailure() =>
+      t.investing.errors.transactionInstitutionMismatch,
+    NonPositiveQuantityFailure() => t.investing.errors.nonPositiveQuantity,
+    OversellFailure() => t.investing.errors.oversell,
+    FutureTransactionDateFailure() => t.investing.errors.futureTransactionDate,
     ServerFailure() => t.errors.server,
   };
 }

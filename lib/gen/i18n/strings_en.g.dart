@@ -42,6 +42,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	// Translations
 	late final Translations$general$en general = Translations$general$en._(_root);
 	late final Translations$errors$en errors = Translations$errors$en._(_root);
+	late final Translations$investing$en investing = Translations$investing$en._(_root);
 	late final Translations$csvImport$en csvImport = Translations$csvImport$en._(_root);
 	late final Translations$validators$en validators = Translations$validators$en._(_root);
 	late final Translations$auth$en auth = Translations$auth$en._(_root);
@@ -126,6 +127,16 @@ class Translations$errors$en {
 
 	/// en: 'The amount cannot be negative.'
 	String get negativeAmount => 'The amount cannot be negative.';
+}
+
+// Path: investing
+class Translations$investing$en {
+	Translations$investing$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$investing$errors$en errors = Translations$investing$errors$en._(_root);
 }
 
 // Path: csvImport
@@ -1844,6 +1855,42 @@ class Translations$payablesReceivables$en {
 	String get pickCategory => 'Choose a category';
 }
 
+// Path: investing.errors
+class Translations$investing$errors$en {
+	Translations$investing$errors$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'An institution named "$name" already exists.'
+	String duplicateInstitution({required Object name}) => 'An institution named "${name}" already exists.';
+
+	/// en: 'This institution still has assets or transactions. Remove them first.'
+	String get institutionInUse => 'This institution still has assets or transactions. Remove them first.';
+
+	/// en: 'An asset $ticker already exists in this market.'
+	String duplicateAsset({required Object ticker}) => 'An asset ${ticker} already exists in this market.';
+
+	/// en: 'This asset still has transactions. Remove them first.'
+	String get assetInUse => 'This asset still has transactions. Remove them first.';
+
+	/// en: 'Choose an institution for this asset first.'
+	String get assetInstitutionRequired => 'Choose an institution for this asset first.';
+
+	/// en: 'The transaction's institution must match the asset's.'
+	String get transactionInstitutionMismatch => 'The transaction\'s institution must match the asset\'s.';
+
+	/// en: 'Quantity must be greater than zero.'
+	String get nonPositiveQuantity => 'Quantity must be greater than zero.';
+
+	/// en: 'You can't sell more than you hold on that date.'
+	String get oversell => 'You can\'t sell more than you hold on that date.';
+
+	/// en: 'The date can't be in the future.'
+	String get futureTransactionDate => 'The date can\'t be in the future.';
+}
+
 // Path: csvImport.errors
 class Translations$csvImport$errors$en {
 	Translations$csvImport$errors$en._(this._root);
@@ -2240,6 +2287,15 @@ extension on Translations {
 			'errors.accessDenied' => 'Access is restricted for this account.',
 			'errors.emptyName' => 'The name cannot be empty.',
 			'errors.negativeAmount' => 'The amount cannot be negative.',
+			'investing.errors.duplicateInstitution' => ({required Object name}) => 'An institution named "${name}" already exists.',
+			'investing.errors.institutionInUse' => 'This institution still has assets or transactions. Remove them first.',
+			'investing.errors.duplicateAsset' => ({required Object ticker}) => 'An asset ${ticker} already exists in this market.',
+			'investing.errors.assetInUse' => 'This asset still has transactions. Remove them first.',
+			'investing.errors.assetInstitutionRequired' => 'Choose an institution for this asset first.',
+			'investing.errors.transactionInstitutionMismatch' => 'The transaction\'s institution must match the asset\'s.',
+			'investing.errors.nonPositiveQuantity' => 'Quantity must be greater than zero.',
+			'investing.errors.oversell' => 'You can\'t sell more than you hold on that date.',
+			'investing.errors.futureTransactionDate' => 'The date can\'t be in the future.',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
 			'csvImport.errors.noValidAccounts' => 'CSV file has no valid accounts.',
@@ -2727,6 +2783,8 @@ extension on Translations {
 			'profile.languageSystem' => 'System',
 			'profile.languageEnglish' => 'English',
 			'profile.languagePortuguese' => 'Português',
+			_ => null,
+		} ?? switch (path) {
 			'startup.tagline' => 'Your finances, in flow.',
 			'startup.stepCheckingAuth' => 'Checking your account',
 			'startup.stepSyncingData' => 'Syncing your data',
@@ -2736,8 +2794,6 @@ extension on Translations {
 			'startup.errorRetry' => 'Try again',
 			'investments.title' => 'Investments',
 			'investments.heroTitle' => 'INVESTED CAPITAL',
-			_ => null,
-		} ?? switch (path) {
 			'investments.heroAllocated' => 'Allocated',
 			'investments.heroPending' => 'Pending',
 			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} unallocated',

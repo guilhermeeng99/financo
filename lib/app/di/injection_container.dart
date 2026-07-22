@@ -89,6 +89,7 @@ import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twen
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 // Investments
+import 'package:financo/features/investing/di/investing_di.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/data/repositories/asset_class_repository_impl.dart';
@@ -553,4 +554,7 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(DateFilterCubit.new)
     ..registerLazySingleton(NotificationService.new);
+
+  // V2 investing module (registrations isolated in its own DI file).
+  registerInvestingDependencies(sl);
 }

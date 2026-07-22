@@ -19,6 +19,19 @@
     "emptyName": "The name cannot be empty.",
     "negativeAmount": "The amount cannot be negative."
   },
+  "investing": {
+    "errors": {
+      "duplicateInstitution": "An institution named \"$name\" already exists.",
+      "institutionInUse": "This institution still has assets or transactions. Remove them first.",
+      "duplicateAsset": "An asset $ticker already exists in this market.",
+      "assetInUse": "This asset still has transactions. Remove them first.",
+      "assetInstitutionRequired": "Choose an institution for this asset first.",
+      "transactionInstitutionMismatch": "The transaction's institution must match the asset's.",
+      "nonPositiveQuantity": "Quantity must be greater than zero.",
+      "oversell": "You can't sell more than you hold on that date.",
+      "futureTransactionDate": "The date can't be in the future."
+    }
+  },
   "csvImport": {
     "errors": {
       "emptyFile": "CSV file is empty or invalid.",

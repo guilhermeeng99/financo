@@ -7,6 +7,9 @@ import 'package:financo/core/database/daos/asset_classes_dao.dart';
 import 'package:financo/core/database/daos/asset_holdings_dao.dart';
 import 'package:financo/core/database/daos/budgets_dao.dart';
 import 'package:financo/core/database/daos/categories_dao.dart';
+import 'package:financo/core/database/daos/institutions_dao.dart';
+import 'package:financo/core/database/daos/investment_assets_dao.dart';
+import 'package:financo/core/database/daos/investment_transactions_dao.dart';
 import 'package:financo/core/database/daos/transactions_dao.dart';
 import 'package:financo/core/database/daos/users_dao.dart';
 import 'package:financo/core/sync/sync_service.dart';
@@ -66,6 +69,12 @@ import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twen
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
+import 'package:financo/features/investing/data/datasources/asset_remote_datasource.dart';
+import 'package:financo/features/investing/data/datasources/asset_transaction_remote_datasource.dart';
+import 'package:financo/features/investing/data/datasources/institution_remote_datasource.dart';
+import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
+import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
+import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/data/datasources/asset_holding_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
@@ -212,8 +221,9 @@ class MockImportTransactionsCsvUseCase extends Mock
 // ── Blocs / Cubits: session-scoped (for page widget tests) ──
 // MockBloc/MockCubit (bloc_test) so widget tests can pin states with
 // `whenListen` while pages read them from the element tree.
-class MockTransactionsBloc extends MockBloc<TransactionsEvent,
-    TransactionsState> implements TransactionsBloc {}
+class MockTransactionsBloc
+    extends MockBloc<TransactionsEvent, TransactionsState>
+    implements TransactionsBloc {}
 
 class MockDashboardBloc extends MockBloc<DashboardEvent, DashboardState>
     implements DashboardBloc {}
@@ -227,8 +237,7 @@ class MockCategoriesCubit extends MockCubit<CategoriesState>
 // ── Blocs: Auth ──
 // `MockBloc` (bloc_test) instead of a plain mocktail Mock so tests can
 // drive the state stream with `whenListen`.
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState>
-    implements AuthBloc {}
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 // ── Repositories: Auth ──
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -416,8 +425,30 @@ class MockGetInvestmentOverviewUseCase extends Mock
     implements GetInvestmentOverviewUseCase {}
 
 // ── Master Panel ──
-class MockMasterUsersRepository extends Mock
-    implements MasterUsersRepository {}
+class MockMasterUsersRepository extends Mock implements MasterUsersRepository {}
 
 class MockMasterUsersRemoteDataSource extends Mock
     implements MasterUsersRemoteDataSource {}
+
+// ── Investing V2 ──
+class MockInstitutionRepository extends Mock implements InstitutionRepository {}
+
+class MockAssetRepository extends Mock implements AssetRepository {}
+
+class MockAssetTransactionRepository extends Mock
+    implements AssetTransactionRepository {}
+
+class MockInstitutionRemoteDataSource extends Mock
+    implements InstitutionRemoteDataSource {}
+
+class MockAssetRemoteDataSource extends Mock implements AssetRemoteDataSource {}
+
+class MockAssetTransactionRemoteDataSource extends Mock
+    implements AssetTransactionRemoteDataSource {}
+
+class MockInstitutionsDao extends Mock implements InstitutionsDao {}
+
+class MockInvestmentAssetsDao extends Mock implements InvestmentAssetsDao {}
+
+class MockInvestmentTransactionsDao extends Mock
+    implements InvestmentTransactionsDao {}

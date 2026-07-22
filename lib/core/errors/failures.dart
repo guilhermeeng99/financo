@@ -153,3 +153,72 @@ final class DuplicateBudgetCategoryFailure extends Failure {
   const DuplicateBudgetCategoryFailure()
     : super('A budget already exists for this category.');
 }
+
+// ─── Investing (V2) ──────────────────────────────────────────────────
+// See docs/specs/investing.md and the per-feature specs. All i18n-free;
+// localised in failure_localizer.dart via t.investing.errors.*.
+
+/// Raised when an institution name is not unique per user (case-insensitive).
+/// Carries the offending name so the UI can name it.
+final class DuplicateInstitutionNameFailure extends Failure {
+  const DuplicateInstitutionNameFailure(this.name)
+    : super('An institution with this name already exists.');
+
+  final String name;
+}
+
+/// Raised when deleting an institution still referenced by an asset or
+/// transaction (investing_transactions.md / institutions.md rule 2).
+final class InstitutionInUseFailure extends Failure {
+  const InstitutionInUseFailure()
+    : super('This institution still has assets or transactions.');
+}
+
+/// Raised when an asset's `(ticker, market)` is not unique per user.
+/// Carries the ticker for the message.
+final class DuplicateAssetFailure extends Failure {
+  const DuplicateAssetFailure(this.ticker)
+    : super('An asset with this ticker already exists in this market.');
+
+  final String ticker;
+}
+
+/// Raised when deleting an asset that still has transactions.
+final class AssetInUseFailure extends Failure {
+  const AssetInUseFailure() : super('This asset still has transactions.');
+}
+
+/// Raised when saving a transaction for an asset that has no institution yet
+/// (investing_transactions.md rule 1).
+final class AssetInstitutionRequiredFailure extends Failure {
+  const AssetInstitutionRequiredFailure()
+    : super('Choose an institution for this asset first.');
+}
+
+/// Raised when a transaction's institution does not match its asset's
+/// institution (investing_transactions.md rule 1).
+final class TransactionInstitutionMismatchFailure extends Failure {
+  const TransactionInstitutionMismatchFailure()
+    : super("The transaction's institution must match the asset's.");
+}
+
+/// Raised when a buy/sell has a non-positive quantity
+/// (investing_transactions.md rule 2).
+final class NonPositiveQuantityFailure extends Failure {
+  const NonPositiveQuantityFailure()
+    : super('Quantity must be greater than zero.');
+}
+
+/// Raised when a sell exceeds the quantity held at its date
+/// (investing_transactions.md rule 3).
+final class OversellFailure extends Failure {
+  const OversellFailure()
+    : super("You can't sell more than you hold on that date.");
+}
+
+/// Raised when a transaction date is in the future
+/// (investing_transactions.md rule 5).
+final class FutureTransactionDateFailure extends Failure {
+  const FutureTransactionDateFailure()
+    : super("The date can't be in the future.");
+}

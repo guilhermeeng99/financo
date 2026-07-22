@@ -39,6 +39,7 @@ class TranslationsPtBr with BaseTranslations<AppLocale, Translations> implements
 	// Translations
 	@override late final _Translations$general$pt_BR general = _Translations$general$pt_BR._(_root);
 	@override late final _Translations$errors$pt_BR errors = _Translations$errors$pt_BR._(_root);
+	@override late final _Translations$investing$pt_BR investing = _Translations$investing$pt_BR._(_root);
 	@override late final _Translations$csvImport$pt_BR csvImport = _Translations$csvImport$pt_BR._(_root);
 	@override late final _Translations$validators$pt_BR validators = _Translations$validators$pt_BR._(_root);
 	@override late final _Translations$auth$pt_BR auth = _Translations$auth$pt_BR._(_root);
@@ -91,6 +92,16 @@ class _Translations$errors$pt_BR implements Translations$errors$en {
 	@override String get accessDenied => 'O acesso é restrito para esta conta.';
 	@override String get emptyName => 'O nome não pode ficar vazio.';
 	@override String get negativeAmount => 'O valor não pode ser negativo.';
+}
+
+// Path: investing
+class _Translations$investing$pt_BR implements Translations$investing$en {
+	_Translations$investing$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override late final _Translations$investing$errors$pt_BR errors = _Translations$investing$errors$pt_BR._(_root);
 }
 
 // Path: csvImport
@@ -776,6 +787,24 @@ class _Translations$payablesReceivables$pt_BR implements Translations$payablesRe
 	@override String get pickCategory => 'Escolha uma categoria';
 }
 
+// Path: investing.errors
+class _Translations$investing$errors$pt_BR implements Translations$investing$errors$en {
+	_Translations$investing$errors$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String duplicateInstitution({required Object name}) => 'Já existe uma instituição chamada "${name}".';
+	@override String get institutionInUse => 'Esta instituição ainda tem ativos ou transações. Remova-os primeiro.';
+	@override String duplicateAsset({required Object ticker}) => 'Já existe um ativo ${ticker} neste mercado.';
+	@override String get assetInUse => 'Este ativo ainda tem transações. Remova-as primeiro.';
+	@override String get assetInstitutionRequired => 'Escolha uma instituição para este ativo primeiro.';
+	@override String get transactionInstitutionMismatch => 'A instituição da transação deve ser a mesma do ativo.';
+	@override String get nonPositiveQuantity => 'A quantidade deve ser maior que zero.';
+	@override String get oversell => 'Você não pode vender mais do que possui nesta data.';
+	@override String get futureTransactionDate => 'A data não pode estar no futuro.';
+}
+
 // Path: csvImport.errors
 class _Translations$csvImport$errors$pt_BR implements Translations$csvImport$errors$en {
 	_Translations$csvImport$errors$pt_BR._(this._root);
@@ -954,6 +983,15 @@ extension on TranslationsPtBr {
 			'errors.accessDenied' => 'O acesso é restrito para esta conta.',
 			'errors.emptyName' => 'O nome não pode ficar vazio.',
 			'errors.negativeAmount' => 'O valor não pode ser negativo.',
+			'investing.errors.duplicateInstitution' => ({required Object name}) => 'Já existe uma instituição chamada "${name}".',
+			'investing.errors.institutionInUse' => 'Esta instituição ainda tem ativos ou transações. Remova-os primeiro.',
+			'investing.errors.duplicateAsset' => ({required Object ticker}) => 'Já existe um ativo ${ticker} neste mercado.',
+			'investing.errors.assetInUse' => 'Este ativo ainda tem transações. Remova-as primeiro.',
+			'investing.errors.assetInstitutionRequired' => 'Escolha uma instituição para este ativo primeiro.',
+			'investing.errors.transactionInstitutionMismatch' => 'A instituição da transação deve ser a mesma do ativo.',
+			'investing.errors.nonPositiveQuantity' => 'A quantidade deve ser maior que zero.',
+			'investing.errors.oversell' => 'Você não pode vender mais do que possui nesta data.',
+			'investing.errors.futureTransactionDate' => 'A data não pode estar no futuro.',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
 			'csvImport.errors.noValidAccounts' => 'O arquivo CSV não tem contas válidas.',
@@ -1441,6 +1479,8 @@ extension on TranslationsPtBr {
 			'profile.languageSystem' => 'Sistema',
 			'profile.languageEnglish' => 'English',
 			'profile.languagePortuguese' => 'Português',
+			_ => null,
+		} ?? switch (path) {
 			'startup.tagline' => 'Suas finanças, em sintonia.',
 			'startup.stepCheckingAuth' => 'Verificando sua conta',
 			'startup.stepSyncingData' => 'Sincronizando seus dados',
@@ -1450,8 +1490,6 @@ extension on TranslationsPtBr {
 			'startup.errorRetry' => 'Tentar novamente',
 			'investments.title' => 'Investimentos',
 			'investments.heroTitle' => 'PATRIMÔNIO INVESTIDO',
-			_ => null,
-		} ?? switch (path) {
 			'investments.heroAllocated' => 'Alocado',
 			'investments.heroPending' => 'Pendente',
 			'investments.pendingBannerTitle' => ({required Object amount}) => '${amount} não alocados',

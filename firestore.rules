@@ -120,5 +120,28 @@ service cloud.firestore {
       allow read, update, delete: if (isAllowed() && ownsResource())
         || isMaster();
     }
+
+    // ─── Investing V2: Institutions ────────────────────────
+    // Custody institutions (Nubank, Avenue, …). See docs/specs/investing.md.
+    match /institutions/{institutionId} {
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
+    }
+
+    // ─── Investing V2: Assets ──────────────────────────────
+    match /investment_assets/{assetId} {
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
+    }
+
+    // ─── Investing V2: Transactions ────────────────────────
+    // Buy/sell/dividend events (source of truth for holdings).
+    match /investment_transactions/{investmentTransactionId} {
+      allow create: if isAllowed() && ownsCreate();
+      allow read, update, delete: if (isAllowed() && ownsResource())
+        || isMaster();
+    }
   }
 }
