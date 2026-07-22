@@ -142,6 +142,13 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                   isActive: location.startsWith(AppRoutes.investingOverview),
                 ),
                 SidebarSubNavItem(
+                  icon: FontAwesomeIcons.scaleBalanced,
+                  expanded: _expanded,
+                  label: t.investing.allocation.title,
+                  onTap: () => context.go(AppRoutes.investingAllocation),
+                  isActive: location.startsWith(AppRoutes.investingAllocation),
+                ),
+                SidebarSubNavItem(
                   icon: FontAwesomeIcons.rightLeft,
                   expanded: _expanded,
                   label: t.investing.transactions.title,

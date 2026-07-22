@@ -64,6 +64,11 @@
       "sectionInstrument": "Instrument",
       "sectionCustody": "Custody",
       "sectionFixedIncome": "Fixed income",
+      "sectionAllocation": "Allocation",
+      "allocationClass": "Asset class",
+      "pickClass": "Select…",
+      "noClass": "None",
+      "noClasses": "Create an asset class first",
       "ticker": "Ticker",
       "tickerHint": "AAPL, PETR4, BTC…",
       "name": "Name",
@@ -138,6 +143,21 @@
       "stale": "Stale",
       "fxMissing": "No FX rate",
       "units": "units"
+    },
+    "allocation": {
+      "title": "Allocation",
+      "emptyTitle": "No targets yet",
+      "empty": "Set target weights on your asset classes to see how your portfolio compares and what to rebalance.",
+      "allocated": "Allocated",
+      "unallocated": "Unallocated",
+      "target": "Target",
+      "current": "Current",
+      "onTarget": "On target",
+      "buy": "Buy",
+      "sell": "Sell",
+      "rebalance": "Rebalance",
+      "targetsUnbalanced": "Your class targets add up to $percent, not 100%.",
+      "unallocatedHint": "$amount isn't assigned to any class yet."
     },
     "nav": "Investing"
   },

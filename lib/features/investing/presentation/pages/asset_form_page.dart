@@ -14,12 +14,15 @@ import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/fixed_income_terms.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/services/allocation_metadata.dart';
 import 'package:financo/features/investing/domain/services/fixed_income_metadata.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_asset_usecase.dart';
 import 'package:financo/features/investing/presentation/pages/assets_page.dart';
+import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,10 +51,12 @@ class _AssetFormPageState extends State<AssetFormPage> {
   late Market _market;
   late Currency _currency;
   String? _institutionId;
+  String? _allocationClassId;
   FixedIncomeBasis _fiBasis = FixedIncomeBasis.cdi;
 
   List<Institution> _institutions = const [];
-  bool _loadingInstitutions = true;
+  List<AssetClassEntity> _classes = const [];
+  bool _loadingFormData = true;
   bool _submitting = false;
 
   bool get _isEditing => widget.existing != null;
@@ -64,6 +69,9 @@ class _AssetFormPageState extends State<AssetFormPage> {
     _market = existing?.market ?? Market.us;
     _currency = existing?.currency ?? Currency.usd;
     _institutionId = existing?.institutionId;
+    _allocationClassId = existing == null
+        ? null
+        : AllocationMetadata.classId(existing);
     if (existing != null) {
       _tickerController.text = existing.ticker;
       _nameController.text = existing.name;
@@ -73,7 +81,7 @@ class _AssetFormPageState extends State<AssetFormPage> {
         _fiRateController.text = _trimRate(parsed.$2);
       }
     }
-    unawaited(_loadInstitutions());
+    unawaited(_loadFormData());
   }
 
   @override
@@ -89,12 +97,16 @@ class _AssetFormPageState extends State<AssetFormPage> {
     return authState is Authenticated ? authState.user.id : '';
   }
 
-  Future<void> _loadInstitutions() async {
-    final result = await GetIt.I<GetInstitutionsUseCase>()(userId: _userId);
+  Future<void> _loadFormData() async {
+    final institutions = await GetIt.I<GetInstitutionsUseCase>()(
+      userId: _userId,
+    );
+    final classes = await GetIt.I<GetAssetClassesUseCase>()(userId: _userId);
     if (!mounted) return;
     setState(() {
-      _institutions = result.getOrElse(() => const []);
-      _loadingInstitutions = false;
+      _institutions = institutions.getOrElse(() => const []);
+      _classes = classes.getOrElse(() => const []);
+      _loadingFormData = false;
     });
   }
 
@@ -104,16 +116,16 @@ class _AssetFormPageState extends State<AssetFormPage> {
   }
 
   Map<String, String> _buildMetadata() {
-    final existing = Map<String, String>.from(
+    final metadata = Map<String, String>.from(
       widget.existing?.metadata ?? const {},
     );
     if (_kind == AssetKind.fixedIncome) {
       final rate = double.tryParse(_fiRateController.text.replaceAll(',', '.'));
       if (rate != null) {
-        existing.addAll(FixedIncomeMetadata.write(_fiBasis, rate));
+        metadata.addAll(FixedIncomeMetadata.write(_fiBasis, rate));
       }
     }
-    return existing;
+    return AllocationMetadata.write(metadata, _allocationClassId);
   }
 
   Future<void> _submit() async {
@@ -193,6 +205,76 @@ class _AssetFormPageState extends State<AssetFormPage> {
       label: (i) => i.name,
     );
     if (picked != null) setState(() => _institutionId = picked.id);
+  }
+
+  String? get _className {
+    final id = _allocationClassId;
+    if (id == null) return null;
+    for (final c in _classes) {
+      if (c.id == id) return c.name;
+    }
+    return null;
+  }
+
+  Future<void> _pickClass() async {
+    if (_classes.isEmpty) {
+      context.showSnack(t.investing.assets.noClasses);
+      return;
+    }
+    final picked = await _pickClassOption();
+    if (picked == null) return;
+    // The sentinel empty id clears the link ("None").
+    setState(() => _allocationClassId = picked.isEmpty ? null : picked);
+  }
+
+  /// Bottom sheet listing every class plus a "None" row, returning the picked
+  /// class id (empty string = None, null = dismissed).
+  Future<String?> _pickClassOption() {
+    final colors = context.appColors;
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: colors.surface,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                t.investing.assets.allocationClass,
+                style: ctx.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text(t.investing.assets.noClass),
+              trailing: _allocationClassId == null
+                  ? FaIcon(
+                      FontAwesomeIcons.check,
+                      size: 14,
+                      color: colors.primary,
+                    )
+                  : null,
+              onTap: () => Navigator.pop(ctx, ''),
+            ),
+            for (final option in _classes)
+              ListTile(
+                title: Text(option.name),
+                trailing: option.id == _allocationClassId
+                    ? FaIcon(
+                        FontAwesomeIcons.check,
+                        size: 14,
+                        color: colors.primary,
+                      )
+                    : null,
+                onTap: () => Navigator.pop(ctx, option.id),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _pickKind() async {
@@ -282,7 +364,7 @@ class _AssetFormPageState extends State<AssetFormPage> {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    if (_loadingInstitutions) {
+    if (_loadingFormData) {
       return Scaffold(
         backgroundColor: colors.background,
         body: const Center(child: CircularProgressIndicator()),
@@ -380,6 +462,20 @@ class _AssetFormPageState extends State<AssetFormPage> {
                     placeholder: t.investing.assets.pickInstitution,
                     isError: _institutionId == null,
                     onTap: () => unawaited(_pickInstitution()),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              FinancoFormSection(
+                label: t.investing.assets.sectionAllocation,
+                children: [
+                  FinancoPickerField(
+                    label: t.investing.assets.allocationClass,
+                    value: _className,
+                    placeholder: _classes.isEmpty
+                        ? t.investing.assets.noClasses
+                        : t.investing.assets.pickClass,
+                    onTap: () => unawaited(_pickClass()),
                   ),
                 ],
               ),

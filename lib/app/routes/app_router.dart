@@ -45,6 +45,7 @@ import 'package:financo/features/dashboard/presentation/pages/planning_page.dart
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/services/allocation_service.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
@@ -52,17 +53,20 @@ import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/assets_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/institutions_cubit.dart';
+import 'package:financo/features/investing/presentation/cubit/investing_allocation_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_overview_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_transactions_cubit.dart';
 import 'package:financo/features/investing/presentation/pages/asset_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/assets_page.dart';
 import 'package:financo/features/investing/presentation/pages/institution_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
+import 'package:financo/features/investing/presentation/pages/investing_allocation_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_overview_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_transaction_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_transactions_page.dart';
 import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
+import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/features/investments/domain/usecases/get_investment_overview_usecase.dart';
 import 'package:financo/features/investments/presentation/cubit/investments_cubit.dart';
 import 'package:financo/features/investments/presentation/pages/asset_class_detail_page.dart';
@@ -290,6 +294,20 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 return cubit;
               },
             ),
+            BlocProvider(
+              create: (_) {
+                final cubit = InvestingAllocationCubit(
+                  engine: GetIt.I<PortfolioPricingEngine>(),
+                  getTransactions: GetIt.I<GetAssetTransactionsUseCase>(),
+                  getAssets: GetIt.I<GetAssetsUseCase>(),
+                  getClasses: GetIt.I<GetAssetClassesUseCase>(),
+                  service: GetIt.I<AllocationService>(),
+                  userId: userId,
+                );
+                unawaited(cubit.load());
+                return cubit;
+              },
+            ),
           ],
           child: _ShellWithSidebar(child: child),
         );
@@ -505,6 +523,11 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         GoRoute(
           path: AppRoutes.investingOverview,
           builder: (context, state) => const InvestingOverviewPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.investingAllocation,
+          builder: (context, state) =>
+              const SubPageScope(child: InvestingAllocationPage()),
         ),
         GoRoute(
           path: AppRoutes.institutions,

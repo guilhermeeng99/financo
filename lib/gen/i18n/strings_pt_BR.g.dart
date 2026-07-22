@@ -106,6 +106,7 @@ class _Translations$investing$pt_BR implements Translations$investing$en {
 	@override late final _Translations$investing$assets$pt_BR assets = _Translations$investing$assets$pt_BR._(_root);
 	@override late final _Translations$investing$transactions$pt_BR transactions = _Translations$investing$transactions$pt_BR._(_root);
 	@override late final _Translations$investing$overview$pt_BR overview = _Translations$investing$overview$pt_BR._(_root);
+	@override late final _Translations$investing$allocation$pt_BR allocation = _Translations$investing$allocation$pt_BR._(_root);
 	@override String get nav => 'Investimentos';
 }
 
@@ -850,6 +851,11 @@ class _Translations$investing$assets$pt_BR implements Translations$investing$ass
 	@override String get sectionInstrument => 'Instrumento';
 	@override String get sectionCustody => 'Custódia';
 	@override String get sectionFixedIncome => 'Renda fixa';
+	@override String get sectionAllocation => 'Alocação';
+	@override String get allocationClass => 'Classe de ativo';
+	@override String get pickClass => 'Selecionar…';
+	@override String get noClass => 'Nenhuma';
+	@override String get noClasses => 'Crie uma classe de ativo primeiro';
 	@override String get ticker => 'Ticker';
 	@override String get tickerHint => 'AAPL, PETR4, BTC…';
 	@override String get name => 'Nome';
@@ -921,6 +927,28 @@ class _Translations$investing$overview$pt_BR implements Translations$investing$o
 	@override String get stale => 'Desatualizado';
 	@override String get fxMissing => 'Sem câmbio';
 	@override String get units => 'unidades';
+}
+
+// Path: investing.allocation
+class _Translations$investing$allocation$pt_BR implements Translations$investing$allocation$en {
+	_Translations$investing$allocation$pt_BR._(this._root);
+
+	final TranslationsPtBr _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Alocação';
+	@override String get emptyTitle => 'Nenhuma meta ainda';
+	@override String get empty => 'Defina metas de peso nas suas classes de ativos para comparar sua carteira e ver o que rebalancear.';
+	@override String get allocated => 'Alocado';
+	@override String get unallocated => 'Não alocado';
+	@override String get target => 'Meta';
+	@override String get current => 'Atual';
+	@override String get onTarget => 'Na meta';
+	@override String get buy => 'Comprar';
+	@override String get sell => 'Vender';
+	@override String get rebalance => 'Rebalancear';
+	@override String targetsUnbalanced({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.';
+	@override String unallocatedHint({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.';
 }
 
 // Path: csvImport.errors
@@ -1209,6 +1237,11 @@ extension on TranslationsPtBr {
 			'investing.assets.sectionInstrument' => 'Instrumento',
 			'investing.assets.sectionCustody' => 'Custódia',
 			'investing.assets.sectionFixedIncome' => 'Renda fixa',
+			'investing.assets.sectionAllocation' => 'Alocação',
+			'investing.assets.allocationClass' => 'Classe de ativo',
+			'investing.assets.pickClass' => 'Selecionar…',
+			'investing.assets.noClass' => 'Nenhuma',
+			'investing.assets.noClasses' => 'Crie uma classe de ativo primeiro',
 			'investing.assets.ticker' => 'Ticker',
 			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
 			'investing.assets.name' => 'Nome',
@@ -1279,6 +1312,19 @@ extension on TranslationsPtBr {
 			'investing.overview.stale' => 'Desatualizado',
 			'investing.overview.fxMissing' => 'Sem câmbio',
 			'investing.overview.units' => 'unidades',
+			'investing.allocation.title' => 'Alocação',
+			'investing.allocation.emptyTitle' => 'Nenhuma meta ainda',
+			'investing.allocation.empty' => 'Defina metas de peso nas suas classes de ativos para comparar sua carteira e ver o que rebalancear.',
+			'investing.allocation.allocated' => 'Alocado',
+			'investing.allocation.unallocated' => 'Não alocado',
+			'investing.allocation.target' => 'Meta',
+			'investing.allocation.current' => 'Atual',
+			'investing.allocation.onTarget' => 'Na meta',
+			'investing.allocation.buy' => 'Comprar',
+			'investing.allocation.sell' => 'Vender',
+			'investing.allocation.rebalance' => 'Rebalancear',
+			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.',
+			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.',
 			'investing.nav' => 'Investimentos',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
@@ -1650,6 +1696,8 @@ extension on TranslationsPtBr {
 			'chat.handlers.unknownBudgetAction' => 'Ação de orçamento desconhecida.',
 			'chat.handlers.invalidAmount' => 'Valor inválido.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Falha ao criar conta: ${error}',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.accountCreated' => ({required Object name}) => 'Conta "${name}" criada com sucesso!',
 			'chat.handlers.accountNotFound' => ({required Object name}) => 'Nenhuma conta chamada "${name}" encontrada.',
 			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Falha ao localizar conta: ${error}',
@@ -1668,8 +1716,6 @@ extension on TranslationsPtBr {
 			'chat.handlers.transactionCreateAccountFirst' => 'Crie uma conta primeiro.',
 			'chat.handlers.transactionUnresolvedAccount' => 'Não foi possível resolver a conta.',
 			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Falha ao criar transação: ${error}',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transação "${description}" de ${amount} criada com sucesso!',
 			'chat.handlers.transferAccountsRequired' => 'Transferência precisa de origem e destino.',
 			'chat.handlers.transferMinTwoAccounts' => 'Transferência requer ao menos duas contas.',

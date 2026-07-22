@@ -1,7 +1,9 @@
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/features/investing/domain/entities/allocation_class.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
+import 'package:financo/features/investing/domain/entities/holding_valuation.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/entities/snapshot.dart';
 
@@ -222,6 +224,64 @@ class SnapshotFactory {
       totalValue: value,
       totalInvested: invested,
       unrealizedPL: unrealizedPL ?? (value - invested),
+    );
+  }
+}
+
+class AllocationClassFactory {
+  const AllocationClassFactory._();
+
+  static AllocationClass root({
+    String id = 'class-stocks',
+    String name = 'Stocks',
+    int icon = 0xe1db,
+    int color = 0xFF2196F3,
+    double targetPercent = 60,
+    String? parentId,
+  }) {
+    return AllocationClass(
+      id: id,
+      name: name,
+      icon: icon,
+      color: color,
+      targetPercent: targetPercent,
+      parentId: parentId,
+    );
+  }
+}
+
+class HoldingValuationFactory {
+  const HoldingValuationFactory._();
+
+  static HoldingValuation base({
+    String assetId = 'asset-aapl',
+    String institutionId = 'inst-avenue',
+    AssetKind assetKind = AssetKind.etfUs,
+    double quantity = 10,
+    Money? marketValueBase,
+    Money? marketValueNative,
+    Money? investedBase,
+    Money? unrealizedPL,
+    bool priceStale = false,
+    bool fxMissing = false,
+    Currency base = Currency.brl,
+  }) {
+    final value = marketValueBase ?? Money.fromMajor(1000, base);
+    final invested = investedBase ?? Money.fromMajor(800, base);
+    return HoldingValuation(
+      assetId: assetId,
+      institutionId: institutionId,
+      assetKind: assetKind,
+      quantity: quantity,
+      marketValueBase: value,
+      marketValueNative: marketValueNative ?? value,
+      investedBase: invested,
+      unrealizedPL: unrealizedPL ?? (value - invested),
+      totalPL: unrealizedPL ?? (value - invested),
+      returnPct: 0,
+      dayChangeBase: Money.zero(base),
+      priceStale: priceStale,
+      fxMissing: fxMissing,
     );
   }
 }

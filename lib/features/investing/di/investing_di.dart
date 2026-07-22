@@ -20,6 +20,7 @@ import 'package:financo/features/investing/domain/repositories/asset_repository.
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
 import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
+import 'package:financo/features/investing/domain/services/allocation_service.dart';
 import 'package:financo/features/investing/domain/services/market_cache_store.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
@@ -119,7 +120,9 @@ void registerInvestingDependencies(GetIt sl) {
     ..registerLazySingleton(() => DeleteAssetTransactionUseCase(sl()))
     ..registerLazySingleton(() => GetHoldingsUseCase(sl()))
     ..registerLazySingleton(() => GetSnapshotsUseCase(sl()))
-    ..registerLazySingleton(() => RecordDailySnapshotUseCase(sl()));
+    ..registerLazySingleton(() => RecordDailySnapshotUseCase(sl()))
+    // ─── Allocation (F5) ────────────────────────────────────
+    ..registerLazySingleton(AllocationService.new);
 
   // Market-data layer (adapters, caching, QuoteRepository) — F2b.
   registerMarketDataDependencies(sl);

@@ -64,6 +64,11 @@
       "sectionInstrument": "Instrumento",
       "sectionCustody": "Custódia",
       "sectionFixedIncome": "Renda fixa",
+      "sectionAllocation": "Alocação",
+      "allocationClass": "Classe de ativo",
+      "pickClass": "Selecionar…",
+      "noClass": "Nenhuma",
+      "noClasses": "Crie uma classe de ativo primeiro",
       "ticker": "Ticker",
       "tickerHint": "AAPL, PETR4, BTC…",
       "name": "Nome",
@@ -138,6 +143,21 @@
       "stale": "Desatualizado",
       "fxMissing": "Sem câmbio",
       "units": "unidades"
+    },
+    "allocation": {
+      "title": "Alocação",
+      "emptyTitle": "Nenhuma meta ainda",
+      "empty": "Defina metas de peso nas suas classes de ativos para comparar sua carteira e ver o que rebalancear.",
+      "allocated": "Alocado",
+      "unallocated": "Não alocado",
+      "target": "Meta",
+      "current": "Atual",
+      "onTarget": "Na meta",
+      "buy": "Comprar",
+      "sell": "Vender",
+      "rebalance": "Rebalancear",
+      "targetsUnbalanced": "Suas metas de classe somam $percent, não 100%.",
+      "unallocatedHint": "$amount ainda não está atribuído a nenhuma classe."
     },
     "nav": "Investimentos"
   },

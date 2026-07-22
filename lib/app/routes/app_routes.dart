@@ -40,6 +40,7 @@ class AppRoutes {
 
   // V2 investing module (gated by kInvestingV2).
   static const investingOverview = '/investing/overview';
+  static const investingAllocation = '/investing/allocation';
   static const institutions = '/investing/institutions';
   static const addInstitution = '/investing/institution/add';
   static const editInstitution = '/investing/institution/edit';

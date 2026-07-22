@@ -141,6 +141,7 @@ class Translations$investing$en {
 	late final Translations$investing$assets$en assets = Translations$investing$assets$en._(_root);
 	late final Translations$investing$transactions$en transactions = Translations$investing$transactions$en._(_root);
 	late final Translations$investing$overview$en overview = Translations$investing$overview$en._(_root);
+	late final Translations$investing$allocation$en allocation = Translations$investing$allocation$en._(_root);
 
 	/// en: 'Investing'
 	String get nav => 'Investing';
@@ -1986,6 +1987,21 @@ class Translations$investing$assets$en {
 	/// en: 'Fixed income'
 	String get sectionFixedIncome => 'Fixed income';
 
+	/// en: 'Allocation'
+	String get sectionAllocation => 'Allocation';
+
+	/// en: 'Asset class'
+	String get allocationClass => 'Asset class';
+
+	/// en: 'Select…'
+	String get pickClass => 'Select…';
+
+	/// en: 'None'
+	String get noClass => 'None';
+
+	/// en: 'Create an asset class first'
+	String get noClasses => 'Create an asset class first';
+
 	/// en: 'Ticker'
 	String get ticker => 'Ticker';
 
@@ -2156,6 +2172,54 @@ class Translations$investing$overview$en {
 
 	/// en: 'units'
 	String get units => 'units';
+}
+
+// Path: investing.allocation
+class Translations$investing$allocation$en {
+	Translations$investing$allocation$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Allocation'
+	String get title => 'Allocation';
+
+	/// en: 'No targets yet'
+	String get emptyTitle => 'No targets yet';
+
+	/// en: 'Set target weights on your asset classes to see how your portfolio compares and what to rebalance.'
+	String get empty => 'Set target weights on your asset classes to see how your portfolio compares and what to rebalance.';
+
+	/// en: 'Allocated'
+	String get allocated => 'Allocated';
+
+	/// en: 'Unallocated'
+	String get unallocated => 'Unallocated';
+
+	/// en: 'Target'
+	String get target => 'Target';
+
+	/// en: 'Current'
+	String get current => 'Current';
+
+	/// en: 'On target'
+	String get onTarget => 'On target';
+
+	/// en: 'Buy'
+	String get buy => 'Buy';
+
+	/// en: 'Sell'
+	String get sell => 'Sell';
+
+	/// en: 'Rebalance'
+	String get rebalance => 'Rebalance';
+
+	/// en: 'Your class targets add up to $percent, not 100%.'
+	String targetsUnbalanced({required Object percent}) => 'Your class targets add up to ${percent}, not 100%.';
+
+	/// en: '$amount isn't assigned to any class yet.'
+	String unallocatedHint({required Object amount}) => '${amount} isn\'t assigned to any class yet.';
 }
 
 // Path: csvImport.errors
@@ -2714,6 +2778,11 @@ extension on Translations {
 			'investing.assets.sectionInstrument' => 'Instrument',
 			'investing.assets.sectionCustody' => 'Custody',
 			'investing.assets.sectionFixedIncome' => 'Fixed income',
+			'investing.assets.sectionAllocation' => 'Allocation',
+			'investing.assets.allocationClass' => 'Asset class',
+			'investing.assets.pickClass' => 'Select…',
+			'investing.assets.noClass' => 'None',
+			'investing.assets.noClasses' => 'Create an asset class first',
 			'investing.assets.ticker' => 'Ticker',
 			'investing.assets.tickerHint' => 'AAPL, PETR4, BTC…',
 			'investing.assets.name' => 'Name',
@@ -2784,6 +2853,19 @@ extension on Translations {
 			'investing.overview.stale' => 'Stale',
 			'investing.overview.fxMissing' => 'No FX rate',
 			'investing.overview.units' => 'units',
+			'investing.allocation.title' => 'Allocation',
+			'investing.allocation.emptyTitle' => 'No targets yet',
+			'investing.allocation.empty' => 'Set target weights on your asset classes to see how your portfolio compares and what to rebalance.',
+			'investing.allocation.allocated' => 'Allocated',
+			'investing.allocation.unallocated' => 'Unallocated',
+			'investing.allocation.target' => 'Target',
+			'investing.allocation.current' => 'Current',
+			'investing.allocation.onTarget' => 'On target',
+			'investing.allocation.buy' => 'Buy',
+			'investing.allocation.sell' => 'Sell',
+			'investing.allocation.rebalance' => 'Rebalance',
+			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Your class targets add up to ${percent}, not 100%.',
+			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} isn\'t assigned to any class yet.',
 			'investing.nav' => 'Investing',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
@@ -3155,6 +3237,8 @@ extension on Translations {
 			'chat.handlers.unknownBudgetAction' => 'Unknown budget action.',
 			'chat.handlers.invalidAmount' => 'Invalid amount.',
 			'chat.handlers.accountCreateFailed' => ({required Object error}) => 'Failed to create account: ${error}',
+			_ => null,
+		} ?? switch (path) {
 			'chat.handlers.accountCreated' => ({required Object name}) => 'Account "${name}" created successfully!',
 			'chat.handlers.accountNotFound' => ({required Object name}) => 'No account named "${name}" found.',
 			'chat.handlers.accountLoadFailed' => ({required Object error}) => 'Failed to find account: ${error}',
@@ -3173,8 +3257,6 @@ extension on Translations {
 			'chat.handlers.transactionCreateAccountFirst' => 'Create an account first.',
 			'chat.handlers.transactionUnresolvedAccount' => 'Could not resolve account.',
 			'chat.handlers.transactionCreateFailed' => ({required Object error}) => 'Failed to create transaction: ${error}',
-			_ => null,
-		} ?? switch (path) {
 			'chat.handlers.transactionCreated' => ({required Object description, required Object amount}) => 'Transaction "${description}" of ${amount} created successfully!',
 			'chat.handlers.transferAccountsRequired' => 'Transfer needs both source and destination accounts.',
 			'chat.handlers.transferMinTwoAccounts' => 'Transfer requires at least two accounts.',
