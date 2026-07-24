@@ -208,6 +208,21 @@ void main() {
       verifyNever(() => database.clearAllTables());
       verifyNever(() => transactionsDao.insertAllTransactions(any()));
     });
+
+    test('an investing fetch failure does not abort the sync (best-effort)',
+        () async {
+      // Regression: the snapshot query once needed a composite Firestore index;
+      // a throw here used to fail the whole startup sync. Investing pulls are
+      // now best-effort — the cash side still clears + persists.
+      stubRemotes();
+      when(() => snapshotRemote.getSnapshots(userId: userId))
+          .thenThrow(Exception('missing composite index'));
+
+      await service.fullSync(userId: userId, user: user);
+
+      verify(() => database.clearAllTables()).called(1);
+      verify(() => accountsDao.insertAllAccounts(accounts)).called(1);
+    });
   });
 
   group('clearLocalData', () {

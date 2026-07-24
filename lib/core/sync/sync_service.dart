@@ -99,24 +99,31 @@ class SyncService {
     required String userId,
     required UserEntity user,
   }) async {
-    // Phase 1 — fetch from Firestore (network, may throw).
+    // Phase 1 — fetch from Firestore (network, may throw). The cash side is
+    // core, so a failure there aborts startup (nothing is cleared yet). The
+    // investing pulls are best-effort: a transient hiccup (or a missing index)
+    // must not make the whole app unusable — the affected collection stays
+    // empty locally and each investing cubit repopulates it via force-refresh
+    // on mount (surfacing any real error there, not at startup).
     final accounts = await _accountRemote.getAccounts(userId: userId);
     final categories = await _categoryRemote.getCategories(userId: userId);
     final transactions = await _transactionRemote.getTransactions(
       userId: userId,
     );
     final budgets = await _budgetRemote.getBudgets(userId: userId);
-    final assetClasses = await _assetClassRemote.getAssetClasses(
-      userId: userId,
+    final assetClasses = await _safe(
+      () => _assetClassRemote.getAssetClasses(userId: userId),
     );
-    final institutions = await _institutionRemote.getInstitutions(
-      userId: userId,
+    final institutions = await _safe(
+      () => _institutionRemote.getInstitutions(userId: userId),
     );
-    final assets = await _assetRemote.getAssets(userId: userId);
-    final assetTransactions = await _assetTransactionRemote.getTransactions(
-      userId: userId,
+    final assets = await _safe(() => _assetRemote.getAssets(userId: userId));
+    final assetTransactions = await _safe(
+      () => _assetTransactionRemote.getTransactions(userId: userId),
     );
-    final snapshots = await _snapshotRemote.getSnapshots(userId: userId);
+    final snapshots = await _safe(
+      () => _snapshotRemote.getSnapshots(userId: userId),
+    );
 
     // Phase 2 — persist to Drift (local, fast).
     await _database.clearAllTables();
@@ -147,6 +154,17 @@ class SyncService {
     }
     if (snapshots.isNotEmpty) {
       await _investmentSnapshotsDao.insertAllSnapshots(snapshots);
+    }
+  }
+
+  /// Best-effort fetch for the non-core investing collections: returns an empty
+  /// list on any error so one collection's failure never aborts the startup
+  /// sync of the rest.
+  Future<List<T>> _safe<T>(Future<List<T>> Function() fetch) async {
+    try {
+      return await fetch();
+    } on Object {
+      return const [];
     }
   }
 

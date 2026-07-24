@@ -21,9 +21,11 @@ class SnapshotRemoteDataSourceImpl implements SnapshotRemoteDataSource {
   @override
   Future<List<SnapshotModel>> getSnapshots({required String userId}) async {
     try {
+      // No orderBy here: `where(userId) + orderBy(date)` would need a composite
+      // Firestore index, and this runs inside fullSync at startup — a missing
+      // index would abort the whole sync. The local DAO orders by date on read.
       final snapshot = await _collection
           .where('userId', isEqualTo: userId)
-          .orderBy('date')
           .get();
       return snapshot.docs.map(SnapshotModel.fromFirestore).toList();
     } on Exception {
