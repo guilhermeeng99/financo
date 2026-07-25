@@ -1,0 +1,8 @@
+# Line endings.
+#
+# Force LF for the TypeScript backend so eslint-config-google's
+# `linebreak-style` (LF) passes the functions predeploy lint on Windows
+# checkouts (core.autocrlf would otherwise hand eslint CRLF files). Dart and
+# other sources keep the platform default — `dart analyze` is line-ending
+# agnostic, so normalizing them would only add churn.
+*.ts text eol=lf
