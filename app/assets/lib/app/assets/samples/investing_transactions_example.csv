@@ -1,0 +1,4 @@
+ticker,operation,quantity,price,date,amount,fees,notes
+SOXX,buy,2,233.91,02/01/2024,,1.00,
+SOXX,dividend,0,0,10/04/2024,12.50,,Q1 distribution
+BTC,buy,0.05,42000,15/02/2024,,0,
