@@ -230,6 +230,7 @@ class _DashboardContent extends StatelessWidget {
             child: _BalancesList(
               accounts: bankAccounts,
               investments: investmentAccounts,
+              brlById: summary.accountBrlById,
             ),
           )
               .animate()
@@ -365,10 +366,18 @@ class _AccountList extends StatelessWidget {
 /// [DashboardAccountSelectionCubit] (keyed by account/institution id) so it
 /// survives navigation and app restarts.
 class _BalancesList extends StatelessWidget {
-  const _BalancesList({required this.accounts, required this.investments});
+  const _BalancesList({
+    required this.accounts,
+    required this.investments,
+    required this.brlById,
+  });
 
   final List<AccountEntity> accounts;
   final List<InvestmentAccountRow> investments;
+
+  /// Account id → BRL estimate of its native balance. Drives the consolidated
+  /// Total and each foreign row's `≈ R$` sub-line (F9).
+  final Map<String, double> brlById;
 
   @override
   Widget build(BuildContext context) {
@@ -387,9 +396,11 @@ class _BalancesList extends StatelessWidget {
         final cubit = context.read<DashboardAccountSelectionCubit>();
         bool included(String id) => !selection.excludedIds.contains(id);
 
+        // Total consolidates in BRL (native balance × current FX), so mixed
+        // currencies sum correctly.
         final accountsTotal = accounts
             .where((a) => included(a.id))
-            .fold<double>(0, (sum, a) => sum + a.initialBalance);
+            .fold<double>(0, (sum, a) => sum + (brlById[a.id] ?? 0));
         final investmentsTotal = investments
             .where((r) => included(r.institutionId))
             .fold<double>(0, (sum, r) => sum + r.marketValue);
@@ -402,6 +413,7 @@ class _BalancesList extends StatelessWidget {
               account: account,
               includedInTotal: included(account.id),
               onToggleIncluded: () => cubit.toggle(account.id),
+              brlEstimate: brlById[account.id],
               onTap: () => context.go(AppRoutes.accountById(account.id)),
             ),
           );

@@ -292,6 +292,7 @@ Future<void> initDependencies() async {
         categoryRepository: sl(),
         institutionRepository: sl(),
         institutionValuationReader: sl(),
+        accountFxConverter: sl(),
       ),
     )
     ..registerLazySingleton<ProfileRepository>(

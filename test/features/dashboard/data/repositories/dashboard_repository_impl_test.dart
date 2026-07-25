@@ -24,10 +24,13 @@ void main() {
   late MockCategoryRepository mockCategoryRepo;
   late MockInstitutionRepository mockInstitutionRepo;
   late MockInstitutionValuationReader mockValuationReader;
+  late MockAccountFxConverter mockFxConverter;
   late DashboardRepositoryImpl repository;
 
   const userId = 'user-1';
   final month = DateTime(2024, 3);
+
+  setUpAll(() => registerFallbackValue(<Currency>[]));
 
   setUp(() {
     mockTransactionRepo = MockTransactionRepository();
@@ -35,12 +38,14 @@ void main() {
     mockCategoryRepo = MockCategoryRepository();
     mockInstitutionRepo = MockInstitutionRepository();
     mockValuationReader = MockInstitutionValuationReader();
+    mockFxConverter = MockAccountFxConverter();
     repository = DashboardRepositoryImpl(
       transactionRepository: mockTransactionRepo,
       accountRepository: mockAccountRepo,
       categoryRepository: mockCategoryRepo,
       institutionRepository: mockInstitutionRepo,
       institutionValuationReader: mockValuationReader,
+      accountFxConverter: mockFxConverter,
     );
     // Default: no investing data, so the cash-only tests below are unaffected.
     when(
@@ -52,6 +57,10 @@ void main() {
     when(
       () => mockValuationReader.read(any()),
     ).thenAnswer((_) async => const <String, InstitutionValuation>{});
+    // Default: BRL-only, so toBrl is the identity and existing figures hold.
+    when(
+      () => mockFxConverter.ratesToBrl(any()),
+    ).thenAnswer((_) async => const {Currency.brl: 1.0});
   });
 
   void stubAccounts(List<AccountEntity> accounts) {
@@ -660,5 +669,75 @@ void main() {
         );
       },
     );
+
+    test('consolidates a foreign account to BRL at the current rate', () async {
+      when(() => mockFxConverter.ratesToBrl(any())).thenAnswer(
+        (_) async => const {Currency.brl: 1.0, Currency.eur: 6.0},
+      );
+      stubAccounts([
+        AccountFactory.checking(id: 'acc-brl'),
+        AccountFactory.checking(
+          id: 'acc-eur',
+          name: 'Wise',
+          currency: Currency.eur,
+          initialBalance: 100,
+        ),
+      ]);
+      stubTransactions([]);
+      stubCategories(const []);
+
+      final result = await repository.getDashboardSummary(
+        userId: userId,
+        month: month,
+      );
+
+      result.fold(
+        (_) => fail('Expected Right'),
+        (summary) {
+          // acc-brl 1000 + acc-eur 100€ × 6 = 1600.
+          expect(summary.totalBalance, 1600);
+          expect(summary.accountBrlById['acc-brl'], 1000);
+          expect(summary.accountBrlById['acc-eur'], 600);
+          // The account entity keeps its native balance + currency.
+          final eur = summary.accounts.firstWhere((a) => a.id == 'acc-eur');
+          expect(eur.initialBalance, 100);
+          expect(eur.currency, Currency.eur);
+        },
+      );
+    });
+
+    test('consolidates foreign income/expense into BRL totals', () async {
+      when(() => mockFxConverter.ratesToBrl(any())).thenAnswer(
+        (_) async => const {Currency.brl: 1.0, Currency.eur: 5.0},
+      );
+      stubAccounts([
+        AccountFactory.checking(
+          id: 'acc-eur',
+          currency: Currency.eur,
+          initialBalance: 0,
+        ),
+      ]);
+      stubTransactions([
+        TransactionFactory.income(
+          id: 'tx-eur-income',
+          accountId: 'acc-eur',
+          categoryId: 'cat-1',
+          amount: 100,
+          date: DateTime(2024, 3, 5),
+        ),
+      ]);
+      stubCategories([CategoryFactory.income(id: 'cat-1')]);
+
+      final result = await repository.getDashboardSummary(
+        userId: userId,
+        month: month,
+      );
+
+      result.fold(
+        (_) => fail('Expected Right'),
+        // 100€ income × 5 = R$500.
+        (summary) => expect(summary.totalIncome, 500),
+      );
+    });
   });
 }

@@ -85,6 +85,7 @@ class DashboardSummary extends Equatable {
     required this.incomeByCategory,
     required this.fiftyThirtyTwenty,
     this.investmentAccounts = const [],
+    this.accountBrlById = const {},
   });
 
   final double totalBalance;
@@ -92,6 +93,12 @@ class DashboardSummary extends Equatable {
   final double totalExpenses;
   final double netResult;
   final List<AccountEntity> accounts;
+
+  /// BRL estimate per account id (native balance × current FX). Drives the
+  /// consolidated "Total" and each account row's `≈ R$` sub-line. A foreign
+  /// account with no available rate is absent (F9 — see
+  /// `docs/specs/multi_currency_accounts.md`).
+  final Map<String, double> accountBrlById;
 
   /// Market-valued investment accounts (institutions). Rendered in the
   /// "Account Balances" section alongside checking accounts so the Dashboard
@@ -114,6 +121,7 @@ class DashboardSummary extends Equatable {
     netResult,
     accounts,
     investmentAccounts,
+    accountBrlById,
     expensesByCategory,
     incomeByCategory,
     fiftyThirtyTwenty,

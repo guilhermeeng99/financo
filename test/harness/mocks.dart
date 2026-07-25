@@ -24,6 +24,7 @@ import 'package:financo/features/access_control/domain/usecases/list_allowed_ema
 import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/features/accounts/domain/services/account_fx_converter.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
@@ -474,6 +475,8 @@ class MockPortfolioPricingEngine extends Mock
 
 class MockInstitutionValuationReader extends Mock
     implements InstitutionValuationReader {}
+
+class MockAccountFxConverter extends Mock implements AccountFxConverter {}
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
 

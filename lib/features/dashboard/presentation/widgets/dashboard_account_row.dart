@@ -1,5 +1,7 @@
 import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -19,6 +21,7 @@ class DashboardAccountRow extends StatelessWidget {
     required this.onTap,
     this.includedInTotal,
     this.onToggleIncluded,
+    this.brlEstimate,
     super.key,
   });
 
@@ -26,6 +29,10 @@ class DashboardAccountRow extends StatelessWidget {
   final VoidCallback onTap;
   final bool? includedInTotal;
   final VoidCallback? onToggleIncluded;
+
+  /// BRL estimate of the (foreign) account balance, shown as an `≈ R$` sub-line
+  /// under the native amount. Null for BRL accounts (F9).
+  final double? brlEstimate;
 
   @override
   Widget build(BuildContext context) {
@@ -87,12 +94,28 @@ class DashboardAccountRow extends StatelessWidget {
               const SizedBox(width: 8),
               Opacity(
                 opacity: muted ? 0.5 : 1,
-                child: Text(
-                  formatCurrency(amount),
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: amount >= 0 ? colors.income : colors.expense,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      formatMoney(Money.fromMajor(amount, account.currency)),
+                      style: context.textTheme.titleSmall?.copyWith(
+                        color: amount >= 0 ? colors.income : colors.expense,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (account.currency != Currency.brl &&
+                        brlEstimate != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '≈ ${formatCurrency(brlEstimate!)}',
+                        style: context.textTheme.labelSmall?.copyWith(
+                          color: colors.onBackgroundLight,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(width: 6),
