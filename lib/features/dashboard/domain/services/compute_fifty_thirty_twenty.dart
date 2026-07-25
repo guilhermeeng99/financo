@@ -88,6 +88,9 @@ double _sumIncome(
   for (final t in txs) {
     if (t.type != TransactionType.income) continue;
     if (t.isTransfer) continue;
+    // An investment resgate (cash back from an institution) is a savings
+    // withdrawal, not income — it's handled by _netSavingsFlow (F8.3).
+    if (t.isInvestmentCashFlow) continue;
     // Income categories can opt out of feeding the 50/30/20 base —
     // useful for one-off receipts (reimbursements, gifts) that would
     // otherwise distort the monthly percentage breakdown.
@@ -129,6 +132,9 @@ _bucketExpenses(
   for (final t in txs) {
     if (t.type != TransactionType.expense) continue;
     if (t.isTransfer) continue;
+    // An investment aporte (cash into an institution) is savings, not a
+    // needs/wants expense — counted by _netSavingsFlow (F8.3).
+    if (t.isInvestmentCashFlow) continue;
 
     final cat = categoriesById[t.categoryId];
     if (cat == null) {
@@ -199,6 +205,19 @@ double _netSavingsFlow(
     }
     // checking ↔ checking, investment ↔ investment, anything with credit
     // card: not savings — ignored.
+  }
+
+  // F8.3: investment cash flows tagged with an institution (a single-entry
+  // aporte/resgate, not an account↔account transfer). An aporte (expense
+  // leaving checking into an institution) adds to savings; a resgate (income
+  // back) subtracts. See docs/specs/investing_account_unification.md.
+  for (final t in txs) {
+    if (!t.isInvestmentCashFlow) continue;
+    if (t.type == TransactionType.expense) {
+      net += t.amount;
+    } else {
+      net -= t.amount;
+    }
   }
 
   return net < 0 ? 0 : net;

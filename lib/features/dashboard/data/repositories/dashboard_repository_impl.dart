@@ -137,10 +137,20 @@ class DashboardRepositoryImpl implements DashboardRepository {
     }).toList();
 
     final totalIncome = periodBrl
-        .where((t) => t.type == TransactionType.income && !t.isTransfer)
+        .where(
+          (t) =>
+              t.type == TransactionType.income &&
+              !t.isTransfer &&
+              !t.isInvestmentCashFlow,
+        )
         .fold<double>(0, (sum, t) => sum + t.amount);
     final totalExpenses = periodBrl
-        .where((t) => t.type == TransactionType.expense && !t.isTransfer)
+        .where(
+          (t) =>
+              t.type == TransactionType.expense &&
+              !t.isTransfer &&
+              !t.isInvestmentCashFlow,
+        )
         .fold<double>(0, (sum, t) => sum + t.amount);
 
     final categoryMap = <String, CategoryEntity>{
@@ -148,13 +158,19 @@ class DashboardRepositoryImpl implements DashboardRepository {
     };
     final expensesByCategory = _aggregateByCategory(
       periodBrl.where(
-        (t) => t.type == TransactionType.expense && !t.isTransfer,
+        (t) =>
+          t.type == TransactionType.expense &&
+          !t.isTransfer &&
+          !t.isInvestmentCashFlow,
       ),
       categoryMap,
     );
     final incomeByCategory = _aggregateByCategory(
       periodBrl.where(
-        (t) => t.type == TransactionType.income && !t.isTransfer,
+        (t) =>
+          t.type == TransactionType.income &&
+          !t.isTransfer &&
+          !t.isInvestmentCashFlow,
       ),
       categoryMap,
     );

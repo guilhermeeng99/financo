@@ -739,5 +739,57 @@ void main() {
       );
       expect(out.savingsShortfall, 0);
     });
+
+    test('counts an investment aporte (institutionId) as savings, not expense',
+        () {
+      final aporte = TransactionFactory.expense(
+        id: 'tx-aporte',
+        accountId: 'acc-chk',
+        amount: 1000,
+      ).copyWith(institutionId: 'inst-avenue');
+      final salary = TransactionFactory.income(
+        id: 'tx-salary',
+        accountId: 'acc-chk',
+        amount: 5000,
+      );
+
+      final out = compute50_30_20Overview(
+        periodTransactions: [salary, aporte],
+        categories: const [],
+        accounts: [AccountFactory.checking(id: 'acc-chk')],
+      );
+
+      expect(out.income, 5000);
+      expect(out.savingsAmount, 1000);
+      // The aporte is not a needs/wants/unclassified expense.
+      expect(out.needsSpent, 0);
+      expect(out.wantsSpent, 0);
+      expect(out.unclassifiedSpent, 0);
+    });
+
+    test('an investment resgate (institutionId income) subtracts from savings',
+        () {
+      final aporte = TransactionFactory.expense(
+        id: 'tx-aporte',
+        accountId: 'acc-chk',
+        amount: 1000,
+      ).copyWith(institutionId: 'inst-avenue');
+      final resgate = TransactionFactory.income(
+        id: 'tx-resgate',
+        accountId: 'acc-chk',
+        amount: 300,
+      ).copyWith(institutionId: 'inst-avenue');
+
+      final out = compute50_30_20Overview(
+        periodTransactions: [aporte, resgate],
+        categories: const [],
+        accounts: [AccountFactory.checking(id: 'acc-chk')],
+      );
+
+      // 1000 aporte − 300 resgate = 700.
+      expect(out.savingsAmount, 700);
+      // The resgate is not counted as income.
+      expect(out.income, 0);
+    });
   });
 }
