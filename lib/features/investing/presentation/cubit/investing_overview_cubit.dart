@@ -3,11 +3,12 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/portfolio_valuation.dart';
 import 'package:financo/features/investing/domain/entities/snapshot.dart';
+import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
-import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
+import 'package:financo/features/investing/presentation/cubit/portfolio_load_mixin.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Session-scoped investing net-worth overview. Prices the portfolio from the
@@ -16,7 +17,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// (idempotent) so the net-worth history accrues. Owns a per-cubit
 /// [PortfolioPricingEngine] (mutable FX/index state). See `docs/specs/quotes.md`
 /// and `docs/specs/valuation.md`.
-class InvestingOverviewCubit extends Cubit<InvestingOverviewState> {
+class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
+    with PortfolioLoadMixin {
   InvestingOverviewCubit({
     required PortfolioPricingEngine engine,
     required GetAssetTransactionsUseCase getTransactions,
@@ -39,17 +41,15 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState> {
   final RecordDailySnapshotUseCase _recordSnapshot;
   final String _userId;
 
-  bool _warmStarted = false;
+  @override
+  PortfolioPricingEngine get engine => _engine;
 
   Future<void> load({bool force = false}) async {
     if (state is! InvestingOverviewLoaded) {
       emit(const InvestingOverviewLoading());
     }
 
-    if (!_warmStarted) {
-      await _engine.warmStart();
-      _warmStarted = true;
-    }
+    await warmStartOnce();
 
     final txResult = await _getTransactions(
       userId: _userId,
@@ -83,16 +83,8 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState> {
     );
 
     // Best-effort network refresh, then re-price. A failure keeps the cached
-    // values on screen (the catch swallows it).
-    final held = _engine.heldPositions(transactions, assets);
-    final skip = !force && await _engine.quotesAreFresh(held.ids);
-    if (!skip) {
-      try {
-        await _engine.refreshNetwork(held.assets, transactions);
-      } on Object {
-        // Network failure — serve the cached prices, flagged stale downstream.
-      }
-    }
+    // values on screen (the refresh swallows it).
+    await refreshHeldPositions(transactions, assets, force: force);
 
     final repriced = await _engine.priceFromCache(transactions, assets);
     // Record today's point, then re-read so the fresh snapshot shows up.

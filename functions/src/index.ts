@@ -12,7 +12,6 @@ import { deleteUserAsAdmin as deleteUserAsAdminImpl } from './admin/deleteUser';
 import { notifyTransactionsDue } from './transactions/notifyTransactionsDue';
 import {
   fetchInvestmentQuotes as fetchInvestmentQuotesImpl,
-  BRAPI_TOKEN,
   FINNHUB_TOKEN,
   type QuoteItem,
 } from './quotes/fetchInvestmentQuotes';
@@ -129,7 +128,7 @@ export const fetchInvestmentQuotes = onCall<FetchInvestmentQuotesRequest>(
     memory: '256MiB',
     timeoutSeconds: 30,
     invoker: 'public',
-    secrets: [BRAPI_TOKEN, FINNHUB_TOKEN],
+    secrets: [FINNHUB_TOKEN],
   },
   async (request) => {
     await assertAllowedCaller(request);

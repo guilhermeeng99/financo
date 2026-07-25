@@ -38,25 +38,28 @@ abstract class MarketCacheStore {         // durable FX + index for warm start
 | **Tesouro Direto** | treasury bonds (redemption value) | none | client |
 | **BCB SGS** | CDI(12)/Selic(11)/IPCA(433) series | none | client |
 | **AwesomeAPI** | FX pairs (`USD-BRL`, `EUR-BRL`) | none | client |
-| **brapi** | BR equities/FII/ETF/BDR | `BRAPI_TOKEN` | **Cloud Function proxy** |
-| **Finnhub** | US equities/ETF | `FINNHUB_TOKEN` | **Cloud Function proxy** |
+| **brapi** | BR equities/FII/ETF/BDR | none (free tier); opt. `BRAPI_TOKEN` env | **Cloud Function proxy** |
+| **Finnhub** | US equities/ETF | `FINNHUB_TOKEN` (backend secret) | **Cloud Function proxy** |
 
 A registry routes each asset to the first `QuoteDataSource` whose `supports()` is
 true. Keyless sources hit the public API directly (`guardedFetch` maps any
 transport/parse error to `ServerFailure`, degrading to cache). The keyed sources
 go through the **`fetchInvestmentQuotes`** callable
-(`functions/src/quotes/fetchInvestmentQuotes.ts`) so `BRAPI_TOKEN`/`FINNHUB_TOKEN`
-stay backend secrets, never in the web bundle. brapi batches all BR tickers;
+(`functions/src/quotes/fetchInvestmentQuotes.ts`) so the Finnhub key stays a
+backend secret, never in the web bundle. `FINNHUB_TOKEN` is the **only** required
+secret; brapi is keyless (free tier) and reads an **optional** `BRAPI_TOKEN`
+env var only if you outgrow the free tier. brapi batches all BR tickers;
 Finnhub is one request per symbol (free tier).
 
 **Deploy (manual, by the owner):**
 ```bash
-firebase functions:secrets:set BRAPI_TOKEN
 firebase functions:secrets:set FINNHUB_TOKEN
 firebase deploy --only functions:fetchInvestmentQuotes
 ```
-Both secrets are optional: empty `BRAPI_TOKEN` → brapi free tier; empty
-`FINNHUB_TOKEN` → US holdings show cost basis (no crash).
+`FINNHUB_TOKEN` is the only secret and is optional — without it US holdings show
+cost basis (no crash). brapi needs no secret (free tier); to use a keyed brapi
+plan set a `BRAPI_TOKEN` **environment variable** on the function — it is not a
+`defineSecret`, so `firebase functions:secrets:set BRAPI_TOKEN` has no effect.
 
 ## Caching rules
 
@@ -80,7 +83,7 @@ Both secrets are optional: empty `BRAPI_TOKEN` → brapi free tier; empty
 
 `LocalQuotes` (assetId pk, unitPriceMinor, previousCloseMinor?, currency, asOf,
 fetchedAt, source), `LocalFxRates` (pair pk `"USD->BRL"`, rate, fetchedAt),
-`LocalIndexPoints` ((indexName, date) pk, rate). schemaVersion bumped to 13.
+`LocalIndexPoints` ((indexName, date) pk, rate). schemaVersion is 15.
 
 ## Composition — `PortfolioPricingEngine` (F2c)
 

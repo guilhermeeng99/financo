@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/features/investing/data/datasources/ttl_cache.dart';
 import 'package:financo/features/investing/domain/datasources/index_data_source.dart';
 import 'package:financo/features/investing/domain/entities/index_point.dart';
 
@@ -12,31 +13,22 @@ class CachingIndexDataSource implements IndexDataSource {
   CachingIndexDataSource(
     this._inner, {
     this.ttl = const Duration(hours: 12),
-    this.now = DateTime.now,
-  });
+    DateTime Function() now = DateTime.now,
+  }) : _cache = TtlCache(now: now);
 
   final IndexDataSource _inner;
 
   /// How long a cached series stays fresh.
   final Duration ttl;
 
-  /// Clock seam, injectable for tests.
-  final DateTime Function() now;
-
-  final Map<String, ({List<IndexPoint> points, DateTime at})> _cache = {};
+  final TtlCache<String, List<IndexPoint>> _cache;
 
   @override
   Future<Either<Failure, List<IndexPoint>>> series(
     EconomicIndex index,
     DateTime from,
-  ) async {
+  ) {
     final key = '${index.name}@${from.toIso8601String()}';
-    final hit = _cache[key];
-    if (hit != null && now().difference(hit.at) < ttl) {
-      return Right(hit.points);
-    }
-    final result = await _inner.series(index, from);
-    result.fold((_) {}, (points) => _cache[key] = (points: points, at: now()));
-    return result;
+    return _cache.getOrFetch(key, ttl, () => _inner.series(index, from));
   }
 }

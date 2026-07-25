@@ -198,7 +198,8 @@ Test infrastructure lives in `test/harness/`:
   `DarkPaletteCubit`, `AppLocaleCubit`, `DateFilterCubit`, `NotificationService`.
 * Session-scoped blocs/cubits that take `userId` (`DashboardBloc`,
   `TransactionsBloc`, `BudgetsCubit`, `AccountsCubit`,
-  `CategoriesCubit`, `ProfileCubit`, `InvestmentsCubit`,
+  `CategoriesCubit`, `ProfileCubit`, `InvestingOverviewCubit`,
+  `InvestingTransactionsCubit`, `InvestingAllocationCubit`,
   `FiftyThirtyTwentyTargetsCubit`, `DashboardAccountSelectionCubit`) are
   created by the shell route via `BlocProvider` — the `userId` is resolved
   from `AuthBloc.state` at mount time and never changes during the shell's
@@ -229,7 +230,11 @@ transactions/{id}
 bills/{id}  # legacy/read-only after 2026-06-10 migration
 budgets/{id}
 asset_classes/{id}
-asset_holdings/{id}
+asset_holdings/{id}  # legacy/read-only after the F7 V2 investing migration
+institutions/{id}
+investment_assets/{id}
+investment_transactions/{id}
+investment_snapshots/{id}
 chat_messages/{id}
 allowed_emails/{email}
 ```
@@ -253,8 +258,12 @@ categories/{id}                      → userId, name, icon, color, type (income
 transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, settlementStatus (pending | paid), dueDate, settledAt?, recurrence (single | installment | fixed), recurrenceGroupId?, recurrenceIntervalMonths?, recurrenceIndex?, recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?, notes?, linkedTransactionId?, sourceBillId? (legacy migration trace), parentTransactionId? (legacy migration trace), createdAt, updatedAt
 bills/{id}                           → legacy/read-only after the 2026-06-10 migration; retained for rollback/audit and account-wipe cleanup only. The app must not query or notify from this collection. Previous shape: userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
 budgets/{id}                         → userId, categoryId, amount, createdAt, updatedAt
-asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt
-asset_holdings/{id}                  → userId, accountId, assetClassId, amount, notes?, updatedAt
+asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt  (allocation buckets; assets link via investment_assets.metadata.allocationClassId)
+asset_holdings/{id}                  → legacy/read-only after the F7 V2 investing migration; superseded by the investment_* collections. Previous shape: userId, accountId, assetClassId, amount, notes?, updatedAt
+institutions/{id}                    → userId, name, kind, currency, createdAt
+investment_assets/{id}               → userId, ticker, name, kind (stockBr | stockUs | fiiBr | etfBr | etfUs | bdrBr | crypto | fixedIncome), market, currency, institutionId, metadata (Map: allocationClassId?, allocationTargetPercent?, fiBasis?, fiRate?), createdAt
+investment_transactions/{id}         → userId, institutionId, assetId, kind (buy | sell | dividend), quantity, unitPriceMinor, feesMinor, amountMinor, currency, date, notes?, createdAt, updatedAt
+investment_snapshots/{id}            → doc id = "${userId}_${yyyy-MM-dd}"; userId, date, totalValueMinor, totalInvestedMinor, totalPlMinor, currency
 chat_messages/{id}                   → userId, role, content, metadata, createdAt
 allowed_emails/{email}               → addedAt, note?  (doc id is the lower-cased email; gates onboarding — see access_control)
 ```

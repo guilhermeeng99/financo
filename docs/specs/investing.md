@@ -197,7 +197,7 @@ createdAt`. Flat in UI. The asset→class link + per-asset target live on
 `Asset.metadata`, **not** on separate subclass rows. Deleting a class → its assets
 fall back to "não alocado".
 
-### `Snapshot`  → `investment_snapshots/{id}`  (id = `yyyy-MM-dd`)
+### `Snapshot`  → `investment_snapshots/{id}`  (id = `${userId}_${yyyy-MM-dd}`)
 `id, userId, date, totalValueMinor, totalInvestedMinor, totalPlMinor, currency`.
 Idempotent per day (`insertOnConflictUpdate`); written at the end of a dashboard
 refresh, **skipped** when no fresh-priced open position exists.

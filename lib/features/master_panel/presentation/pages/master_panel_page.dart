@@ -6,11 +6,9 @@ import 'package:financo/app/widgets/financo_dialog.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/constants/access_control.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/features/access_control/domain/entities/allowed_email_entity.dart';
-import 'package:financo/features/auth/domain/entities/user_entity.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
+import 'package:financo/features/auth/domain/entities/user_entity.dart';import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_state.dart';
 import 'package:financo/features/master_panel/presentation/widgets/add_allowed_email_dialog.dart';
 import 'package:financo/features/master_panel/presentation/widgets/delete_user_dialog.dart';
@@ -101,10 +99,7 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
     );
   }
 
-  String _currentUid(BuildContext context) {
-    final auth = context.read<AuthBloc>().state;
-    return auth is Authenticated ? auth.user.id : '';
-  }
+  String _currentUid(BuildContext context) => context.currentUserId;
 
   Future<void> _addEmail(BuildContext context) async {
     final result = await showAddAllowedEmailDialog(context);

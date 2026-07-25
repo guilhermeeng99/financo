@@ -9,10 +9,8 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/validators.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/core/utils/validators.dart';import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/usecases/create_category_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/delete_category_with_reassignment_usecase.dart';
@@ -40,8 +38,7 @@ class AddCategoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+    final userId = context.currentUserId;
 
     return BlocProvider(
       create: (_) {

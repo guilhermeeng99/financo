@@ -10,6 +10,7 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -19,10 +20,7 @@ import 'package:financo/features/accounts/domain/usecases/update_account_usecase
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/bank_picker_field.dart';
 import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
-import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -36,8 +34,7 @@ class AddAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+    final userId = context.currentUserId;
 
     return BlocProvider(
       create: (_) {

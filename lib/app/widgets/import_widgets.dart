@@ -85,6 +85,61 @@ class ImportProgressOverlay extends StatelessWidget {
   }
 }
 
+/// Inline determinate progress column shown in the body while a CSV import
+/// commits: a progress bar over a "NN%" label. Distinct from
+/// [ImportProgressOverlay] — this one replaces the preview list in place rather
+/// than dimming the whole screen. [progress] is 0..1.
+class ImportProgressInline extends StatelessWidget {
+  const ImportProgressInline({required this.progress, super.key});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          LinearProgressIndicator(value: progress),
+          const SizedBox(height: 12),
+          Text('${(progress * 100).round()}%'),
+        ],
+      ),
+    );
+  }
+}
+
+/// Titled group of import-preview rows (e.g. "To import (3)"), used to separate
+/// the importable rows from the skipped/duplicate ones on the CSV review pages.
+class ImportSection extends StatelessWidget {
+  const ImportSection({required this.title, required this.children, super.key});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
+          child: Text(
+            title,
+            style: context.textTheme.titleSmall?.copyWith(
+              color: context.appColors.onBackgroundLight,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        ...children,
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+}
+
 /// Circular red trash button used to drop a row from an import preview.
 class ImportRemoveButton extends StatelessWidget {
   const ImportRemoveButton({required this.onPressed, super.key});

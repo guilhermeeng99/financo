@@ -3,9 +3,10 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/investing/domain/entities/allocation_class.dart';
 import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
 import 'package:financo/features/investing/domain/services/allocation_service.dart';
+import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
-import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
+import 'package:financo/features/investing/presentation/cubit/portfolio_load_mixin.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,7 +19,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// the V1 [GetAssetClassesUseCase] and mapped to the investing-owned
 /// [AllocationClass] here — the only place coupled to the V1 feature, so F7 can
 /// swap the source without touching the service or UI.
-class InvestingAllocationCubit extends Cubit<InvestingAllocationState> {
+class InvestingAllocationCubit extends Cubit<InvestingAllocationState>
+    with PortfolioLoadMixin {
   InvestingAllocationCubit({
     required PortfolioPricingEngine engine,
     required GetAssetTransactionsUseCase getTransactions,
@@ -41,17 +43,15 @@ class InvestingAllocationCubit extends Cubit<InvestingAllocationState> {
   final AllocationService _service;
   final String _userId;
 
-  bool _warmStarted = false;
+  @override
+  PortfolioPricingEngine get engine => _engine;
 
   Future<void> load({bool force = false}) async {
     if (state is! InvestingAllocationLoaded) {
       emit(const InvestingAllocationLoading());
     }
 
-    if (!_warmStarted) {
-      await _engine.warmStart();
-      _warmStarted = true;
-    }
+    await warmStartOnce();
 
     final txResult = await _getTransactions(
       userId: _userId,
@@ -102,15 +102,7 @@ class InvestingAllocationCubit extends Cubit<InvestingAllocationState> {
       ),
     );
 
-    final held = _engine.heldPositions(transactions, assets);
-    final skip = !force && await _engine.quotesAreFresh(held.ids);
-    if (!skip) {
-      try {
-        await _engine.refreshNetwork(held.assets, transactions);
-      } on Object {
-        // Network failure — keep the cached prices on screen.
-      }
-    }
+    await refreshHeldPositions(transactions, assets, force: force);
 
     if (isClosed) return;
     emit(

@@ -76,10 +76,15 @@ import 'package:financo/features/investing/data/datasources/asset_remote_datasou
 import 'package:financo/features/investing/data/datasources/asset_transaction_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/institution_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/snapshot_remote_datasource.dart';
+import 'package:financo/features/investing/domain/datasources/index_data_source.dart';
+import 'package:financo/features/investing/domain/datasources/quote_data_source.dart';
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
+import 'package:financo/features/investing/domain/repositories/quote_repository.dart';
 import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
+import 'package:financo/features/investing/domain/services/market_cache_store.dart';
+import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
@@ -90,7 +95,6 @@ import 'package:financo/features/investing/domain/usecases/import_assets_csv_use
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
-import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
 import 'package:financo/features/investments/domain/usecases/create_asset_class_usecase.dart';
@@ -466,6 +470,14 @@ class MockGetAssetTransactionsUseCase extends Mock
 
 class MockPortfolioPricingEngine extends Mock
     implements PortfolioPricingEngine {}
+
+class MockQuoteRepository extends Mock implements QuoteRepository {}
+
+class MockFxDataSource extends Mock implements FxDataSource {}
+
+class MockIndexDataSource extends Mock implements IndexDataSource {}
+
+class MockMarketCacheStore extends Mock implements MarketCacheStore {}
 
 class MockCreateAssetUseCase extends Mock implements CreateAssetUseCase {}
 

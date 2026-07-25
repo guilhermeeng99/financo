@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';
@@ -33,8 +31,7 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+    final userId = context.currentUserId;
 
     return BlocProvider(
       create: (_) => ChatBloc(

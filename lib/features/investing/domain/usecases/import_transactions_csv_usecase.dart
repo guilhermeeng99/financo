@@ -57,6 +57,29 @@ class InvestingTransactionImportPreviewItem extends Equatable {
 
   bool get canImport => problem == null && asset != null;
 
+  /// A copy with the resolution outcome filled in — the resolver attaches
+  /// either the matched [asset] or the blocking [problem]. Only these two
+  /// fields are ever revised after parsing (a parsed row can't be edited), so
+  /// the other fields are always carried over unchanged.
+  InvestingTransactionImportPreviewItem copyWith({
+    Asset? asset,
+    InvestingTransactionImportProblem? problem,
+  }) {
+    return InvestingTransactionImportPreviewItem(
+      ticker: ticker,
+      market: market,
+      kind: kind,
+      quantity: quantity,
+      unitPriceMajor: unitPriceMajor,
+      amountMajor: amountMajor,
+      feesMajor: feesMajor,
+      date: date,
+      notes: notes,
+      asset: asset ?? this.asset,
+      problem: problem ?? this.problem,
+    );
+  }
+
   @override
   List<Object?> get props => [
     ticker,
@@ -393,60 +416,21 @@ class ImportInvestingTransactionsCsvUseCase {
     }).toList();
 
     if (matches.isEmpty) {
-      return _withProblem(
-        item,
-        InvestingTransactionImportProblem.assetNotFound,
+      return item.copyWith(
+        problem: InvestingTransactionImportProblem.assetNotFound,
       );
     }
     if (matches.length > 1) {
-      return _withProblem(
-        item,
-        InvestingTransactionImportProblem.assetAmbiguous,
+      return item.copyWith(
+        problem: InvestingTransactionImportProblem.assetAmbiguous,
       );
     }
     final asset = matches.single;
     if (asset.institutionId == null || asset.institutionId!.isEmpty) {
-      return _withProblem(
-        item,
-        InvestingTransactionImportProblem.assetNoInstitution,
+      return item.copyWith(
+        problem: InvestingTransactionImportProblem.assetNoInstitution,
       );
     }
-    return _withAsset(item, asset);
-  }
-
-  InvestingTransactionImportPreviewItem _withProblem(
-    InvestingTransactionImportPreviewItem item,
-    InvestingTransactionImportProblem problem,
-  ) {
-    return InvestingTransactionImportPreviewItem(
-      ticker: item.ticker,
-      market: item.market,
-      kind: item.kind,
-      quantity: item.quantity,
-      unitPriceMajor: item.unitPriceMajor,
-      amountMajor: item.amountMajor,
-      feesMajor: item.feesMajor,
-      date: item.date,
-      notes: item.notes,
-      problem: problem,
-    );
-  }
-
-  InvestingTransactionImportPreviewItem _withAsset(
-    InvestingTransactionImportPreviewItem item,
-    Asset asset,
-  ) {
-    return InvestingTransactionImportPreviewItem(
-      ticker: item.ticker,
-      market: item.market,
-      kind: item.kind,
-      quantity: item.quantity,
-      unitPriceMajor: item.unitPriceMajor,
-      amountMajor: item.amountMajor,
-      feesMajor: item.feesMajor,
-      date: item.date,
-      notes: item.notes,
-      asset: asset,
-    );
+    return item.copyWith(asset: asset);
   }
 }

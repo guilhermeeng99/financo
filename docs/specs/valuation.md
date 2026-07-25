@@ -93,7 +93,7 @@ A `Snapshot` is the portfolio consolidated to base on a calendar day
 (`dayKey = yyyy-MM-dd`) written via `set()`, so re-recording a day overwrites
 rather than appending (a deliberate exception to the auto-id convention — daily
 idempotency requires a deterministic key). Mirrored + cached in the
-`investment_snapshots` Drift table (schema 14) as integer minor units + a base
+`investment_snapshots` Drift table (schema 15) as integer minor units + a base
 `currency`.
 
 `RecordDailySnapshotUseCase` runs at the end of every overview refresh from the

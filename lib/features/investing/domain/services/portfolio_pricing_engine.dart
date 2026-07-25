@@ -19,7 +19,9 @@ import 'package:financo/features/investing/domain/services/valuation_service.dar
 /// quote cache (no network), and performs the best-effort network refresh.
 ///
 /// Each cubit composes its own instance, so the two screens share the rules but
-/// not the state. See `docs/specs/valuation.md` and `docs/specs/quotes.md`.
+/// not the state. This is pure domain orchestration (no widgets), so it lives
+/// under `domain/services`. See `docs/specs/valuation.md` and
+/// `docs/specs/quotes.md`.
 ///
 /// Example:
 /// ```dart

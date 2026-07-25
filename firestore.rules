@@ -112,9 +112,11 @@ service cloud.firestore {
         || isMaster();
     }
 
-    // ─── Asset Holdings (Investments) ──────────────────────
-    // Declared allocations of money into asset classes. Writes never
-    // touch transactions/accounts (Model A isolation).
+    // ─── Asset Holdings (legacy V1 — superseded by investment_* in F7) ──
+    // The app no longer reads or writes this collection; the V2 investing
+    // module (institutions/investment_assets/investment_transactions) replaced
+    // it. Rule retained read-only for rollback + account-wipe cleanup, mirroring
+    // the bills legacy convention.
     match /asset_holdings/{assetHoldingId} {
       allow create: if isAllowed() && ownsCreate();
       allow read, update, delete: if (isAllowed() && ownsResource())

@@ -7,10 +7,8 @@ import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/utils/validators.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/core/utils/validators.dart';import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
@@ -31,8 +29,7 @@ class AddBudgetPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+    final userId = context.currentUserId;
 
     return BlocProvider(
       create: (_) {

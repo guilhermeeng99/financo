@@ -9,8 +9,9 @@ Personal finance manager for Android and Web. Natural-language data entry powere
 - **Categories** — income and expense, with optional parent (sub-category) hierarchy and Material icons.
 - **Transactions** — single-account or **transfers** (linked expense/income across two own accounts), with running balance per account.
 - **Payables and receivables** — future-dated transactions can remain pending, become overdue in their month, and be marked as paid/received.
+- **Investing** — custody institutions; assets (BR/US equities, ETFs, FIIs, crypto, fixed income) with buy/sell/dividend transactions and derived holdings; market-value net worth with multi-currency FX and live quotes (brapi/Finnhub proxy + keyless CoinGecko/Tesouro/BCB); target allocation with rebalance suggestions; daily net-worth snapshots.
 - **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
-- **CSV import** — bulk-create accounts, categories, transactions, and budgets from CSV files (samples shipped in `lib/app/assets/samples/`).
+- **CSV import** — bulk-create accounts, categories, transactions, budgets, and investing assets + transactions from CSV files (samples shipped in `lib/app/assets/samples/`).
 - **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today pending transactions.
 
 ## Architecture
@@ -29,6 +30,7 @@ functions/
     ├── access/   # Allowlist helpers + assertAllowedCaller gate
     ├── admin/    # deleteUserAsAdmin callable (master-only user wipe)
     ├── chat/     # Gemini pipeline, action extractor
+    ├── quotes/   # fetchInvestmentQuotes market-data proxy (brapi / Finnhub)
     └── transactions/ # Scheduled pending-transaction notifier
 
 docs/specs/       # Per-feature contracts (entities, business rules, state machines)
@@ -108,7 +110,7 @@ npm run build
 firebase deploy --only functions
 ```
 
-The callables `chatSend`, `transcribeChatAudio`, and `deleteUserAsAdmin` are defined in `functions/src/index.ts`; the scheduled pending-transaction notifier `notifyTransactionsDue` lives in `functions/src/transactions/notifyTransactionsDue.ts` and is re-exported from `index.ts`.
+The callables `chatSend`, `transcribeChatAudio`, `deleteUserAsAdmin`, and `fetchInvestmentQuotes` (market-data proxy — see `functions/src/quotes/`) are defined in `functions/src/index.ts`; the scheduled pending-transaction notifier `notifyTransactionsDue` lives in `functions/src/transactions/notifyTransactionsDue.ts` and is re-exported from `index.ts`.
 
 ## Testing
 

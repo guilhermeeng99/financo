@@ -4,6 +4,7 @@ import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_mobile_nav.dart';
 import 'package:financo/app/widgets/financo_sidebar.dart';
 import 'package:financo/app/widgets/sub_page_scope.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
 import 'package:financo/features/access_control/domain/usecases/list_allowed_emails_usecase.dart';
 import 'package:financo/features/access_control/domain/usecases/remove_allowed_email_usecase.dart';
@@ -46,6 +47,7 @@ import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/services/allocation_service.dart';
+import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
@@ -68,7 +70,6 @@ import 'package:financo/features/investing/presentation/pages/investing_allocati
 import 'package:financo/features/investing/presentation/pages/investing_overview_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_transaction_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_transactions_page.dart';
-import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/features/investments/presentation/pages/asset_class_form_page.dart';
@@ -157,8 +158,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
-        final authState = context.read<AuthBloc>().state;
-        final userId = authState is Authenticated ? authState.user.id : '';
+        final userId = context.currentUserId;
         // Instantiated here (instead of inside MultiBlocProvider) because
         // DashboardBloc depends on it. Provided downstream via
         // BlocProvider.value so the targets editor / detail page can read

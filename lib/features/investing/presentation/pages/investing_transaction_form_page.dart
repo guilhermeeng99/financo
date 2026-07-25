@@ -8,20 +8,16 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
-import 'package:financo/core/money/money.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/investing/domain/entities/asset.dart';
+import 'package:financo/core/money/money.dart';import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/services/transaction_amounts.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/material.dart';import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -85,10 +81,7 @@ class _InvestingTransactionFormPageState
     super.dispose();
   }
 
-  String get _userId {
-    final authState = context.read<AuthBloc>().state;
-    return authState is Authenticated ? authState.user.id : '';
-  }
+  String get _userId => context.currentUserId;
 
   Future<void> _loadAssets() async {
     final result = await GetIt.I<GetAssetsUseCase>()(userId: _userId);

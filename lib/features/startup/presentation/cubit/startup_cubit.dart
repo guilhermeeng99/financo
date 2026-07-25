@@ -38,9 +38,12 @@ class StartupCubit extends Cubit<StartupState> {
         user: authState.user,
       );
       emit(StartupAuthenticated(userId: authState.user.id));
-    } on Exception catch (e, st) {
-      // Log the raw cause for diagnostics, but never surface the exception
-      // string to the user — the page renders a localized message instead.
+    } on Object catch (e, st) {
+      // Catch Object (not just Exception): a Dart Error (e.g. a type/cast
+      // error while decoding a synced document) would otherwise escape,
+      // leaving initialize() unresolved and the app stuck on the loader.
+      // The raw cause is logged for diagnostics; the page shows a localized
+      // message instead of the exception string.
       log(
         'startup sync failed',
         name: 'StartupCubit',

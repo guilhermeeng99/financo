@@ -7,11 +7,9 @@ import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
-import 'package:financo/core/utils/validators.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/investing/domain/entities/asset.dart';
+import 'package:financo/core/utils/validators.dart';import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/fixed_income_terms.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/services/allocation_metadata.dart';
@@ -24,9 +22,7 @@ import 'package:financo/features/investing/presentation/pages/assets_page.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/material.dart';import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -92,10 +88,7 @@ class _AssetFormPageState extends State<AssetFormPage> {
     super.dispose();
   }
 
-  String get _userId {
-    final authState = context.read<AuthBloc>().state;
-    return authState is Authenticated ? authState.user.id : '';
-  }
+  String get _userId => context.currentUserId;
 
   Future<void> _loadFormData() async {
     final institutions = await GetIt.I<GetInstitutionsUseCase>()(

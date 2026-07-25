@@ -11,9 +11,7 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
@@ -67,8 +65,7 @@ class AddTransactionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authState = context.read<AuthBloc>().state;
-    final userId = authState is Authenticated ? authState.user.id : '';
+    final userId = context.currentUserId;
 
     return BlocProvider(
       create: (_) => TransactionFormCubit(

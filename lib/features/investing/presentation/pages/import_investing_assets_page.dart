@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
+import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/assets_cubit.dart';
@@ -67,7 +68,7 @@ class _ImportInvestingAssetsPageState extends State<ImportInvestingAssetsPage> {
       body: BlocBuilder<AssetsCubit, AssetsState>(
         builder: (context, state) {
           if (state is AssetsImporting) {
-            return _ImportProgress(progress: state.progress);
+            return ImportProgressInline(progress: state.progress);
           }
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -84,7 +85,7 @@ class _ImportInvestingAssetsPageState extends State<ImportInvestingAssetsPage> {
                   ),
                 ),
               if (canImport)
-                _Section(
+                ImportSection(
                   title:
                       '${t.investing.assets.import.toCreate} '
                       '(${preview.toCreate.length})',
@@ -94,11 +95,10 @@ class _ImportInvestingAssetsPageState extends State<ImportInvestingAssetsPage> {
                   ],
                 ),
               if (preview.duplicates.isNotEmpty)
-                _Section(
+                ImportSection(
                   title:
                       '${t.investing.assets.import.duplicates} '
                       '(${preview.duplicates.length})',
-                  muted: true,
                   children: [
                     for (final item in preview.duplicates)
                       _AssetRow(item: item, muted: true),
@@ -115,60 +115,6 @@ class _ImportInvestingAssetsPageState extends State<ImportInvestingAssetsPage> {
               onSubmit: () => unawaited(_confirm()),
             )
           : null,
-    );
-  }
-}
-
-class _ImportProgress extends StatelessWidget {
-  const _ImportProgress({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          LinearProgressIndicator(value: progress),
-          const SizedBox(height: 12),
-          Text('${(progress * 100).round()}%'),
-        ],
-      ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.children,
-    this.muted = false,
-  });
-
-  final String title;
-  final List<Widget> children;
-  final bool muted;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-          child: Text(
-            title,
-            style: context.textTheme.titleSmall?.copyWith(
-              color: context.appColors.onBackgroundLight,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        ...children,
-        const SizedBox(height: 12),
-      ],
     );
   }
 }

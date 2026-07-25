@@ -15,14 +15,12 @@ import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
-import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/categories/domain/entities/category_entity.dart';
+import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
@@ -72,10 +70,7 @@ class _PayablesReceivablesPageState extends State<PayablesReceivablesPage> {
   Future<_PayablesReceivablesSnapshot>? _future;
   Set<String>? _selectedAccountIds;
 
-  String get _userId {
-    final authState = context.read<AuthBloc>().state;
-    return authState is Authenticated ? authState.user.id : '';
-  }
+  String get _userId => context.currentUserId;
 
   @override
   void initState() {

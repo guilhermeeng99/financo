@@ -1,15 +1,18 @@
 import { defineSecret } from 'firebase-functions/params';
 
 /**
- * API tokens for the keyed market-data sources, kept as backend secrets so they
- * never ship in the web bundle. Set them once with:
- *   firebase functions:secrets:set BRAPI_TOKEN
+ * Finnhub token for US pricing, kept as a backend secret so it never ships in
+ * the web bundle. Set it once with:
  *   firebase functions:secrets:set FINNHUB_TOKEN
- * Both are optional: an empty BRAPI_TOKEN falls back to brapi's free tier
- * (popular tickers only); an empty FINNHUB_TOKEN disables US pricing (those
- * holdings then show cost basis on the client).
+ * An empty/absent FINNHUB_TOKEN disables US pricing (those holdings then show
+ * cost basis on the client — no crash).
+ *
+ * brapi (BR equities/FIIs/ETFs/BDRs) needs NO secret: its free tier prices
+ * popular tickers without a key, so we read an OPTIONAL `BRAPI_TOKEN` from the
+ * environment (unset → free tier). Bind it as a secret only if you outgrow the
+ * free tier and need a keyed plan — that's why it isn't a required deploy
+ * secret here.
  */
-export const BRAPI_TOKEN = defineSecret('BRAPI_TOKEN');
 export const FINNHUB_TOKEN = defineSecret('FINNHUB_TOKEN');
 
 /** One requested quote: which asset, its ticker, and which source prices it. */
@@ -60,7 +63,7 @@ async function fetchBrapi(items: QuoteItem[]): Promise<QuoteResult[]> {
   const byTicker = new Map(
     items.map((i): [string, QuoteItem] => [i.ticker.toUpperCase(), i]),
   );
-  const token = BRAPI_TOKEN.value();
+  const token = process.env.BRAPI_TOKEN ?? '';
   const tickers = Array.from(byTicker.keys()).join(',');
   const url =
     `https://brapi.dev/api/quote/${tickers}` + (token ? `?token=${token}` : '');

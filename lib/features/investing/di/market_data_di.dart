@@ -12,8 +12,8 @@ import 'package:financo/features/investing/domain/datasources/quote_data_source.
 import 'package:financo/features/investing/domain/repositories/quote_repository.dart';
 import 'package:financo/features/investing/domain/services/holding_calculator.dart';
 import 'package:financo/features/investing/domain/services/portfolio_inputs_builder.dart';
+import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/services/valuation_service.dart';
-import 'package:financo/features/investing/presentation/portfolio_pricing_engine.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 

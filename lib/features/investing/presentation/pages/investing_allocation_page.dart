@@ -7,12 +7,10 @@ import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:financo/features/auth/presentation/bloc/auth_state.dart';
-import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_allocation_cubit.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
@@ -102,10 +100,7 @@ class InvestingAllocationPage extends StatelessWidget {
     }
   }
 
-  String _userId(BuildContext context) {
-    final state = context.read<AuthBloc>().state;
-    return state is Authenticated ? state.user.id : '';
-  }
+  String _userId(BuildContext context) => context.currentUserId;
 }
 
 class _AllocationBody extends StatelessWidget {

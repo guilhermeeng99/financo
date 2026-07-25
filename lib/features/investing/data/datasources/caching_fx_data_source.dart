@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/features/investing/data/datasources/ttl_cache.dart';
 import 'package:financo/features/investing/domain/datasources/quote_data_source.dart';
 
 /// Wraps an [FxDataSource] with a short in-memory TTL cache, so back-to-back
@@ -13,28 +14,19 @@ class CachingFxDataSource implements FxDataSource {
   CachingFxDataSource(
     this._inner, {
     this.ttl = const Duration(minutes: 10),
-    this.now = DateTime.now,
-  });
+    DateTime Function() now = DateTime.now,
+  }) : _cache = TtlCache(now: now);
 
   final FxDataSource _inner;
 
   /// How long a cached rate stays fresh.
   final Duration ttl;
 
-  /// Clock seam, injectable for tests.
-  final DateTime Function() now;
-
-  final Map<String, ({double rate, DateTime at})> _cache = {};
+  final TtlCache<String, double> _cache;
 
   @override
-  Future<Either<Failure, double>> rate(Currency from, Currency to) async {
+  Future<Either<Failure, double>> rate(Currency from, Currency to) {
     final key = '${from.name}->${to.name}';
-    final hit = _cache[key];
-    if (hit != null && now().difference(hit.at) < ttl) {
-      return Right(hit.rate);
-    }
-    final result = await _inner.rate(from, to);
-    result.fold((_) {}, (rate) => _cache[key] = (rate: rate, at: now()));
-    return result;
+    return _cache.getOrFetch(key, ttl, () => _inner.rate(from, to));
   }
 }

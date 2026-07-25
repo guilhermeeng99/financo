@@ -3,7 +3,12 @@ import 'dart:async';
 import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
+import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/quantity_format.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_transactions_cubit.dart';
@@ -76,7 +81,7 @@ class _ImportInvestingTransactionsPageState
           >(
             builder: (context, state) {
               if (state is InvestingTransactionsImporting) {
-                return _ImportProgress(progress: state.progress);
+                return ImportProgressInline(progress: state.progress);
               }
               return ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -93,7 +98,7 @@ class _ImportInvestingTransactionsPageState
                       ),
                     ),
                   if (canImport)
-                    _Section(
+                    ImportSection(
                       title:
                           '${t.investing.transactions.import.toImport} '
                           '(${preview.toImport.length})',
@@ -103,11 +108,10 @@ class _ImportInvestingTransactionsPageState
                       ],
                     ),
                   if (preview.skipped.isNotEmpty)
-                    _Section(
+                    ImportSection(
                       title:
                           '${t.investing.transactions.import.skipped} '
                           '(${preview.skipped.length})',
-                      muted: true,
                       children: [
                         for (final item in preview.skipped)
                           _TxRow(item: item, muted: true),
@@ -124,60 +128,6 @@ class _ImportInvestingTransactionsPageState
               onSubmit: () => unawaited(_confirm()),
             )
           : null,
-    );
-  }
-}
-
-class _ImportProgress extends StatelessWidget {
-  const _ImportProgress({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          LinearProgressIndicator(value: progress),
-          const SizedBox(height: 12),
-          Text('${(progress * 100).round()}%'),
-        ],
-      ),
-    );
-  }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.children,
-    this.muted = false,
-  });
-
-  final String title;
-  final List<Widget> children;
-  final bool muted;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
-          child: Text(
-            title,
-            style: context.textTheme.titleSmall?.copyWith(
-              color: context.appColors.onBackgroundLight,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        ...children,
-        const SizedBox(height: 12),
-      ],
     );
   }
 }
@@ -245,16 +195,15 @@ class _TxRow extends StatelessWidget {
   }
 
   String _amountLabel(InvestingTransactionImportPreviewItem item) {
+    // Skipped rows have no resolved asset (so no currency) — fall back to BRL,
+    // the import's home market, so the amount still formats as money rather
+    // than a bare double.
+    final currency = item.asset?.currency ?? Currency.brl;
     if (item.kind == TransactionKind.dividend) {
-      return item.amountMajor.toStringAsFixed(2);
+      return formatMoney(Money.fromMajor(item.amountMajor, currency));
     }
-    final price = item.unitPriceMajor.toStringAsFixed(2);
-    return '${_trimQty(item.quantity)} × $price';
-  }
-
-  String _trimQty(double q) {
-    if (q == q.roundToDouble()) return q.toStringAsFixed(0);
-    return q.toString();
+    final price = formatMoney(Money.fromMajor(item.unitPriceMajor, currency));
+    return '${formatQuantity(item.quantity)} × $price';
   }
 
   String _problemLabel(InvestingTransactionImportProblem problem) =>

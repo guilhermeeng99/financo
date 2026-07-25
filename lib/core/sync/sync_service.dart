@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/daos/accounts_dao.dart';
 import 'package:financo/core/database/daos/asset_classes_dao.dart';
@@ -112,16 +114,23 @@ class SyncService {
     );
     final budgets = await _budgetRemote.getBudgets(userId: userId);
     final assetClasses = await _safe(
+      'asset_classes',
       () => _assetClassRemote.getAssetClasses(userId: userId),
     );
     final institutions = await _safe(
+      'institutions',
       () => _institutionRemote.getInstitutions(userId: userId),
     );
-    final assets = await _safe(() => _assetRemote.getAssets(userId: userId));
+    final assets = await _safe(
+      'investment_assets',
+      () => _assetRemote.getAssets(userId: userId),
+    );
     final assetTransactions = await _safe(
+      'investment_transactions',
       () => _assetTransactionRemote.getTransactions(userId: userId),
     );
     final snapshots = await _safe(
+      'investment_snapshots',
       () => _snapshotRemote.getSnapshots(userId: userId),
     );
 
@@ -140,30 +149,67 @@ class SyncService {
     if (budgets.isNotEmpty) {
       await _budgetsDao.insertAllBudgets(budgets);
     }
-    if (assetClasses.isNotEmpty) {
-      await _assetClassesDao.insertAllAssetClasses(assetClasses);
-    }
-    if (institutions.isNotEmpty) {
-      await _institutionsDao.insertAllInstitutions(institutions);
-    }
-    if (assets.isNotEmpty) {
-      await _investmentAssetsDao.insertAllAssets(assets);
-    }
-    if (assetTransactions.isNotEmpty) {
-      await _investmentTransactionsDao.insertAllTransactions(assetTransactions);
-    }
-    if (snapshots.isNotEmpty) {
-      await _investmentSnapshotsDao.insertAllSnapshots(snapshots);
+    // Investing inserts are best-effort — a bad row must not abort startup.
+    // Failures are logged (not swallowed silently) so they can be diagnosed.
+    await _safeInsert(
+      'asset_classes',
+      assetClasses,
+      _assetClassesDao.insertAllAssetClasses,
+    );
+    await _safeInsert(
+      'institutions',
+      institutions,
+      _institutionsDao.insertAllInstitutions,
+    );
+    await _safeInsert('assets', assets, _investmentAssetsDao.insertAllAssets);
+    await _safeInsert(
+      'investment_transactions',
+      assetTransactions,
+      _investmentTransactionsDao.insertAllTransactions,
+    );
+    await _safeInsert(
+      'snapshots',
+      snapshots,
+      _investmentSnapshotsDao.insertAllSnapshots,
+    );
+  }
+
+  /// Inserts [items] via [insert] only when non-empty, logging (not rethrowing)
+  /// any failure so one bad investing collection never blocks startup.
+  Future<void> _safeInsert<T>(
+    String label,
+    List<T> items,
+    Future<void> Function(List<T>) insert,
+  ) async {
+    if (items.isEmpty) return;
+    try {
+      await insert(items);
+    } on Object catch (e, s) {
+      developer.log(
+        'fullSync: failed to cache $label (${items.length} rows)',
+        name: 'SyncService',
+        error: e,
+        stackTrace: s,
+      );
     }
   }
 
-  /// Best-effort fetch for the non-core investing collections: returns an empty
-  /// list on any error so one collection's failure never aborts the startup
-  /// sync of the rest.
-  Future<List<T>> _safe<T>(Future<List<T>> Function() fetch) async {
+  /// Best-effort fetch for a non-core investing collection: returns an empty
+  /// list on any error (logged with [label], never swallowed silently) so one
+  /// collection's failure never aborts the startup sync of the rest.
+  Future<List<T>> _safe<T>(
+    String label,
+    Future<List<T>> Function() fetch,
+  ) async {
     try {
       return await fetch();
-    } on Object {
+    } on Object catch (e, s) {
+      developer.log(
+        'fullSync: failed to fetch $label',
+        name: 'SyncService',
+        error: e,
+        stackTrace: s,
+      );
       return const [];
     }
   }

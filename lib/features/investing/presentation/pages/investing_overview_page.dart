@@ -6,12 +6,14 @@ import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/quantity_format.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/holding_valuation.dart';
 import 'package:financo/features/investing/domain/entities/portfolio_valuation.dart';
 import 'package:financo/features/investing/domain/entities/snapshot.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_overview_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -359,7 +361,8 @@ class _HoldingTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${_qty(valuation.quantity)} ${t.investing.overview.units}',
+                    '${formatQuantity(valuation.quantity)} '
+                    '${t.investing.overview.units}',
                     style: context.textTheme.bodySmall?.copyWith(
                       color: colors.onBackgroundLight,
                     ),
@@ -514,7 +517,7 @@ class _SparklinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparklinePainter oldDelegate) =>
-      oldDelegate.values != values || oldDelegate.color != color;
+      !listEquals(oldDelegate.values, values) || oldDelegate.color != color;
 }
 
 /// Signed money: `+R$ 10,00` / `-R$ 10,00` (the minus comes from the formatter).
@@ -526,13 +529,4 @@ String _signedPct(double ratio) {
   final pct = ratio * 100;
   final sign = pct > 0 ? '+' : '';
   return '$sign${pct.toStringAsFixed(2)}%';
-}
-
-/// Trims trailing zeros from a fractional quantity (3.0 → `3`, 1.5 → `1.5`).
-String _qty(double quantity) {
-  if (quantity == quantity.roundToDouble()) return quantity.toStringAsFixed(0);
-  return quantity
-      .toStringAsFixed(8)
-      .replaceFirst(RegExp(r'0+$'), '')
-      .replaceFirst(RegExp(r'\.$'), '');
 }
