@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 
 class TransactionFormState extends Equatable {
@@ -20,6 +21,9 @@ class TransactionFormState extends Equatable {
     this.recurrenceIntervalMonths = 1,
     this.installmentCount = 2,
     this.destinationAccountId = '',
+    this.accountCurrency = Currency.brl,
+    this.destinationCurrency = Currency.brl,
+    this.destinationAmount = 0,
     this.existingId,
     this.linkedTransactionId,
     this.recurrenceGroupId,
@@ -132,6 +136,18 @@ class TransactionFormState extends Equatable {
   final DateTime? recurrenceEndDate;
   final int installmentCount;
   final String destinationAccountId;
+
+  /// Currencies of the source and destination accounts, resolved by the cubit
+  /// once the account list loads. A cross-currency transfer (they differ) needs
+  /// the amount received on the far side captured separately (F9.5 — see
+  /// `docs/specs/multi_currency_accounts.md`).
+  final Currency accountCurrency;
+  final Currency destinationCurrency;
+
+  /// The amount landing in the destination account, in [destinationCurrency].
+  /// Only used for a cross-currency transfer; the same-currency case reuses
+  /// [amount] on both legs.
+  final double destinationAmount;
   final String? existingId;
   final String? linkedTransactionId;
   final DateTime? originalDueDate;
@@ -173,12 +189,21 @@ class TransactionFormState extends Equatable {
     return !isAfterEndOfToday(date);
   }
 
+  /// A transfer between accounts in different currencies (e.g. BRL → EUR).
+  /// The two legs then carry different amounts.
+  bool get isCrossCurrency =>
+      isTransfer && accountCurrency != destinationCurrency;
+
   bool get isValid {
     if (amount <= 0 || !_isDateValid || accountId.isEmpty) return false;
 
     if (isTransfer) {
-      return destinationAccountId.isNotEmpty &&
-          accountId != destinationAccountId;
+      if (destinationAccountId.isEmpty || accountId == destinationAccountId) {
+        return false;
+      }
+      // A cross-currency transfer needs the received amount on the far side.
+      if (isCrossCurrency && destinationAmount <= 0) return false;
+      return true;
     }
 
     return categoryId.isNotEmpty;
@@ -199,6 +224,9 @@ class TransactionFormState extends Equatable {
       accountId: accountId,
       categoryId: categoryId,
       destinationAccountId: destinationAccountId,
+      accountCurrency: accountCurrency,
+      destinationCurrency: destinationCurrency,
+      destinationAmount: destinationAmount,
       notes: notes,
       status: FormStatus.initial,
       isTransfer: isTransfer,
@@ -226,6 +254,9 @@ class TransactionFormState extends Equatable {
     String? accountId,
     String? categoryId,
     String? destinationAccountId,
+    Currency? accountCurrency,
+    Currency? destinationCurrency,
+    double? destinationAmount,
     String? notes,
     FormStatus? status,
     bool? isTransfer,
@@ -255,6 +286,9 @@ class TransactionFormState extends Equatable {
       accountId: accountId ?? this.accountId,
       categoryId: categoryId ?? this.categoryId,
       destinationAccountId: destinationAccountId ?? this.destinationAccountId,
+      accountCurrency: accountCurrency ?? this.accountCurrency,
+      destinationCurrency: destinationCurrency ?? this.destinationCurrency,
+      destinationAmount: destinationAmount ?? this.destinationAmount,
       notes: notes ?? this.notes,
       status: status ?? this.status,
       isTransfer: isTransfer ?? this.isTransfer,
@@ -293,6 +327,9 @@ class TransactionFormState extends Equatable {
     accountId,
     categoryId,
     destinationAccountId,
+    accountCurrency,
+    destinationCurrency,
+    destinationAmount,
     notes,
     status,
     isTransfer,

@@ -2,11 +2,14 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/money/currency.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/presentation/cubit/transaction_form_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../harness/factories/account_factory.dart';
 import '../../../../harness/factories/transaction_factory.dart';
 import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
@@ -18,6 +21,7 @@ void main() {
   late MockUpdateTransactionSequenceUseCase mockUpdateSequence;
   late MockCreateTransferUseCase mockTransfer;
   late MockGetTransactionUseCase mockGet;
+  late MockGetAccountsUseCase mockGetAccounts;
 
   const userId = 'user-1';
 
@@ -30,6 +34,7 @@ void main() {
     mockUpdateSequence = MockUpdateTransactionSequenceUseCase();
     mockTransfer = MockCreateTransferUseCase();
     mockGet = MockGetTransactionUseCase();
+    mockGetAccounts = MockGetAccountsUseCase();
     // Default counterpart-leg fetch (used when editing a transfer). The
     // income leg is the typical counterpart; individual tests override.
     when(() => mockGet(any())).thenAnswer(
@@ -37,6 +42,11 @@ void main() {
         TransactionFactory.transfer().income,
       ),
     );
+    // Default: no accounts, so every currency resolves to BRL (same-currency
+    // transfers unaffected). Cross-currency tests override this.
+    when(
+      () => mockGetAccounts(userId: any(named: 'userId')),
+    ).thenAnswer((_) async => const Right(<AccountEntity>[]));
   });
 
   TransactionFormCubit buildCubit({TransactionEntity? existing}) =>
@@ -47,6 +57,7 @@ void main() {
         updateTransactionSequence: mockUpdateSequence,
         createTransfer: mockTransfer,
         getTransaction: mockGet,
+        getAccounts: mockGetAccounts,
         userId: userId,
         existingTransaction: existing,
       );
@@ -1033,6 +1044,102 @@ void main() {
           ..setTransferMode(enabled: true)
           ..updateDestinationAccountId('acc-2');
         expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
+    });
+
+    group('cross-currency transfer', () {
+      setUp(() {
+        when(
+          () => mockGetAccounts(userId: any(named: 'userId')),
+        ).thenAnswer(
+          (_) async => Right([
+            AccountFactory.checking(id: 'acc-brl'),
+            AccountFactory.checking(id: 'acc-eur', currency: Currency.eur),
+          ]),
+        );
+      });
+
+      test('detected when currencies differ and needs a received amount',
+          () async {
+        final cubit = buildCubit();
+        await Future<void>.delayed(Duration.zero);
+        cubit
+          ..setTransferMode(enabled: true)
+          ..updateAmount('7000')
+          ..updateAccountId('acc-brl')
+          ..updateDestinationAccountId('acc-eur');
+
+        expect(cubit.state.isCrossCurrency, isTrue);
+        // Invalid until the received (far-side) amount is entered.
+        expect(cubit.state.isValid, isFalse);
+        cubit.updateDestinationAmount('1100');
+        expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
+
+      test('writes each leg its own native amount', () async {
+        when(
+          () => mockTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        ).thenAnswer((_) async => const Right(<TransactionEntity>[]));
+
+        final cubit = buildCubit();
+        await Future<void>.delayed(Duration.zero);
+        cubit
+          ..setTransferMode(enabled: true)
+          ..updateAmount('7000')
+          ..updateAccountId('acc-brl')
+          ..updateDestinationAccountId('acc-eur')
+          ..updateDestinationAmount('1100');
+        await cubit.submit();
+
+        final captured = verify(
+          () => mockTransfer(
+            expense: captureAny(named: 'expense'),
+            income: captureAny(named: 'income'),
+          ),
+        ).captured;
+        final expense = captured[0] as TransactionEntity;
+        final income = captured[1] as TransactionEntity;
+        expect(expense.amount, 7000);
+        expect(expense.accountId, 'acc-brl');
+        expect(income.amount, 1100);
+        expect(income.accountId, 'acc-eur');
+        addTearDown(cubit.close);
+      });
+
+      test('same-currency transfer keeps the same amount on both legs',
+          () async {
+        when(
+          () => mockTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        ).thenAnswer((_) async => const Right(<TransactionEntity>[]));
+
+        final cubit = buildCubit();
+        await Future<void>.delayed(Duration.zero);
+        // acc-brl-2 is not in the loaded map, so it defaults to BRL — a valid,
+        // same-currency transfer.
+        cubit
+          ..setTransferMode(enabled: true)
+          ..updateAmount('500')
+          ..updateAccountId('acc-brl')
+          ..updateDestinationAccountId('acc-brl-2');
+        expect(cubit.state.isCrossCurrency, isFalse);
+        await cubit.submit();
+
+        final captured = verify(
+          () => mockTransfer(
+            expense: captureAny(named: 'expense'),
+            income: captureAny(named: 'income'),
+          ),
+        ).captured;
+        expect((captured[0] as TransactionEntity).amount, 500);
+        expect((captured[1] as TransactionEntity).amount, 500);
         addTearDown(cubit.close);
       });
     });

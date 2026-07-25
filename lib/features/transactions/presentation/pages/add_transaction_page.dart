@@ -11,7 +11,9 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/extensions/context_user_extensions.dart';import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transactions_usecase.dart';
@@ -75,6 +77,7 @@ class AddTransactionPage extends StatelessWidget {
         updateTransactionSequence: GetIt.I<UpdateTransactionSequenceUseCase>(),
         createTransfer: GetIt.I<CreateTransferUseCase>(),
         getTransaction: GetIt.I<GetTransactionUseCase>(),
+        getAccounts: GetIt.I<GetAccountsUseCase>(),
         userId: userId,
         existingTransaction: existingTransaction,
         prefillAccountId: prefillAccountId,
@@ -96,6 +99,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
+  final _receivedController = TextEditingController();
 
   @override
   void initState() {
@@ -117,6 +121,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     _descriptionController.dispose();
     _amountController.dispose();
     _notesController.dispose();
+    _receivedController.dispose();
     super.dispose();
   }
 
@@ -560,6 +565,19 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
           onPicked: cubit.updateDestinationAccountId,
         ),
       ),
+      // Cross-currency transfer (e.g. BRL → EUR): the amount landing on the far
+      // side is entered separately, in the destination currency (F9.5).
+      if (state.isCrossCurrency) ...[
+        const SizedBox(height: 12),
+        FinancoCurrencyField(
+          controller: _receivedController,
+          label:
+              '${t.transactions.receivedAmount} '
+              '(${state.destinationCurrency.code})',
+          hintText: t.transactions.amountHint,
+          onChanged: cubit.updateDestinationAmount,
+        ),
+      ],
     ];
   }
 

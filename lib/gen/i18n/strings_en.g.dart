@@ -585,6 +585,9 @@ class Translations$transactions$en {
 	/// en: 'Destination account'
 	String get destinationAccount => 'Destination account';
 
+	/// en: 'Amount received'
+	String get receivedAmount => 'Amount received';
+
 	/// en: 'Transfer created'
 	String get transferCreated => 'Transfer created';
 
@@ -3197,6 +3200,7 @@ extension on Translations {
 			'transactions.transfer' => 'Transfer',
 			'transactions.sourceAccount' => 'Source account',
 			'transactions.destinationAccount' => 'Destination account',
+			'transactions.receivedAmount' => 'Amount received',
 			'transactions.transferCreated' => 'Transfer created',
 			'transactions.saveAndAddAnother' => 'Save and add another',
 			'transactions.deleteTransaction' => 'Delete Transaction',
@@ -3389,9 +3393,9 @@ extension on Translations {
 			'chat.suggestion3' => 'Show my overdue payables',
 			'chat.suggestion4' => 'Create a category called Leisure',
 			'chat.action.transactionExpense' => 'Confirm expense',
-			'chat.action.transactionIncome' => 'Confirm income',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transactionIncome' => 'Confirm income',
 			'chat.action.transfer' => 'Confirm transfer',
 			'chat.action.fieldFromAccount' => 'From',
 			'chat.action.fieldToAccount' => 'To',

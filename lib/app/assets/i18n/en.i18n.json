@@ -363,6 +363,7 @@
     "transfer": "Transfer",
     "sourceAccount": "Source account",
     "destinationAccount": "Destination account",
+    "receivedAmount": "Amount received",
     "transferCreated": "Transfer created",
     "saveAndAddAnother": "Save and add another",
     "deleteTransaction": "Delete Transaction",

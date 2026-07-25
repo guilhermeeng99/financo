@@ -315,6 +315,7 @@ class _Translations$transactions$pt_BR implements Translations$transactions$en {
 	@override String get transfer => 'Transferência';
 	@override String get sourceAccount => 'Conta de origem';
 	@override String get destinationAccount => 'Conta de destino';
+	@override String get receivedAmount => 'Valor recebido';
 	@override String get transferCreated => 'Transferência criada';
 	@override String get saveAndAddAnother => 'Salvar e lançar outra';
 	@override String get deleteTransaction => 'Excluir transação';
@@ -1567,6 +1568,7 @@ extension on TranslationsPtBr {
 			'transactions.transfer' => 'Transferência',
 			'transactions.sourceAccount' => 'Conta de origem',
 			'transactions.destinationAccount' => 'Conta de destino',
+			'transactions.receivedAmount' => 'Valor recebido',
 			'transactions.transferCreated' => 'Transferência criada',
 			'transactions.saveAndAddAnother' => 'Salvar e lançar outra',
 			'transactions.deleteTransaction' => 'Excluir transação',
@@ -1759,9 +1761,9 @@ extension on TranslationsPtBr {
 			'chat.suggestion3' => 'Mostrar contas a pagar atrasadas',
 			'chat.suggestion4' => 'Criar uma categoria chamada Lazer',
 			'chat.action.transactionExpense' => 'Confirmar despesa',
-			'chat.action.transactionIncome' => 'Confirmar receita',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transactionIncome' => 'Confirmar receita',
 			'chat.action.transfer' => 'Confirmar transferência',
 			'chat.action.fieldFromAccount' => 'De',
 			'chat.action.fieldToAccount' => 'Para',

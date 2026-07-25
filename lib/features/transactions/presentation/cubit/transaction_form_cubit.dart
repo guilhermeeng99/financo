@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/amount_parser.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
 import 'package:financo/features/transactions/domain/usecases/create_transaction_usecase.dart';
@@ -23,6 +25,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     required UpdateTransactionUseCase updateTransaction,
     required CreateTransferUseCase createTransfer,
     required GetTransactionUseCase getTransaction,
+    required GetAccountsUseCase getAccounts,
     required String userId,
     CreateTransactionsUseCase? createTransactions,
     UpdateTransactionSequenceUseCase? updateTransactionSequence,
@@ -34,6 +37,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
        _updateTransactionSequence = updateTransactionSequence,
        _createTransfer = createTransfer,
        _getTransaction = getTransaction,
+       _getAccounts = getAccounts,
        super(
          TransactionFormState.initial(
            userId: userId,
@@ -41,6 +45,9 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
            prefillAccountId: prefillAccountId,
          ),
        ) {
+    // Resolve account currencies up front so the form can detect a
+    // cross-currency transfer and ask for the received amount (F9.5).
+    unawaited(_loadAccountCurrencies());
     // Editing a transfer: only the tapped leg arrives. Fetch the linked
     // leg so the form can show both source and destination accounts —
     // and so submit can update *both* legs (see `_updateTransfer`).
@@ -55,6 +62,11 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   final UpdateTransactionSequenceUseCase? _updateTransactionSequence;
   final CreateTransferUseCase _createTransfer;
   final GetTransactionUseCase _getTransaction;
+  final GetAccountsUseCase _getAccounts;
+
+  /// account id → currency, filled once by [_loadAccountCurrencies]. Empty
+  /// until it resolves; a miss defaults to BRL.
+  Map<String, Currency> _currencyByAccountId = const {};
 
   void updateType(TransactionType type) => emit(state.copyWith(type: type));
 
@@ -95,7 +107,9 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     );
   }
 
-  void updateAccountId(String id) => emit(state.copyWith(accountId: id));
+  void updateAccountId(String id) => emit(
+    state.copyWith(accountId: id, accountCurrency: _currencyForId(id)),
+  );
 
   void updateCategoryId(String id) => emit(state.copyWith(categoryId: id));
 
@@ -139,8 +153,17 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     );
   }
 
-  void updateDestinationAccountId(String id) =>
-      emit(state.copyWith(destinationAccountId: id));
+  void updateDestinationAccountId(String id) => emit(
+    state.copyWith(
+      destinationAccountId: id,
+      destinationCurrency: _currencyForId(id),
+    ),
+  );
+
+  /// The amount landing in the destination account (its own currency), for a
+  /// cross-currency transfer. Ignored when both accounts share a currency.
+  void updateDestinationAmount(String value) =>
+      emit(state.copyWith(destinationAmount: parseDecimalAmount(value) ?? 0));
 
   void updateNotes(String value) => emit(state.copyWith(notes: value));
 
@@ -184,6 +207,35 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// the destination (income leg) account — regardless of which leg the
   /// user tapped. On fetch failure the unknown account stays empty so the
   /// form remains invalid rather than guessing.
+  /// Loads the user's accounts once to map id → currency, then re-resolves the
+  /// currencies of any already-selected accounts. Best-effort: a failure leaves
+  /// currencies at their BRL default (cross-currency simply isn't detected).
+  Future<void> _loadAccountCurrencies() async {
+    final result = await _getAccounts(userId: state.userId);
+    if (isClosed) return;
+    result.fold((_) {}, (accounts) {
+      _currencyByAccountId = {for (final a in accounts) a.id: a.currency};
+      final resolvedSource = _currencyForId(state.accountId);
+      final resolvedDestination = _currencyForId(state.destinationAccountId);
+      // Only emit when a resolved currency actually differs — a no-op emit is
+      // the cubit's first, so bloc wouldn't suppress it (it would surface as a
+      // spurious duplicate state).
+      if (resolvedSource == state.accountCurrency &&
+          resolvedDestination == state.destinationCurrency) {
+        return;
+      }
+      emit(
+        state.copyWith(
+          accountCurrency: resolvedSource,
+          destinationCurrency: resolvedDestination,
+        ),
+      );
+    });
+  }
+
+  Currency _currencyForId(String id) =>
+      _currencyByAccountId[id] ?? Currency.brl;
+
   Future<void> _resolveTransferCounterpart(TransactionEntity tapped) async {
     final counterpartId = tapped.linkedTransactionId;
     if (counterpartId == null) return;
@@ -197,6 +249,10 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
           destinationAccountId: isExpenseLeg ? null : counterpart.accountId,
           originalCreatedAt: isExpenseLeg ? counterpart.createdAt : null,
           destinationCreatedAt: isExpenseLeg ? null : counterpart.createdAt,
+          // F9.5: when the tapped leg is the expense (source), the income
+          // counterpart carries the received amount — recover it so an edited
+          // cross-currency transfer keeps its far-side value.
+          destinationAmount: isExpenseLeg ? null : counterpart.amount,
         ),
       );
     });
@@ -348,6 +404,8 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       type: TransactionType.income,
       accountId: state.destinationAccountId,
       now: now,
+      // Cross-currency: the far side receives its own amount in its currency.
+      amount: state.isCrossCurrency ? state.destinationAmount : null,
     );
 
     (await _createTransfer(expense: expense, income: income)).fold(
@@ -366,6 +424,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     required TransactionType type,
     required String accountId,
     required DateTime now,
+    double? amount,
     String id = '',
     String? linkedTransactionId,
     DateTime? createdAt,
@@ -376,7 +435,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       accountId: accountId,
       categoryId: '',
       type: type,
-      amount: state.amount,
+      amount: amount ?? state.amount,
       description: state.description,
       date: state.date,
       notes: state.notes,
@@ -406,6 +465,7 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       type: TransactionType.income,
       accountId: state.destinationAccountId,
       now: now,
+      amount: state.isCrossCurrency ? state.destinationAmount : null,
       id: state.linkedTransactionId ?? '',
       linkedTransactionId: state.existingId,
       createdAt: state.destinationCreatedAt,

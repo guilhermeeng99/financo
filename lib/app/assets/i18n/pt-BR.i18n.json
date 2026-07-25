@@ -363,6 +363,7 @@
     "transfer": "Transferência",
     "sourceAccount": "Conta de origem",
     "destinationAccount": "Conta de destino",
+    "receivedAmount": "Valor recebido",
     "transferCreated": "Transferência criada",
     "saveAndAddAnother": "Salvar e lançar outra",
     "deleteTransaction": "Excluir transação",
