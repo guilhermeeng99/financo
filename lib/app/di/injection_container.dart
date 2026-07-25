@@ -87,6 +87,7 @@ import 'package:financo/features/dashboard/domain/usecases/get_dashboard_summary
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
+import 'package:financo/features/data_migration/domain/account_migration_executor.dart';
 // Investing (V2) + surviving allocation-class stack
 import 'package:financo/features/investing/di/investing_di.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
@@ -284,6 +285,14 @@ Future<void> initDependencies() async {
     // investing FX cache). Consumed by the dashboard + account statement.
     ..registerLazySingleton(
       () => AccountFxConverter(fxDataSource: sl(), cache: sl()),
+    )
+    // F8.5/F9.6: applies the one-time guided account migration.
+    ..registerLazySingleton(
+      () => AccountMigrationExecutor(
+        accountRepository: sl(),
+        institutionRepository: sl(),
+        transactionRepository: sl(),
+      ),
     )
     ..registerLazySingleton<DashboardRepository>(
       () => DashboardRepositoryImpl(

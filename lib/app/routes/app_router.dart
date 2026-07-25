@@ -43,6 +43,7 @@ import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
+import 'package:financo/features/data_migration/presentation/pages/migration_page.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
@@ -330,6 +331,11 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               child: const MasterPanelPage(),
             ),
           ),
+        ),
+        GoRoute(
+          path: AppRoutes.migration,
+          builder: (context, state) =>
+              const SubPageScope(child: MigrationPage()),
         ),
         GoRoute(
           path: AppRoutes.accountDetail,

@@ -250,6 +250,15 @@ class _ProfileContent extends StatelessWidget {
                 accent: context.appColors.primary,
                 onTap: () => context.push(AppRoutes.masterPanel),
               ),
+              // One-time account/investing migration (F8.5/F9.6). PT-BR text is
+              // inline on purpose — admin-only, one-off utility.
+              ProfileRow(
+                icon: FontAwesomeIcons.database,
+                title: 'Migração de contas',
+                subtitle: 'Unificar investimentos + converter Wise (F8.5/F9.6)',
+                accent: context.appColors.primary,
+                onTap: () => context.push(AppRoutes.migration),
+              ),
             ],
           ),
         ],

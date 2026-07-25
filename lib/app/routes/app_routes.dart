@@ -53,5 +53,8 @@ class AppRoutes {
   static const importInvestingAssets = '/investing/assets/import';
   static const importInvestingTransactions = '/investing/transactions/import';
 
+  /// One-time guided account/investing migration (F8.5/F9.6).
+  static const migration = '/migration';
+
   static String accountById(String id) => '/account/$id';
 }
