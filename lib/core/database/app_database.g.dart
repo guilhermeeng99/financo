@@ -628,6 +628,18 @@ class $LocalAccountsTable extends LocalAccounts
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('brl'),
+  );
   static const VerificationMeta _creditLimitMeta = const VerificationMeta(
     'creditLimit',
   );
@@ -689,6 +701,7 @@ class $LocalAccountsTable extends LocalAccounts
     type,
     bank,
     initialBalance,
+    currency,
     creditLimit,
     closingDay,
     dueDay,
@@ -754,6 +767,12 @@ class $LocalAccountsTable extends LocalAccounts
       );
     } else if (isInserting) {
       context.missing(_initialBalanceMeta);
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
     }
     if (data.containsKey('credit_limit')) {
       context.handle(
@@ -826,6 +845,10 @@ class $LocalAccountsTable extends LocalAccounts
         DriftSqlType.double,
         data['${effectivePrefix}initial_balance'],
       )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
       creditLimit: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}credit_limit'],
@@ -862,6 +885,11 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
   final String type;
   final String bank;
   final double initialBalance;
+
+  /// Account currency (enum `name`, e.g. `brl`/`usd`/`eur`). Defaults to BRL so
+  /// existing rows and the cash side stay unchanged (F9). See
+  /// docs/specs/multi_currency_accounts.md.
+  final String currency;
   final double? creditLimit;
   final int? closingDay;
   final int? dueDay;
@@ -874,6 +902,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     required this.type,
     required this.bank,
     required this.initialBalance,
+    required this.currency,
     this.creditLimit,
     this.closingDay,
     this.dueDay,
@@ -889,6 +918,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     map['type'] = Variable<String>(type);
     map['bank'] = Variable<String>(bank);
     map['initial_balance'] = Variable<double>(initialBalance);
+    map['currency'] = Variable<String>(currency);
     if (!nullToAbsent || creditLimit != null) {
       map['credit_limit'] = Variable<double>(creditLimit);
     }
@@ -913,6 +943,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       type: Value(type),
       bank: Value(bank),
       initialBalance: Value(initialBalance),
+      currency: Value(currency),
       creditLimit: creditLimit == null && nullToAbsent
           ? const Value.absent()
           : Value(creditLimit),
@@ -941,6 +972,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       type: serializer.fromJson<String>(json['type']),
       bank: serializer.fromJson<String>(json['bank']),
       initialBalance: serializer.fromJson<double>(json['initialBalance']),
+      currency: serializer.fromJson<String>(json['currency']),
       creditLimit: serializer.fromJson<double?>(json['creditLimit']),
       closingDay: serializer.fromJson<int?>(json['closingDay']),
       dueDay: serializer.fromJson<int?>(json['dueDay']),
@@ -958,6 +990,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       'type': serializer.toJson<String>(type),
       'bank': serializer.toJson<String>(bank),
       'initialBalance': serializer.toJson<double>(initialBalance),
+      'currency': serializer.toJson<String>(currency),
       'creditLimit': serializer.toJson<double?>(creditLimit),
       'closingDay': serializer.toJson<int?>(closingDay),
       'dueDay': serializer.toJson<int?>(dueDay),
@@ -973,6 +1006,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     String? type,
     String? bank,
     double? initialBalance,
+    String? currency,
     Value<double?> creditLimit = const Value.absent(),
     Value<int?> closingDay = const Value.absent(),
     Value<int?> dueDay = const Value.absent(),
@@ -985,6 +1019,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     type: type ?? this.type,
     bank: bank ?? this.bank,
     initialBalance: initialBalance ?? this.initialBalance,
+    currency: currency ?? this.currency,
     creditLimit: creditLimit.present ? creditLimit.value : this.creditLimit,
     closingDay: closingDay.present ? closingDay.value : this.closingDay,
     dueDay: dueDay.present ? dueDay.value : this.dueDay,
@@ -1003,6 +1038,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
       initialBalance: data.initialBalance.present
           ? data.initialBalance.value
           : this.initialBalance,
+      currency: data.currency.present ? data.currency.value : this.currency,
       creditLimit: data.creditLimit.present
           ? data.creditLimit.value
           : this.creditLimit,
@@ -1026,6 +1062,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
           ..write('type: $type, ')
           ..write('bank: $bank, ')
           ..write('initialBalance: $initialBalance, ')
+          ..write('currency: $currency, ')
           ..write('creditLimit: $creditLimit, ')
           ..write('closingDay: $closingDay, ')
           ..write('dueDay: $dueDay, ')
@@ -1043,6 +1080,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
     type,
     bank,
     initialBalance,
+    currency,
     creditLimit,
     closingDay,
     dueDay,
@@ -1059,6 +1097,7 @@ class LocalAccount extends DataClass implements Insertable<LocalAccount> {
           other.type == this.type &&
           other.bank == this.bank &&
           other.initialBalance == this.initialBalance &&
+          other.currency == this.currency &&
           other.creditLimit == this.creditLimit &&
           other.closingDay == this.closingDay &&
           other.dueDay == this.dueDay &&
@@ -1073,6 +1112,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
   final Value<String> type;
   final Value<String> bank;
   final Value<double> initialBalance;
+  final Value<String> currency;
   final Value<double?> creditLimit;
   final Value<int?> closingDay;
   final Value<int?> dueDay;
@@ -1086,6 +1126,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     this.type = const Value.absent(),
     this.bank = const Value.absent(),
     this.initialBalance = const Value.absent(),
+    this.currency = const Value.absent(),
     this.creditLimit = const Value.absent(),
     this.closingDay = const Value.absent(),
     this.dueDay = const Value.absent(),
@@ -1100,6 +1141,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     required String type,
     required String bank,
     required double initialBalance,
+    this.currency = const Value.absent(),
     this.creditLimit = const Value.absent(),
     this.closingDay = const Value.absent(),
     this.dueDay = const Value.absent(),
@@ -1120,6 +1162,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     Expression<String>? type,
     Expression<String>? bank,
     Expression<double>? initialBalance,
+    Expression<String>? currency,
     Expression<double>? creditLimit,
     Expression<int>? closingDay,
     Expression<int>? dueDay,
@@ -1134,6 +1177,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
       if (type != null) 'type': type,
       if (bank != null) 'bank': bank,
       if (initialBalance != null) 'initial_balance': initialBalance,
+      if (currency != null) 'currency': currency,
       if (creditLimit != null) 'credit_limit': creditLimit,
       if (closingDay != null) 'closing_day': closingDay,
       if (dueDay != null) 'due_day': dueDay,
@@ -1150,6 +1194,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     Value<String>? type,
     Value<String>? bank,
     Value<double>? initialBalance,
+    Value<String>? currency,
     Value<double?>? creditLimit,
     Value<int?>? closingDay,
     Value<int?>? dueDay,
@@ -1164,6 +1209,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
       type: type ?? this.type,
       bank: bank ?? this.bank,
       initialBalance: initialBalance ?? this.initialBalance,
+      currency: currency ?? this.currency,
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
@@ -1193,6 +1239,9 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
     }
     if (initialBalance.present) {
       map['initial_balance'] = Variable<double>(initialBalance.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
     }
     if (creditLimit.present) {
       map['credit_limit'] = Variable<double>(creditLimit.value);
@@ -1224,6 +1273,7 @@ class LocalAccountsCompanion extends UpdateCompanion<LocalAccount> {
           ..write('type: $type, ')
           ..write('bank: $bank, ')
           ..write('initialBalance: $initialBalance, ')
+          ..write('currency: $currency, ')
           ..write('creditLimit: $creditLimit, ')
           ..write('closingDay: $closingDay, ')
           ..write('dueDay: $dueDay, ')
@@ -1454,6 +1504,28 @@ class $LocalTransactionsTable extends LocalTransactions
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _institutionIdMeta = const VerificationMeta(
+    'institutionId',
+  );
+  @override
+  late final GeneratedColumn<String> institutionId = GeneratedColumn<String>(
+    'institution_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linkedInvestmentTransactionIdMeta =
+      const VerificationMeta('linkedInvestmentTransactionId');
+  @override
+  late final GeneratedColumn<String> linkedInvestmentTransactionId =
+      GeneratedColumn<String>(
+        'linked_investment_transaction_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1498,6 +1570,8 @@ class $LocalTransactionsTable extends LocalTransactions
     recurrenceEndDate,
     notes,
     linkedTransactionId,
+    institutionId,
+    linkedInvestmentTransactionId,
     createdAt,
     updatedAt,
   ];
@@ -1673,6 +1747,24 @@ class $LocalTransactionsTable extends LocalTransactions
         ),
       );
     }
+    if (data.containsKey('institution_id')) {
+      context.handle(
+        _institutionIdMeta,
+        institutionId.isAcceptableOrUnknown(
+          data['institution_id']!,
+          _institutionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_investment_transaction_id')) {
+      context.handle(
+        _linkedInvestmentTransactionIdMeta,
+        linkedInvestmentTransactionId.isAcceptableOrUnknown(
+          data['linked_investment_transaction_id']!,
+          _linkedInvestmentTransactionIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1778,6 +1870,14 @@ class $LocalTransactionsTable extends LocalTransactions
         DriftSqlType.string,
         data['${effectivePrefix}linked_transaction_id'],
       ),
+      institutionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}institution_id'],
+      ),
+      linkedInvestmentTransactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_investment_transaction_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1817,6 +1917,12 @@ class LocalTransaction extends DataClass
   final DateTime? recurrenceEndDate;
   final String? notes;
   final String? linkedTransactionId;
+
+  /// Set when this cash row is an investment aporte/resgate: the counterparty
+  /// institution and the investment transaction that generated it (F8 — see
+  /// docs/specs/investing_account_unification.md).
+  final String? institutionId;
+  final String? linkedInvestmentTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
   const LocalTransaction({
@@ -1840,6 +1946,8 @@ class LocalTransaction extends DataClass
     this.recurrenceEndDate,
     this.notes,
     this.linkedTransactionId,
+    this.institutionId,
+    this.linkedInvestmentTransactionId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -1885,6 +1993,14 @@ class LocalTransaction extends DataClass
     }
     if (!nullToAbsent || linkedTransactionId != null) {
       map['linked_transaction_id'] = Variable<String>(linkedTransactionId);
+    }
+    if (!nullToAbsent || institutionId != null) {
+      map['institution_id'] = Variable<String>(institutionId);
+    }
+    if (!nullToAbsent || linkedInvestmentTransactionId != null) {
+      map['linked_investment_transaction_id'] = Variable<String>(
+        linkedInvestmentTransactionId,
+      );
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1932,6 +2048,13 @@ class LocalTransaction extends DataClass
       linkedTransactionId: linkedTransactionId == null && nullToAbsent
           ? const Value.absent()
           : Value(linkedTransactionId),
+      institutionId: institutionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(institutionId),
+      linkedInvestmentTransactionId:
+          linkedInvestmentTransactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedInvestmentTransactionId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1973,6 +2096,10 @@ class LocalTransaction extends DataClass
       linkedTransactionId: serializer.fromJson<String?>(
         json['linkedTransactionId'],
       ),
+      institutionId: serializer.fromJson<String?>(json['institutionId']),
+      linkedInvestmentTransactionId: serializer.fromJson<String?>(
+        json['linkedInvestmentTransactionId'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -2005,6 +2132,10 @@ class LocalTransaction extends DataClass
       'recurrenceEndDate': serializer.toJson<DateTime?>(recurrenceEndDate),
       'notes': serializer.toJson<String?>(notes),
       'linkedTransactionId': serializer.toJson<String?>(linkedTransactionId),
+      'institutionId': serializer.toJson<String?>(institutionId),
+      'linkedInvestmentTransactionId': serializer.toJson<String?>(
+        linkedInvestmentTransactionId,
+      ),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -2031,6 +2162,8 @@ class LocalTransaction extends DataClass
     Value<DateTime?> recurrenceEndDate = const Value.absent(),
     Value<String?> notes = const Value.absent(),
     Value<String?> linkedTransactionId = const Value.absent(),
+    Value<String?> institutionId = const Value.absent(),
+    Value<String?> linkedInvestmentTransactionId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => LocalTransaction(
@@ -2067,6 +2200,12 @@ class LocalTransaction extends DataClass
     linkedTransactionId: linkedTransactionId.present
         ? linkedTransactionId.value
         : this.linkedTransactionId,
+    institutionId: institutionId.present
+        ? institutionId.value
+        : this.institutionId,
+    linkedInvestmentTransactionId: linkedInvestmentTransactionId.present
+        ? linkedInvestmentTransactionId.value
+        : this.linkedInvestmentTransactionId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -2114,6 +2253,12 @@ class LocalTransaction extends DataClass
       linkedTransactionId: data.linkedTransactionId.present
           ? data.linkedTransactionId.value
           : this.linkedTransactionId,
+      institutionId: data.institutionId.present
+          ? data.institutionId.value
+          : this.institutionId,
+      linkedInvestmentTransactionId: data.linkedInvestmentTransactionId.present
+          ? data.linkedInvestmentTransactionId.value
+          : this.linkedInvestmentTransactionId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2142,6 +2287,10 @@ class LocalTransaction extends DataClass
           ..write('recurrenceEndDate: $recurrenceEndDate, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
+          ..write('institutionId: $institutionId, ')
+          ..write(
+            'linkedInvestmentTransactionId: $linkedInvestmentTransactionId, ',
+          )
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2170,6 +2319,8 @@ class LocalTransaction extends DataClass
     recurrenceEndDate,
     notes,
     linkedTransactionId,
+    institutionId,
+    linkedInvestmentTransactionId,
     createdAt,
     updatedAt,
   ]);
@@ -2197,6 +2348,9 @@ class LocalTransaction extends DataClass
           other.recurrenceEndDate == this.recurrenceEndDate &&
           other.notes == this.notes &&
           other.linkedTransactionId == this.linkedTransactionId &&
+          other.institutionId == this.institutionId &&
+          other.linkedInvestmentTransactionId ==
+              this.linkedInvestmentTransactionId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2222,6 +2376,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
   final Value<DateTime?> recurrenceEndDate;
   final Value<String?> notes;
   final Value<String?> linkedTransactionId;
+  final Value<String?> institutionId;
+  final Value<String?> linkedInvestmentTransactionId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -2246,6 +2402,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.recurrenceEndDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
+    this.institutionId = const Value.absent(),
+    this.linkedInvestmentTransactionId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2271,6 +2429,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     this.recurrenceEndDate = const Value.absent(),
     this.notes = const Value.absent(),
     this.linkedTransactionId = const Value.absent(),
+    this.institutionId = const Value.absent(),
+    this.linkedInvestmentTransactionId = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -2305,6 +2465,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Expression<DateTime>? recurrenceEndDate,
     Expression<String>? notes,
     Expression<String>? linkedTransactionId,
+    Expression<String>? institutionId,
+    Expression<String>? linkedInvestmentTransactionId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2333,6 +2495,9 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       if (notes != null) 'notes': notes,
       if (linkedTransactionId != null)
         'linked_transaction_id': linkedTransactionId,
+      if (institutionId != null) 'institution_id': institutionId,
+      if (linkedInvestmentTransactionId != null)
+        'linked_investment_transaction_id': linkedInvestmentTransactionId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2360,6 +2525,8 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
     Value<DateTime?>? recurrenceEndDate,
     Value<String?>? notes,
     Value<String?>? linkedTransactionId,
+    Value<String?>? institutionId,
+    Value<String?>? linkedInvestmentTransactionId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -2387,6 +2554,9 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
       recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
+      institutionId: institutionId ?? this.institutionId,
+      linkedInvestmentTransactionId:
+          linkedInvestmentTransactionId ?? this.linkedInvestmentTransactionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2462,6 +2632,14 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
         linkedTransactionId.value,
       );
     }
+    if (institutionId.present) {
+      map['institution_id'] = Variable<String>(institutionId.value);
+    }
+    if (linkedInvestmentTransactionId.present) {
+      map['linked_investment_transaction_id'] = Variable<String>(
+        linkedInvestmentTransactionId.value,
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2497,6 +2675,10 @@ class LocalTransactionsCompanion extends UpdateCompanion<LocalTransaction> {
           ..write('recurrenceEndDate: $recurrenceEndDate, ')
           ..write('notes: $notes, ')
           ..write('linkedTransactionId: $linkedTransactionId, ')
+          ..write('institutionId: $institutionId, ')
+          ..write(
+            'linkedInvestmentTransactionId: $linkedInvestmentTransactionId, ',
+          )
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -4055,6 +4237,24 @@ class $LocalInstitutionsTable extends LocalInstitutions
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _bankMeta = const VerificationMeta('bank');
+  @override
+  late final GeneratedColumn<String> bank = GeneratedColumn<String>(
+    'bank',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4063,6 +4263,8 @@ class $LocalInstitutionsTable extends LocalInstitutions
     kind,
     currency,
     createdAt,
+    bank,
+    color,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4121,6 +4323,18 @@ class $LocalInstitutionsTable extends LocalInstitutions
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('bank')) {
+      context.handle(
+        _bankMeta,
+        bank.isAcceptableOrUnknown(data['bank']!, _bankMeta),
+      );
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    }
     return context;
   }
 
@@ -4154,6 +4368,14 @@ class $LocalInstitutionsTable extends LocalInstitutions
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
       )!,
+      bank: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank'],
+      ),
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      ),
     );
   }
 
@@ -4171,6 +4393,13 @@ class LocalInstitution extends DataClass
   final String kind;
   final String currency;
   final DateTime createdAt;
+
+  /// Optional display hint (a `BankType.name`) for a brand logo/avatar, and an
+  /// ARGB colour — set when an investment account is unified into an
+  /// institution (F8). Nullable; older rows and manually-created brokers
+  /// leave them empty. See docs/specs/investing_account_unification.md.
+  final String? bank;
+  final int? color;
   const LocalInstitution({
     required this.id,
     required this.userId,
@@ -4178,6 +4407,8 @@ class LocalInstitution extends DataClass
     required this.kind,
     required this.currency,
     required this.createdAt,
+    this.bank,
+    this.color,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4188,6 +4419,12 @@ class LocalInstitution extends DataClass
     map['kind'] = Variable<String>(kind);
     map['currency'] = Variable<String>(currency);
     map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || bank != null) {
+      map['bank'] = Variable<String>(bank);
+    }
+    if (!nullToAbsent || color != null) {
+      map['color'] = Variable<int>(color);
+    }
     return map;
   }
 
@@ -4199,6 +4436,10 @@ class LocalInstitution extends DataClass
       kind: Value(kind),
       currency: Value(currency),
       createdAt: Value(createdAt),
+      bank: bank == null && nullToAbsent ? const Value.absent() : Value(bank),
+      color: color == null && nullToAbsent
+          ? const Value.absent()
+          : Value(color),
     );
   }
 
@@ -4214,6 +4455,8 @@ class LocalInstitution extends DataClass
       kind: serializer.fromJson<String>(json['kind']),
       currency: serializer.fromJson<String>(json['currency']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      bank: serializer.fromJson<String?>(json['bank']),
+      color: serializer.fromJson<int?>(json['color']),
     );
   }
   @override
@@ -4226,6 +4469,8 @@ class LocalInstitution extends DataClass
       'kind': serializer.toJson<String>(kind),
       'currency': serializer.toJson<String>(currency),
       'createdAt': serializer.toJson<DateTime>(createdAt),
+      'bank': serializer.toJson<String?>(bank),
+      'color': serializer.toJson<int?>(color),
     };
   }
 
@@ -4236,6 +4481,8 @@ class LocalInstitution extends DataClass
     String? kind,
     String? currency,
     DateTime? createdAt,
+    Value<String?> bank = const Value.absent(),
+    Value<int?> color = const Value.absent(),
   }) => LocalInstitution(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -4243,6 +4490,8 @@ class LocalInstitution extends DataClass
     kind: kind ?? this.kind,
     currency: currency ?? this.currency,
     createdAt: createdAt ?? this.createdAt,
+    bank: bank.present ? bank.value : this.bank,
+    color: color.present ? color.value : this.color,
   );
   LocalInstitution copyWithCompanion(LocalInstitutionsCompanion data) {
     return LocalInstitution(
@@ -4252,6 +4501,8 @@ class LocalInstitution extends DataClass
       kind: data.kind.present ? data.kind.value : this.kind,
       currency: data.currency.present ? data.currency.value : this.currency,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      bank: data.bank.present ? data.bank.value : this.bank,
+      color: data.color.present ? data.color.value : this.color,
     );
   }
 
@@ -4263,13 +4514,16 @@ class LocalInstitution extends DataClass
           ..write('name: $name, ')
           ..write('kind: $kind, ')
           ..write('currency: $currency, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('bank: $bank, ')
+          ..write('color: $color')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, userId, name, kind, currency, createdAt);
+  int get hashCode =>
+      Object.hash(id, userId, name, kind, currency, createdAt, bank, color);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4279,7 +4533,9 @@ class LocalInstitution extends DataClass
           other.name == this.name &&
           other.kind == this.kind &&
           other.currency == this.currency &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.bank == this.bank &&
+          other.color == this.color);
 }
 
 class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
@@ -4289,6 +4545,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
   final Value<String> kind;
   final Value<String> currency;
   final Value<DateTime> createdAt;
+  final Value<String?> bank;
+  final Value<int?> color;
   final Value<int> rowid;
   const LocalInstitutionsCompanion({
     this.id = const Value.absent(),
@@ -4297,6 +4555,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
     this.kind = const Value.absent(),
     this.currency = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.bank = const Value.absent(),
+    this.color = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalInstitutionsCompanion.insert({
@@ -4306,6 +4566,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
     required String kind,
     required String currency,
     required DateTime createdAt,
+    this.bank = const Value.absent(),
+    this.color = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -4320,6 +4582,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
     Expression<String>? kind,
     Expression<String>? currency,
     Expression<DateTime>? createdAt,
+    Expression<String>? bank,
+    Expression<int>? color,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4329,6 +4593,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
       if (kind != null) 'kind': kind,
       if (currency != null) 'currency': currency,
       if (createdAt != null) 'created_at': createdAt,
+      if (bank != null) 'bank': bank,
+      if (color != null) 'color': color,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4340,6 +4606,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
     Value<String>? kind,
     Value<String>? currency,
     Value<DateTime>? createdAt,
+    Value<String?>? bank,
+    Value<int?>? color,
     Value<int>? rowid,
   }) {
     return LocalInstitutionsCompanion(
@@ -4349,6 +4617,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
       kind: kind ?? this.kind,
       currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
+      bank: bank ?? this.bank,
+      color: color ?? this.color,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4374,6 +4644,12 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
+    if (bank.present) {
+      map['bank'] = Variable<String>(bank.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4389,6 +4665,8 @@ class LocalInstitutionsCompanion extends UpdateCompanion<LocalInstitution> {
           ..write('kind: $kind, ')
           ..write('currency: $currency, ')
           ..write('createdAt: $createdAt, ')
+          ..write('bank: $bank, ')
+          ..write('color: $color, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5133,6 +5411,28 @@ class $LocalInvestmentTransactionsTable extends LocalInvestmentTransactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fundingAccountIdMeta = const VerificationMeta(
+    'fundingAccountId',
+  );
+  @override
+  late final GeneratedColumn<String> fundingAccountId = GeneratedColumn<String>(
+    'funding_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cashAmountMinorMeta = const VerificationMeta(
+    'cashAmountMinor',
+  );
+  @override
+  late final GeneratedColumn<int> cashAmountMinor = GeneratedColumn<int>(
+    'cash_amount_minor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5169,6 +5469,8 @@ class $LocalInvestmentTransactionsTable extends LocalInvestmentTransactions
     currency,
     date,
     notes,
+    fundingAccountId,
+    cashAmountMinor,
     createdAt,
     updatedAt,
   ];
@@ -5284,6 +5586,24 @@ class $LocalInvestmentTransactionsTable extends LocalInvestmentTransactions
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('funding_account_id')) {
+      context.handle(
+        _fundingAccountIdMeta,
+        fundingAccountId.isAcceptableOrUnknown(
+          data['funding_account_id']!,
+          _fundingAccountIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('cash_amount_minor')) {
+      context.handle(
+        _cashAmountMinorMeta,
+        cashAmountMinor.isAcceptableOrUnknown(
+          data['cash_amount_minor']!,
+          _cashAmountMinorMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -5360,6 +5680,14 @@ class $LocalInvestmentTransactionsTable extends LocalInvestmentTransactions
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      fundingAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}funding_account_id'],
+      ),
+      cashAmountMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cash_amount_minor'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -5391,6 +5719,13 @@ class LocalInvestmentTransaction extends DataClass
   final String currency;
   final DateTime date;
   final String? notes;
+
+  /// F8 funding link: the checking account the cash moved from/to, and the BRL
+  /// amount that moved (`cashAmountMinor`, always BRL regardless of `currency`
+  /// above). Nullable — set only for single-entry aporte/resgate purchases.
+  /// See docs/specs/investing_account_unification.md.
+  final String? fundingAccountId;
+  final int? cashAmountMinor;
   final DateTime createdAt;
   final DateTime updatedAt;
   const LocalInvestmentTransaction({
@@ -5406,6 +5741,8 @@ class LocalInvestmentTransaction extends DataClass
     required this.currency,
     required this.date,
     this.notes,
+    this.fundingAccountId,
+    this.cashAmountMinor,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -5425,6 +5762,12 @@ class LocalInvestmentTransaction extends DataClass
     map['date'] = Variable<DateTime>(date);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || fundingAccountId != null) {
+      map['funding_account_id'] = Variable<String>(fundingAccountId);
+    }
+    if (!nullToAbsent || cashAmountMinor != null) {
+      map['cash_amount_minor'] = Variable<int>(cashAmountMinor);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -5447,6 +5790,12 @@ class LocalInvestmentTransaction extends DataClass
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      fundingAccountId: fundingAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fundingAccountId),
+      cashAmountMinor: cashAmountMinor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cashAmountMinor),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -5470,6 +5819,8 @@ class LocalInvestmentTransaction extends DataClass
       currency: serializer.fromJson<String>(json['currency']),
       date: serializer.fromJson<DateTime>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
+      fundingAccountId: serializer.fromJson<String?>(json['fundingAccountId']),
+      cashAmountMinor: serializer.fromJson<int?>(json['cashAmountMinor']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -5490,6 +5841,8 @@ class LocalInvestmentTransaction extends DataClass
       'currency': serializer.toJson<String>(currency),
       'date': serializer.toJson<DateTime>(date),
       'notes': serializer.toJson<String?>(notes),
+      'fundingAccountId': serializer.toJson<String?>(fundingAccountId),
+      'cashAmountMinor': serializer.toJson<int?>(cashAmountMinor),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -5508,6 +5861,8 @@ class LocalInvestmentTransaction extends DataClass
     String? currency,
     DateTime? date,
     Value<String?> notes = const Value.absent(),
+    Value<String?> fundingAccountId = const Value.absent(),
+    Value<int?> cashAmountMinor = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => LocalInvestmentTransaction(
@@ -5523,6 +5878,12 @@ class LocalInvestmentTransaction extends DataClass
     currency: currency ?? this.currency,
     date: date ?? this.date,
     notes: notes.present ? notes.value : this.notes,
+    fundingAccountId: fundingAccountId.present
+        ? fundingAccountId.value
+        : this.fundingAccountId,
+    cashAmountMinor: cashAmountMinor.present
+        ? cashAmountMinor.value
+        : this.cashAmountMinor,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -5548,6 +5909,12 @@ class LocalInvestmentTransaction extends DataClass
       currency: data.currency.present ? data.currency.value : this.currency,
       date: data.date.present ? data.date.value : this.date,
       notes: data.notes.present ? data.notes.value : this.notes,
+      fundingAccountId: data.fundingAccountId.present
+          ? data.fundingAccountId.value
+          : this.fundingAccountId,
+      cashAmountMinor: data.cashAmountMinor.present
+          ? data.cashAmountMinor.value
+          : this.cashAmountMinor,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -5568,6 +5935,8 @@ class LocalInvestmentTransaction extends DataClass
           ..write('currency: $currency, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
+          ..write('fundingAccountId: $fundingAccountId, ')
+          ..write('cashAmountMinor: $cashAmountMinor, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -5588,6 +5957,8 @@ class LocalInvestmentTransaction extends DataClass
     currency,
     date,
     notes,
+    fundingAccountId,
+    cashAmountMinor,
     createdAt,
     updatedAt,
   );
@@ -5607,6 +5978,8 @@ class LocalInvestmentTransaction extends DataClass
           other.currency == this.currency &&
           other.date == this.date &&
           other.notes == this.notes &&
+          other.fundingAccountId == this.fundingAccountId &&
+          other.cashAmountMinor == this.cashAmountMinor &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -5625,6 +5998,8 @@ class LocalInvestmentTransactionsCompanion
   final Value<String> currency;
   final Value<DateTime> date;
   final Value<String?> notes;
+  final Value<String?> fundingAccountId;
+  final Value<int?> cashAmountMinor;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -5641,6 +6016,8 @@ class LocalInvestmentTransactionsCompanion
     this.currency = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.fundingAccountId = const Value.absent(),
+    this.cashAmountMinor = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -5658,6 +6035,8 @@ class LocalInvestmentTransactionsCompanion
     required String currency,
     required DateTime date,
     this.notes = const Value.absent(),
+    this.fundingAccountId = const Value.absent(),
+    this.cashAmountMinor = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -5687,6 +6066,8 @@ class LocalInvestmentTransactionsCompanion
     Expression<String>? currency,
     Expression<DateTime>? date,
     Expression<String>? notes,
+    Expression<String>? fundingAccountId,
+    Expression<int>? cashAmountMinor,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -5704,6 +6085,8 @@ class LocalInvestmentTransactionsCompanion
       if (currency != null) 'currency': currency,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
+      if (fundingAccountId != null) 'funding_account_id': fundingAccountId,
+      if (cashAmountMinor != null) 'cash_amount_minor': cashAmountMinor,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -5723,6 +6106,8 @@ class LocalInvestmentTransactionsCompanion
     Value<String>? currency,
     Value<DateTime>? date,
     Value<String?>? notes,
+    Value<String?>? fundingAccountId,
+    Value<int?>? cashAmountMinor,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -5740,6 +6125,8 @@ class LocalInvestmentTransactionsCompanion
       currency: currency ?? this.currency,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      fundingAccountId: fundingAccountId ?? this.fundingAccountId,
+      cashAmountMinor: cashAmountMinor ?? this.cashAmountMinor,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -5785,6 +6172,12 @@ class LocalInvestmentTransactionsCompanion
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (fundingAccountId.present) {
+      map['funding_account_id'] = Variable<String>(fundingAccountId.value);
+    }
+    if (cashAmountMinor.present) {
+      map['cash_amount_minor'] = Variable<int>(cashAmountMinor.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5812,6 +6205,8 @@ class LocalInvestmentTransactionsCompanion
           ..write('currency: $currency, ')
           ..write('date: $date, ')
           ..write('notes: $notes, ')
+          ..write('fundingAccountId: $fundingAccountId, ')
+          ..write('cashAmountMinor: $cashAmountMinor, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -7644,6 +8039,7 @@ typedef $$LocalAccountsTableCreateCompanionBuilder =
       required String type,
       required String bank,
       required double initialBalance,
+      Value<String> currency,
       Value<double?> creditLimit,
       Value<int?> closingDay,
       Value<int?> dueDay,
@@ -7659,6 +8055,7 @@ typedef $$LocalAccountsTableUpdateCompanionBuilder =
       Value<String> type,
       Value<String> bank,
       Value<double> initialBalance,
+      Value<String> currency,
       Value<double?> creditLimit,
       Value<int?> closingDay,
       Value<int?> dueDay,
@@ -7703,6 +8100,11 @@ class $$LocalAccountsTableFilterComposer
 
   ColumnFilters<double> get initialBalance => $composableBuilder(
     column: $table.initialBalance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7771,6 +8173,11 @@ class $$LocalAccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get creditLimit => $composableBuilder(
     column: $table.creditLimit,
     builder: (column) => ColumnOrderings(column),
@@ -7825,6 +8232,9 @@ class $$LocalAccountsTableAnnotationComposer
     column: $table.initialBalance,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
 
   GeneratedColumn<double> get creditLimit => $composableBuilder(
     column: $table.creditLimit,
@@ -7885,6 +8295,7 @@ class $$LocalAccountsTableTableManager
                 Value<String> type = const Value.absent(),
                 Value<String> bank = const Value.absent(),
                 Value<double> initialBalance = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<double?> creditLimit = const Value.absent(),
                 Value<int?> closingDay = const Value.absent(),
                 Value<int?> dueDay = const Value.absent(),
@@ -7898,6 +8309,7 @@ class $$LocalAccountsTableTableManager
                 type: type,
                 bank: bank,
                 initialBalance: initialBalance,
+                currency: currency,
                 creditLimit: creditLimit,
                 closingDay: closingDay,
                 dueDay: dueDay,
@@ -7913,6 +8325,7 @@ class $$LocalAccountsTableTableManager
                 required String type,
                 required String bank,
                 required double initialBalance,
+                Value<String> currency = const Value.absent(),
                 Value<double?> creditLimit = const Value.absent(),
                 Value<int?> closingDay = const Value.absent(),
                 Value<int?> dueDay = const Value.absent(),
@@ -7926,6 +8339,7 @@ class $$LocalAccountsTableTableManager
                 type: type,
                 bank: bank,
                 initialBalance: initialBalance,
+                currency: currency,
                 creditLimit: creditLimit,
                 closingDay: closingDay,
                 dueDay: dueDay,
@@ -7980,6 +8394,8 @@ typedef $$LocalTransactionsTableCreateCompanionBuilder =
       Value<DateTime?> recurrenceEndDate,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
+      Value<String?> institutionId,
+      Value<String?> linkedInvestmentTransactionId,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -8006,6 +8422,8 @@ typedef $$LocalTransactionsTableUpdateCompanionBuilder =
       Value<DateTime?> recurrenceEndDate,
       Value<String?> notes,
       Value<String?> linkedTransactionId,
+      Value<String?> institutionId,
+      Value<String?> linkedInvestmentTransactionId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -8117,6 +8535,16 @@ class $$LocalTransactionsTableFilterComposer
 
   ColumnFilters<String> get linkedTransactionId => $composableBuilder(
     column: $table.linkedTransactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedInvestmentTransactionId => $composableBuilder(
+    column: $table.linkedInvestmentTransactionId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8240,6 +8668,17 @@ class $$LocalTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedInvestmentTransactionId =>
+      $composableBuilder(
+        column: $table.linkedInvestmentTransactionId,
+        builder: (column) => ColumnOrderings(column),
+      );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -8342,6 +8781,17 @@ class $$LocalTransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get institutionId => $composableBuilder(
+    column: $table.institutionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedInvestmentTransactionId =>
+      $composableBuilder(
+        column: $table.linkedInvestmentTransactionId,
+        builder: (column) => column,
+      );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -8409,6 +8859,9 @@ class $$LocalTransactionsTableTableManager
                 Value<DateTime?> recurrenceEndDate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
+                Value<String?> institutionId = const Value.absent(),
+                Value<String?> linkedInvestmentTransactionId =
+                    const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -8433,6 +8886,8 @@ class $$LocalTransactionsTableTableManager
                 recurrenceEndDate: recurrenceEndDate,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
+                institutionId: institutionId,
+                linkedInvestmentTransactionId: linkedInvestmentTransactionId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -8459,6 +8914,9 @@ class $$LocalTransactionsTableTableManager
                 Value<DateTime?> recurrenceEndDate = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
                 Value<String?> linkedTransactionId = const Value.absent(),
+                Value<String?> institutionId = const Value.absent(),
+                Value<String?> linkedInvestmentTransactionId =
+                    const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -8483,6 +8941,8 @@ class $$LocalTransactionsTableTableManager
                 recurrenceEndDate: recurrenceEndDate,
                 notes: notes,
                 linkedTransactionId: linkedTransactionId,
+                institutionId: institutionId,
+                linkedInvestmentTransactionId: linkedInvestmentTransactionId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -9297,6 +9757,8 @@ typedef $$LocalInstitutionsTableCreateCompanionBuilder =
       required String kind,
       required String currency,
       required DateTime createdAt,
+      Value<String?> bank,
+      Value<int?> color,
       Value<int> rowid,
     });
 typedef $$LocalInstitutionsTableUpdateCompanionBuilder =
@@ -9307,6 +9769,8 @@ typedef $$LocalInstitutionsTableUpdateCompanionBuilder =
       Value<String> kind,
       Value<String> currency,
       Value<DateTime> createdAt,
+      Value<String?> bank,
+      Value<int?> color,
       Value<int> rowid,
     });
 
@@ -9346,6 +9810,16 @@ class $$LocalInstitutionsTableFilterComposer
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -9388,6 +9862,16 @@ class $$LocalInstitutionsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get bank => $composableBuilder(
+    column: $table.bank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalInstitutionsTableAnnotationComposer
@@ -9416,6 +9900,12 @@ class $$LocalInstitutionsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get bank =>
+      $composableBuilder(column: $table.bank, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
 }
 
 class $$LocalInstitutionsTableTableManager
@@ -9464,6 +9954,8 @@ class $$LocalInstitutionsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String> currency = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
+                Value<String?> bank = const Value.absent(),
+                Value<int?> color = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalInstitutionsCompanion(
                 id: id,
@@ -9472,6 +9964,8 @@ class $$LocalInstitutionsTableTableManager
                 kind: kind,
                 currency: currency,
                 createdAt: createdAt,
+                bank: bank,
+                color: color,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9482,6 +9976,8 @@ class $$LocalInstitutionsTableTableManager
                 required String kind,
                 required String currency,
                 required DateTime createdAt,
+                Value<String?> bank = const Value.absent(),
+                Value<int?> color = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalInstitutionsCompanion.insert(
                 id: id,
@@ -9490,6 +9986,8 @@ class $$LocalInstitutionsTableTableManager
                 kind: kind,
                 currency: currency,
                 createdAt: createdAt,
+                bank: bank,
+                color: color,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9851,6 +10349,8 @@ typedef $$LocalInvestmentTransactionsTableCreateCompanionBuilder =
       required String currency,
       required DateTime date,
       Value<String?> notes,
+      Value<String?> fundingAccountId,
+      Value<int?> cashAmountMinor,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -9869,6 +10369,8 @@ typedef $$LocalInvestmentTransactionsTableUpdateCompanionBuilder =
       Value<String> currency,
       Value<DateTime> date,
       Value<String?> notes,
+      Value<String?> fundingAccountId,
+      Value<int?> cashAmountMinor,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -9940,6 +10442,16 @@ class $$LocalInvestmentTransactionsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fundingAccountId => $composableBuilder(
+    column: $table.fundingAccountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cashAmountMinor => $composableBuilder(
+    column: $table.cashAmountMinor,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10023,6 +10535,16 @@ class $$LocalInvestmentTransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get fundingAccountId => $composableBuilder(
+    column: $table.fundingAccountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cashAmountMinor => $composableBuilder(
+    column: $table.cashAmountMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -10084,6 +10606,16 @@ class $$LocalInvestmentTransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get fundingAccountId => $composableBuilder(
+    column: $table.fundingAccountId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cashAmountMinor => $composableBuilder(
+    column: $table.cashAmountMinor,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -10150,6 +10682,8 @@ class $$LocalInvestmentTransactionsTableTableManager
                 Value<String> currency = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> fundingAccountId = const Value.absent(),
+                Value<int?> cashAmountMinor = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -10166,6 +10700,8 @@ class $$LocalInvestmentTransactionsTableTableManager
                 currency: currency,
                 date: date,
                 notes: notes,
+                fundingAccountId: fundingAccountId,
+                cashAmountMinor: cashAmountMinor,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -10184,6 +10720,8 @@ class $$LocalInvestmentTransactionsTableTableManager
                 required String currency,
                 required DateTime date,
                 Value<String?> notes = const Value.absent(),
+                Value<String?> fundingAccountId = const Value.absent(),
+                Value<int?> cashAmountMinor = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -10200,6 +10738,8 @@ class $$LocalInvestmentTransactionsTableTableManager
                 currency: currency,
                 date: date,
                 notes: notes,
+                fundingAccountId: fundingAccountId,
+                cashAmountMinor: cashAmountMinor,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

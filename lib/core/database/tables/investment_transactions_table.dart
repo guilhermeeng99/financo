@@ -19,6 +19,13 @@ class LocalInvestmentTransactions extends Table {
   TextColumn get currency => text()();
   DateTimeColumn get date => dateTime()();
   TextColumn get notes => text().nullable()();
+
+  /// F8 funding link: the checking account the cash moved from/to, and the BRL
+  /// amount that moved (`cashAmountMinor`, always BRL regardless of `currency`
+  /// above). Nullable — set only for single-entry aporte/resgate purchases.
+  /// See docs/specs/investing_account_unification.md.
+  TextColumn get fundingAccountId => text().nullable()();
+  IntColumn get cashAmountMinor => integer().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

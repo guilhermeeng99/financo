@@ -1,3 +1,4 @@
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 class AccountFactory {
@@ -9,6 +10,7 @@ class AccountFactory {
     String name = 'Nubank Checking',
     BankType bank = BankType.nubank,
     double initialBalance = 1000,
+    Currency currency = Currency.brl,
     DateTime? createdAt,
   }) {
     return AccountEntity(
@@ -18,6 +20,7 @@ class AccountFactory {
       type: AccountType.checking,
       bank: bank,
       initialBalance: initialBalance,
+      currency: currency,
       createdAt: createdAt ?? DateTime(2024),
     );
   }

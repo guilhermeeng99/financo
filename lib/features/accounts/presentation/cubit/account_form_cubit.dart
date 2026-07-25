@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/app/state/form_status.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -69,6 +70,10 @@ class AccountFormCubit extends Cubit<AccountFormState> {
 
   void updateBank(BankType value) => emit(state.copyWith(bank: value));
 
+  /// Sets the account currency (create only — see [AccountFormState.currency]).
+  void updateCurrency(Currency value) =>
+      emit(state.copyWith(currency: value));
+
   /// Records the picker's selection: both the id (persisted) and the
   /// display name (shown in the form row).
   void updateLinkedAccount({required String id, required String name}) =>
@@ -85,6 +90,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
       type: state.type,
       bank: state.bank,
       initialBalance: state.balance,
+      currency: state.currency,
       creditLimit: state.type == AccountType.creditCard
           ? state.creditLimit
           : null,
@@ -123,6 +129,7 @@ class AccountFormState extends Equatable {
     required this.type,
     required this.bank,
     required this.balance,
+    required this.currency,
     required this.creditLimit,
     required this.closingDay,
     required this.dueDay,
@@ -144,6 +151,7 @@ class AccountFormState extends Equatable {
       type: existing?.type ?? AccountType.checking,
       bank: existing?.bank ?? BankType.nubank,
       balance: existing?.initialBalance ?? 0,
+      currency: existing?.currency ?? Currency.brl,
       creditLimit: existing?.creditLimit ?? 0,
       closingDay: existing?.closingDay ?? 1,
       dueDay: existing?.dueDay ?? 10,
@@ -159,6 +167,7 @@ class AccountFormState extends Equatable {
   final AccountType type;
   final BankType bank;
   final double balance;
+  final Currency currency;
   final double creditLimit;
   final int closingDay;
   final int dueDay;
@@ -189,11 +198,16 @@ class AccountFormState extends Equatable {
   /// removed once the affected users had finished migrating.
   bool get canChangeType => !isEditing;
 
+  /// Currency is locked once an account exists — every persisted native amount
+  /// is denominated in it, so changing it would silently reinterpret history.
+  bool get canChangeCurrency => !isEditing;
+
   AccountFormState copyWith({
     String? name,
     AccountType? type,
     BankType? bank,
     double? balance,
+    Currency? currency,
     double? creditLimit,
     int? closingDay,
     int? dueDay,
@@ -208,6 +222,7 @@ class AccountFormState extends Equatable {
       type: type ?? this.type,
       bank: bank ?? this.bank,
       balance: balance ?? this.balance,
+      currency: currency ?? this.currency,
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
@@ -227,6 +242,7 @@ class AccountFormState extends Equatable {
     type,
     bank,
     balance,
+    currency,
     creditLimit,
     closingDay,
     dueDay,

@@ -15,6 +15,8 @@ class Institution extends Equatable {
     required this.kind,
     required this.currency,
     required this.createdAt,
+    this.bank,
+    this.color,
   });
 
   /// Stable unique id.
@@ -35,11 +37,23 @@ class Institution extends Equatable {
   /// Creation timestamp.
   final DateTime createdAt;
 
+  /// Optional display hint: the `BankType.name` (from the accounts feature)
+  /// used to render a brand logo/avatar on the Dashboard once investment
+  /// accounts are unified into institutions (F8 — see
+  /// `docs/specs/investing_account_unification.md`). Null → initials avatar.
+  final String? bank;
+
+  /// Optional display colour (ARGB int). Falls back to a colour derived from
+  /// [kind] when null.
+  final int? color;
+
   /// Returns a copy with the given fields replaced.
   Institution copyWith({
     String? name,
     InstitutionKind? kind,
     Currency? currency,
+    String? bank,
+    int? color,
   }) {
     return Institution(
       id: id,
@@ -48,9 +62,20 @@ class Institution extends Equatable {
       kind: kind ?? this.kind,
       currency: currency ?? this.currency,
       createdAt: createdAt,
+      bank: bank ?? this.bank,
+      color: color ?? this.color,
     );
   }
 
   @override
-  List<Object?> get props => [id, userId, name, kind, currency, createdAt];
+  List<Object?> get props => [
+    id,
+    userId,
+    name,
+    kind,
+    currency,
+    createdAt,
+    bank,
+    color,
+  ];
 }

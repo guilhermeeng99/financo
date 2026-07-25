@@ -18,6 +18,8 @@ class AssetTransactionModel extends AssetTransaction {
     required super.createdAt,
     required super.updatedAt,
     super.notes,
+    super.fundingAccountId,
+    super.cashAmount,
   });
 
   factory AssetTransactionModel.fromFirestore(DocumentSnapshot doc) {
@@ -44,6 +46,10 @@ class AssetTransactionModel extends AssetTransaction {
       amount: Money((data['amountMinor'] as num).toInt(), ccy),
       date: _toDate(data['date']),
       notes: data['notes'] as String?,
+      fundingAccountId: data['fundingAccountId'] as String?,
+      cashAmount: data['cashAmountMinor'] == null
+          ? null
+          : Money((data['cashAmountMinor'] as num).toInt(), Currency.brl),
       createdAt: _toDate(data['createdAt']),
       updatedAt: _toDate(data['updatedAt']),
     );
@@ -62,6 +68,8 @@ class AssetTransactionModel extends AssetTransaction {
       amount: e.amount,
       date: e.date,
       notes: e.notes,
+      fundingAccountId: e.fundingAccountId,
+      cashAmount: e.cashAmount,
       createdAt: e.createdAt,
       updatedAt: e.updatedAt,
     );
@@ -85,6 +93,8 @@ class AssetTransactionModel extends AssetTransaction {
       'currency': amount.currency.name,
       'date': Timestamp.fromDate(date),
       if (notes != null) 'notes': notes,
+      if (fundingAccountId != null) 'fundingAccountId': fundingAccountId,
+      if (cashAmount != null) 'cashAmountMinor': cashAmount!.minorUnits,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

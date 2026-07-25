@@ -83,6 +83,7 @@ import 'package:financo/features/investing/domain/repositories/asset_transaction
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
 import 'package:financo/features/investing/domain/repositories/quote_repository.dart';
 import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
+import 'package:financo/features/investing/domain/services/institution_valuation_reader.dart';
 import 'package:financo/features/investing/domain/services/market_cache_store.dart';
 import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
@@ -470,6 +471,9 @@ class MockGetAssetTransactionsUseCase extends Mock
 
 class MockPortfolioPricingEngine extends Mock
     implements PortfolioPricingEngine {}
+
+class MockInstitutionValuationReader extends Mock
+    implements InstitutionValuationReader {}
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
 

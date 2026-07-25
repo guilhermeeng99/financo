@@ -25,6 +25,8 @@ class TransactionModel extends TransactionEntity {
     super.recurrenceEndDate,
     super.notes,
     super.linkedTransactionId,
+    super.institutionId,
+    super.linkedInvestmentTransactionId,
   });
 
   factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
@@ -61,6 +63,9 @@ class TransactionModel extends TransactionEntity {
       recurrenceEndDate: _readDate(data['recurrenceEndDate']),
       notes: data['notes'] as String?,
       linkedTransactionId: data['linkedTransactionId'] as String?,
+      institutionId: data['institutionId'] as String?,
+      linkedInvestmentTransactionId:
+          data['linkedInvestmentTransactionId'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
@@ -88,6 +93,8 @@ class TransactionModel extends TransactionEntity {
       recurrenceEndDate: entity.recurrenceEndDate,
       notes: entity.notes,
       linkedTransactionId: entity.linkedTransactionId,
+      institutionId: entity.institutionId,
+      linkedInvestmentTransactionId: entity.linkedInvestmentTransactionId,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -116,6 +123,8 @@ class TransactionModel extends TransactionEntity {
           : Timestamp.fromDate(recurrenceEndDate!),
       'notes': notes,
       'linkedTransactionId': linkedTransactionId,
+      'institutionId': institutionId,
+      'linkedInvestmentTransactionId': linkedInvestmentTransactionId,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };

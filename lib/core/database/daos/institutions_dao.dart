@@ -46,6 +46,8 @@ class InstitutionsDao extends DatabaseAccessor<AppDatabase>
         kind: e.kind.name,
         currency: e.currency.name,
         createdAt: e.createdAt,
+        bank: Value(e.bank),
+        color: Value(e.color),
       );
 
   Institution _toEntity(LocalInstitution row) => Institution(
@@ -55,5 +57,7 @@ class InstitutionsDao extends DatabaseAccessor<AppDatabase>
     kind: InstitutionKind.values.byName(row.kind),
     currency: Currency.values.byName(row.currency),
     createdAt: row.createdAt,
+    bank: row.bank,
+    color: row.color,
   );
 }

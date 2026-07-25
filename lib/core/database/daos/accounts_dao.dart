@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 part 'accounts_dao.g.dart';
@@ -51,6 +52,7 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
         type: e.type.name,
         bank: e.bank.name,
         initialBalance: e.initialBalance,
+        currency: Value(e.currency.name),
         creditLimit: Value(e.creditLimit),
         closingDay: Value(e.closingDay),
         dueDay: Value(e.dueDay),
@@ -65,6 +67,7 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
     type: AccountType.values.byName(row.type),
     bank: BankType.values.byName(row.bank),
     initialBalance: row.initialBalance,
+    currency: Currency.values.byName(row.currency),
     creditLimit: row.creditLimit,
     closingDay: row.closingDay,
     dueDay: row.dueDay,

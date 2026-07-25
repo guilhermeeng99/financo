@@ -32,6 +32,8 @@ class TransactionEntity extends Equatable {
     this.recurrenceEndDate,
     this.notes,
     this.linkedTransactionId,
+    this.institutionId,
+    this.linkedInvestmentTransactionId,
   }) : dueDate = dueDate ?? date;
 
   final String id;
@@ -54,10 +56,25 @@ class TransactionEntity extends Equatable {
   final DateTime? recurrenceEndDate;
   final String? notes;
   final String? linkedTransactionId;
+
+  /// When set, this cash transaction is an investment aporte/resgate whose
+  /// counterparty is an institution (not a second account). An expense marks
+  /// money leaving a checking account into the broker (aporte); an income marks
+  /// a payout back (resgate). Drives the 50/30/20 savings bucket after F8.
+  /// See docs/specs/investing_account_unification.md.
+  final String? institutionId;
+
+  /// The `investment_transactions` doc (buy/sell) that generated this cash-flow
+  /// row. Non-null only alongside [institutionId]; drives the linked lifecycle
+  /// (edit/delete the investment transaction cascades to this row).
+  final String? linkedInvestmentTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   bool get isTransfer => linkedTransactionId != null;
+
+  /// True when this is an investment aporte/resgate (cash ↔ institution).
+  bool get isInvestmentCashFlow => institutionId != null;
   bool get isRecurring => recurrence != TransactionRecurrence.single;
   bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
   bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;
@@ -97,6 +114,8 @@ class TransactionEntity extends Equatable {
     DateTime? recurrenceEndDate,
     String? notes,
     String? linkedTransactionId,
+    String? institutionId,
+    String? linkedInvestmentTransactionId,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -123,6 +142,9 @@ class TransactionEntity extends Equatable {
       recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
       notes: notes ?? this.notes,
       linkedTransactionId: linkedTransactionId ?? this.linkedTransactionId,
+      institutionId: institutionId ?? this.institutionId,
+      linkedInvestmentTransactionId:
+          linkedInvestmentTransactionId ?? this.linkedInvestmentTransactionId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -150,6 +172,8 @@ class TransactionEntity extends Equatable {
     recurrenceEndDate,
     notes,
     linkedTransactionId,
+    institutionId,
+    linkedInvestmentTransactionId,
     createdAt,
     updatedAt,
   ];

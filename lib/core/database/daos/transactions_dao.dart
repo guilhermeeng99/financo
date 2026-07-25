@@ -142,6 +142,8 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
         recurrenceEndDate: Value(e.recurrenceEndDate),
         notes: Value(e.notes),
         linkedTransactionId: Value(e.linkedTransactionId),
+        institutionId: Value(e.institutionId),
+        linkedInvestmentTransactionId: Value(e.linkedInvestmentTransactionId),
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       );
@@ -167,6 +169,8 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     recurrenceEndDate: row.recurrenceEndDate,
     notes: row.notes,
     linkedTransactionId: row.linkedTransactionId,
+    institutionId: row.institutionId,
+    linkedInvestmentTransactionId: row.linkedInvestmentTransactionId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

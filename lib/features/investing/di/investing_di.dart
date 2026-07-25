@@ -21,6 +21,7 @@ import 'package:financo/features/investing/domain/repositories/asset_transaction
 import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
 import 'package:financo/features/investing/domain/repositories/snapshot_repository.dart';
 import 'package:financo/features/investing/domain/services/allocation_service.dart';
+import 'package:financo/features/investing/domain/services/institution_valuation_reader.dart';
 import 'package:financo/features/investing/domain/services/market_cache_store.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
@@ -35,6 +36,7 @@ import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase
 import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/record_institution_cash_flow_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_institution_usecase.dart';
@@ -120,11 +122,31 @@ void registerInvestingDependencies(GetIt sl) {
       ),
     )
     ..registerLazySingleton(() => DeleteAssetTransactionUseCase(sl()))
+    // F8.4: single-entry cash deposit/withdrawal between a checking account
+    // and an institution (money in/out as a cash holding).
+    ..registerLazySingleton(
+      () => RecordInstitutionCashFlowUseCase(
+        assetRepository: sl(),
+        assetTransactionRepository: sl(),
+        saveAssetTransaction: sl(),
+        transactionRepository: sl(),
+      ),
+    )
     ..registerLazySingleton(() => GetHoldingsUseCase(sl()))
     ..registerLazySingleton(() => GetSnapshotsUseCase(sl()))
     ..registerLazySingleton(() => RecordDailySnapshotUseCase(sl()))
     // ─── Allocation (F5) ────────────────────────────────────
     ..registerLazySingleton(AllocationService.new)
+    // ─── Institution valuation reader (F8.2) ────────────────
+    // Read-only bridge the Dashboard uses to show an investment account's
+    // live market value; prices from cache via a fresh pricing engine.
+    ..registerLazySingleton(
+      () => InstitutionValuationReader(
+        transactionRepository: sl(),
+        assetRepository: sl(),
+        pricingEngine: sl(),
+      ),
+    )
     // ─── CSV import (F6) ────────────────────────────────────
     ..registerLazySingleton(
       () => ImportAssetsCsvUseCase(

@@ -11,6 +11,7 @@ import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
@@ -240,6 +241,30 @@ class _AddAccountViewState extends State<_AddAccountView> {
                           selected: state.bank,
                           onChanged: cubit.updateBank,
                         ),
+                        // Currency is fixed at creation (every native amount
+                        // is denominated in it). Hidden on edit, like the type
+                        // toggle. See docs/specs/multi_currency_accounts.md.
+                        if (state.canChangeCurrency) ...[
+                          const SizedBox(height: 12),
+                          FinancoPillToggle<Currency>(
+                            selected: state.currency,
+                            onChanged: cubit.updateCurrency,
+                            options: const [
+                              FinancoPillToggleOption(
+                                value: Currency.brl,
+                                label: r'R$ BRL',
+                              ),
+                              FinancoPillToggleOption(
+                                value: Currency.usd,
+                                label: r'$ USD',
+                              ),
+                              FinancoPillToggleOption(
+                                value: Currency.eur,
+                                label: '€ EUR',
+                              ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 12),
                         FinancoCurrencyField(
                           controller: _balanceController,

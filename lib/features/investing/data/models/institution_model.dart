@@ -10,6 +10,8 @@ class InstitutionModel extends Institution {
     required super.kind,
     required super.currency,
     required super.createdAt,
+    super.bank,
+    super.color,
   });
 
   factory InstitutionModel.fromFirestore(DocumentSnapshot doc) {
@@ -33,6 +35,8 @@ class InstitutionModel extends Institution {
       createdAt: createdAtRaw is Timestamp
           ? createdAtRaw.toDate()
           : DateTime.tryParse(createdAtRaw?.toString() ?? '') ?? DateTime.now(),
+      bank: data['bank'] as String?,
+      color: (data['color'] as num?)?.toInt(),
     );
   }
 
@@ -44,6 +48,8 @@ class InstitutionModel extends Institution {
       kind: e.kind,
       currency: e.currency,
       createdAt: e.createdAt,
+      bank: e.bank,
+      color: e.color,
     );
   }
 
@@ -54,6 +60,8 @@ class InstitutionModel extends Institution {
       'kind': kind.name,
       'currency': currency.name,
       'createdAt': Timestamp.fromDate(createdAt),
+      'bank': bank,
+      'color': color,
     };
   }
 }

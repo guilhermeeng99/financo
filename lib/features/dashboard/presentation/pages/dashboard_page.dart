@@ -11,6 +11,7 @@ import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
 import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_selection_cubit.dart';
@@ -19,6 +20,7 @@ import 'package:financo/features/dashboard/presentation/widgets/category_breakdo
 import 'package:financo/features/dashboard/presentation/widgets/category_details_dialog.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_account_row.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_hero.dart';
+import 'package:financo/features/dashboard/presentation/widgets/dashboard_institution_row.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_section.dart';
 import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_card.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -174,17 +176,20 @@ class _DashboardContent extends StatelessWidget {
     // cards, "biggest" = closest to zero, since their balance trends
     // negative as the user spends.
     //
-    // Checking + investment share one "Account Balances" section —
-    // both represent money the user holds (positive sign convention)
-    // so a unified, mute-able total mirrors how the user thinks about
-    // net liquidity. Credit cards keep their own section: opposite
-    // sign convention + different mental model.
+    // Checking accounts + market-valued investment accounts (institutions)
+    // share one "Account Balances" section — both represent money the user
+    // holds (positive sign convention), so a unified, mute-able total reflects
+    // true net worth (cash + market value). Investment-type *accounts* are no
+    // longer rendered here: post-F8 the investing institutions carry that value
+    // at market (see docs/specs/investing_account_unification.md). Credit cards
+    // keep their own section: opposite sign convention + different mental
+    // model.
     final bankAccounts = (summary.accounts
-            .where((a) =>
-                a.type == AccountType.checking ||
-                a.type == AccountType.investment)
+            .where((a) => a.type == AccountType.checking)
             .toList())
       ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
+    // Already sorted by market value (descending) in the repository.
+    final investmentAccounts = summary.investmentAccounts;
     final creditCards = (summary.accounts
             .where((a) => a.type == AccountType.creditCard)
             .toList())
@@ -216,13 +221,16 @@ class _DashboardContent extends StatelessWidget {
               duration: 400.ms,
               curve: Curves.easeOut,
             ),
-        if (bankAccounts.isNotEmpty) ...[
+        if (bankAccounts.isNotEmpty || investmentAccounts.isNotEmpty) ...[
           const SizedBox(height: 24),
           DashboardSection(
             label: t.dashboard.accountBalances,
-            count: bankAccounts.length,
+            count: bankAccounts.length + investmentAccounts.length,
             accent: colors.primary,
-            child: _BankAccountList(accounts: bankAccounts),
+            child: _BalancesList(
+              accounts: bankAccounts,
+              investments: investmentAccounts,
+            ),
           )
               .animate()
               .fadeIn(delay: 100.ms, duration: 400.ms)
@@ -266,7 +274,9 @@ class _DashboardContent extends StatelessWidget {
               duration: 400.ms,
               curve: Curves.easeOut,
             ),
-        if (bankAccounts.isEmpty && creditCards.isEmpty) ...[
+        if (bankAccounts.isEmpty &&
+            investmentAccounts.isEmpty &&
+            creditCards.isEmpty) ...[
           const SizedBox(height: 24),
           _NoAccountsHint(),
         ],
@@ -348,50 +358,71 @@ class _AccountList extends StatelessWidget {
   }
 }
 
-/// Account list for the **bank accounts** section (checking +
-/// investment combined). Adds a per-row checkbox that controls whether
-/// the account is summed into the trailing "Total" row. Selection
-/// state is owned by [DashboardAccountSelectionCubit] so it survives
-/// navigation and app restarts.
-class _BankAccountList extends StatelessWidget {
-  const _BankAccountList({required this.accounts});
+/// The "Account Balances" list: checking accounts followed by market-valued
+/// investment accounts (institutions). Each row has a checkbox that controls
+/// whether it is summed into the trailing "Total" row, so the total reflects
+/// net worth (cash + market value). Selection state is owned by
+/// [DashboardAccountSelectionCubit] (keyed by account/institution id) so it
+/// survives navigation and app restarts.
+class _BalancesList extends StatelessWidget {
+  const _BalancesList({required this.accounts, required this.investments});
 
   final List<AccountEntity> accounts;
+  final List<InvestmentAccountRow> investments;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+
+    Widget divider() => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Container(height: 0.5, color: colors.surfaceVariant),
+    );
+
     return BlocBuilder<
       DashboardAccountSelectionCubit,
       DashboardAccountSelectionState
     >(
       builder: (context, selection) {
         final cubit = context.read<DashboardAccountSelectionCubit>();
-        final total = accounts
-            .where((a) => !selection.excludedIds.contains(a.id))
+        bool included(String id) => !selection.excludedIds.contains(id);
+
+        final accountsTotal = accounts
+            .where((a) => included(a.id))
             .fold<double>(0, (sum, a) => sum + a.initialBalance);
+        final investmentsTotal = investments
+            .where((r) => included(r.institutionId))
+            .fold<double>(0, (sum, r) => sum + r.marketValue);
+
+        final rows = <Widget>[];
+        for (final account in accounts) {
+          if (rows.isNotEmpty) rows.add(divider());
+          rows.add(
+            DashboardAccountRow(
+              account: account,
+              includedInTotal: included(account.id),
+              onToggleIncluded: () => cubit.toggle(account.id),
+              onTap: () => context.go(AppRoutes.accountById(account.id)),
+            ),
+          );
+        }
+        for (final investment in investments) {
+          if (rows.isNotEmpty) rows.add(divider());
+          rows.add(
+            DashboardInstitutionRow(
+              row: investment,
+              includedInTotal: included(investment.institutionId),
+              onToggleIncluded: () => cubit.toggle(investment.institutionId),
+              onTap: () => context.go(AppRoutes.investingOverview),
+            ),
+          );
+        }
+
         return Column(
           children: [
-            for (var i = 0; i < accounts.length; i++) ...[
-              if (i > 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Container(height: 0.5, color: colors.surfaceVariant),
-                ),
-              DashboardAccountRow(
-                account: accounts[i],
-                includedInTotal:
-                    !selection.excludedIds.contains(accounts[i].id),
-                onToggleIncluded: () => cubit.toggle(accounts[i].id),
-                onTap: () =>
-                    context.go(AppRoutes.accountById(accounts[i].id)),
-              ),
-            ],
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Container(height: 0.5, color: colors.surfaceVariant),
-            ),
-            _TotalRow(amount: total),
+            ...rows,
+            divider(),
+            _TotalRow(amount: accountsTotal + investmentsTotal),
           ],
         );
       },

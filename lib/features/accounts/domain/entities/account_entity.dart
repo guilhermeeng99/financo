@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 
 /// Persisted as `enum.name` in Firestore + Drift. `investment` exists so
@@ -47,6 +48,7 @@ class AccountEntity extends Equatable {
     required this.bank,
     required this.initialBalance,
     required this.createdAt,
+    this.currency = Currency.brl,
     this.creditLimit,
     this.closingDay,
     this.dueDay,
@@ -60,6 +62,13 @@ class AccountEntity extends Equatable {
   final AccountType type;
   final BankType bank;
   final double initialBalance;
+
+  /// The currency this account is denominated in. Every balance and transaction
+  /// amount on it is native to this currency; the app consolidates to BRL at
+  /// the current FX rate for combined views (F9 — see
+  /// `docs/specs/multi_currency_accounts.md`). Defaults to BRL; existing
+  /// accounts are BRL, so BRL-only users see identical numbers.
+  final Currency currency;
   final double? creditLimit;
   final int? closingDay;
   final int? dueDay;
@@ -104,6 +113,7 @@ class AccountEntity extends Equatable {
     AccountType? type,
     BankType? bank,
     double? initialBalance,
+    Currency? currency,
     double? creditLimit,
     int? closingDay,
     int? dueDay,
@@ -118,6 +128,7 @@ class AccountEntity extends Equatable {
       type: type ?? this.type,
       bank: bank ?? this.bank,
       initialBalance: initialBalance ?? this.initialBalance,
+      currency: currency ?? this.currency,
       creditLimit: creditLimit ?? this.creditLimit,
       closingDay: closingDay ?? this.closingDay,
       dueDay: dueDay ?? this.dueDay,
@@ -135,6 +146,7 @@ class AccountEntity extends Equatable {
     type,
     bank,
     initialBalance,
+    currency,
     creditLimit,
     closingDay,
     dueDay,

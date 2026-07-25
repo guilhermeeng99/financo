@@ -23,6 +23,12 @@ class LocalTransactions extends Table {
   DateTimeColumn get recurrenceEndDate => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
   TextColumn get linkedTransactionId => text().nullable()();
+
+  /// Set when this cash row is an investment aporte/resgate: the counterparty
+  /// institution and the investment transaction that generated it (F8 — see
+  /// docs/specs/investing_account_unification.md).
+  TextColumn get institutionId => text().nullable()();
+  TextColumn get linkedInvestmentTransactionId => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 

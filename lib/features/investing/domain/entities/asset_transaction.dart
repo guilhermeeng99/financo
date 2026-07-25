@@ -51,6 +51,8 @@ class AssetTransaction extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.notes,
+    this.fundingAccountId,
+    this.cashAmount,
   });
 
   /// Stable unique id.
@@ -86,6 +88,18 @@ class AssetTransaction extends Equatable {
   /// Optional free-text note.
   final String? notes;
 
+  /// The checking account the cash came from (buy) / went to (sell). When set,
+  /// the app auto-manages a paired cash-flow transaction so the purchase is a
+  /// single entry that also feeds the 50/30/20 savings bucket (F8 — see
+  /// docs/specs/investing_account_unification.md). Null → cash already at the
+  /// broker / external; no cash-flow row is generated.
+  final String? fundingAccountId;
+
+  /// The amount that actually moved on the checking side, always in BRL (the
+  /// buy's native [amount] may be USD; this is the reais debited/credited).
+  /// Non-null only alongside [fundingAccountId].
+  final Money? cashAmount;
+
   /// Audit — creation timestamp.
   final DateTime createdAt;
 
@@ -103,6 +117,8 @@ class AssetTransaction extends Equatable {
     Money? amount,
     DateTime? date,
     String? notes,
+    String? fundingAccountId,
+    Money? cashAmount,
     DateTime? updatedAt,
   }) {
     return AssetTransaction(
@@ -117,6 +133,8 @@ class AssetTransaction extends Equatable {
       amount: amount ?? this.amount,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      fundingAccountId: fundingAccountId ?? this.fundingAccountId,
+      cashAmount: cashAmount ?? this.cashAmount,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -135,6 +153,8 @@ class AssetTransaction extends Equatable {
     amount,
     date,
     notes,
+    fundingAccountId,
+    cashAmount,
     createdAt,
     updatedAt,
   ];

@@ -69,11 +69,17 @@ class AppDatabase extends _$AppDatabase {
   // index_points) — device-local, never mirrored. 14: net-worth history
   // (investment_snapshots) — mirrored. 15: dropped the legacy
   // local_asset_holdings table (V1 removed in F7; its data is discarded).
+  // 16: F8 account-unification columns — institutions.bank/color,
+  // transactions.institutionId/linkedInvestmentTransactionId,
+  // investment_transactions.fundingAccountId/cashAmountMinor.
+  // 17: F9 multi-currency — accounts.currency (default brl).
   // Local cache is disposable — the sync layer repopulates the mirrored
   // tables from Firestore on next open.
-  // See docs/specs/investing.md §4 and docs/specs/valuation.md.
+  // See docs/specs/investing.md §4, docs/specs/valuation.md,
+  // docs/specs/investing_account_unification.md, and
+  // docs/specs/multi_currency_accounts.md.
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   // Local cache is disposable — Firestore is the source of truth and the
   // sync service repopulates everything on next open. Any version mismatch

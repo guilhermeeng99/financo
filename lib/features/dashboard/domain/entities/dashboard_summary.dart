@@ -19,6 +19,61 @@ class CategoryAmount extends Equatable {
   List<Object> get props => [categoryId, categoryName, categoryColor, amount];
 }
 
+/// A market-valued investment account on the Dashboard, backed by an investing
+/// institution. Its value is the live market value of that institution's
+/// holdings (BRL, FX-consolidated) rather than a hand-kept principal balance —
+/// the core of the F8 account/investing unification (see
+/// `docs/specs/investing_account_unification.md`).
+class InvestmentAccountRow extends Equatable {
+  const InvestmentAccountRow({
+    required this.institutionId,
+    required this.name,
+    required this.marketValue,
+    required this.invested,
+    this.bank,
+    this.color,
+    this.currencyCode,
+    this.priceStale = false,
+  });
+
+  /// The backing institution id (also the mute/selection key on the Dashboard).
+  final String institutionId;
+
+  /// Display name (the institution/broker name).
+  final String name;
+
+  /// Live market value of the institution's holdings, in BRL.
+  final double marketValue;
+
+  /// Cost basis of the open positions, in BRL.
+  final double invested;
+
+  /// Optional `BankType.name` for a brand avatar; null → initials avatar.
+  final String? bank;
+
+  /// Optional ARGB display colour for the fallback avatar.
+  final int? color;
+
+  /// The institution's native currency code (e.g. `USD`); shown as a hint when
+  /// it is not BRL.
+  final String? currencyCode;
+
+  /// True when the valuation fell back to cost because a quote was missing/stale.
+  final bool priceStale;
+
+  @override
+  List<Object?> get props => [
+    institutionId,
+    name,
+    marketValue,
+    invested,
+    bank,
+    color,
+    currencyCode,
+    priceStale,
+  ];
+}
+
 class DashboardSummary extends Equatable {
   const DashboardSummary({
     required this.totalBalance,
@@ -29,6 +84,7 @@ class DashboardSummary extends Equatable {
     required this.expensesByCategory,
     required this.incomeByCategory,
     required this.fiftyThirtyTwenty,
+    this.investmentAccounts = const [],
   });
 
   final double totalBalance;
@@ -36,6 +92,12 @@ class DashboardSummary extends Equatable {
   final double totalExpenses;
   final double netResult;
   final List<AccountEntity> accounts;
+
+  /// Market-valued investment accounts (institutions). Rendered in the
+  /// "Account Balances" section alongside checking accounts so the Dashboard
+  /// total reflects true net worth (cash + market value). Empty until the
+  /// investing module has institutions with holdings.
+  final List<InvestmentAccountRow> investmentAccounts;
   final List<CategoryAmount> expensesByCategory;
   final List<CategoryAmount> incomeByCategory;
 
@@ -51,6 +113,7 @@ class DashboardSummary extends Equatable {
     totalExpenses,
     netResult,
     accounts,
+    investmentAccounts,
     expensesByCategory,
     incomeByCategory,
     fiftyThirtyTwenty,

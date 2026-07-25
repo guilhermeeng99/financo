@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 class AccountModel extends AccountEntity {
@@ -10,6 +11,7 @@ class AccountModel extends AccountEntity {
     required super.bank,
     required super.initialBalance,
     required super.createdAt,
+    super.currency,
     super.creditLimit,
     super.closingDay,
     super.dueDay,
@@ -32,6 +34,10 @@ class AccountModel extends AccountEntity {
     final bankType =
         BankType.values.where((b) => b.name == bankStr).firstOrNull ??
         BankType.others;
+    final currencyStr = data['currency'] as String? ?? 'brl';
+    final currency =
+        Currency.values.where((c) => c.name == currencyStr).firstOrNull ??
+        Currency.brl;
     return AccountModel(
       id: id,
       userId: data['userId'] as String,
@@ -39,6 +45,7 @@ class AccountModel extends AccountEntity {
       type: AccountType.values.byName(data['type'] as String),
       bank: bankType,
       initialBalance: (data['balance'] as num).toDouble(),
+      currency: currency,
       creditLimit: (data['creditLimit'] as num?)?.toDouble(),
       closingDay: data['closingDay'] as int?,
       dueDay: data['dueDay'] as int?,
@@ -55,6 +62,7 @@ class AccountModel extends AccountEntity {
       type: entity.type,
       bank: entity.bank,
       initialBalance: entity.initialBalance,
+      currency: entity.currency,
       creditLimit: entity.creditLimit,
       closingDay: entity.closingDay,
       dueDay: entity.dueDay,
@@ -70,6 +78,7 @@ class AccountModel extends AccountEntity {
       'type': type.name,
       'bank': bank.name,
       'balance': initialBalance,
+      'currency': currency.name,
       'creditLimit': creditLimit,
       'closingDay': closingDay,
       'dueDay': dueDay,

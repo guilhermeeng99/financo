@@ -8,6 +8,9 @@ import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dar
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
 import 'package:financo/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:financo/features/dashboard/domain/services/compute_fifty_thirty_twenty.dart';
+import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/repositories/institution_repository.dart';
+import 'package:financo/features/investing/domain/services/institution_valuation_reader.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/repositories/transaction_repository.dart';
 
@@ -16,13 +19,19 @@ class DashboardRepositoryImpl implements DashboardRepository {
     required TransactionRepository transactionRepository,
     required AccountRepository accountRepository,
     required CategoryRepository categoryRepository,
+    required InstitutionRepository institutionRepository,
+    required InstitutionValuationReader institutionValuationReader,
   }) : _transactionRepo = transactionRepository,
        _accountRepo = accountRepository,
-       _categoryRepo = categoryRepository;
+       _categoryRepo = categoryRepository,
+       _institutionRepo = institutionRepository,
+       _valuationReader = institutionValuationReader;
 
   final TransactionRepository _transactionRepo;
   final AccountRepository _accountRepo;
   final CategoryRepository _categoryRepo;
+  final InstitutionRepository _institutionRepo;
+  final InstitutionValuationReader _valuationReader;
 
   @override
   Future<Either<Failure, DashboardSummary>> getDashboardSummary({
@@ -45,6 +54,20 @@ class DashboardRepositoryImpl implements DashboardRepository {
     final categoriesResult = await _categoryRepo.getCategories(
       userId: userId,
       forceRefresh: forceRefresh,
+    );
+
+    // Investing side (F8.2): the investment "accounts" are institutions,
+    // valued at market. Loaded best-effort — a failure here degrades the
+    // Dashboard to its cash-only view rather than erroring the whole page.
+    final institutionsResult = await _institutionRepo.getInstitutions(
+      userId: userId,
+      forceRefresh: forceRefresh,
+    );
+    final institutions = institutionsResult.getOrElse(() => const []);
+    final institutionValuations = await _valuationReader.read(userId);
+    final investmentAccounts = _buildInvestmentAccounts(
+      institutions,
+      institutionValuations,
     );
 
     return accountsResult.fold(
@@ -129,6 +152,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
               totalExpenses: totalExpenses,
               netResult: totalIncome - totalExpenses,
               accounts: adjustedAccounts,
+              investmentAccounts: investmentAccounts,
               expensesByCategory: expensesByCategory,
               incomeByCategory: incomeByCategory,
               fiftyThirtyTwenty: fiftyThirtyTwenty,
@@ -139,6 +163,30 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ),
       ),
     );
+  }
+
+  /// Maps each institution to a market-valued Dashboard row. Institutions with
+  /// no holdings surface as zero (so the user still sees their brokers), and
+  /// the list is sorted by market value, descending.
+  List<InvestmentAccountRow> _buildInvestmentAccounts(
+    List<Institution> institutions,
+    Map<String, InstitutionValuation> valuations,
+  ) {
+    final rows = institutions.map((institution) {
+      final valuation =
+          valuations[institution.id] ?? const InstitutionValuation.zero();
+      return InvestmentAccountRow(
+        institutionId: institution.id,
+        name: institution.name,
+        marketValue: valuation.marketValue.major,
+        invested: valuation.invested.major,
+        bank: institution.bank,
+        color: institution.color,
+        currencyCode: institution.currency.code,
+        priceStale: valuation.priceStale,
+      );
+    }).toList()..sort((a, b) => b.marketValue.compareTo(a.marketValue));
+    return rows;
   }
 
   List<CategoryAmount> _aggregateByCategory(

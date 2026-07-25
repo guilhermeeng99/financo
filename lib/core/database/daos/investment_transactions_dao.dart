@@ -54,6 +54,8 @@ class InvestmentTransactionsDao extends DatabaseAccessor<AppDatabase>
         currency: e.amount.currency.name,
         date: e.date,
         notes: Value(e.notes),
+        fundingAccountId: Value(e.fundingAccountId),
+        cashAmountMinor: Value(e.cashAmount?.minorUnits),
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       );
@@ -72,6 +74,10 @@ class InvestmentTransactionsDao extends DatabaseAccessor<AppDatabase>
       amount: Money(row.amountMinor, ccy),
       date: row.date,
       notes: row.notes,
+      fundingAccountId: row.fundingAccountId,
+      cashAmount: row.cashAmountMinor == null
+          ? null
+          : Money(row.cashAmountMinor!, Currency.brl),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );

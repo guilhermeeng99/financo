@@ -1,15 +1,20 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/money/money.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/features/investing/domain/services/institution_valuation_reader.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../harness/factories/account_factory.dart';
 import '../../../../harness/factories/category_factory.dart';
+import '../../../../harness/factories/investing_factories.dart';
 import '../../../../harness/factories/transaction_factory.dart';
 import '../../../../harness/mocks.dart';
 
@@ -17,6 +22,8 @@ void main() {
   late MockTransactionRepository mockTransactionRepo;
   late MockAccountRepository mockAccountRepo;
   late MockCategoryRepository mockCategoryRepo;
+  late MockInstitutionRepository mockInstitutionRepo;
+  late MockInstitutionValuationReader mockValuationReader;
   late DashboardRepositoryImpl repository;
 
   const userId = 'user-1';
@@ -26,11 +33,25 @@ void main() {
     mockTransactionRepo = MockTransactionRepository();
     mockAccountRepo = MockAccountRepository();
     mockCategoryRepo = MockCategoryRepository();
+    mockInstitutionRepo = MockInstitutionRepository();
+    mockValuationReader = MockInstitutionValuationReader();
     repository = DashboardRepositoryImpl(
       transactionRepository: mockTransactionRepo,
       accountRepository: mockAccountRepo,
       categoryRepository: mockCategoryRepo,
+      institutionRepository: mockInstitutionRepo,
+      institutionValuationReader: mockValuationReader,
     );
+    // Default: no investing data, so the cash-only tests below are unaffected.
+    when(
+      () => mockInstitutionRepo.getInstitutions(
+        userId: any(named: 'userId'),
+        forceRefresh: any(named: 'forceRefresh'),
+      ),
+    ).thenAnswer((_) async => const Right<Failure, List<Institution>>([]));
+    when(
+      () => mockValuationReader.read(any()),
+    ).thenAnswer((_) async => const <String, InstitutionValuation>{});
   });
 
   void stubAccounts(List<AccountEntity> accounts) {
@@ -575,6 +596,66 @@ void main() {
               'Food',
             );
             expect(summary.incomeByCategory, isEmpty);
+          },
+        );
+      },
+    );
+
+    test(
+      'builds market-valued investment accounts from institutions',
+      () async {
+        stubAccounts([]);
+        stubTransactions([]);
+        stubCategories(const []);
+        when(
+          () => mockInstitutionRepo.getInstitutions(
+            userId: any(named: 'userId'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).thenAnswer(
+          (_) async => Right<Failure, List<Institution>>([
+            InstitutionFactory.avenue(),
+            InstitutionFactory.nubank(name: 'Nu'),
+          ]),
+        );
+        when(() => mockValuationReader.read(any())).thenAnswer(
+          (_) async => {
+            'inst-avenue': InstitutionValuation(
+              marketValue: Money.fromMajor(1000, Currency.brl),
+              invested: Money.fromMajor(700, Currency.brl),
+              priceStale: false,
+              fxMissing: false,
+            ),
+            // inst-nubank intentionally omitted → surfaces as zero.
+          },
+        );
+
+        final result = await repository.getDashboardSummary(
+          userId: userId,
+          month: month,
+        );
+
+        result.fold(
+          (_) => fail('Expected Right'),
+          (summary) {
+            expect(summary.investmentAccounts.length, 2);
+            // Sorted by market value, descending → Avenue first.
+            expect(
+              summary.investmentAccounts.first.institutionId,
+              'inst-avenue',
+            );
+            final avenue = summary.investmentAccounts.firstWhere(
+              (r) => r.institutionId == 'inst-avenue',
+            );
+            final nu = summary.investmentAccounts.firstWhere(
+              (r) => r.institutionId == 'inst-nubank',
+            );
+            expect(avenue.marketValue, 1000);
+            expect(avenue.invested, 700);
+            expect(avenue.currencyCode, 'USD');
+            // No valuation for Nu → zeroed but still listed.
+            expect(nu.marketValue, 0);
+            expect(nu.currencyCode, 'BRL');
           },
         );
       },

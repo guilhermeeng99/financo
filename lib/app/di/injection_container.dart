@@ -29,6 +29,7 @@ import 'package:financo/features/access_control/domain/usecases/remove_allowed_e
 import 'package:financo/features/accounts/data/datasources/account_remote_datasource.dart';
 import 'package:financo/features/accounts/data/repositories/account_repository_impl.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
+import 'package:financo/features/accounts/domain/services/account_fx_converter.dart';
 import 'package:financo/features/accounts/domain/usecases/create_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_usecase.dart';
 import 'package:financo/features/accounts/domain/usecases/delete_account_with_dependents_usecase.dart';
@@ -279,11 +280,18 @@ Future<void> initDependencies() async {
         chatRemoteDataSource: sl(),
       ),
     )
+    // F9: converts foreign-account amounts to a BRL estimate (reuses the
+    // investing FX cache). Consumed by the dashboard + account statement.
+    ..registerLazySingleton(
+      () => AccountFxConverter(fxDataSource: sl(), cache: sl()),
+    )
     ..registerLazySingleton<DashboardRepository>(
       () => DashboardRepositoryImpl(
         transactionRepository: sl(),
         accountRepository: sl(),
         categoryRepository: sl(),
+        institutionRepository: sl(),
+        institutionValuationReader: sl(),
       ),
     )
     ..registerLazySingleton<ProfileRepository>(

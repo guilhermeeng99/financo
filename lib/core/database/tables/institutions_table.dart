@@ -13,6 +13,13 @@ class LocalInstitutions extends Table {
   TextColumn get currency => text()();
   DateTimeColumn get createdAt => dateTime()();
 
+  /// Optional display hint (a `BankType.name`) for a brand logo/avatar, and an
+  /// ARGB colour — set when an investment account is unified into an
+  /// institution (F8). Nullable; older rows and manually-created brokers
+  /// leave them empty. See docs/specs/investing_account_unification.md.
+  TextColumn get bank => text().nullable()();
+  IntColumn get color => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
