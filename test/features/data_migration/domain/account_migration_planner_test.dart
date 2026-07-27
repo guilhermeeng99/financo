@@ -79,6 +79,45 @@ void main() {
       expect(plan.merges, isEmpty);
       expect(plan.warnings, isNotEmpty);
     });
+
+    test('warns and skips when the chosen institution no longer exists', () {
+      final account = AccountFactory.investment(id: 'acc-gone', name: 'Ghost');
+
+      // The account maps to an institution id that is not in the set.
+      final plan = planner.plan(
+        accounts: [account],
+        institutions: const [],
+        transactions: const [],
+        accountToInstitutionId: const {'acc-gone': 'inst-missing'},
+        institutionIdsToConvert: const {},
+      );
+
+      expect(plan.merges, isEmpty);
+      expect(plan.warnings.single, contains('no longer exists'));
+    });
+
+    test('deletes a half-paired transfer leg with no counterpart', () {
+      final account = AccountFactory.investment(id: 'acc-inv', name: 'Orphan');
+      final institution = InstitutionFactory.avenue();
+      // Only the account-side (income) leg is in the set; its checking
+      // counterpart is missing, so there is nothing to re-tag as an aporte.
+      final transfer = TransactionFactory.transfer(
+        sourceAccountId: 'acc-chk',
+        destinationAccountId: 'acc-inv',
+      );
+
+      final plan = planner.plan(
+        accounts: [account],
+        institutions: [institution],
+        transactions: [transfer.income],
+        accountToInstitutionId: const {'acc-inv': 'inst-avenue'},
+        institutionIdsToConvert: const {},
+      );
+
+      final merge = plan.merges.single;
+      expect(merge.deletedLegIds, [transfer.income.id]);
+      expect(merge.aportes, isEmpty);
+    });
   });
 
   group('Wise institution conversion (F9.6)', () {
