@@ -114,6 +114,27 @@ void main() {
       expect(result['inst-avenue']!.invested, brl(1200));
     });
 
+    test('exposes the native-currency value for a foreign institution',
+        () async {
+      final avenue = HoldingValuationFactory.base(
+        marketValueBase: brl(1000),
+        marketValueNative: Money.fromMajor(200, Currency.usd),
+      );
+      stubLoad(
+        transactions: [AssetTransactionFactory.buy()],
+        assets: [AssetFactory.stockUs()],
+        portfolio: portfolioWith([avenue]),
+      );
+
+      final result = await reader.read(userId);
+
+      expect(result['inst-avenue']!.marketValue, brl(1000));
+      expect(
+        result['inst-avenue']!.marketValueNative,
+        Money.fromMajor(200, Currency.usd),
+      );
+    });
+
     test('flags a stale price on the affected institution', () async {
       final stale = HoldingValuationFactory.base(
         priceStale: true,

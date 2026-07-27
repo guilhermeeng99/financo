@@ -416,6 +416,9 @@ class Translations$dashboard$en {
 
 	/// en: 'Total'
 	String get total => 'Total';
+
+	/// en: 'Investment'
+	String get investmentTag => 'Investment';
 }
 
 // Path: fiftyThirtyTwenty
@@ -3150,6 +3153,7 @@ extension on Translations {
 			'dashboard.subcategories' => 'Subcategories',
 			'dashboard.noSubcategories' => 'No subcategories',
 			'dashboard.total' => 'Total',
+			'dashboard.investmentTag' => 'Investment',
 			'fiftyThirtyTwenty.title' => '50/30/20',
 			'fiftyThirtyTwenty.needsLabel' => 'Needs',
 			'fiftyThirtyTwenty.wantsLabel' => 'Wants',
@@ -3392,9 +3396,9 @@ extension on Translations {
 			'chat.suggestion2' => 'How much do I have on my Nubank account?',
 			'chat.suggestion3' => 'Show my overdue payables',
 			'chat.suggestion4' => 'Create a category called Leisure',
-			'chat.action.transactionExpense' => 'Confirm expense',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
 			'chat.action.transfer' => 'Confirm transfer',
 			'chat.action.fieldFromAccount' => 'From',

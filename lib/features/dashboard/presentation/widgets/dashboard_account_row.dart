@@ -4,6 +4,7 @@ import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/dashboard/presentation/widgets/dashboard_row_parts.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -37,8 +38,10 @@ class DashboardAccountRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final isCredit = account.type == AccountType.creditCard;
-    final amount = isCredit ? account.initialBalance : account.initialBalance;
+    // The repository pre-adjusts `initialBalance` into the live balance for
+    // every account type (credit cards included, with their own sign), so the
+    // row just renders it directly.
+    final amount = account.initialBalance;
     final muted = includedInTotal == false;
 
     return Material(
@@ -51,7 +54,7 @@ class DashboardAccountRow extends StatelessWidget {
           child: Row(
             children: [
               if (includedInTotal != null) ...[
-                _IncludeCheckbox(
+                DashboardIncludeCheckbox(
                   value: includedInTotal!,
                   onChanged: onToggleIncluded,
                 ),
@@ -150,45 +153,6 @@ class _AccountTypeTag extends StatelessWidget {
       AccountType.investment => (t.accounts.investmentShort, colors.income),
       AccountType.creditCard => (t.accounts.creditCard, colors.warning),
     };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: context.textTheme.labelSmall?.copyWith(
-          color: tint,
-          fontWeight: FontWeight.w700,
-          height: 1,
-          fontSize: 10,
-        ),
-      ),
-    );
-  }
-}
-
-class _IncludeCheckbox extends StatelessWidget {
-  const _IncludeCheckbox({required this.value, required this.onChanged});
-
-  final bool value;
-  final VoidCallback? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return SizedBox(
-      width: 28,
-      height: 28,
-      child: Checkbox(
-        value: value,
-        // Compact + matches the row's tap target without dominating it.
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        visualDensity: VisualDensity.compact,
-        activeColor: colors.primary,
-        onChanged: onChanged == null ? null : (_) => onChanged!(),
-      ),
-    );
+    return DashboardPill(label: label, tint: tint);
   }
 }

@@ -632,6 +632,7 @@ void main() {
             'inst-avenue': InstitutionValuation(
               marketValue: Money.fromMajor(1000, Currency.brl),
               invested: Money.fromMajor(700, Currency.brl),
+              marketValueNative: Money.fromMajor(200, Currency.usd),
               priceStale: false,
               fxMissing: false,
             ),
@@ -662,8 +663,11 @@ void main() {
             expect(avenue.marketValue, 1000);
             expect(avenue.invested, 700);
             expect(avenue.currencyCode, 'USD');
+            // Native US$ figure surfaces for the foreign broker (F-dashboard).
+            expect(avenue.nativeValue, 200);
             // No valuation for Nu → zeroed but still listed.
             expect(nu.marketValue, 0);
+            expect(nu.nativeValue, 0);
             expect(nu.currencyCode, 'BRL');
           },
         );

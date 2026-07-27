@@ -131,6 +131,13 @@ class BankBrand {
       abbreviation: 'Av',
       color: 0xFF002820,
     ),
+    // Wise brand green (#9FE870); luminance is high so the avatar prints
+    // dark text, matching Wise's own bright-green-with-forest-text mark.
+    BankType.wise: BankBrand(
+      label: 'Wise',
+      abbreviation: 'Wise',
+      color: 0xFF9FE870,
+    ),
     BankType.others: BankBrand(
       label: 'Others',
       abbreviation: '',
@@ -209,6 +216,7 @@ class BankBrand {
       'banco neon': BankType.neon,
       'avenue securities': BankType.avenue,
       'avenue corretora': BankType.avenue,
+      'transferwise': BankType.wise,
     };
     for (final e in extras.entries) {
       map[e.key] = e.value;

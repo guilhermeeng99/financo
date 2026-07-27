@@ -74,6 +74,12 @@ void main() {
       expect(BankBrand.resolveAlias('bancoDoBrasil'), BankType.bancoDoBrasil);
     });
 
+    test('resolves Wise, including the former TransferWise name', () {
+      expect(BankBrand.resolveAlias('Wise'), BankType.wise);
+      expect(BankBrand.resolveAlias('wise'), BankType.wise);
+      expect(BankBrand.resolveAlias('TransferWise'), BankType.wise);
+    });
+
     test('returns null for empty / unknown input', () {
       expect(BankBrand.resolveAlias(''), isNull);
       expect(BankBrand.resolveAlias('   '), isNull);

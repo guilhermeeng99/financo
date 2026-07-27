@@ -213,6 +213,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         name: institution.name,
         marketValue: valuation.marketValue.major,
         invested: valuation.invested.major,
+        nativeValue: valuation.marketValueNative.major,
         bank: institution.bank,
         color: institution.color,
         currencyCode: institution.currency.code,

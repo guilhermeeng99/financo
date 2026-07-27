@@ -16,6 +16,7 @@ class InstitutionValuation extends Equatable {
   const InstitutionValuation({
     required this.marketValue,
     required this.invested,
+    required this.marketValueNative,
     required this.priceStale,
     required this.fxMissing,
   });
@@ -24,11 +25,19 @@ class InstitutionValuation extends Equatable {
   const InstitutionValuation.zero()
     : marketValue = const Money.zero(Currency.brl),
       invested = const Money.zero(Currency.brl),
+      marketValueNative = const Money.zero(Currency.brl),
       priceStale = false,
       fxMissing = false;
 
   /// Current market value of the institution's holdings (BRL).
   final Money marketValue;
+
+  /// Market value in the institution's own currency (e.g. US$ for Avenue). For
+  /// a single-currency institution this is the holdings' native total, known
+  /// even when the BRL rate is missing; a mixed-currency broker falls back to
+  /// the BRL [marketValue]. Lets the Dashboard show the native figure with a
+  /// consolidated `≈ R$` sub-line, mirroring foreign cash accounts (F9).
+  final Money marketValueNative;
 
   /// Cost basis of the open positions (BRL).
   final Money invested;
@@ -44,7 +53,13 @@ class InstitutionValuation extends Equatable {
   Money get unrealizedPL => marketValue - invested;
 
   @override
-  List<Object?> get props => [marketValue, invested, priceStale, fxMissing];
+  List<Object?> get props => [
+    marketValue,
+    invested,
+    marketValueNative,
+    priceStale,
+    fxMissing,
+  ];
 }
 
 /// Prices each institution's holdings from the local caches (no network) so a
@@ -104,9 +119,18 @@ class InstitutionValuationReader {
     final byInstitution = <String, InstitutionValuation>{};
     for (final id in institutionIds) {
       final subset = portfolio.forInstitution(id);
+      // A single-currency institution (the norm — Avenue=USD, Nubank=BRL)
+      // exposes its holdings' own-currency total (from byCurrency, which keeps
+      // FX-missing holdings) so the Dashboard shows the native figure even when
+      // the BRL rate is unavailable. Mixed-currency brokers fall back to base.
+      final byCurrency = subset.byCurrency;
+      final native = byCurrency.length == 1
+          ? byCurrency.values.first
+          : subset.totalValueBase;
       byInstitution[id] = InstitutionValuation(
         marketValue: subset.totalValueBase,
         invested: subset.totalInvestedBase,
+        marketValueNative: native,
         priceStale: subset.holdings.any((h) => h.priceStale),
         fxMissing: subset.holdings.any((h) => h.fxMissing),
       );

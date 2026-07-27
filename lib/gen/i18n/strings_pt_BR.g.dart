@@ -247,6 +247,7 @@ class _Translations$dashboard$pt_BR implements Translations$dashboard$en {
 	@override String get subcategories => 'Subcategorias';
 	@override String get noSubcategories => 'Sem subcategorias';
 	@override String get total => 'Total';
+	@override String get investmentTag => 'Investimento';
 }
 
 // Path: fiftyThirtyTwenty
@@ -1518,6 +1519,7 @@ extension on TranslationsPtBr {
 			'dashboard.subcategories' => 'Subcategorias',
 			'dashboard.noSubcategories' => 'Sem subcategorias',
 			'dashboard.total' => 'Total',
+			'dashboard.investmentTag' => 'Investimento',
 			'fiftyThirtyTwenty.title' => '50/30/20',
 			'fiftyThirtyTwenty.needsLabel' => 'Necessidades',
 			'fiftyThirtyTwenty.wantsLabel' => 'Desejos',
@@ -1760,9 +1762,9 @@ extension on TranslationsPtBr {
 			'chat.suggestion2' => 'Quanto tenho na conta Nubank?',
 			'chat.suggestion3' => 'Mostrar contas a pagar atrasadas',
 			'chat.suggestion4' => 'Criar uma categoria chamada Lazer',
-			'chat.action.transactionExpense' => 'Confirmar despesa',
 			_ => null,
 		} ?? switch (path) {
+			'chat.action.transactionExpense' => 'Confirmar despesa',
 			'chat.action.transactionIncome' => 'Confirmar receita',
 			'chat.action.transfer' => 'Confirmar transferência',
 			'chat.action.fieldFromAccount' => 'De',

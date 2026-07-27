@@ -1,8 +1,12 @@
 import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
+import 'package:financo/features/dashboard/presentation/widgets/dashboard_row_parts.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -28,7 +32,6 @@ class DashboardInstitutionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final amount = row.marketValue;
     final muted = includedInTotal == false;
 
     return Material(
@@ -41,7 +44,7 @@ class DashboardInstitutionRow extends StatelessWidget {
           child: Row(
             children: [
               if (includedInTotal != null) ...[
-                _IncludeCheckbox(
+                DashboardIncludeCheckbox(
                   value: includedInTotal!,
                   onChanged: onToggleIncluded,
                 ),
@@ -77,13 +80,7 @@ class DashboardInstitutionRow extends StatelessWidget {
               const SizedBox(width: 8),
               Opacity(
                 opacity: muted ? 0.5 : 1,
-                child: Text(
-                  formatCurrency(amount),
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: amount >= 0 ? colors.income : colors.expense,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: _InstitutionAmount(row: row),
               ),
               const SizedBox(width: 6),
               FaIcon(
@@ -108,10 +105,7 @@ class _InstitutionAvatar extends StatelessWidget {
 
   BankType? _bankFromName(String? name) {
     if (name == null) return null;
-    for (final bank in BankType.values) {
-      if (bank.name == name) return bank;
-    }
-    return null;
+    return BankType.values.where((b) => b.name == name).firstOrNull;
   }
 
   @override
@@ -153,8 +147,10 @@ class _InstitutionAvatar extends StatelessWidget {
 }
 
 /// A small pill marking the row as a market-valued investment account, tinted
-/// green (income accent) to echo the "money you hold" vocabulary and showing
-/// the native currency code.
+/// green (income accent) to echo the "money you hold" vocabulary. The native
+/// currency is no longer shown here — it moved to the amount column ($ over the
+/// `≈ R$` estimate) so this pill can say what the row *is*: an investment.
+/// Turns amber when a quote is stale so the user knows the value is last-known.
 class _MarketTag extends StatelessWidget {
   const _MarketTag({required this.row});
 
@@ -164,45 +160,62 @@ class _MarketTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final tint = row.priceStale ? colors.warning : colors.income;
-    final label = row.currencyCode ?? 'BRL';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: context.textTheme.labelSmall?.copyWith(
-          color: tint,
-          fontWeight: FontWeight.w700,
-          height: 1,
-          fontSize: 10,
-        ),
-      ),
-    );
+    return DashboardPill(label: t.dashboard.investmentTag, tint: tint);
   }
 }
 
-class _IncludeCheckbox extends StatelessWidget {
-  const _IncludeCheckbox({required this.value, required this.onChanged});
+/// Amount column for an institution row. A BRL institution shows a single
+/// `R$` figure; a foreign one (e.g. Avenue in US$) shows its native value with
+/// the consolidated `≈ R$` estimate below — matching how foreign cash accounts
+/// render (F9). The `≈ R$` line is omitted when no rate consolidated the value
+/// (marketValue == 0) so the row shows the real native figure instead of R$ 0.
+class _InstitutionAmount extends StatelessWidget {
+  const _InstitutionAmount({required this.row});
 
-  final bool value;
-  final VoidCallback? onChanged;
+  final InvestmentAccountRow row;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return SizedBox(
-      width: 28,
-      height: 28,
-      child: Checkbox(
-        value: value,
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        visualDensity: VisualDensity.compact,
-        activeColor: colors.primary,
-        onChanged: onChanged == null ? null : (_) => onChanged!(),
-      ),
+    final code = row.currencyCode;
+    final isForeign = code != null && code != Currency.brl.code;
+
+    if (!isForeign) {
+      return Text(
+        formatCurrency(row.marketValue),
+        style: context.textTheme.titleSmall?.copyWith(
+          color: row.marketValue >= 0 ? colors.income : colors.expense,
+          fontWeight: FontWeight.w700,
+        ),
+      );
+    }
+
+    final currency = Currency.values.firstWhere(
+      (c) => c.code == code,
+      orElse: () => Currency.brl,
+    );
+    final hasBrlEstimate = row.marketValue != 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          formatMoney(Money.fromMajor(row.nativeValue, currency)),
+          style: context.textTheme.titleSmall?.copyWith(
+            color: row.nativeValue >= 0 ? colors.income : colors.expense,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (hasBrlEstimate) ...[
+          const SizedBox(height: 2),
+          Text(
+            '≈ ${formatCurrency(row.marketValue)}',
+            style: context.textTheme.labelSmall?.copyWith(
+              color: colors.onBackgroundLight,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

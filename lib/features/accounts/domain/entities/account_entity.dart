@@ -2,10 +2,14 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 
-/// Persisted as `enum.name` in Firestore + Drift. `investment` exists so
-/// the 50/30/20 dashboard card can identify which transfers count as
-/// savings (see docs/specs/fifty_thirty_twenty.md). Functionally it behaves
-/// like `checking` for every other widget and calculation.
+/// Persisted as `enum.name` in Firestore + Drift. `investment` is
+/// **deprecated** post-F8: 50/30/20 savings is now driven by
+/// `institutionId`-tagged aporte/resgate cash flows, not by
+/// checking→investment transfers (see
+/// docs/specs/investing_account_unification.md). The value is retired in data
+/// by the F8 migration and kept only so legacy/in-flight docs deserialize
+/// until F8.6 removes it; until then it still behaves like `checking` for any
+/// remaining widget or calculation.
 enum AccountType { checking, creditCard, investment }
 
 /// Supported banks. Persisted as `enum.name` in Firestore + Drift, so
@@ -36,6 +40,7 @@ enum BankType {
   will,
   neon,
   avenue,
+  wise,
   others,
 }
 

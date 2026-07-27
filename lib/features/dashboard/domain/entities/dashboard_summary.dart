@@ -30,6 +30,7 @@ class InvestmentAccountRow extends Equatable {
     required this.name,
     required this.marketValue,
     required this.invested,
+    this.nativeValue = 0,
     this.bank,
     this.color,
     this.currencyCode,
@@ -47,6 +48,12 @@ class InvestmentAccountRow extends Equatable {
 
   /// Cost basis of the open positions, in BRL.
   final double invested;
+
+  /// Market value in the institution's own currency (major units). Shown as the
+  /// primary figure for foreign institutions (e.g. US$ for Avenue), with
+  /// [marketValue] rendered below as the `≈ R$` estimate. Equals [marketValue]
+  /// for BRL institutions.
+  final double nativeValue;
 
   /// Optional `BankType.name` for a brand avatar; null → initials avatar.
   final String? bank;
@@ -67,6 +74,7 @@ class InvestmentAccountRow extends Equatable {
     name,
     marketValue,
     invested,
+    nativeValue,
     bank,
     color,
     currencyCode,
