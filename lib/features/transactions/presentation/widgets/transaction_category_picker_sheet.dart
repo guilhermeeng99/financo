@@ -116,6 +116,10 @@ class _CategoryPickerSheetState extends State<_CategoryPickerSheet> {
           category: c,
           allCategories: allOfType,
           isSelected: c.id == widget.selectedId,
+          // While searching, the parent may be filtered out and matches lose
+          // their grouping — show each subcategory's parent so an ambiguous
+          // name (e.g. "Saúde" under "Gatos") reads clearly.
+          showParent: _query.trim().isNotEmpty,
           onTap: () => Navigator.pop(context, c.id),
         );
       },
@@ -128,17 +132,40 @@ class _CategoryRow extends StatelessWidget {
     required this.category,
     required this.allCategories,
     required this.isSelected,
+    required this.showParent,
     required this.onTap,
   });
 
   final CategoryEntity category;
   final Iterable<CategoryEntity> allCategories;
   final bool isSelected;
+
+  /// When true, a subcategory shows its parent's name beneath it (used while
+  /// searching, where the grouping indentation no longer conveys the parent).
+  final bool showParent;
   final VoidCallback onTap;
+
+  /// The parent category's name, or null when this is a root or the parent
+  /// isn't in the list.
+  String? _parentName() {
+    final parentId = category.parentId;
+    if (parentId == null) return null;
+    for (final candidate in allCategories) {
+      if (candidate.id == parentId) return candidate.name;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final parentName = showParent ? _parentName() : null;
+    // Indentation groups subcategories under their parent in the normal
+    // (unsearched) view; while searching the parent name (subtitle) carries
+    // that context instead, so the rows sit flush-left.
+    final leftPadding = showParent
+        ? 12.0
+        : (category.isSubcategory ? 36.0 : 12.0);
     return Material(
       color: isSelected
           ? colors.primary.withValues(alpha: 0.08)
@@ -148,12 +175,7 @@ class _CategoryRow extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            category.isSubcategory ? 36 : 12,
-            10,
-            12,
-            10,
-          ),
+          padding: EdgeInsets.fromLTRB(leftPadding, 10, 12, 10),
           child: Row(
             children: [
               FinancoCategoryAvatar(
@@ -162,14 +184,33 @@ class _CategoryRow extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  category.name,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      category.name,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: colors.onBackground,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (parentName != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        parentName,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: colors.onBackgroundLight,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
                 ),
               ),
               if (isSelected)

@@ -30,6 +30,21 @@ void main() {
       expect(result, isNot(contains(transport)));
     });
 
+    test('matches ignoring accents (salario → Salário)', () {
+      final salary = CategoryFactory.expense(id: 's', name: 'Salário');
+      final result = filterCategoriesByQuery(
+        all: [salary, transport],
+        query: 'salario',
+      );
+      expect(result, contains(salary));
+      expect(result, isNot(contains(transport)));
+    });
+
+    test('accented query still matches an unaccented name', () {
+      final result = filterCategoriesByQuery(all: all, query: 'DÍNING');
+      expect(result, contains(dining));
+    });
+
     test('returns empty when nothing matches', () {
       expect(filterCategoriesByQuery(all: all, query: 'zzz'), isEmpty);
     });

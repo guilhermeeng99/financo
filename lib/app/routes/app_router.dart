@@ -67,6 +67,7 @@ import 'package:financo/features/investing/presentation/pages/import_investing_a
 import 'package:financo/features/investing/presentation/pages/import_investing_transactions_page.dart';
 import 'package:financo/features/investing/presentation/pages/institution_form_page.dart';
 import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
+import 'package:financo/features/investing/presentation/pages/investing_allocation_class_detail_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_allocation_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_overview_page.dart';
 import 'package:financo/features/investing/presentation/pages/investing_transaction_form_page.dart';
@@ -272,7 +273,16 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                 return cubit;
               },
             ),
+            // Eager (lazy: false) so the overview loads at app start rather
+            // than only when the Investing tab is first opened. Its load runs
+            // the network quote/FX refresh that warms the shared market cache
+            // the Dashboard prices investment institutions from — without this,
+            // the Dashboard shows cost-basis/stale values on first paint until
+            // the user visits the Investing tab and comes back. The Dashboard
+            // re-reads the warmed cache via a listener on this cubit (see
+            // dashboard_page.dart).
             BlocProvider(
+              lazy: false,
               create: (_) {
                 final cubit = InvestingOverviewCubit(
                   engine: GetIt.I<PortfolioPricingEngine>(),
@@ -514,6 +524,15 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               const SubPageScope(child: InvestingAllocationPage()),
         ),
         GoRoute(
+          path: AppRoutes.allocationClassDetail,
+          builder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return SubPageScope(
+              child: AllocationClassDetailPage(classId: id),
+            );
+          },
+        ),
+        GoRoute(
           path: AppRoutes.institutions,
           builder: (context, state) =>
               const SubPageScope(child: InstitutionsPage()),
@@ -582,7 +601,9 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
     GoRoute(
       path: AppRoutes.addAsset,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AssetFormPage(),
+      builder: (context, state) => AssetFormPage(
+        presetClassId: state.uri.queryParameters['classId'],
+      ),
     ),
     GoRoute(
       path: AppRoutes.editAsset,

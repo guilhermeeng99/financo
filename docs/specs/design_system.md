@@ -79,9 +79,12 @@ changes for free *as long as it uses the tokens*.
 
 ### Hard rule
 Never write a `Color(0x…)` literal or a `Colors.<name>` in feature/UI code.
-The only sanctioned literal outside `lib/app/theme/` today is
-`core/notifications/notification_constants.dart` (an OS-notification accent,
-not an in-app surface). New literals in UI code are a design-system bug.
+Sanctioned literal exceptions outside `lib/app/theme/`:
+`core/notifications/notification_constants.dart` (an OS-notification accent) and
+`features/investing/presentation/asset_visuals.dart` plus the overview net-worth
+hero gradient — the fixed per-`AssetKind` palette ported from Investanco, used by
+the positions avatars and the allocation-by-class donut. New literals elsewhere
+in UI code are a design-system bug.
 
 ---
 
@@ -184,7 +187,7 @@ comment in its source.
 |--------|--------------------|
 | `FinancoFormSection` | Card cluster of fields with an uppercase label above. The standard way to group a form. `label`, `children`. |
 | `FinancoTextField` | App text field (wraps the input theme). `controller`, `label`, `hintText`, `onChanged`, `maxLines`, `subdued`. |
-| `FinancoCurrencyField` | BRL "cents-grow-from-the-right" money input, `R$` prefix, value as `2.000,00`. `controller`, `onChanged`, `autofocus`. |
+| `FinancoCurrencyField` | Currency-aware "cents-grow-from-the-right" money input (F9.7): a `currency` (default `brl`) drives the prefix symbol + locale format — `R$ 2.000,00` / `$ 2,000.00` / `€ 2.000,00`, via `CurrencyInputFormatter`. `controller`, `currency`, `onChanged`, `autofocus`. |
 | `FinancoDateField` | Read-only date tile (`InputDecorator` look) that opens a picker on tap. `label`, `value`, `onTap`. |
 | `FinancoPickerField` | Tap-to-open "row selector" tile: leading icon, label, value/placeholder, chevron. Backs Account/Category pickers. |
 | `FinancoPickerSheet` | Design-system chrome for modal picker bottom sheets: rounded surface, drag handle, left-aligned title. Draggable variant takes a `bodyBuilder(scrollController)` (+ optional `header` widgets, e.g. a search field); `FinancoPickerSheet.fixed` is a shrink-wrapped column for short content (day grid, short lists). |

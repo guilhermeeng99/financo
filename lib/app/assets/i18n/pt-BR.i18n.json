@@ -8,7 +8,8 @@
     "noResults": "Nenhum resultado encontrado",
     "ok": "OK",
     "update": "Atualizar",
-    "create": "Criar"
+    "create": "Criar",
+    "edit": "Editar"
   },
   "errors": {
     "unexpected": "Algo deu errado. Tente novamente.",
@@ -69,6 +70,8 @@
       "pickClass": "Selecionar…",
       "noClass": "Nenhuma",
       "noClasses": "Crie uma classe de ativo primeiro",
+      "allocationTarget": "Meta % na classe",
+      "allocationTargetHint": "ex.: 50",
       "import": {
         "cta": "Importar CSV",
         "introTitle": "Importar ativos",
@@ -176,10 +179,16 @@
       "byCurrency": "Por moeda",
       "emptyTitle": "Nada investido ainda",
       "empty": "Registre uma compra para acompanhar sua carteira.",
+      "refresh": "Atualizar",
       "refreshing": "Atualizando preços…",
       "stale": "Desatualizado",
       "fxMissing": "Sem câmbio",
-      "units": "unidades"
+      "units": "unidades",
+      "totalNetWorth": "Patrimônio total",
+      "dayChange": "Variação do dia",
+      "allocationByClass": "Alocação por classe",
+      "inCurrency": "Em $code",
+      "filterAll": "Todos"
     },
     "allocation": {
       "title": "Alocação",
@@ -195,7 +204,20 @@
       "rebalance": "Rebalancear",
       "addClass": "Nova classe",
       "targetsUnbalanced": "Suas metas de classe somam $percent, não 100%.",
-      "unallocatedHint": "$amount ainda não está atribuído a nenhuma classe."
+      "unallocatedHint": "$amount ainda não está atribuído a nenhuma classe.",
+      "investedNetWorth": "PATRIMÔNIO INVESTIDO",
+      "classRowSubtitle": "$actual de $target",
+      "above": "$amount acima",
+      "below": "$amount abaixo",
+      "assets": "Ativos",
+      "targetAmount": "Alvo: $amount",
+      "addAsset": "Adicionar ativo",
+      "noAssets": "Nenhum ativo nesta classe ainda.",
+      "assetLine": "$amount · $percent",
+      "assetLineTarget": "$amount · $actual de $target",
+      "assetAdd": "Adicione $amount para atingir o alvo",
+      "assetTrim": "Reduza $amount para atingir o alvo",
+      "assetNoTarget": "Sem alvo definido"
     },
     "nav": "Investimentos"
   },

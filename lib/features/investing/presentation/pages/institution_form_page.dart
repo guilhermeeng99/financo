@@ -3,19 +3,22 @@ import 'dart:async';
 import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_option_picker.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
-import 'package:financo/core/utils/validators.dart';import 'package:financo/features/investing/domain/entities/institution.dart';
+import 'package:financo/core/utils/validators.dart';
+import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/usecases/create_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/delete_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_institution_usecase.dart';
 import 'package:financo/features/investing/presentation/pages/institutions_page.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
@@ -129,42 +132,13 @@ class _InstitutionFormPageState extends State<InstitutionFormPage> {
     required List<T> options,
     required T selected,
     required String Function(T) label,
-  }) {
-    final colors = context.appColors;
-    return showModalBottomSheet<T>(
-      context: context,
-      backgroundColor: colors.surface,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                title,
-                style: ctx.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            for (final option in options)
-              ListTile(
-                title: Text(label(option)),
-                trailing: option == selected
-                    ? FaIcon(
-                        FontAwesomeIcons.check,
-                        size: 14,
-                        color: colors.primary,
-                      )
-                    : null,
-                onTap: () => Navigator.pop(ctx, option),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
+  }) => showOptionPickerSheet<T>(
+    context: context,
+    title: title,
+    options: options,
+    selected: selected,
+    label: label,
+  );
 
   @override
   Widget build(BuildContext context) {

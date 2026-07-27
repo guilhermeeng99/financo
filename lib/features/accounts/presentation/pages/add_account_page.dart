@@ -21,7 +21,8 @@ import 'package:financo/features/accounts/domain/usecases/update_account_usecase
 import 'package:financo/features/accounts/presentation/cubit/account_form_cubit.dart';
 import 'package:financo/features/accounts/presentation/widgets/bank_picker_field.dart';
 import 'package:financo/features/accounts/presentation/widgets/day_picker_sheet.dart';
-import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';import 'package:financo/gen/i18n/strings.g.dart';
+import 'package:financo/features/accounts/presentation/widgets/linked_account_picker_sheet.dart';
+import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -73,13 +74,17 @@ class _AddAccountViewState extends State<_AddAccountView> {
     final state = context.read<AccountFormCubit>().state;
     if (state.isEditing) {
       _nameController.text = state.name;
-      // Seed the controllers with the BR-formatted numeric portion so the
-      // first paint matches what `BrlCurrencyInputFormatter` will produce
-      // on every subsequent keystroke ("65.679,36" not "65679.36").
-      _balanceController.text = BrlCurrencyInputFormatter.format(state.balance);
+      // Seed the controllers with the currency-formatted numeric portion so the
+      // first paint matches what `CurrencyInputFormatter` will produce on every
+      // subsequent keystroke ("65.679,36" for BRL, "65,679.36" for USD).
+      _balanceController.text = CurrencyInputFormatter.format(
+        state.balance,
+        state.currency,
+      );
       if (state.creditLimit > 0) {
-        _creditLimitController.text = BrlCurrencyInputFormatter.format(
+        _creditLimitController.text = CurrencyInputFormatter.format(
           state.creditLimit,
+          state.currency,
         );
       }
     }
@@ -269,6 +274,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
                         const SizedBox(height: 12),
                         FinancoCurrencyField(
                           controller: _balanceController,
+                          currency: state.currency,
                           label: t.accounts.balanceLabel,
                           hintText: t.accounts.balanceHint,
                           onChanged: cubit.updateBalance,
@@ -292,6 +298,7 @@ class _AddAccountViewState extends State<_AddAccountView> {
                           const SizedBox(height: 12),
                           FinancoCurrencyField(
                             controller: _creditLimitController,
+                            currency: state.currency,
                             label: t.accounts.creditLimitLabel,
                             hintText: t.accounts.creditLimitHint,
                             onChanged: cubit.updateCreditLimit,

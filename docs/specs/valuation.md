@@ -81,9 +81,14 @@ form (writer) and the valuation (reader) never drift.
 `InvestingOverviewCubit` owns a per-cubit `PortfolioPricingEngine` and prices the
 portfolio cache-first then network-refreshes (same warm-start → priceFromCache →
 refreshNetwork → re-price flow the engine documents). `InvestingOverviewPage`
-renders the base-currency net worth, invested + unrealized P/L, `byCurrency`
-subtotals (shown only when >1 currency), a per-holding list (stale / fx-missing
-badges), and the history sparkline.
+(ported to Investanco's portfolio layout) renders a green net-worth **hero** with
+overall return and a foreign-currency "In USD/EUR" sub-line, a metrics row
+(**invested · unrealized P/L · day change**), an **allocation-by-class donut** +
+legend (`fl_chart`, coloured by `assetKindColor`), and the **positions** as avatar
+rows (`AssetAvatar`) sorted by return, each with its native value + P/L%, all
+scoped by an optional **institution filter**. The net-worth history sparkline was
+dropped from this page (snapshots are still recorded — see below); stale /
+fx-missing positions are flagged inline.
 
 ## Snapshots (net-worth history) — F4
 

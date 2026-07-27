@@ -122,6 +122,17 @@ statement layers. Returns null when no rate is cached (O3).
 - `compute50_30_20`/category aggregation convert per-transaction to BRL via the
   converter.
 - The transfer form supports two leg amounts when the accounts' currencies differ.
+- **The money input adapts to the currency (F9.7).** `FinancoCurrencyField` takes
+  a `Currency` (default `brl`) that drives its prefix symbol and locale number
+  format (`R$ 1.234,56` / `$ 1,234.56` / `€ 1.234,56`), backed by
+  `CurrencyInputFormatter` (renamed from `BrlCurrencyInputFormatter`). Wiring:
+  the transaction form passes the selected account's `accountCurrency` (and
+  `destinationCurrency` for the cross-currency received field); the account form
+  passes the picked `currency`; the transactions-import sheet resolves the source
+  account's currency by name. `parseDecimalAmount` reads both BR and EN styles,
+  so the display format stays decoupled from parsing. Budgets and the accounts-
+  import sheet stay BRL (no per-row currency); investing buy/sell money fields
+  already carry the asset currency in their labels.
 
 ### State machines
 - `AccountFormCubit` — currency picker at create; locked on edit.

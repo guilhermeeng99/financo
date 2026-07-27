@@ -8,7 +8,8 @@ import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
-import 'package:financo/core/utils/validators.dart';import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
+import 'package:financo/core/utils/validators.dart';
+import 'package:financo/features/budgets/domain/entities/budget_entity.dart';
 import 'package:financo/features/budgets/domain/usecases/create_budget_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/get_budgets_usecase.dart';
 import 'package:financo/features/budgets/domain/usecases/update_budget_usecase.dart';
@@ -64,7 +65,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
     super.initState();
     final state = context.read<BudgetFormCubit>().state;
     if (state.amount > 0) {
-      _amountController.text = BrlCurrencyInputFormatter.format(state.amount);
+      _amountController.text = CurrencyInputFormatter.format(state.amount);
     }
   }
 
@@ -103,9 +104,7 @@ class _AddBudgetViewState extends State<_AddBudgetView> {
     if (state.status == FormStatus.success) {
       context
         ..showSnack(
-          state.isEditing
-              ? t.budgets.budgetUpdated
-              : t.budgets.budgetCreated,
+          state.isEditing ? t.budgets.budgetUpdated : t.budgets.budgetCreated,
         )
         ..pop(true);
     } else if (state.status == FormStatus.failure) {

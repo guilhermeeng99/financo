@@ -4,20 +4,23 @@ import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
-import 'package:financo/core/money/money.dart';import 'package:financo/features/investing/domain/entities/asset.dart';
+import 'package:financo/core/money/money.dart';
+import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/services/transaction_amounts.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -179,22 +182,18 @@ class _InvestingTransactionFormPageState
       return;
     }
     final colors = context.appColors;
+    // Draggable, scrollable sheet — the flat Column overflowed once the user
+    // had more than a handful of assets (RenderFlex bottom overflow).
     final picked = await showModalBottomSheet<Asset>(
       context: context,
-      backgroundColor: colors.surface,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => FinancoPickerSheet(
+        title: t.investing.transactions.asset,
+        bodyBuilder: (scrollController) => ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.only(bottom: 8),
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                t.investing.transactions.asset,
-                style: ctx.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             for (final asset in _assets)
               ListTile(
                 title: Text(asset.ticker),
@@ -208,7 +207,6 @@ class _InvestingTransactionFormPageState
                     : null,
                 onTap: () => Navigator.pop(ctx, asset),
               ),
-            const SizedBox(height: 8),
           ],
         ),
       ),

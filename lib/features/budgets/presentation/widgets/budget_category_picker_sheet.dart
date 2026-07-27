@@ -4,6 +4,7 @@ import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
+import 'package:financo/features/categories/presentation/utils/category_query_filter.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -72,14 +73,7 @@ class _BudgetCategoryPickerSheetState
             (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
           );
 
-    final filtered = _query.trim().isEmpty
-        ? all
-        : all
-              .where(
-                (c) =>
-                    c.name.toLowerCase().contains(_query.trim().toLowerCase()),
-              )
-              .toList();
+    final filtered = filterCategoriesByQuery(all: all, query: _query);
 
     final hasNoneAtAll = all.isEmpty;
 

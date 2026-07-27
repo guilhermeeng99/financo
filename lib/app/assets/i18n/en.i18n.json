@@ -8,7 +8,8 @@
     "noResults": "No results found",
     "ok": "OK",
     "update": "Update",
-    "create": "Create"
+    "create": "Create",
+    "edit": "Edit"
   },
   "errors": {
     "unexpected": "Something went wrong. Please try again.",
@@ -69,6 +70,8 @@
       "pickClass": "Select…",
       "noClass": "None",
       "noClasses": "Create an asset class first",
+      "allocationTarget": "Target % within class",
+      "allocationTargetHint": "e.g. 50",
       "import": {
         "cta": "Import CSV",
         "introTitle": "Import assets",
@@ -176,10 +179,16 @@
       "byCurrency": "By currency",
       "emptyTitle": "Nothing invested yet",
       "empty": "Record a buy to start tracking your portfolio.",
+      "refresh": "Refresh",
       "refreshing": "Updating prices…",
       "stale": "Stale",
       "fxMissing": "No FX rate",
-      "units": "units"
+      "units": "units",
+      "totalNetWorth": "Total net worth",
+      "dayChange": "Day change",
+      "allocationByClass": "Allocation by class",
+      "inCurrency": "In $code",
+      "filterAll": "All"
     },
     "allocation": {
       "title": "Allocation",
@@ -195,7 +204,20 @@
       "rebalance": "Rebalance",
       "addClass": "New class",
       "targetsUnbalanced": "Your class targets add up to $percent, not 100%.",
-      "unallocatedHint": "$amount isn't assigned to any class yet."
+      "unallocatedHint": "$amount isn't assigned to any class yet.",
+      "investedNetWorth": "INVESTED NET WORTH",
+      "classRowSubtitle": "$actual of $target",
+      "above": "$amount above",
+      "below": "$amount below",
+      "assets": "Assets",
+      "targetAmount": "Target: $amount",
+      "addAsset": "Add asset",
+      "noAssets": "No assets in this class yet.",
+      "assetLine": "$amount · $percent",
+      "assetLineTarget": "$amount · $actual of $target",
+      "assetAdd": "Add $amount to reach the target",
+      "assetTrim": "Trim $amount to reach the target",
+      "assetNoTarget": "No target set"
     },
     "nav": "Investing"
   },

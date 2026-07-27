@@ -27,14 +27,20 @@ class AllocationService {
     required Currency base,
   }) {
     // Market value per asset (base), excluding fx-missing holdings so an
-    // unconsolidatable foreign holding never distorts the percentages.
+    // unconsolidatable foreign holding never distorts the percentages. The
+    // native total per asset rides alongside so the class detail can suggest an
+    // aporte in the asset's own currency (e.g. US$ for an Avenue ETF).
     final valueByAsset = <String, Money>{};
+    final nativeByAsset = <String, Money>{};
     var total = Money.zero(base);
     for (final h in holdings) {
       if (h.fxMissing) continue;
       total += h.marketValueBase;
       valueByAsset[h.assetId] =
           (valueByAsset[h.assetId] ?? Money.zero(base)) + h.marketValueBase;
+      final native = h.marketValueNative;
+      nativeByAsset[h.assetId] =
+          (nativeByAsset[h.assetId] ?? Money.zero(native.currency)) + native;
     }
 
     // Assign each asset's value to its (known) bucket.
@@ -78,6 +84,15 @@ class AllocationService {
           targetPercent: root.targetFraction,
           targetValue: targetValue,
           delta: targetValue - rootValue,
+          assets: _assetSlices(
+            classId: root.id,
+            classTargetValue: targetValue,
+            total: total,
+            assets: assets,
+            valueByAsset: valueByAsset,
+            nativeByAsset: nativeByAsset,
+            base: base,
+          ),
         ),
       );
     }
@@ -110,5 +125,80 @@ class AllocationService {
       rebalanceActions: actions,
       targetSumPercent: targetSum,
     );
+  }
+
+  /// The per-asset slices for one class: every asset linked directly to
+  /// [classId], largest first, each priced against its within-class target
+  /// share (`AllocationMetadata.target`). The class's [classTargetValue] is
+  /// split by those shares to derive each asset's suggested value and the
+  /// aporte/trim to reach it (in base and, when foreign, native currency).
+  List<AllocationAssetSlice> _assetSlices({
+    required String classId,
+    required Money classTargetValue,
+    required Money total,
+    required List<Asset> assets,
+    required Map<String, Money> valueByAsset,
+    required Map<String, Money> nativeByAsset,
+    required Currency base,
+  }) {
+    int valueMinor(String assetId) => valueByAsset[assetId]?.minorUnits ?? 0;
+
+    final classAssets =
+        assets.where((a) => AllocationMetadata.classId(a) == classId).toList()
+          ..sort((a, b) => valueMinor(b.id).compareTo(valueMinor(a.id)));
+
+    final classTotalMinor = classAssets.fold<int>(
+      0,
+      (sum, a) => sum + valueMinor(a.id),
+    );
+    final targetValueMinor = classTargetValue.minorUnits;
+
+    return [
+      for (final asset in classAssets)
+        () {
+          final currentMinor = valueMinor(asset.id);
+          final assetTarget = AllocationMetadata.target(asset);
+          final suggestedMinor = (targetValueMinor * assetTarget / 100).round();
+          final deltaMinor = suggestedMinor - currentMinor;
+          return AllocationAssetSlice(
+            assetId: asset.id,
+            ticker: asset.ticker,
+            currentValue: Money(currentMinor, base),
+            percentOfClass: classTotalMinor == 0
+                ? 0
+                : currentMinor / classTotalMinor,
+            percentOfTotal: total.minorUnits == 0
+                ? 0
+                : currentMinor / total.minorUnits,
+            targetPercent: assetTarget,
+            suggestedValue: Money(suggestedMinor, base),
+            suggestedDelta: Money(deltaMinor, base),
+            suggestedDeltaNative: _nativeDelta(
+              asset: asset,
+              base: base,
+              currentBaseMinor: currentMinor,
+              currentNativeMinor: nativeByAsset[asset.id]?.minorUnits ?? 0,
+              deltaBaseMinor: deltaMinor,
+            ),
+          );
+        }(),
+    ];
+  }
+
+  /// The base-currency delta expressed in the asset's own currency, using the
+  /// holding's current base↔native ratio. Null for base-currency assets or when
+  /// the ratio can't be derived (no current value on either side).
+  Money? _nativeDelta({
+    required Asset asset,
+    required Currency base,
+    required int currentBaseMinor,
+    required int currentNativeMinor,
+    required int deltaBaseMinor,
+  }) {
+    if (asset.currency == base) return null;
+    if (currentBaseMinor == 0 || currentNativeMinor == 0) return null;
+    final nativeMinor = (deltaBaseMinor * currentNativeMinor / currentBaseMinor)
+        .round();
+    return Money(nativeMinor, asset.currency);
   }
 }

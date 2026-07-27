@@ -76,6 +76,7 @@ class _Translations$general$pt_BR implements Translations$general$en {
 	@override String get ok => 'OK';
 	@override String get update => 'Atualizar';
 	@override String get create => 'Criar';
+	@override String get edit => 'Editar';
 }
 
 // Path: errors
@@ -858,6 +859,8 @@ class _Translations$investing$assets$pt_BR implements Translations$investing$ass
 	@override String get pickClass => 'Selecionar…';
 	@override String get noClass => 'Nenhuma';
 	@override String get noClasses => 'Crie uma classe de ativo primeiro';
+	@override String get allocationTarget => 'Meta % na classe';
+	@override String get allocationTargetHint => 'ex.: 50';
 	@override late final _Translations$investing$assets$import$pt_BR import = _Translations$investing$assets$import$pt_BR._(_root);
 	@override String get ticker => 'Ticker';
 	@override String get tickerHint => 'AAPL, PETR4, BTC…';
@@ -927,10 +930,16 @@ class _Translations$investing$overview$pt_BR implements Translations$investing$o
 	@override String get byCurrency => 'Por moeda';
 	@override String get emptyTitle => 'Nada investido ainda';
 	@override String get empty => 'Registre uma compra para acompanhar sua carteira.';
+	@override String get refresh => 'Atualizar';
 	@override String get refreshing => 'Atualizando preços…';
 	@override String get stale => 'Desatualizado';
 	@override String get fxMissing => 'Sem câmbio';
 	@override String get units => 'unidades';
+	@override String get totalNetWorth => 'Patrimônio total';
+	@override String get dayChange => 'Variação do dia';
+	@override String get allocationByClass => 'Alocação por classe';
+	@override String inCurrency({required Object code}) => 'Em ${code}';
+	@override String get filterAll => 'Todos';
 }
 
 // Path: investing.allocation
@@ -954,6 +963,19 @@ class _Translations$investing$allocation$pt_BR implements Translations$investing
 	@override String get addClass => 'Nova classe';
 	@override String targetsUnbalanced({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.';
 	@override String unallocatedHint({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.';
+	@override String get investedNetWorth => 'PATRIMÔNIO INVESTIDO';
+	@override String classRowSubtitle({required Object actual, required Object target}) => '${actual} de ${target}';
+	@override String above({required Object amount}) => '${amount} acima';
+	@override String below({required Object amount}) => '${amount} abaixo';
+	@override String get assets => 'Ativos';
+	@override String targetAmount({required Object amount}) => 'Alvo: ${amount}';
+	@override String get addAsset => 'Adicionar ativo';
+	@override String get noAssets => 'Nenhum ativo nesta classe ainda.';
+	@override String assetLine({required Object amount, required Object percent}) => '${amount} · ${percent}';
+	@override String assetLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}';
+	@override String assetAdd({required Object amount}) => 'Adicione ${amount} para atingir o alvo';
+	@override String assetTrim({required Object amount}) => 'Reduza ${amount} para atingir o alvo';
+	@override String get assetNoTarget => 'Sem alvo definido';
 }
 
 // Path: csvImport.errors
@@ -1259,6 +1281,7 @@ extension on TranslationsPtBr {
 			'general.ok' => 'OK',
 			'general.update' => 'Atualizar',
 			'general.create' => 'Criar',
+			'general.edit' => 'Editar',
 			'errors.unexpected' => 'Algo deu errado. Tente novamente.',
 			'errors.server' => 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
 			'errors.auth' => 'Falha na autenticação. Entre novamente.',
@@ -1308,6 +1331,8 @@ extension on TranslationsPtBr {
 			'investing.assets.pickClass' => 'Selecionar…',
 			'investing.assets.noClass' => 'Nenhuma',
 			'investing.assets.noClasses' => 'Crie uma classe de ativo primeiro',
+			'investing.assets.allocationTarget' => 'Meta % na classe',
+			'investing.assets.allocationTargetHint' => 'ex.: 50',
 			'investing.assets.import.cta' => 'Importar CSV',
 			'investing.assets.import.introTitle' => 'Importar ativos',
 			'investing.assets.import.introBody' => 'Envie um CSV com as colunas ticker, tipo e instituição (mercado e moeda são opcionais). Instituições ausentes são criadas automaticamente.',
@@ -1407,10 +1432,16 @@ extension on TranslationsPtBr {
 			'investing.overview.byCurrency' => 'Por moeda',
 			'investing.overview.emptyTitle' => 'Nada investido ainda',
 			'investing.overview.empty' => 'Registre uma compra para acompanhar sua carteira.',
+			'investing.overview.refresh' => 'Atualizar',
 			'investing.overview.refreshing' => 'Atualizando preços…',
 			'investing.overview.stale' => 'Desatualizado',
 			'investing.overview.fxMissing' => 'Sem câmbio',
 			'investing.overview.units' => 'unidades',
+			'investing.overview.totalNetWorth' => 'Patrimônio total',
+			'investing.overview.dayChange' => 'Variação do dia',
+			'investing.overview.allocationByClass' => 'Alocação por classe',
+			'investing.overview.inCurrency' => ({required Object code}) => 'Em ${code}',
+			'investing.overview.filterAll' => 'Todos',
 			'investing.allocation.title' => 'Alocação',
 			'investing.allocation.emptyTitle' => 'Nenhuma meta ainda',
 			'investing.allocation.empty' => 'Defina metas de peso nas suas classes de ativos para comparar sua carteira e ver o que rebalancear.',
@@ -1425,6 +1456,19 @@ extension on TranslationsPtBr {
 			'investing.allocation.addClass' => 'Nova classe',
 			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Suas metas de classe somam ${percent}, não 100%.',
 			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} ainda não está atribuído a nenhuma classe.',
+			'investing.allocation.investedNetWorth' => 'PATRIMÔNIO INVESTIDO',
+			'investing.allocation.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} de ${target}',
+			'investing.allocation.above' => ({required Object amount}) => '${amount} acima',
+			'investing.allocation.below' => ({required Object amount}) => '${amount} abaixo',
+			'investing.allocation.assets' => 'Ativos',
+			'investing.allocation.targetAmount' => ({required Object amount}) => 'Alvo: ${amount}',
+			'investing.allocation.addAsset' => 'Adicionar ativo',
+			'investing.allocation.noAssets' => 'Nenhum ativo nesta classe ainda.',
+			'investing.allocation.assetLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent}',
+			'investing.allocation.assetLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} de ${target}',
+			'investing.allocation.assetAdd' => ({required Object amount}) => 'Adicione ${amount} para atingir o alvo',
+			'investing.allocation.assetTrim' => ({required Object amount}) => 'Reduza ${amount} para atingir o alvo',
+			'investing.allocation.assetNoTarget' => 'Sem alvo definido',
 			'investing.nav' => 'Investimentos',
 			'csvImport.errors.emptyFile' => 'O arquivo CSV está vazio ou é inválido.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'O CSV está sem a coluna obrigatória "${column}".',
@@ -1740,6 +1784,8 @@ extension on TranslationsPtBr {
 			'categories.bucketNeeds' => 'Necessidade',
 			'categories.bucketWants' => 'Desejo',
 			'categories.bucketUnclassified' => 'Sem classificação',
+			_ => null,
+		} ?? switch (path) {
 			'categories.bucketHelp' => 'Necessidades cobrem o essencial (aluguel, mercado, transporte). Desejos cobrem o discricionário (lazer, restaurantes). Investimento é tratado pelas transferências para contas de investimento.',
 			'categories.pickParent' => 'Categoria pai',
 			'categories.searchHint' => 'Buscar categorias',
@@ -1762,8 +1808,6 @@ extension on TranslationsPtBr {
 			'chat.suggestion2' => 'Quanto tenho na conta Nubank?',
 			'chat.suggestion3' => 'Mostrar contas a pagar atrasadas',
 			'chat.suggestion4' => 'Criar uma categoria chamada Lazer',
-			_ => null,
-		} ?? switch (path) {
 			'chat.action.transactionExpense' => 'Confirmar despesa',
 			'chat.action.transactionIncome' => 'Confirmar receita',
 			'chat.action.transfer' => 'Confirmar transferência',

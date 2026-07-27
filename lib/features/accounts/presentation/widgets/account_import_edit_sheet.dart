@@ -62,16 +62,17 @@ class _AccountImportEditSheetState extends State<AccountImportEditSheet> {
     super.initState();
     _draft = widget.item;
     _nameController = TextEditingController(text: _draft.name);
-    // Seed the controllers with BR-formatted text so the first paint
-    // matches what `BrlCurrencyInputFormatter` produces on edit.
+    // Account import creates BRL accounts (no currency column), so the fields
+    // stay BR-formatted; seed to match what `CurrencyInputFormatter` produces
+    // on edit.
     _balanceController = TextEditingController(
-      text: BrlCurrencyInputFormatter.format(_draft.initialBalance),
+      text: CurrencyInputFormatter.format(_draft.initialBalance),
     );
     _limitController = TextEditingController(
       // Show whatever the CSV gave us (including 0,00) so the user can see
       // the field is "set but invalid" instead of just empty placeholder.
       text: _draft.creditLimit != null
-          ? BrlCurrencyInputFormatter.format(_draft.creditLimit!)
+          ? CurrencyInputFormatter.format(_draft.creditLimit!)
           : '',
     );
   }

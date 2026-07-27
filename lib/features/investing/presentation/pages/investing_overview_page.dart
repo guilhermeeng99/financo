@@ -1,25 +1,32 @@
+import 'dart:async';
+
 import 'package:financo/app/widgets/error_view.dart';
 import 'package:financo/app/widgets/feature_empty_state.dart';
+import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
-import 'package:financo/core/utils/quantity_format.dart';
+import 'package:financo/core/utils/money_format.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/holding_valuation.dart';
+import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/entities/portfolio_valuation.dart';
-import 'package:financo/features/investing/domain/entities/snapshot.dart';
+import 'package:financo/features/investing/presentation/asset_visuals.dart';
+import 'package:financo/features/investing/presentation/cubit/institutions_cubit.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_overview_cubit.dart';
+import 'package:financo/features/investing/presentation/pages/assets_page.dart'
+    show assetKindLabel;
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/foundation.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// Net-worth landing for the investing module: a multi-currency total priced
-/// from the local cache first, then refreshed from the network. See
+/// Net-worth landing for the investing module: a gradient hero, key metrics,
+/// allocation by class, and the positions — scoped by an optional institution
+/// filter. Ported from Investanco's portfolio dashboard. See
 /// `docs/specs/valuation.md`.
 class InvestingOverviewPage extends StatelessWidget {
   const InvestingOverviewPage({super.key});
@@ -27,7 +34,10 @@ class InvestingOverviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: FinancoLargeAppBar(title: t.investing.overview.title),
+      appBar: FinancoLargeAppBar(
+        title: t.investing.overview.title,
+        actions: const [_OverviewRefreshAction()],
+      ),
       body: BlocBuilder<InvestingOverviewCubit, InvestingOverviewState>(
         builder: (context, state) {
           if (state is InvestingOverviewLoading) {
@@ -48,11 +58,9 @@ class InvestingOverviewPage extends StatelessWidget {
               message: t.investing.overview.empty,
             );
           }
-          return _OverviewBody(
+          return _PortfolioView(
             portfolio: loaded.portfolio,
             assetsById: loaded.assetsById,
-            snapshots: loaded.snapshots,
-            isRefreshing: loaded.isRefreshing,
           );
         },
       ),
@@ -60,166 +68,360 @@ class InvestingOverviewPage extends StatelessWidget {
   }
 }
 
-class _OverviewBody extends StatelessWidget {
-  const _OverviewBody({
-    required this.portfolio,
-    required this.assetsById,
-    required this.snapshots,
-    required this.isRefreshing,
-  });
+/// App-bar refresh action: forces a network re-pull of quotes/FX
+/// (`load(force: true)`), swapping to an inline spinner while in flight.
+class _OverviewRefreshAction extends StatelessWidget {
+  const _OverviewRefreshAction();
 
-  final PortfolioValuation portfolio;
-  final Map<String, Asset> assetsById;
-  final List<Snapshot> snapshots;
-  final bool isRefreshing;
+  static bool _isRefreshing(InvestingOverviewState state) =>
+      state is InvestingOverviewLoaded && state.isRefreshing;
 
   @override
   Widget build(BuildContext context) {
-    final holdings = [...portfolio.holdings]
-      ..sort((a, b) => b.marketValueBase.minorUnits.compareTo(
-        a.marketValueBase.minorUnits,
-      ));
-    return RefreshIndicator(
-      onRefresh: () =>
-          context.read<InvestingOverviewCubit>().load(force: true),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-        children: [
-          _NetWorthHero(portfolio: portfolio, isRefreshing: isRefreshing),
-          const SizedBox(height: 12),
-          _StatsRow(portfolio: portfolio),
-          if (snapshots.length > 1) ...[
-            const SizedBox(height: 20),
-            _History(snapshots: snapshots),
-          ],
-          if (portfolio.byCurrency.length > 1) ...[
-            const SizedBox(height: 20),
-            _ByCurrency(byCurrency: portfolio.byCurrency),
-          ],
-          const SizedBox(height: 24),
-          Text(
-            t.investing.overview.holdings,
-            style: context.textTheme.titleSmall?.copyWith(
-              color: context.appColors.onBackgroundLight,
-              fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.only(right: 16, top: 4),
+      child: BlocBuilder<InvestingOverviewCubit, InvestingOverviewState>(
+        buildWhen: (previous, current) =>
+            _isRefreshing(previous) != _isRefreshing(current),
+        builder: (context, state) {
+          if (_isRefreshing(state)) {
+            return SizedBox(
+              width: 36,
+              height: 36,
+              child: Center(
+                child: SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: context.appColors.primary,
+                  ),
+                ),
+              ),
+            );
+          }
+          return FinancoAppBarIconButton(
+            icon: FontAwesomeIcons.arrowsRotate,
+            color: context.appColors.primary,
+            tooltip: t.investing.overview.refresh,
+            onPressed: () => unawaited(
+              context.read<InvestingOverviewCubit>().load(force: true),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// The loaded portfolio, scoped by an optional institution filter (chips shown
+/// when more than one institution holds value). Institution names come from the
+/// shell-scoped [InstitutionsCubit].
+class _PortfolioView extends StatefulWidget {
+  const _PortfolioView({required this.portfolio, required this.assetsById});
+
+  final PortfolioValuation portfolio;
+  final Map<String, Asset> assetsById;
+
+  @override
+  State<_PortfolioView> createState() => _PortfolioViewState();
+}
+
+class _PortfolioViewState extends State<_PortfolioView> {
+  String? _filter;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<InstitutionsCubit, InstitutionsState>(
+      builder: (context, instState) {
+        final institutions = instState is InstitutionsLoaded
+            ? instState.institutions
+            : const <Institution>[];
+        final institutionsById = {for (final i in institutions) i.id: i};
+
+        final full = widget.portfolio;
+        // Institutions that currently hold value, biggest first — the chips.
+        final filterableIds =
+            (full.byInstitution.entries
+                    .where((e) => e.value.minorUnits > 0)
+                    .toList()
+                  ..sort(
+                    (a, b) => b.value.minorUnits.compareTo(a.value.minorUnits),
+                  ))
+                .map((e) => e.key)
+                .toList();
+        // Keep the active filter valid if its institution dropped to zero.
+        final activeFilter = _filter != null && filterableIds.contains(_filter)
+            ? _filter
+            : null;
+        final visible = activeFilter == null
+            ? full
+            : full.forInstitution(activeFilter);
+
+        return RefreshIndicator(
+          onRefresh: () =>
+              context.read<InvestingOverviewCubit>().load(force: true),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            children: [
+              if (filterableIds.length > 1) ...[
+                _InstitutionFilter(
+                  institutionIds: filterableIds,
+                  institutionsById: institutionsById,
+                  selected: activeFilter,
+                  onSelect: (id) => setState(() => _filter = id),
+                ),
+                const SizedBox(height: 12),
+              ],
+              _Hero(portfolio: visible),
+              const SizedBox(height: 12),
+              _Metrics(portfolio: visible),
+              if (visible.byClass.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                _AllocationByClass(byClass: visible.byClass),
+              ],
+              const SizedBox(height: 20),
+              Text(
+                t.investing.overview.holdings,
+                style: context.textTheme.titleSmall?.copyWith(
+                  color: context.appColors.onBackgroundLight,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _Positions(
+                holdings: visible.holdings,
+                assetsById: widget.assetsById,
+                institutionsById: institutionsById,
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          for (final h in holdings)
-            _HoldingTile(valuation: h, asset: assetsById[h.assetId]),
+        );
+      },
+    );
+  }
+}
+
+class _InstitutionFilter extends StatelessWidget {
+  const _InstitutionFilter({
+    required this.institutionIds,
+    required this.institutionsById,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<String> institutionIds;
+  final Map<String, Institution> institutionsById;
+  final String? selected;
+  final ValueChanged<String?> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        children: [
+          _FilterChip(
+            label: t.investing.overview.filterAll,
+            selected: selected == null,
+            onTap: () => onSelect(null),
+          ),
+          for (final id in institutionIds) ...[
+            const SizedBox(width: 8),
+            _FilterChip(
+              label: institutionsById[id]?.name ?? id,
+              selected: selected == id,
+              onTap: () => onSelect(id),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _NetWorthHero extends StatelessWidget {
-  const _NetWorthHero({required this.portfolio, required this.isRefreshing});
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
-  final PortfolioValuation portfolio;
-  final bool isRefreshing;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final pl = portfolio.totalUnrealizedPL;
-    final plColor = pl.isNegative ? colors.expense : colors.income;
+    return Material(
+      color: selected ? colors.primary.withValues(alpha: 0.14) : colors.surface,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Center(
+            child: Text(
+              label,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: selected ? colors.primary : colors.onBackgroundLight,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Hero extends StatelessWidget {
+  const _Hero({required this.portfolio});
+
+  final PortfolioValuation portfolio;
+
+  @override
+  Widget build(BuildContext context) {
+    final ret = portfolio.totalReturnPct;
+    final up = ret >= 0;
+    final base = portfolio.totalValueBase.currency;
+    final foreign = [
+      for (final e in portfolio.byCurrency.entries)
+        if (e.key != base && e.value.minorUnits > 0) e.value,
+    ];
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF00A868), Color(0xFF007A4D)],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                t.investing.overview.netWorth,
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: colors.onBackgroundLight,
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (isRefreshing)
-                SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.6,
-                    color: colors.onBackgroundLight,
-                  ),
-                ),
-            ],
+          Text(
+            t.investing.overview.totalNetWorth,
+            style: context.textTheme.labelLarge?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             formatMoney(portfolio.totalValueBase),
             style: context.textTheme.headlineMedium?.copyWith(
-              color: colors.onBackground,
+              color: Colors.white,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              FaIcon(
-                pl.isNegative
-                    ? FontAwesomeIcons.arrowTrendDown
-                    : FontAwesomeIcons.arrowTrendUp,
-                size: 12,
-                color: plColor,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${_signed(pl)} · ${_signedPct(portfolio.totalReturnPct)}',
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: plColor,
-                  fontWeight: FontWeight.w600,
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(
+                  up
+                      ? FontAwesomeIcons.arrowTrendUp
+                      : FontAwesomeIcons.arrowTrendDown,
+                  size: 12,
+                  color: Colors.white,
                 ),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Text(
+                  signedPercent(ret),
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
+          for (final money in foreign) ...[
+            const SizedBox(height: 12),
+            Text(
+              '${t.investing.overview.inCurrency(code: money.currency.code)}'
+              '  ·  ${formatMoney(money)}',
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.portfolio});
+class _Metrics extends StatelessWidget {
+  const _Metrics({required this.portfolio});
 
   final PortfolioValuation portfolio;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            label: t.investing.overview.invested,
-            value: formatMoney(portfolio.totalInvestedBase),
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _MetricTile(
+              label: t.investing.overview.invested,
+              value: formatMoney(portfolio.totalInvestedBase),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            label: t.investing.overview.unrealizedPl,
-            value: _signed(portfolio.totalUnrealizedPL),
-            valueColor: portfolio.totalUnrealizedPL.isNegative
-                ? context.appColors.expense
-                : context.appColors.income,
+          _divider(colors.surfaceVariant),
+          Expanded(
+            child: _MetricTile(
+              label: t.investing.overview.unrealizedPl,
+              value: signedMoney(portfolio.totalUnrealizedPL),
+              valueColor: portfolio.totalUnrealizedPL.isNegative
+                  ? colors.expense
+                  : colors.income,
+            ),
           ),
-        ),
-      ],
+          _divider(colors.surfaceVariant),
+          Expanded(
+            child: _MetricTile(
+              label: t.investing.overview.dayChange,
+              value: signedMoney(portfolio.totalDayChangeBase),
+              valueColor: portfolio.totalDayChangeBase.isNegative
+                  ? colors.expense
+                  : colors.income,
+            ),
+          ),
+        ],
+      ),
     );
   }
+
+  Widget _divider(Color color) => Container(
+    width: 1,
+    height: 36,
+    margin: const EdgeInsets.symmetric(horizontal: 8),
+    color: color,
+  );
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({
     required this.label,
     required this.value,
     this.valueColor,
@@ -232,26 +434,148 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.bodySmall?.copyWith(
+            color: colors.onBackgroundLight,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.titleSmall?.copyWith(
+            color: valueColor ?? colors.onBackground,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AllocationByClass extends StatelessWidget {
+  const _AllocationByClass({required this.byClass});
+
+  final Map<AssetKind, Money> byClass;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final entries =
+        byClass.entries.where((e) => e.value.minorUnits > 0).toList()
+          ..sort((a, b) => b.value.minorUnits.compareTo(a.value.minorUnits));
+    if (entries.isEmpty) return const SizedBox.shrink();
+    final totalMinor = entries.fold<int>(0, (s, e) => s + e.value.minorUnits);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: context.textTheme.bodySmall?.copyWith(
-              color: colors.onBackgroundLight,
+            t.investing.overview.allocationByClass,
+            style: context.textTheme.titleSmall?.copyWith(
+              color: colors.onBackground,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: PieChart(
+                  PieChartData(
+                    sectionsSpace: 3,
+                    centerSpaceRadius: 42,
+                    sections: [
+                      for (final e in entries)
+                        PieChartSectionData(
+                          value: e.value.minorUnits.toDouble(),
+                          color: assetKindColor(e.key),
+                          radius: 22,
+                          showTitle: false,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  children: [
+                    for (final e in entries)
+                      _LegendRow(
+                        color: assetKindColor(e.key),
+                        label: assetKindLabel(e.key),
+                        fraction: totalMinor == 0
+                            ? 0
+                            : e.value.minorUnits / totalMinor,
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendRow extends StatelessWidget {
+  const _LegendRow({
+    required this.color,
+    required this.label,
+    required this.fraction,
+  });
+
+  final Color color;
+  final String label;
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.bodySmall?.copyWith(
+                color: colors.onBackgroundLight,
+              ),
+            ),
+          ),
           Text(
-            value,
-            style: context.textTheme.titleMedium?.copyWith(
-              color: valueColor ?? colors.onBackground,
+            '${(fraction * 100).toStringAsFixed(0)}%',
+            style: context.textTheme.labelMedium?.copyWith(
+              color: colors.onBackground,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -261,272 +585,164 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _ByCurrency extends StatelessWidget {
-  const _ByCurrency({required this.byCurrency});
+class _Positions extends StatelessWidget {
+  const _Positions({
+    required this.holdings,
+    required this.assetsById,
+    required this.institutionsById,
+  });
 
-  final Map<Currency, Money> byCurrency;
+  final List<HoldingValuation> holdings;
+  final Map<String, Asset> assetsById;
+  final Map<String, Institution> institutionsById;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          t.investing.overview.byCurrency,
-          style: context.textTheme.titleSmall?.copyWith(
-            color: colors.onBackgroundLight,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final amount in byCurrency.values)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  formatMoney(amount),
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+    final open = holdings.where((h) => h.quantity > 0).toList()
+      ..sort((a, b) => b.returnPct.compareTo(a.returnPct));
+    if (open.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          for (var i = 0; i < open.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: colors.surfaceVariant),
+            _PositionTile(
+              holding: open[i],
+              asset: assetsById[open[i].assetId],
+              institution: institutionsById[open[i].institutionId],
+            ),
           ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _HoldingTile extends StatelessWidget {
-  const _HoldingTile({required this.valuation, required this.asset});
+class _PositionTile extends StatelessWidget {
+  const _PositionTile({
+    required this.holding,
+    required this.asset,
+    required this.institution,
+  });
 
-  final HoldingValuation valuation;
+  final HoldingValuation holding;
   final Asset? asset;
+  final Institution? institution;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final plColor = valuation.unrealizedPL.isNegative
+    final ticker = asset?.ticker ?? holding.assetId;
+    final quantity = _trimQuantity(holding.quantity);
+    final subtitle = institution == null
+        ? quantity
+        : '${institution!.name}  ·  $quantity';
+    final plColor = holding.unrealizedPL.isNegative
         ? colors.expense
         : colors.income;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          asset?.ticker ?? valuation.assetId,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.textTheme.titleSmall?.copyWith(
-                            color: colors.onBackground,
-                            fontWeight: FontWeight.w600,
-                          ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        children: [
+          AssetAvatar(kind: holding.assetKind, ticker: ticker),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        ticker,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.textTheme.titleSmall?.copyWith(
+                          color: colors.onBackground,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (valuation.fxMissing)
-                        _Badge(
-                          label: t.investing.overview.fxMissing,
-                          color: colors.expense,
-                        )
-                      else if (valuation.priceStale)
-                        _Badge(
-                          label: t.investing.overview.stale,
-                          color: colors.onBackgroundLight,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${formatQuantity(valuation.quantity)} '
-                    '${t.investing.overview.units}',
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: colors.onBackgroundLight,
                     ),
+                    if (holding.priceStale) ...[
+                      const SizedBox(width: 6),
+                      FaIcon(
+                        FontAwesomeIcons.clock,
+                        size: 11,
+                        color: colors.onBackgroundLight,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: colors.onBackgroundLight,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
+          const SizedBox(width: 8),
+          if (holding.fxMissing)
+            Text(
+              '—',
+              style: context.textTheme.titleSmall?.copyWith(
+                color: colors.onBackgroundLight,
+              ),
+            )
+          else
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  formatMoney(valuation.marketValueBase),
+                  formatMoney(holding.marketValueBase),
                   style: context.textTheme.titleSmall?.copyWith(
                     color: colors.onBackground,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (holding.marketValueNative.currency !=
+                    holding.marketValueBase.currency) ...[
+                  const SizedBox(height: 1),
+                  Text(
+                    formatMoney(holding.marketValueNative),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: colors.onBackgroundLight,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 2),
                 Text(
-                  '${_signed(valuation.unrealizedPL)} · '
-                  '${_signedPct(valuation.returnPct)}',
+                  '${signedMoney(holding.unrealizedPL)} · '
+                  '${signedPercent(holding.returnPct)}',
                   style: context.textTheme.bodySmall?.copyWith(color: plColor),
                 ),
               ],
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: context.textTheme.labelSmall?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
+/// Trims a share quantity to a compact string (drops trailing zeros).
+String _trimQuantity(double quantity) {
+  if (quantity == quantity.roundToDouble()) {
+    return quantity.toStringAsFixed(0);
   }
-}
-
-class _History extends StatelessWidget {
-  const _History({required this.snapshots});
-
-  final List<Snapshot> snapshots;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final values = [
-      for (final s in snapshots) s.totalValue.minorUnits.toDouble(),
-    ];
-    final first = snapshots.first.totalValue;
-    final last = snapshots.last.totalValue;
-    final delta = last - first;
-    final lineColor = delta.isNegative ? colors.expense : colors.income;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          t.investing.overview.history,
-          style: context.textTheme.titleSmall?.copyWith(
-            color: colors.onBackgroundLight,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Container(
-          height: 72,
-          width: double.infinity,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: CustomPaint(
-            painter: _SparklinePainter(values: values, color: lineColor),
-            child: const SizedBox.expand(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Minimal line chart of the net-worth history — no axes, just the shape of the
-/// trend. A flat series (all-equal) draws a centered horizontal line.
-class _SparklinePainter extends CustomPainter {
-  const _SparklinePainter({required this.values, required this.color});
-
-  final List<double> values;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (values.length < 2) return;
-    final min = values.reduce((a, b) => a < b ? a : b);
-    final max = values.reduce((a, b) => a > b ? a : b);
-    final range = max - min;
-    final dx = size.width / (values.length - 1);
-
-    double yFor(double v) {
-      if (range == 0) return size.height / 2;
-      return size.height - ((v - min) / range) * size.height;
-    }
-
-    final path = Path()..moveTo(0, yFor(values.first));
-    for (var i = 1; i < values.length; i++) {
-      path.lineTo(dx * i, yFor(values[i]));
-    }
-
-    final fill = Path.from(path)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas
-      ..drawPath(
-        fill,
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = color.withValues(alpha: 0.10),
-      )
-      ..drawPath(
-        path,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round
-          ..color = color,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_SparklinePainter oldDelegate) =>
-      !listEquals(oldDelegate.values, values) || oldDelegate.color != color;
-}
-
-/// Signed money: `+R$ 10,00` / `-R$ 10,00` (the minus comes from the formatter).
-String _signed(Money m) =>
-    m.isNegative || m.isZero ? formatMoney(m) : '+${formatMoney(m)}';
-
-/// Signed percentage from a ratio (0.12 → `+12.00%`).
-String _signedPct(double ratio) {
-  final pct = ratio * 100;
-  final sign = pct > 0 ? '+' : '';
-  return '$sign${pct.toStringAsFixed(2)}%';
+  return quantity
+      .toStringAsFixed(6)
+      .replaceAll(RegExp(r'0+$'), '')
+      .replaceAll(RegExp(r'\.$'), '');
 }

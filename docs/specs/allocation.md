@@ -16,13 +16,16 @@ boundary, so F7 can relocate the collection without touching the service or UI.
 
 ## Asset → bucket link
 
-An asset points at its bucket via `Asset.metadata['allocationClassId']`
-(`AllocationMetadata`, mirroring `FixedIncomeMetadata`). The **target** lives on
-the class, not the asset, so retargeting a class moves every asset in it at
-once. The asset form has an Allocation section with a class picker (plus a
-"None" row that clears the link). Investanco's per-asset `allocationTargetPercent`
-sub-target is intentionally **not** ported — the class-level current-vs-target is
-the rebalance signal.
+An asset points at its bucket via `Asset.metadata['allocationClassId']` and
+carries a **within-class target share** via
+`Asset.metadata['allocationTargetPercent']` (0–100), both via
+`AllocationMetadata` (mirroring `FixedIncomeMetadata`). The class's
+`targetPercent` is the portfolio-level target; the per-asset target refines it —
+the class's target value is split across its assets by their shares, driving the
+class-detail page's per-asset "add/trim to reach the target" suggestions (ported
+from Investanco). The asset form's Allocation section has a class picker (plus a
+"None" row that clears both keys) and, once a class is set, a "target % within
+class" field.
 
 ## Computation (`AllocationService.compute`, pure)
 
@@ -40,6 +43,13 @@ Inputs: `classes: List<AllocationClass>`, `assets: List<Asset>`,
    (0 when total is 0 — no div-by-zero). `targetValue = totalValue ×
    targetFraction`. `delta = targetValue − currentValue` (+ under → buy, − over
    → sell). Slices sorted by current value desc.
+3b. **Per-asset slices** (`AllocationClassSlice.assets`): for each asset linked
+   directly to the class (largest value first), `suggestedValue = classTargetValue
+   × assetTargetPercent / 100`, `suggestedDelta = suggestedValue − currentValue`
+   (+ add, − trim), `percentOfClass`/`percentOfTotal` from its value, and
+   `suggestedDeltaNative` = the delta in the asset's own currency via the
+   holding's current base↔native ratio (null for base-currency assets or no
+   current value). An asset with no target (0) yields a zero suggestion.
 4. **Rebalance actions**: one per slice whose `|delta| ≥ 100` minor units (R$1),
    direction buy/sell, amount `|delta|`, sorted by amount desc.
 5. `targetSumPercent` = Σ root `targetPercent`; `targetsBalanced` = within ±0.1
@@ -53,12 +63,24 @@ cache → compute → emit (`isRefreshing: true`) → skip-if-fresh else refresh
 network → re-price → recompute → emit (`isRefreshing: false`). Route
 `/investing/allocation` (a `SubPageScope` under the shell) + sidebar sub-item.
 
-`InvestingAllocationPage` renders: total value + allocated/unallocated line, a
-"targets ≠ 100%" banner when unbalanced, one row per bucket (class icon/color, current
-value, a bar with current-fill + target-tick, `current% vs target%`, and a
-buy/sell/on-target delta label), a Rebalance section listing the actions, and an
-"unallocated" hint when any value is unassigned. Empty state when no buckets
-exist.
+`InvestingAllocationPage` (Investanco-style) renders: a **donut**
+(`AllocationClassDonut`, `fl_chart`) of the current mix — one arc per class sized
+by market value, a muted arc for the unallocated remainder, invested net worth in
+the center; a "targets ≠ 100%" banner when unbalanced; one row per bucket (class
+icon/color, name, `X% of Y%` = current% of target%, current value, a
+`R$ X above/below` delta, and a full-color bar filling current/target — capped
+full when over target, with a chevron); a Rebalance section; and an "unallocated"
+hint. Tapping a bucket opens its **class-detail page**.
+
+`AllocationClassDetailPage` (route `/investing/allocation/class/:id`, a
+`SubPageScope` under the shell) reads the same shell-scoped
+`InvestingAllocationCubit` and picks the slice by id. It renders a hero card
+(value, `X% of Y%`, bar, `Target: R$ X`, above/below), then the class's assets —
+each row shows the ticker, `R$ X · a% of t%`, and a suggestion (`Add/Trim R$ X
+(native)` from `suggestedDelta`/`suggestedDeltaNative`, or "no target"), tappable
+to edit the asset — and an "Add asset" button that opens the asset form
+pre-selecting the class. The app-bar pencil edits the class (the surviving V1
+`asset_classes` form). Class create still flows through the `+` FAB on the list.
 
 ## Edge cases (covered by `allocation_service_test.dart`)
 
@@ -69,4 +91,6 @@ exist.
 | Asset with no / unknown class | Value counts toward total but lands in `unallocatedValue`. |
 | `fxMissing` holding | Excluded from every total. |
 | Subclass holding | Rolls up into its root's `currentValue`. |
+| Per-asset slices | Class carries its assets (value-desc) with within-class target %, `percentOfClass/Total`, and `suggestedDelta` (add/trim). |
+| Foreign asset suggestion | `suggestedDeltaNative` set in the asset's currency via the holding's base↔native ratio. |
 | Empty portfolio | `total = 0`, `currentPercent = 0`, no actions (no div-by-zero). |

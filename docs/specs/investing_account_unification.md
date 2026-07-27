@@ -160,6 +160,17 @@ A transaction may represent cash moving between a **checking account** and an
     `checking`/`creditCard`. Brokers are created in the investing Institutions UI.
     *(F8.6 pending: the `investment` type pill still renders in
     `add_account_page.dart` until the enum value is removed.)*
+11. **Market values warm at startup.** `InstitutionValuationReader` prices
+    cache-only (no network), so its figures are only correct once the shared
+    market-quote cache is warm — and only `InvestingOverviewCubit.load()`'s
+    network refresh warms it. Therefore the overview provider is eager
+    (`lazy: false` in `app_router.dart`) so that refresh runs at app start, and
+    the Dashboard re-reads once it settles (listenWhen `investingRefreshSettled`
+    — `isRefreshing` true→false — in `dashboard_page.dart`). Result: institution
+    market values are correct on first paint without visiting the Investing tab.
+    The Portfolio app bar also exposes a manual refresh (`load(force: true)`),
+    covering the empty/error states and web, where pull-to-refresh isn't
+    available.
 
 ---
 
@@ -181,9 +192,13 @@ A transaction may represent cash moving between a **checking account** and an
   cash flows instead of pairing transfers by account type.
 
 ### State machines
-- `DashboardBloc` — same states; summary now includes institution rows.
+- `DashboardBloc` — same states; summary now includes institution rows. Also
+  reloads (plain `DashboardLoadRequested`) on the investing overview
+  refresh-settle edge so the warmed market values surface on first paint.
 - `InvestingOverviewCubit` — unchanged valuation; the buy/sell forms gain the
-  funding-account picker + BRL amount field.
+  funding-account picker + BRL amount field. Eager-loaded at shell mount
+  (`lazy: false`) to warm the market-quote cache at startup; the Portfolio app
+  bar exposes a manual `load(force: true)` refresh.
 - `AccountsCubit` — no longer lists investment accounts.
 
 ---

@@ -240,6 +240,10 @@ Field update methods:
   updateSettlementStatus, updateRecurrence, updateRecurrenceIntervalMonths,
   updateInstallmentCount, setTransferMode
 
+`updateType` clears the selected category on any expense↔income switch (the two
+category sets are disjoint), mirroring the import-preview "switching type clears
+category" rule.
+
 Date behavior:
   - updateDate switches non-transfer future dates to pending automatically.
   - updateSettlementStatus(paid) moves future dates back to today.

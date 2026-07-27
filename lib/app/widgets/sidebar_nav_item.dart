@@ -15,6 +15,8 @@ class SidebarNavItem extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.isActive,
+    this.showChevron = false,
+    this.groupExpanded = false,
     super.key,
   });
 
@@ -23,6 +25,12 @@ class SidebarNavItem extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final bool isActive;
+
+  /// When true (and the rail is [expanded]), renders a trailing chevron that
+  /// points down while [groupExpanded] — marks this item as a collapsible
+  /// group header (Dashboard, Investing).
+  final bool showChevron;
+  final bool groupExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +86,19 @@ class SidebarNavItem extends StatelessWidget {
                                 : FontWeight.w500,
                           ),
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    if (expanded && showChevron)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: AnimatedRotation(
+                          turns: groupExpanded ? 0.25 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: FaIcon(
+                            FontAwesomeIcons.chevronRight,
+                            size: 10,
+                            color: colors.onBackgroundLight,
+                          ),
                         ),
                       ),
                   ],

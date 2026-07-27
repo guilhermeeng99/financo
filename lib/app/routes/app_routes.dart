@@ -41,6 +41,7 @@ class AppRoutes {
   // V2 investing module.
   static const investingOverview = '/investing/overview';
   static const investingAllocation = '/investing/allocation';
+  static const allocationClassDetail = '/investing/allocation/class/:id';
   static const institutions = '/investing/institutions';
   static const addInstitution = '/investing/institution/add';
   static const editInstitution = '/investing/institution/edit';
@@ -57,4 +58,7 @@ class AppRoutes {
   static const migration = '/migration';
 
   static String accountById(String id) => '/account/$id';
+
+  static String allocationClassById(String id) =>
+      '/investing/allocation/class/$id';
 }

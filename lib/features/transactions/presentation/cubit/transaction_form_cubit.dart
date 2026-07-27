@@ -68,7 +68,13 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
   /// until it resolves; a miss defaults to BRL.
   Map<String, Currency> _currencyByAccountId = const {};
 
-  void updateType(TransactionType type) => emit(state.copyWith(type: type));
+  void updateType(TransactionType type) {
+    if (type == state.type) return;
+    // Categories are type-specific (an expense category can't classify income
+    // and vice versa), so switching type invalidates the current pick — clear
+    // it so a mismatched category can't be submitted.
+    emit(state.copyWith(type: type, categoryId: ''));
+  }
 
   void updateAmount(String value) {
     // Accept both BR (`421,95`) and EN (`421.95`) decimal styles. Negative

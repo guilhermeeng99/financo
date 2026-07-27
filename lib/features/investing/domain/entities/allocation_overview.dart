@@ -4,6 +4,64 @@ import 'package:financo/core/money/money.dart';
 /// Which way a rebalance action moves money.
 enum RebalanceDirection { buy, sell }
 
+/// One asset inside a class, priced against its within-class target. Drives the
+/// class-detail page's per-asset "add/trim to reach the target" suggestions
+/// (ported from Investanco's subclass slice). All money is in the base currency
+/// except [suggestedDeltaNative]. See `docs/specs/allocation.md`.
+class AllocationAssetSlice extends Equatable {
+  const AllocationAssetSlice({
+    required this.assetId,
+    required this.ticker,
+    required this.currentValue,
+    required this.percentOfClass,
+    required this.percentOfTotal,
+    required this.targetPercent,
+    required this.suggestedValue,
+    required this.suggestedDelta,
+    required this.suggestedDeltaNative,
+  });
+
+  final String assetId;
+  final String ticker;
+
+  /// Current market value (base).
+  final Money currentValue;
+
+  /// Share of its class (0–1).
+  final double percentOfClass;
+
+  /// Share of the whole portfolio (0–1).
+  final double percentOfTotal;
+
+  /// Target share **within its class** (0–100).
+  final double targetPercent;
+
+  /// Ideal value = class target value × [targetPercent] / 100 (base).
+  final Money suggestedValue;
+
+  /// `suggestedValue − currentValue` (base). Positive → add (aporte),
+  /// negative → trim.
+  final Money suggestedDelta;
+
+  /// [suggestedDelta] expressed in the asset's native currency, derived from
+  /// the holding's own base↔native ratio. Null for base-currency assets or when
+  /// the ratio can't be derived (no current value).
+  final Money? suggestedDeltaNative;
+
+  @override
+  List<Object?> get props => [
+    assetId,
+    ticker,
+    currentValue,
+    percentOfClass,
+    percentOfTotal,
+    targetPercent,
+    suggestedValue,
+    suggestedDelta,
+    suggestedDeltaNative,
+  ];
+}
+
 /// A root allocation bucket priced against its target. All money is in the
 /// portfolio base currency. See `docs/specs/allocation.md`.
 class AllocationClassSlice extends Equatable {
@@ -17,6 +75,7 @@ class AllocationClassSlice extends Equatable {
     required this.targetPercent,
     required this.targetValue,
     required this.delta,
+    this.assets = const [],
   });
 
   final String classId;
@@ -40,6 +99,10 @@ class AllocationClassSlice extends Equatable {
   /// negative → over target (sell).
   final Money delta;
 
+  /// The assets linked directly to this class, largest value first. Populated
+  /// for the class-detail view; empty in the roll-up.
+  final List<AllocationAssetSlice> assets;
+
   bool get isUnderTarget => delta.minorUnits > 0;
   bool get isOverTarget => delta.minorUnits < 0;
 
@@ -54,6 +117,7 @@ class AllocationClassSlice extends Equatable {
     targetPercent,
     targetValue,
     delta,
+    assets,
   ];
 }
 

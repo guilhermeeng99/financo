@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:financo/app/errors/failure_localizer.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_option_picker.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
-import 'package:financo/core/utils/validators.dart';import 'package:financo/features/investing/domain/entities/asset.dart';
+import 'package:financo/core/utils/validators.dart';
+import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/fixed_income_terms.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/services/allocation_metadata.dart';
@@ -22,16 +25,21 @@ import 'package:financo/features/investing/presentation/pages/assets_page.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
-import 'package:flutter/material.dart';import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 /// Create/edit form for an investing asset. See
 /// `docs/specs/investing_assets.md`.
 class AssetFormPage extends StatefulWidget {
-  const AssetFormPage({super.key, this.existing});
+  const AssetFormPage({super.key, this.existing, this.presetClassId});
 
   final Asset? existing;
+
+  /// When creating (no [existing]), pre-selects this allocation class — set by
+  /// the "Add asset" action on an allocation class-detail page.
+  final String? presetClassId;
 
   @override
   State<AssetFormPage> createState() => _AssetFormPageState();
@@ -42,6 +50,7 @@ class _AssetFormPageState extends State<AssetFormPage> {
   final _tickerController = TextEditingController();
   final _nameController = TextEditingController();
   final _fiRateController = TextEditingController();
+  final _allocationTargetController = TextEditingController();
 
   late AssetKind _kind;
   late Market _market;
@@ -66,11 +75,13 @@ class _AssetFormPageState extends State<AssetFormPage> {
     _currency = existing?.currency ?? Currency.usd;
     _institutionId = existing?.institutionId;
     _allocationClassId = existing == null
-        ? null
+        ? widget.presetClassId
         : AllocationMetadata.classId(existing);
     if (existing != null) {
       _tickerController.text = existing.ticker;
       _nameController.text = existing.name;
+      final target = AllocationMetadata.target(existing);
+      if (target > 0) _allocationTargetController.text = _trimRate(target);
       final parsed = FixedIncomeMetadata.read(existing);
       if (parsed != null) {
         _fiBasis = parsed.$1;
@@ -85,6 +96,7 @@ class _AssetFormPageState extends State<AssetFormPage> {
     _tickerController.dispose();
     _nameController.dispose();
     _fiRateController.dispose();
+    _allocationTargetController.dispose();
     super.dispose();
   }
 
@@ -118,7 +130,13 @@ class _AssetFormPageState extends State<AssetFormPage> {
         metadata.addAll(FixedIncomeMetadata.write(_fiBasis, rate));
       }
     }
-    return AllocationMetadata.write(metadata, _allocationClassId);
+    final rawTarget = _allocationTargetController.text.replaceAll(',', '.');
+    final target = double.tryParse(rawTarget) ?? 0;
+    return AllocationMetadata.write(
+      metadata,
+      _allocationClassId,
+      targetPercent: target,
+    );
   }
 
   Future<void> _submit() async {
@@ -226,20 +244,14 @@ class _AssetFormPageState extends State<AssetFormPage> {
     final colors = context.appColors;
     return showModalBottomSheet<String>(
       context: context,
-      backgroundColor: colors.surface,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => FinancoPickerSheet(
+        title: t.investing.assets.allocationClass,
+        bodyBuilder: (scrollController) => ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.only(bottom: 8),
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                t.investing.assets.allocationClass,
-                style: ctx.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
             ListTile(
               title: Text(t.investing.assets.noClass),
               trailing: _allocationClassId == null
@@ -263,7 +275,6 @@ class _AssetFormPageState extends State<AssetFormPage> {
                     : null,
                 onTap: () => Navigator.pop(ctx, option.id),
               ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -317,42 +328,13 @@ class _AssetFormPageState extends State<AssetFormPage> {
     required List<T> options,
     required T selected,
     required String Function(T) label,
-  }) {
-    final colors = context.appColors;
-    return showModalBottomSheet<T>(
-      context: context,
-      backgroundColor: colors.surface,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                title,
-                style: ctx.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            for (final option in options)
-              ListTile(
-                title: Text(label(option)),
-                trailing: option == selected
-                    ? FaIcon(
-                        FontAwesomeIcons.check,
-                        size: 14,
-                        color: colors.primary,
-                      )
-                    : null,
-                onTap: () => Navigator.pop(ctx, option),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
+  }) => showOptionPickerSheet<T>(
+    context: context,
+    title: title,
+    options: options,
+    selected: selected,
+    label: label,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -470,6 +452,17 @@ class _AssetFormPageState extends State<AssetFormPage> {
                         : t.investing.assets.pickClass,
                     onTap: () => unawaited(_pickClass()),
                   ),
+                  if (_allocationClassId != null) ...[
+                    const SizedBox(height: 12),
+                    FinancoTextField(
+                      controller: _allocationTargetController,
+                      label: t.investing.assets.allocationTarget,
+                      hintText: t.investing.assets.allocationTargetHint,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                  ],
                 ],
               ),
               if (_kind == AssetKind.fixedIncome) ...[

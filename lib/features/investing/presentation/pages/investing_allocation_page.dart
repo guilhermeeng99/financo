@@ -8,10 +8,13 @@ import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
-import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
-import 'package:financo/core/utils/dynamic_icon.dart';import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
+import 'package:financo/core/utils/dynamic_icon.dart';
+import 'package:financo/core/utils/money_format.dart';
+import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
+import 'package:financo/features/investing/domain/services/allocation_service.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_allocation_cubit.dart';
+import 'package:financo/features/investing/presentation/widgets/allocation_class_donut.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -21,8 +24,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
-/// Current-vs-target allocation over market value, with rebalance suggestions.
-/// See `docs/specs/allocation.md`.
+/// Current-vs-target allocation over market value: a donut of the current mix,
+/// per-class rows (current% of target% + how far above/below), and rebalance
+/// suggestions. Tapping a class opens its per-asset detail. See
+/// `docs/specs/allocation.md`.
 class InvestingAllocationPage extends StatelessWidget {
   const InvestingAllocationPage({super.key});
 
@@ -62,11 +67,7 @@ class InvestingAllocationPage extends StatelessWidget {
               onAction: () => unawaited(_openClassForm(context)),
             );
           }
-          return _AllocationBody(
-            overview: loaded.overview,
-            onEditClass: (classId) =>
-                unawaited(_openClassForm(context, classId: classId)),
-          );
+          return _AllocationBody(overview: loaded.overview);
         },
       ),
     );
@@ -104,10 +105,9 @@ class InvestingAllocationPage extends StatelessWidget {
 }
 
 class _AllocationBody extends StatelessWidget {
-  const _AllocationBody({required this.overview, required this.onEditClass});
+  const _AllocationBody({required this.overview});
 
   final AllocationOverview overview;
-  final void Function(String classId) onEditClass;
 
   @override
   Widget build(BuildContext context) {
@@ -117,22 +117,18 @@ class _AllocationBody extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
-          _Totals(overview: overview),
+          AllocationClassDonut(overview: overview),
           if (!overview.targetsBalanced) ...[
             const SizedBox(height: 12),
             _Banner(
               icon: FontAwesomeIcons.triangleExclamation,
               text: t.investing.allocation.targetsUnbalanced(
-                percent: _pct(overview.targetSumPercent / 100),
+                percent: percentFraction(overview.targetSumPercent / 100),
               ),
             ),
           ],
           const SizedBox(height: 20),
-          for (final slice in overview.slices)
-            _ClassRow(
-              slice: slice,
-              onTap: () => onEditClass(slice.classId),
-            ),
+          for (final slice in overview.slices) _ClassRow(slice: slice),
           if (overview.rebalanceActions.isNotEmpty) ...[
             const SizedBox(height: 20),
             Text(
@@ -161,61 +157,24 @@ class _AllocationBody extends StatelessWidget {
   }
 }
 
-class _Totals extends StatelessWidget {
-  const _Totals({required this.overview});
-
-  final AllocationOverview overview;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            formatMoney(overview.totalValue),
-            style: context.textTheme.headlineSmall?.copyWith(
-              color: colors.onBackground,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${t.investing.allocation.allocated}: '
-            '${formatMoney(overview.allocatedValue)}'
-            '${overview.hasUnallocated ? ' · '
-                      '${t.investing.allocation.unallocated}: '
-                      '${formatMoney(overview.unallocatedValue)}' : ''}',
-            style: context.textTheme.bodySmall?.copyWith(
-              color: colors.onBackgroundLight,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
+/// A root-class row: icon, name, "X% of Y%", value, "R$ X above/below", and a
+/// full-color bar filling current/target (capped at full when over target).
+/// Tapping opens the class detail. Mirrors Investanco's `InvestmentClassRow`.
 class _ClassRow extends StatelessWidget {
-  const _ClassRow({required this.slice, required this.onTap});
+  const _ClassRow({required this.slice});
 
   final AllocationClassSlice slice;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final classColor = Color(slice.color);
-    final deltaLabel = _deltaLabel(slice);
-    final deltaColor =
-        slice.delta.minorUnits.abs() < AllocationSliceThreshold.minor
+    final actual = (slice.currentPercent * 100).toStringAsFixed(0);
+    final target = (slice.targetPercent * 100).toStringAsFixed(0);
+    final onTarget =
+        slice.delta.minorUnits.abs() <
+        AllocationService.rebalanceThresholdMinor;
+    final deltaColor = onTarget
         ? colors.onBackgroundLight
         : (slice.isUnderTarget ? colors.income : colors.expense);
     return Padding(
@@ -224,7 +183,8 @@ class _ClassRow extends StatelessWidget {
         color: colors.surface,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
-          onTap: onTap,
+          onTap: () =>
+              context.push(AppRoutes.allocationClassById(slice.classId)),
           borderRadius: BorderRadius.circular(14),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -244,51 +204,68 @@ class _ClassRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        slice.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.textTheme.titleSmall?.copyWith(
-                          color: colors.onBackground,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            slice.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.textTheme.titleSmall?.copyWith(
+                              color: colors.onBackground,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            t.investing.allocation.classRowSubtitle(
+                              actual: '$actual%',
+                              target: '$target%',
+                            ),
+                            style: context.textTheme.bodySmall?.copyWith(
+                              color: colors.onBackgroundLight,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      formatMoney(slice.currentValue),
-                      style: context.textTheme.titleSmall?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          formatMoney(slice.currentValue),
+                          style: context.textTheme.titleSmall?.copyWith(
+                            color: colors.onBackground,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _deltaLabel(),
+                          style: context.textTheme.bodySmall?.copyWith(
+                            color: deltaColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    FaIcon(
+                      FontAwesomeIcons.chevronRight,
+                      size: 11,
+                      color: colors.onBackgroundLight,
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                _AllocationBar(
-                  current: slice.currentPercent,
-                  target: slice.targetPercent,
-                  color: classColor,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${t.investing.allocation.current} '
-                      '${_pct(slice.currentPercent)} · '
-                      '${t.investing.allocation.target} '
-                      '${_pct(slice.targetPercent)}',
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                    Text(
-                      deltaLabel,
-                      style: context.textTheme.bodySmall?.copyWith(
-                        color: deltaColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: _progress(),
+                    minHeight: 8,
+                    backgroundColor: colors.surfaceVariant,
+                    valueColor: AlwaysStoppedAnimation<Color>(classColor),
+                  ),
                 ),
               ],
             ),
@@ -298,71 +275,22 @@ class _ClassRow extends StatelessWidget {
     );
   }
 
-  String _deltaLabel(AllocationClassSlice slice) {
-    if (slice.delta.minorUnits.abs() < AllocationSliceThreshold.minor) {
+  /// Bar fills current/target, capped at full when over target.
+  double _progress() {
+    final target = slice.targetPercent;
+    if (target <= 0) return slice.currentPercent.clamp(0.0, 1.0);
+    return (slice.currentPercent / target).clamp(0.0, 1.0);
+  }
+
+  String _deltaLabel() {
+    if (slice.delta.minorUnits.abs() <
+        AllocationService.rebalanceThresholdMinor) {
       return t.investing.allocation.onTarget;
     }
-    final verb = slice.isUnderTarget
-        ? t.investing.allocation.buy
-        : t.investing.allocation.sell;
-    final amount = Money(slice.delta.minorUnits.abs(), slice.delta.currency);
-    return '$verb ${formatMoney(amount)}';
-  }
-}
-
-/// A thin bar: fill = current share of the portfolio, tick = target share.
-class _AllocationBar extends StatelessWidget {
-  const _AllocationBar({
-    required this.current,
-    required this.target,
-    required this.color,
-  });
-
-  final double current;
-  final double target;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final fill = current.clamp(0.0, 1.0) * width;
-        final tick = target.clamp(0.0, 1.0) * width;
-        // Guard the tick's max offset: a mid-layout width of 0 would make
-        // `width - 2` negative and `clamp` assert (min > max).
-        final maxTickLeft = width > 2 ? width - 2 : 0.0;
-        return SizedBox(
-          height: 8,
-          child: Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: colors.surfaceVariant.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              Container(
-                width: fill,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              Positioned(
-                left: (tick - 1).clamp(0.0, maxTickLeft),
-                child: Container(
-                  width: 2,
-                  height: 8,
-                  color: colors.onBackground,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    final amount = absMoney(slice.delta);
+    return slice.isUnderTarget
+        ? t.investing.allocation.below(amount: amount)
+        : t.investing.allocation.above(amount: amount);
   }
 }
 
@@ -451,11 +379,3 @@ class _Banner extends StatelessWidget {
     );
   }
 }
-
-/// Mirror of `AllocationService.rebalanceThresholdMinor` for the UI's on-target
-/// styling, kept here so the page doesn't import the service.
-abstract final class AllocationSliceThreshold {
-  static const minor = 100;
-}
-
-String _pct(double fraction) => '${(fraction * 100).toStringAsFixed(1)}%';

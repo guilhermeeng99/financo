@@ -3,6 +3,7 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/usecases/create_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/update_asset_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -95,6 +96,64 @@ void main() {
       ).thenAnswer((_) async => const Right(null));
       final result = await useCase(AssetFactory.stockUs());
       expect(result.isRight(), isTrue);
+    });
+  });
+
+  group('UpdateAssetUseCase', () {
+    late UpdateAssetUseCase useCase;
+    setUp(() => useCase = UpdateAssetUseCase(assets));
+
+    test('rejects a blank ticker', () async {
+      final result = await useCase(AssetFactory.stockUs(ticker: '  '));
+      result.leftMap((f) => expect(f, isA<EmptyNameFailure>()));
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('rejects a missing institution', () async {
+      final result = await useCase(AssetFactory.stockUs(institutionId: null));
+      result.leftMap((f) => expect(f, isA<AssetInstitutionRequiredFailure>()));
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('rejects a duplicate ticker/market on a different asset', () async {
+      when(() => assets.getAssets(userId: 'user-1')).thenAnswer(
+        (_) async => Right([AssetFactory.stockUs(id: 'existing')]),
+      );
+      final result = await useCase(
+        AssetFactory.stockUs(id: 'editing', ticker: 'aapl'),
+      );
+      result.leftMap((f) => expect(f, isA<DuplicateAssetFailure>()));
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('editing an asset to its own ticker is not a duplicate', () async {
+      // The self-exclusion branch (e.id != asset.id) is unique to update.
+      when(() => assets.getAssets(userId: 'user-1')).thenAnswer(
+        (_) async => Right([AssetFactory.stockUs()]),
+      );
+      when(() => assets.updateAsset(any())).thenAnswer(
+        (invocation) async =>
+            Right(invocation.positionalArguments.first as Asset),
+      );
+      // Same default id ('asset-aapl') on both — the self-exclusion path.
+      final result = await useCase(AssetFactory.stockUs(ticker: 'aapl'));
+      expect(result.isRight(), isTrue);
+    });
+
+    test('updates and uppercases the ticker', () async {
+      when(
+        () => assets.getAssets(userId: 'user-1'),
+      ).thenAnswer((_) async => const Right([]));
+      when(() => assets.updateAsset(any())).thenAnswer(
+        (invocation) async =>
+            Right(invocation.positionalArguments.first as Asset),
+      );
+      final result = await useCase(AssetFactory.stockUs(ticker: 'aapl'));
+      expect(result.isRight(), isTrue);
+      final captured =
+          verify(() => assets.updateAsset(captureAny())).captured.single
+              as Asset;
+      expect(captured.ticker, 'AAPL');
     });
   });
 }

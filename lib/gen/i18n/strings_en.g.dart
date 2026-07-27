@@ -97,6 +97,9 @@ class Translations$general$en {
 
 	/// en: 'Create'
 	String get create => 'Create';
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
 }
 
 // Path: errors
@@ -2008,6 +2011,12 @@ class Translations$investing$assets$en {
 	/// en: 'Create an asset class first'
 	String get noClasses => 'Create an asset class first';
 
+	/// en: 'Target % within class'
+	String get allocationTarget => 'Target % within class';
+
+	/// en: 'e.g. 50'
+	String get allocationTargetHint => 'e.g. 50';
+
 	late final Translations$investing$assets$import$en import = Translations$investing$assets$import$en._(_root);
 
 	/// en: 'Ticker'
@@ -2170,6 +2179,9 @@ class Translations$investing$overview$en {
 	/// en: 'Record a buy to start tracking your portfolio.'
 	String get empty => 'Record a buy to start tracking your portfolio.';
 
+	/// en: 'Refresh'
+	String get refresh => 'Refresh';
+
 	/// en: 'Updating prices…'
 	String get refreshing => 'Updating prices…';
 
@@ -2181,6 +2193,21 @@ class Translations$investing$overview$en {
 
 	/// en: 'units'
 	String get units => 'units';
+
+	/// en: 'Total net worth'
+	String get totalNetWorth => 'Total net worth';
+
+	/// en: 'Day change'
+	String get dayChange => 'Day change';
+
+	/// en: 'Allocation by class'
+	String get allocationByClass => 'Allocation by class';
+
+	/// en: 'In $code'
+	String inCurrency({required Object code}) => 'In ${code}';
+
+	/// en: 'All'
+	String get filterAll => 'All';
 }
 
 // Path: investing.allocation
@@ -2232,6 +2259,45 @@ class Translations$investing$allocation$en {
 
 	/// en: '$amount isn't assigned to any class yet.'
 	String unallocatedHint({required Object amount}) => '${amount} isn\'t assigned to any class yet.';
+
+	/// en: 'INVESTED NET WORTH'
+	String get investedNetWorth => 'INVESTED NET WORTH';
+
+	/// en: '$actual of $target'
+	String classRowSubtitle({required Object actual, required Object target}) => '${actual} of ${target}';
+
+	/// en: '$amount above'
+	String above({required Object amount}) => '${amount} above';
+
+	/// en: '$amount below'
+	String below({required Object amount}) => '${amount} below';
+
+	/// en: 'Assets'
+	String get assets => 'Assets';
+
+	/// en: 'Target: $amount'
+	String targetAmount({required Object amount}) => 'Target: ${amount}';
+
+	/// en: 'Add asset'
+	String get addAsset => 'Add asset';
+
+	/// en: 'No assets in this class yet.'
+	String get noAssets => 'No assets in this class yet.';
+
+	/// en: '$amount · $percent'
+	String assetLine({required Object amount, required Object percent}) => '${amount} · ${percent}';
+
+	/// en: '$amount · $actual of $target'
+	String assetLineTarget({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}';
+
+	/// en: 'Add $amount to reach the target'
+	String assetAdd({required Object amount}) => 'Add ${amount} to reach the target';
+
+	/// en: 'Trim $amount to reach the target'
+	String assetTrim({required Object amount}) => 'Trim ${amount} to reach the target';
+
+	/// en: 'No target set'
+	String get assetNoTarget => 'No target set';
 }
 
 // Path: csvImport.errors
@@ -2893,6 +2959,7 @@ extension on Translations {
 			'general.ok' => 'OK',
 			'general.update' => 'Update',
 			'general.create' => 'Create',
+			'general.edit' => 'Edit',
 			'errors.unexpected' => 'Something went wrong. Please try again.',
 			'errors.server' => 'Couldn\'t reach the server. Check your connection and try again.',
 			'errors.auth' => 'Authentication failed. Please sign in again.',
@@ -2942,6 +3009,8 @@ extension on Translations {
 			'investing.assets.pickClass' => 'Select…',
 			'investing.assets.noClass' => 'None',
 			'investing.assets.noClasses' => 'Create an asset class first',
+			'investing.assets.allocationTarget' => 'Target % within class',
+			'investing.assets.allocationTargetHint' => 'e.g. 50',
 			'investing.assets.import.cta' => 'Import CSV',
 			'investing.assets.import.introTitle' => 'Import assets',
 			'investing.assets.import.introBody' => 'Upload a CSV with columns ticker, kind and institution (market and currency are optional). Missing institutions are created automatically.',
@@ -3041,10 +3110,16 @@ extension on Translations {
 			'investing.overview.byCurrency' => 'By currency',
 			'investing.overview.emptyTitle' => 'Nothing invested yet',
 			'investing.overview.empty' => 'Record a buy to start tracking your portfolio.',
+			'investing.overview.refresh' => 'Refresh',
 			'investing.overview.refreshing' => 'Updating prices…',
 			'investing.overview.stale' => 'Stale',
 			'investing.overview.fxMissing' => 'No FX rate',
 			'investing.overview.units' => 'units',
+			'investing.overview.totalNetWorth' => 'Total net worth',
+			'investing.overview.dayChange' => 'Day change',
+			'investing.overview.allocationByClass' => 'Allocation by class',
+			'investing.overview.inCurrency' => ({required Object code}) => 'In ${code}',
+			'investing.overview.filterAll' => 'All',
 			'investing.allocation.title' => 'Allocation',
 			'investing.allocation.emptyTitle' => 'No targets yet',
 			'investing.allocation.empty' => 'Set target weights on your asset classes to see how your portfolio compares and what to rebalance.',
@@ -3059,6 +3134,19 @@ extension on Translations {
 			'investing.allocation.addClass' => 'New class',
 			'investing.allocation.targetsUnbalanced' => ({required Object percent}) => 'Your class targets add up to ${percent}, not 100%.',
 			'investing.allocation.unallocatedHint' => ({required Object amount}) => '${amount} isn\'t assigned to any class yet.',
+			'investing.allocation.investedNetWorth' => 'INVESTED NET WORTH',
+			'investing.allocation.classRowSubtitle' => ({required Object actual, required Object target}) => '${actual} of ${target}',
+			'investing.allocation.above' => ({required Object amount}) => '${amount} above',
+			'investing.allocation.below' => ({required Object amount}) => '${amount} below',
+			'investing.allocation.assets' => 'Assets',
+			'investing.allocation.targetAmount' => ({required Object amount}) => 'Target: ${amount}',
+			'investing.allocation.addAsset' => 'Add asset',
+			'investing.allocation.noAssets' => 'No assets in this class yet.',
+			'investing.allocation.assetLine' => ({required Object amount, required Object percent}) => '${amount} · ${percent}',
+			'investing.allocation.assetLineTarget' => ({required Object amount, required Object actual, required Object target}) => '${amount} · ${actual} of ${target}',
+			'investing.allocation.assetAdd' => ({required Object amount}) => 'Add ${amount} to reach the target',
+			'investing.allocation.assetTrim' => ({required Object amount}) => 'Trim ${amount} to reach the target',
+			'investing.allocation.assetNoTarget' => 'No target set',
 			'investing.nav' => 'Investing',
 			'csvImport.errors.emptyFile' => 'CSV file is empty or invalid.',
 			'csvImport.errors.missingColumn' => ({required Object column}) => 'CSV is missing the required "${column}" column.',
@@ -3374,6 +3462,8 @@ extension on Translations {
 			'categories.bucketNeeds' => 'Need',
 			'categories.bucketWants' => 'Want',
 			'categories.bucketUnclassified' => 'Unclassified',
+			_ => null,
+		} ?? switch (path) {
 			'categories.bucketHelp' => 'Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is handled by transfers to investment accounts.',
 			'categories.pickParent' => 'Parent category',
 			'categories.searchHint' => 'Search categories',
@@ -3396,8 +3486,6 @@ extension on Translations {
 			'chat.suggestion2' => 'How much do I have on my Nubank account?',
 			'chat.suggestion3' => 'Show my overdue payables',
 			'chat.suggestion4' => 'Create a category called Leisure',
-			_ => null,
-		} ?? switch (path) {
 			'chat.action.transactionExpense' => 'Confirm expense',
 			'chat.action.transactionIncome' => 'Confirm income',
 			'chat.action.transfer' => 'Confirm transfer',

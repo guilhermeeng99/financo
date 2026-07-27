@@ -23,12 +23,27 @@ import 'package:financo/features/dashboard/presentation/widgets/dashboard_hero.d
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_institution_row.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_section.dart';
 import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_card.dart';
+import 'package:financo/features/investing/presentation/cubit/investing_overview_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+
+/// True on the edge where the investing overview finishes its network refresh
+/// (`isRefreshing` goes true→false, or it first settles from a non-loaded
+/// state). The Dashboard prices investment institutions from the shared
+/// market-quote cache, which that refresh warms — so this is the moment to
+/// re-read and surface live market values. Extracted (and unit-tested) so the
+/// transition matrix is verified without a full widget test.
+bool investingRefreshSettled(
+  InvestingOverviewState previous,
+  InvestingOverviewState current,
+) {
+  if (current is! InvestingOverviewLoaded || current.isRefreshing) return false;
+  return previous is! InvestingOverviewLoaded || previous.isRefreshing;
+}
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -120,8 +135,10 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             },
           ),
-          BlocListener<FiftyThirtyTwentyTargetsCubit,
-              FiftyThirtyTwentyTargetsState>(
+          BlocListener<
+            FiftyThirtyTwentyTargetsCubit,
+            FiftyThirtyTwentyTargetsState
+          >(
             // Targets feed the 50/30/20 overview directly. Without this
             // listener, editing targets on the detail page wouldn't
             // re-bin the dashboard card until the next month-step.
@@ -135,6 +152,22 @@ class _DashboardPageState extends State<DashboardPage> {
                   month: filter.month,
                   forceRefresh: true,
                 ),
+              );
+            },
+          ),
+          BlocListener<InvestingOverviewCubit, InvestingOverviewState>(
+            // Investment institution rows are priced from the shared
+            // market-quote cache, which the overview's network refresh warms
+            // at startup. Re-read once that refresh settles so the market
+            // values surface on first paint — no need to visit the Investing
+            // tab and come back. A plain (non-forced) reload: it re-reads the
+            // now-warm cache and the bloc skips the Loading flicker while
+            // already Loaded.
+            listenWhen: investingRefreshSettled,
+            listener: (context, state) {
+              final filter = context.read<DateFilterCubit>().state;
+              context.read<DashboardBloc>().add(
+                DashboardLoadRequested(year: filter.year, month: filter.month),
               );
             },
           ),
@@ -184,16 +217,16 @@ class _DashboardContent extends StatelessWidget {
     // at market (see docs/specs/investing_account_unification.md). Credit cards
     // keep their own section: opposite sign convention + different mental
     // model.
-    final bankAccounts = (summary.accounts
-            .where((a) => a.type == AccountType.checking)
-            .toList())
-      ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
+    final bankAccounts =
+        (summary.accounts.where((a) => a.type == AccountType.checking).toList())
+          ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
     // Already sorted by market value (descending) in the repository.
     final investmentAccounts = summary.investmentAccounts;
-    final creditCards = (summary.accounts
-            .where((a) => a.type == AccountType.creditCard)
-            .toList())
-      ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
+    final creditCards =
+        (summary.accounts
+              .where((a) => a.type == AccountType.creditCard)
+              .toList())
+          ..sort((a, b) => b.initialBalance.compareTo(a.initialBalance));
 
     // The shell renders the sidebar at >=600px and that sidebar already
     // hosts a month stepper, so showing the body pill there would be a
@@ -212,10 +245,13 @@ class _DashboardContent extends StatelessWidget {
           SizedBox(height: 16),
         ],
         DashboardHero(
-          income: summary.totalIncome,
-          expenses: summary.totalExpenses,
-          netResult: summary.netResult,
-        ).animate().fadeIn(duration: 400.ms).slideY(
+              income: summary.totalIncome,
+              expenses: summary.totalExpenses,
+              netResult: summary.netResult,
+            )
+            .animate()
+            .fadeIn(duration: 400.ms)
+            .slideY(
               begin: 0.05,
               end: 0,
               duration: 400.ms,
@@ -224,15 +260,15 @@ class _DashboardContent extends StatelessWidget {
         if (bankAccounts.isNotEmpty || investmentAccounts.isNotEmpty) ...[
           const SizedBox(height: 24),
           DashboardSection(
-            label: t.dashboard.accountBalances,
-            count: bankAccounts.length + investmentAccounts.length,
-            accent: colors.primary,
-            child: _BalancesList(
-              accounts: bankAccounts,
-              investments: investmentAccounts,
-              brlById: summary.accountBrlById,
-            ),
-          )
+                label: t.dashboard.accountBalances,
+                count: bankAccounts.length + investmentAccounts.length,
+                accent: colors.primary,
+                child: _BalancesList(
+                  accounts: bankAccounts,
+                  investments: investmentAccounts,
+                  brlById: summary.accountBrlById,
+                ),
+              )
               .animate()
               .fadeIn(delay: 100.ms, duration: 400.ms)
               .slideY(
@@ -246,11 +282,11 @@ class _DashboardContent extends StatelessWidget {
         if (creditCards.isNotEmpty) ...[
           const SizedBox(height: 20),
           DashboardSection(
-            label: t.dashboard.creditCardBalance,
-            count: creditCards.length,
-            accent: colors.warning,
-            child: _AccountList(accounts: creditCards),
-          )
+                label: t.dashboard.creditCardBalance,
+                count: creditCards.length,
+                accent: colors.warning,
+                child: _AccountList(accounts: creditCards),
+              )
               .animate()
               .fadeIn(delay: 150.ms, duration: 400.ms)
               .slideY(
@@ -283,21 +319,21 @@ class _DashboardContent extends StatelessWidget {
         ],
         const SizedBox(height: 20),
         DashboardSection(
-          label: t.dashboard.expensesByCategory,
-          accent: colors.expense,
-          child: summary.expensesByCategory.isEmpty
-              ? _EmptyHint(message: t.dashboard.noExpensesYet)
-              : CategoryBreakdownList(
-                  data: summary.expensesByCategory,
-                  isExpense: true,
-                  onCategoryTap: (category) => showCategoryDetailsDialog(
-                    context: context,
-                    parent: category,
-                    totalExpenses: summary.totalExpenses,
-                    periodTransactions: state.periodTransactions,
-                  ),
-                ),
-        )
+              label: t.dashboard.expensesByCategory,
+              accent: colors.expense,
+              child: summary.expensesByCategory.isEmpty
+                  ? _EmptyHint(message: t.dashboard.noExpensesYet)
+                  : CategoryBreakdownList(
+                      data: summary.expensesByCategory,
+                      isExpense: true,
+                      onCategoryTap: (category) => showCategoryDetailsDialog(
+                        context: context,
+                        parent: category,
+                        totalExpenses: summary.totalExpenses,
+                        periodTransactions: state.periodTransactions,
+                      ),
+                    ),
+            )
             .animate()
             .fadeIn(delay: 200.ms, duration: 400.ms)
             .slideY(
@@ -309,15 +345,15 @@ class _DashboardContent extends StatelessWidget {
             ),
         const SizedBox(height: 20),
         DashboardSection(
-          label: t.dashboard.incomeByCategory,
-          accent: colors.income,
-          child: summary.incomeByCategory.isEmpty
-              ? _EmptyHint(message: t.dashboard.noIncomeYet)
-              : CategoryBreakdownList(
-                  data: summary.incomeByCategory,
-                  isExpense: false,
-                ),
-        )
+              label: t.dashboard.incomeByCategory,
+              accent: colors.income,
+              child: summary.incomeByCategory.isEmpty
+                  ? _EmptyHint(message: t.dashboard.noIncomeYet)
+                  : CategoryBreakdownList(
+                      data: summary.incomeByCategory,
+                      isExpense: false,
+                    ),
+            )
             .animate()
             .fadeIn(delay: 250.ms, duration: 400.ms)
             .slideY(
@@ -350,8 +386,7 @@ class _AccountList extends StatelessWidget {
             ),
           DashboardAccountRow(
             account: accounts[i],
-            onTap: () =>
-                context.go(AppRoutes.accountById(accounts[i].id)),
+            onTap: () => context.go(AppRoutes.accountById(accounts[i].id)),
           ),
         ],
       ],

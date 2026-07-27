@@ -5,6 +5,7 @@ import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/app/widgets/import_widgets.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/amount_parser.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
@@ -55,12 +56,12 @@ class _TransactionImportEditSheetState
   void initState() {
     super.initState();
     _draft = widget.row;
-    // Seed with BR-formatted text so the first paint matches what
-    // `BrlCurrencyInputFormatter` produces on edit (mirrors the accounts
-    // import sheet). `parseDecimalAmount` reads it back on save.
+    // Seed with the source account's currency format so the first paint matches
+    // what `CurrencyInputFormatter` produces on edit. `parseDecimalAmount`
+    // reads it back on save regardless of the locale style.
     _amountController = TextEditingController(
       text: _draft.amount > 0
-          ? BrlCurrencyInputFormatter.format(_draft.amount)
+          ? CurrencyInputFormatter.format(_draft.amount, _sourceCurrency)
           : '',
     );
     _descriptionController = TextEditingController(text: _draft.description);
@@ -71,6 +72,21 @@ class _TransactionImportEditSheetState
     _amountController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  /// The source account's currency, matched from the picked account name, so
+  /// the amount field shows the right symbol/format. Falls back to BRL until an
+  /// account resolves. Re-derived on rebuild, so re-picking the account updates
+  /// the field.
+  Currency get _sourceCurrency {
+    final accounts = context.read<AccountsCubit>().state.accountsOrEmpty;
+    return accounts
+            .where(
+              (a) => a.name.toLowerCase() == _draft.accountName.toLowerCase(),
+            )
+            .map((a) => a.currency)
+            .firstOrNull ??
+        Currency.brl;
   }
 
   Future<void> _pickDate() async {
@@ -357,6 +373,7 @@ class _TransactionImportEditSheetState
                     children: [
                       FinancoCurrencyField(
                         controller: _amountController,
+                        currency: _sourceCurrency,
                         label: t.transactions.amountLabel,
                         hintText: t.transactions.amountHint,
                         onChanged: (_) => setState(() {}),

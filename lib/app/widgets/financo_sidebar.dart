@@ -37,9 +37,21 @@ class FinancoSidebar extends StatefulWidget {
 class _FinancoSidebarState extends State<FinancoSidebar> {
   bool _expanded = true;
 
+  /// Which collapsible group is open ('dashboard' | 'investing'), or null when
+  /// both are collapsed. Starts collapsed so the rail stays compact — the many
+  /// investing sub-items only show once the user opens the group.
+  String? _openGroup;
+
   void _toggle() {
     unawaited(HapticFeedback.selectionClick());
     setState(() => _expanded = !_expanded);
+  }
+
+  /// Group header tap: toggle this group open/closed (accordion — opening one
+  /// closes the other) and navigate to the group's default page.
+  void _openGroupAndGo(String group, String route) {
+    setState(() => _openGroup = _openGroup == group ? null : group);
+    context.go(route);
   }
 
   @override
@@ -96,74 +108,89 @@ class _FinancoSidebarState extends State<FinancoSidebar> {
                 icon: FontAwesomeIcons.house,
                 expanded: _expanded,
                 label: t.nav.dashboard,
-                onTap: () => context.go(AppRoutes.dashboard),
+                showChevron: true,
+                groupExpanded: _openGroup == 'dashboard',
+                onTap: () => _openGroupAndGo('dashboard', AppRoutes.dashboard),
                 isActive: isDashboardSection,
               ),
-              SidebarSubNavItem(
-                icon: FontAwesomeIcons.receipt,
-                expanded: _expanded,
-                label: t.nav.payablesReceivables,
-                onTap: () => context.go(AppRoutes.payablesReceivables),
-                isActive:
-                    location.startsWith(AppRoutes.payablesReceivables) ||
-                    location.startsWith(AppRoutes.payables) ||
-                    location.startsWith(AppRoutes.receivables),
-              ),
-              SidebarSubNavItem(
-                icon: FontAwesomeIcons.circleCheck,
-                expanded: _expanded,
-                label: t.nav.paidAndReceived,
-                onTap: () => context.go(AppRoutes.paidAndReceived),
-                isActive:
-                    location.startsWith(AppRoutes.paidAndReceived) ||
-                    location.startsWith(AppRoutes.paidAccounts) ||
-                    location.startsWith(AppRoutes.receivedAccounts),
-              ),
+              if (_expanded && _openGroup == 'dashboard') ...[
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.receipt,
+                  expanded: _expanded,
+                  label: t.nav.payablesReceivables,
+                  onTap: () => context.go(AppRoutes.payablesReceivables),
+                  isActive:
+                      location.startsWith(AppRoutes.payablesReceivables) ||
+                      location.startsWith(AppRoutes.payables) ||
+                      location.startsWith(AppRoutes.receivables),
+                ),
+                SidebarSubNavItem(
+                  icon: FontAwesomeIcons.circleCheck,
+                  expanded: _expanded,
+                  label: t.nav.paidAndReceived,
+                  onTap: () => context.go(AppRoutes.paidAndReceived),
+                  isActive:
+                      location.startsWith(AppRoutes.paidAndReceived) ||
+                      location.startsWith(AppRoutes.paidAccounts) ||
+                      location.startsWith(AppRoutes.receivedAccounts),
+                ),
+              ],
               if (kInvestingV2) ...[
                 SidebarNavItem(
                   icon: FontAwesomeIcons.chartLine,
                   expanded: _expanded,
                   label: t.investing.nav,
-                  onTap: () => context.go(AppRoutes.investingOverview),
+                  showChevron: true,
+                  groupExpanded: _openGroup == 'investing',
+                  onTap: () => _openGroupAndGo(
+                    'investing',
+                    AppRoutes.investingAllocation,
+                  ),
                   isActive: location.startsWith('/investing'),
                 ),
-                SidebarSubNavItem(
-                  icon: FontAwesomeIcons.chartPie,
-                  expanded: _expanded,
-                  label: t.investing.overview.title,
-                  onTap: () => context.go(AppRoutes.investingOverview),
-                  isActive: location.startsWith(AppRoutes.investingOverview),
-                ),
-                SidebarSubNavItem(
-                  icon: FontAwesomeIcons.scaleBalanced,
-                  expanded: _expanded,
-                  label: t.investing.allocation.title,
-                  onTap: () => context.go(AppRoutes.investingAllocation),
-                  isActive: location.startsWith(AppRoutes.investingAllocation),
-                ),
-                SidebarSubNavItem(
-                  icon: FontAwesomeIcons.rightLeft,
-                  expanded: _expanded,
-                  label: t.investing.transactions.title,
-                  onTap: () => context.go(AppRoutes.investingTransactions),
-                  isActive: location.startsWith(
-                    AppRoutes.investingTransactions,
+                if (_expanded && _openGroup == 'investing') ...[
+                  SidebarSubNavItem(
+                    icon: FontAwesomeIcons.scaleBalanced,
+                    expanded: _expanded,
+                    label: t.investing.allocation.title,
+                    onTap: () => context.go(AppRoutes.investingAllocation),
+                    isActive: location.startsWith(
+                      AppRoutes.investingAllocation,
+                    ),
                   ),
-                ),
-                SidebarSubNavItem(
-                  icon: FontAwesomeIcons.coins,
-                  expanded: _expanded,
-                  label: t.investing.assets.title,
-                  onTap: () => context.go(AppRoutes.assets),
-                  isActive: location.startsWith(AppRoutes.assets),
-                ),
-                SidebarSubNavItem(
-                  icon: FontAwesomeIcons.buildingColumns,
-                  expanded: _expanded,
-                  label: t.investing.institutions.title,
-                  onTap: () => context.go(AppRoutes.institutions),
-                  isActive: location.startsWith(AppRoutes.institutions),
-                ),
+                  SidebarSubNavItem(
+                    icon: FontAwesomeIcons.chartPie,
+                    expanded: _expanded,
+                    label: t.investing.overview.title,
+                    onTap: () => context.go(AppRoutes.investingOverview),
+                    isActive: location.startsWith(
+                      AppRoutes.investingOverview,
+                    ),
+                  ),
+                  SidebarSubNavItem(
+                    icon: FontAwesomeIcons.rightLeft,
+                    expanded: _expanded,
+                    label: t.investing.transactions.title,
+                    onTap: () => context.go(AppRoutes.investingTransactions),
+                    isActive: location.startsWith(
+                      AppRoutes.investingTransactions,
+                    ),
+                  ),
+                  SidebarSubNavItem(
+                    icon: FontAwesomeIcons.coins,
+                    expanded: _expanded,
+                    label: t.investing.assets.title,
+                    onTap: () => context.go(AppRoutes.assets),
+                    isActive: location.startsWith(AppRoutes.assets),
+                  ),
+                  SidebarSubNavItem(
+                    icon: FontAwesomeIcons.buildingColumns,
+                    expanded: _expanded,
+                    label: t.investing.institutions.title,
+                    onTap: () => context.go(AppRoutes.institutions),
+                    isActive: location.startsWith(AppRoutes.institutions),
+                  ),
+                ],
               ],
               SidebarNavItem(
                 icon: FontAwesomeIcons.bullseye,

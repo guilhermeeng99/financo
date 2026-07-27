@@ -218,4 +218,131 @@ void main() {
     expect(overview.slices.single.currentPercent, 0);
     expect(overview.rebalanceActions, isEmpty);
   });
+
+  test(
+    'class carries per-asset slices with within-class targets and deltas',
+    () {
+      // Portfolio R$1000. Stocks (target 60% → class target R$600) holds two
+      // assets: a1 R$400 @ 50% target, a2 R$200 @ 50% target → each ideal
+      // R$300, so a1 trims R$100 and a2 adds R$100. The rest is unallocated.
+      final assets = [
+        AssetFactory.stockBr(
+          id: 'a1',
+          ticker: 'A1',
+          metadata: AllocationMetadata.write(
+            const {},
+            'c-stocks',
+            targetPercent: 50,
+          ),
+        ),
+        AssetFactory.stockBr(
+          id: 'a2',
+          ticker: 'A2',
+          metadata: AllocationMetadata.write(
+            const {},
+            'c-stocks',
+            targetPercent: 50,
+          ),
+        ),
+        AssetFactory.stockBr(id: 'a-loose'),
+      ];
+      final holdings = [
+        HoldingValuationFactory.base(
+          assetId: 'a1',
+          marketValueBase: Money.fromMajor(400, brl),
+        ),
+        HoldingValuationFactory.base(
+          assetId: 'a2',
+          marketValueBase: Money.fromMajor(200, brl),
+        ),
+        HoldingValuationFactory.base(
+          assetId: 'a-loose',
+          marketValueBase: Money.fromMajor(400, brl),
+        ),
+      ];
+
+      final overview = service.compute(
+        classes: [stocksClass],
+        assets: assets,
+        holdings: holdings,
+        base: brl,
+      );
+
+      final stocks = overview.slices.firstWhere((s) => s.classId == 'c-stocks');
+      expect(stocks.assets, hasLength(2));
+      // Sorted by value desc → a1 first.
+      final a1 = stocks.assets.first;
+      final a2 = stocks.assets.last;
+      expect(a1.assetId, 'a1');
+      expect(a1.currentValue, Money.fromMajor(400, brl));
+      expect(a1.targetPercent, 50);
+      expect(a1.percentOfClass, closeTo(400 / 600, 1e-9));
+      expect(a1.percentOfTotal, closeTo(0.4, 1e-9));
+      expect(a1.suggestedValue, Money.fromMajor(300, brl));
+      expect(a1.suggestedDelta, Money.fromMajor(-100, brl));
+      expect(a1.suggestedDeltaNative, isNull);
+      expect(a2.suggestedDelta, Money.fromMajor(100, brl));
+    },
+  );
+
+  test('foreign asset suggestion carries a native-currency delta', () {
+    // Class US (target 50% → class target R$500) holds one USD asset worth
+    // R$400 (US$80) targeted at 100% of the class → add R$100. Native delta =
+    // 100 × (80 / 400) = US$20.
+    final usClass = AllocationClassFactory.root(
+      id: 'c-us',
+      name: 'US',
+      targetPercent: 50,
+    );
+    final assets = [
+      AssetFactory.stockUs(
+        id: 'a-us',
+        metadata: AllocationMetadata.write(
+          const {},
+          'c-us',
+          targetPercent: 100,
+        ),
+      ),
+      AssetFactory.stockBr(id: 'a-loose'),
+    ];
+    final holdings = [
+      HoldingValuationFactory.base(
+        assetId: 'a-us',
+        marketValueBase: Money.fromMajor(400, brl),
+        marketValueNative: Money.fromMajor(80, Currency.usd),
+      ),
+      HoldingValuationFactory.base(
+        assetId: 'a-loose',
+        marketValueBase: Money.fromMajor(600, brl),
+      ),
+    ];
+
+    final overview = service.compute(
+      classes: [usClass],
+      assets: assets,
+      holdings: holdings,
+      base: brl,
+    );
+
+    final us = overview.slices.firstWhere((s) => s.classId == 'c-us');
+    final asset = us.assets.single;
+    expect(asset.suggestedDelta, Money.fromMajor(100, brl));
+    expect(asset.suggestedDeltaNative, Money.fromMajor(20, Currency.usd));
+  });
+
+  test('allocation metadata round-trips class + target and clears both', () {
+    final withTarget = AllocationMetadata.write(
+      const {},
+      'c-stocks',
+      targetPercent: 42.5,
+    );
+    final asset = AssetFactory.stockBr(metadata: withTarget);
+    expect(AllocationMetadata.classId(asset), 'c-stocks');
+    expect(AllocationMetadata.target(asset), 42.5);
+
+    final cleared = AllocationMetadata.write(withTarget, null);
+    final clearedAsset = AssetFactory.stockBr(metadata: cleared);
+    expect(AllocationMetadata.classId(clearedAsset), isNull);
+    expect(AllocationMetadata.target(clearedAsset), 0);
+  });
 }

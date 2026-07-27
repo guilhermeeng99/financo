@@ -109,7 +109,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     if (state.isEditing) {
       _descriptionController.text = state.description;
       _amountController.text = state.amount > 0
-          ? BrlCurrencyInputFormatter.format(state.amount)
+          ? CurrencyInputFormatter.format(state.amount, state.accountCurrency)
           : '';
       _notesController.text = state.notes;
       return;
@@ -378,6 +378,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
                             Expanded(
                               child: FinancoCurrencyField(
                                 controller: _amountController,
+                                currency: state.accountCurrency,
                                 label: t.transactions.amountLabel,
                                 hintText: t.transactions.amountHint,
                                 onChanged: cubit.updateAmount,
@@ -571,6 +572,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
         const SizedBox(height: 12),
         FinancoCurrencyField(
           controller: _receivedController,
+          currency: state.destinationCurrency,
           label:
               '${t.transactions.receivedAmount} '
               '(${state.destinationCurrency.code})',
@@ -580,5 +582,4 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
       ],
     ];
   }
-
 }

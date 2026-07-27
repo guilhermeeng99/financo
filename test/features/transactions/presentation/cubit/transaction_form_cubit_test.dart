@@ -105,6 +105,28 @@ void main() {
       addTearDown(cubit.close);
     });
 
+    test('switching type clears the selected category', () {
+      final cubit = buildCubit()..updateCategoryId('cat-expense');
+      expect(cubit.state.categoryId, 'cat-expense');
+
+      cubit.updateType(TransactionType.income);
+      expect(cubit.state.type, TransactionType.income);
+      // Expense category can't classify income — it must be cleared.
+      expect(cubit.state.categoryId, '');
+
+      addTearDown(cubit.close);
+    });
+
+    test('re-selecting the current type keeps the category', () {
+      // Starts as expense; re-picking expense must not wipe the category.
+      final cubit = buildCubit()
+        ..updateCategoryId('cat-expense')
+        ..updateType(TransactionType.expense);
+      expect(cubit.state.categoryId, 'cat-expense');
+
+      addTearDown(cubit.close);
+    });
+
     test('initial state detects transfer from existing transaction', () {
       final pair = TransactionFactory.transfer();
       final cubit = buildCubit(existing: pair.expense);
@@ -1060,23 +1082,25 @@ void main() {
         );
       });
 
-      test('detected when currencies differ and needs a received amount',
-          () async {
-        final cubit = buildCubit();
-        await Future<void>.delayed(Duration.zero);
-        cubit
-          ..setTransferMode(enabled: true)
-          ..updateAmount('7000')
-          ..updateAccountId('acc-brl')
-          ..updateDestinationAccountId('acc-eur');
+      test(
+        'detected when currencies differ and needs a received amount',
+        () async {
+          final cubit = buildCubit();
+          await Future<void>.delayed(Duration.zero);
+          cubit
+            ..setTransferMode(enabled: true)
+            ..updateAmount('7000')
+            ..updateAccountId('acc-brl')
+            ..updateDestinationAccountId('acc-eur');
 
-        expect(cubit.state.isCrossCurrency, isTrue);
-        // Invalid until the received (far-side) amount is entered.
-        expect(cubit.state.isValid, isFalse);
-        cubit.updateDestinationAmount('1100');
-        expect(cubit.state.isValid, isTrue);
-        addTearDown(cubit.close);
-      });
+          expect(cubit.state.isCrossCurrency, isTrue);
+          // Invalid until the received (far-side) amount is entered.
+          expect(cubit.state.isValid, isFalse);
+          cubit.updateDestinationAmount('1100');
+          expect(cubit.state.isValid, isTrue);
+          addTearDown(cubit.close);
+        },
+      );
 
       test('writes each leg its own native amount', () async {
         when(
@@ -1111,37 +1135,39 @@ void main() {
         addTearDown(cubit.close);
       });
 
-      test('same-currency transfer keeps the same amount on both legs',
-          () async {
-        when(
-          () => mockTransfer(
-            expense: any(named: 'expense'),
-            income: any(named: 'income'),
-          ),
-        ).thenAnswer((_) async => const Right(<TransactionEntity>[]));
+      test(
+        'same-currency transfer keeps the same amount on both legs',
+        () async {
+          when(
+            () => mockTransfer(
+              expense: any(named: 'expense'),
+              income: any(named: 'income'),
+            ),
+          ).thenAnswer((_) async => const Right(<TransactionEntity>[]));
 
-        final cubit = buildCubit();
-        await Future<void>.delayed(Duration.zero);
-        // acc-brl-2 is not in the loaded map, so it defaults to BRL — a valid,
-        // same-currency transfer.
-        cubit
-          ..setTransferMode(enabled: true)
-          ..updateAmount('500')
-          ..updateAccountId('acc-brl')
-          ..updateDestinationAccountId('acc-brl-2');
-        expect(cubit.state.isCrossCurrency, isFalse);
-        await cubit.submit();
+          final cubit = buildCubit();
+          await Future<void>.delayed(Duration.zero);
+          // acc-brl-2 is not in the loaded map, so it defaults to BRL —
+          // a valid, same-currency transfer.
+          cubit
+            ..setTransferMode(enabled: true)
+            ..updateAmount('500')
+            ..updateAccountId('acc-brl')
+            ..updateDestinationAccountId('acc-brl-2');
+          expect(cubit.state.isCrossCurrency, isFalse);
+          await cubit.submit();
 
-        final captured = verify(
-          () => mockTransfer(
-            expense: captureAny(named: 'expense'),
-            income: captureAny(named: 'income'),
-          ),
-        ).captured;
-        expect((captured[0] as TransactionEntity).amount, 500);
-        expect((captured[1] as TransactionEntity).amount, 500);
-        addTearDown(cubit.close);
-      });
+          final captured = verify(
+            () => mockTransfer(
+              expense: captureAny(named: 'expense'),
+              income: captureAny(named: 'income'),
+            ),
+          ).captured;
+          expect((captured[0] as TransactionEntity).amount, 500);
+          expect((captured[1] as TransactionEntity).amount, 500);
+          addTearDown(cubit.close);
+        },
+      );
     });
   });
 }
