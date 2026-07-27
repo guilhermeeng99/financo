@@ -24,6 +24,8 @@ Extends `Equatable`.
 | totalExpenses | double | Period expenses only (selected month) |
 | netResult | double | `totalIncome - totalExpenses` |
 | accounts | List\<AccountEntity\> | Adjusted with cumulative transactions |
+| accountBrlById | Map\<String, double\> | BRL estimate per account id (native balance × current FX). Drives the consolidated Total and each foreign account's `≈ R$` sub-line. Foreign accounts with no available rate are absent (F9 — see [multi_currency_accounts.md](multi_currency_accounts.md)). Defaults to `{}`. |
+| investmentAccounts | List\<InvestmentAccountRow\> | Market-valued investment accounts (institutions), rendered alongside checking so the Total reflects net worth (cash + market value). Empty until the investing module has institutions (F8 — see [investing_account_unification.md](investing_account_unification.md)). Defaults to `[]`. |
 | expensesByCategory | List\<CategoryAmount\> | Sorted descending by amount |
 | incomeByCategory | List\<CategoryAmount\> | Sorted descending by amount |
 | fiftyThirtyTwenty | FiftyThirtyTwentyOverview | Per-period 50/30/20 split, computed via `compute50_30_20Overview`. See [fifty_thirty_twenty.md](fifty_thirty_twenty.md). |
@@ -42,19 +44,28 @@ to plumb it through.
 
 ### DashboardRepositoryImpl
 
-**Dependencies**: TransactionRepository, AccountRepository, CategoryRepository.
+**Dependencies**: TransactionRepository, AccountRepository, CategoryRepository,
+InstitutionRepository, InstitutionValuationReader, AccountFxConverter.
+
+The last three are an **intentional dashboard × investing join**: the Dashboard
+reads investing institutions and their market values (so brokers show as
+investment accounts and the Total reflects net worth) and consolidates
+foreign-currency accounts to BRL. The investing read is **best-effort** — a
+failure degrades the page to its cash-only view rather than erroring.
 
 **Algorithm**:
 1. Fetch accounts (all), transactions (all up to end of month), categories (all) — in sequence
 2. If any fetch fails → return Left(failure)
-3. Compute cumulative account adjustments from ALL transactions (income adds, expense subtracts)
-4. Adjust each account's `initialBalance` with cumulative adjustment via `copyWith`
-5. Filter transactions to selected month only (period = startOfMonth to endOfMonth)
-6. Compute `totalBalance` (sum of adjusted accounts), `totalIncome`, `totalExpenses` from period transactions — **excluding transfers**
-7. Compute `netResult = totalIncome - totalExpenses`
-8. Aggregate expenses and income by category (sorted descending by amount) — **excluding transfers**
-9. Compute `fiftyThirtyTwenty` by calling the pure function `compute50_30_20Overview(periodTransactions, categories, accounts)` — single pass, no extra IO. See [fifty_thirty_twenty.md](fifty_thirty_twenty.md) for the algorithm.
-10. Return Right(DashboardSummary)
+3. Read investing institutions + their market values via `InstitutionValuationReader` (best-effort) and build the market-valued `investmentAccounts` rows (BRL, FX-consolidated), sorted by market value descending
+4. Read current-FX rates via `AccountFxConverter.ratesToBrl` to consolidate foreign accounts; a missing rate falls back to a 1:1 estimate (the roll-up is explicitly an estimate — F9)
+5. Compute cumulative account adjustments from ALL transactions (income adds, expense subtracts)
+6. Adjust each account's `initialBalance` with cumulative adjustment via `copyWith`
+7. Build `accountBrlById` (each adjusted balance × its currency's rate); `totalBalance` = sum of `accountBrlById` (cash, BRL-consolidated). The displayed **Total** row combines cash + non-muted institution market values in the presentation layer (see [investing_account_unification.md](investing_account_unification.md) rule 3)
+8. Filter transactions to selected month, consolidate each to BRL, then compute `totalIncome`, `totalExpenses` — **excluding transfers and investment cash flows** (`isInvestmentCashFlow`)
+9. Compute `netResult = totalIncome - totalExpenses`
+10. Aggregate expenses and income by category (sorted descending by amount) — **excluding transfers and investment cash flows**
+11. Compute `fiftyThirtyTwenty` by calling the pure function `compute50_30_20Overview(periodTransactions, categories, accounts)` — single pass, no extra IO. See [fifty_thirty_twenty.md](fifty_thirty_twenty.md) for the algorithm.
+12. Return Right(DashboardSummary)
 
 ### Business Rules
 

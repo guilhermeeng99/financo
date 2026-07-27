@@ -12,9 +12,21 @@ Financo's cash-side `TransactionEntity`.
 
 `AssetTransaction` (`lib/features/investing/domain/entities/asset_transaction.dart`):
 `id, userId, institutionId, assetId, kind (TransactionKind), quantity (double),
-unitPrice (Money), fees (Money), amount (Money), date, notes?, createdAt,
-updatedAt`. Persisted as `unitPriceMinor/feesMinor/amountMinor` INT + one
-`currency` column (umbrella §3, §4). `TransactionKind = {buy, sell, dividend}`.
+unitPrice (Money), fees (Money), amount (Money), date, notes?,
+fundingAccountId?, cashAmount?, createdAt, updatedAt`. Persisted as
+`unitPriceMinor/feesMinor/amountMinor` INT + one `currency` column (umbrella
+§3, §4). `TransactionKind = {buy, sell, dividend}`.
+
+- `fundingAccountId?` (String) — the checking account the cash came from (buy)
+  / went to (sell). When set, the app auto-manages a paired cash-flow
+  `transactions` row so the purchase is a single entry that also feeds the
+  50/30/20 savings bucket (F8 — see
+  [investing_account_unification.md](investing_account_unification.md) §4). Null
+  → cash already at the broker / external; no cash-flow row is generated.
+- `cashAmount?` (Money) — the amount that actually moved on the checking side,
+  always **BRL** (F8 O2: a USD buy debits BRL from checking; the native
+  `amount` may be USD, this is the reais debited/credited). Persisted as
+  `cashAmountMinor`; non-null only alongside `fundingAccountId`.
 
 ## Ordering (single source, shared by calculator + guard)
 

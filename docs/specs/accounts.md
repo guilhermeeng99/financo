@@ -7,9 +7,10 @@ AccountEntity {
   id:              String   (required, Firestore doc ID)
   userId:          String   (required, owner)
   name:            String   (required, non-empty)
-  type:            AccountType (required: checking | creditCard | investment)
-  bank:            BankType (required: see BankBrand registry — Brazilian banks + others)
+  type:            AccountType (required: checking | creditCard | investment — investment deprecated, see rule 12)
+  bank:            BankType (required: see BankBrand registry — Brazilian banks + non-BR (avenue=US, wise=international) + others)
   initialBalance:  double   (required, seed balance at account creation)
+  currency:        Currency (default Currency.brl, set at creation — the currency the account is denominated in; F9, see [multi_currency_accounts.md](multi_currency_accounts.md))
   creditLimit:     double?  (null for checking/investment, required for creditCard)
   closingDay:      int?     (null for checking/investment, required for creditCard, 1–31)
   dueDay:          int?     (null for checking/investment, required for creditCard, 1–31)
@@ -23,7 +24,7 @@ AccountEntity {
 
 `initialBalance` is the immutable seed entered when the account was created — it lives in Firestore. `currentBalance` is a runtime-only field set by `AccountsCubit.loadAccounts` after fetching all-time transactions (it is **not** persisted). Sign convention is type-specific so the same getter works for both:
 
-- **Checking / Investment**: `currentBalance = initialBalance + Σincome − Σexpense`. Positive means money in the account. Investment accounts track **principal only** (deposits − withdrawals) — market yield is intentionally out of scope (see [fifty_thirty_twenty.md](fifty_thirty_twenty.md)).
+- **Checking / Investment**: `currentBalance = initialBalance + Σincome − Σexpense`. Positive means money in the account. Investment accounts track **principal only** (deposits − withdrawals) — market yield is intentionally out of scope. `AccountType.investment` is **deprecated** post-F8 (retired in data; savings now flows through institution aporte/resgate — see rule 12 and [investing_account_unification.md](investing_account_unification.md)).
 - **Credit card**: `currentBalance = initialBalance + Σexpense − Σincome`. Positive means the amount currently owed; spending raises it, payments (transfers in, refunds) lower it.
 
 The pure helper `applyTransactionsToAccounts(accounts, transactions)` in `lib/features/accounts/domain/account_balance_calculator.dart` is the single source of truth for the math. Transactions that target an unknown `accountId` are ignored.
@@ -64,25 +65,30 @@ Adding a new bank means: append a value to `BankType` and add a matching entry i
    1. every transaction on the account is deleted first (transfers cascade to
       their linked leg via the transaction repository) — any failure
       short-circuits to `Left`;
-   2. then the account itself — failure also short-circuits;
-   3. then, **best-effort**, the investment holdings tied to the account
-      (`AssetHoldingRepository.deleteHoldingsForAccount`) — a failure here is
-      ignored because the account is already gone and the investments overview
-      filters out orphan holdings.
+   2. then the account itself — failure also short-circuits.
+
+   There is **no holdings step**: post-F8, holdings live on institutions, not
+   accounts, so an account delete never touches the investing ledger.
 
    Navigation contract: `AddAccountPage` is mounted on the root navigator,
    **outside** the shell's providers, so it cannot touch shell-scoped cubits.
    On successful create/update/delete it signals via `pop(true)`;
    `AccountsPage` (inside the shell) reacts to the `true` result by
-   force-refreshing `AccountsCubit` **and** `InvestmentsCubit`, so a
-   deleted/created investment account's holdings drop in or out of the
-   overview immediately.
+   force-refreshing its `AccountsCubit`.
 7. **Accounts are ordered by creation date** (ascending) in both Firestore and local cache.
 8. **Default bank is Nubank** for new accounts.
 9. **Default type is checking** for new accounts.
 10. **Default closingDay is 1, default dueDay is 10** for credit card forms.
 11. **initialBalance represents the seed balance** — running balance is calculated from transactions.
-12. **Investment accounts behave like checking** for the balance calculator and transaction pickers, with one functional distinction: transfers `checking → investment` are interpreted as savings by the 50/30/20 overview (see [fifty_thirty_twenty.md](fifty_thirty_twenty.md)). No new fields and no new conditional form sections are introduced.
+12. **`AccountType.investment` is deprecated (F8).** It is retired in data by
+    the F8 migration and no longer hosts savings — savings now flows through
+    institution aporte/resgate cash flows (see
+    [investing_account_unification.md](investing_account_unification.md) §4
+    rule 7 and [fifty_thirty_twenty.md](fifty_thirty_twenty.md)). The enum value
+    is kept only until F8.6 removes it; while present it behaves like `checking`
+    for the balance calculator and transaction pickers, with no new fields.
+    (Historically, transfers `checking → investment` were the 50/30/20 savings
+    signal.)
 13. **CSV import (V1) does not surface investment accounts.** The importer recognises `Conta Corrente` / `Cartão de Crédito` only; "Investimento" rows are rejected at parse time with a `ValidationFailure` pointing to the offending row. Documented in the import dialog copy. Manual creation via the add-account form is the supported path; full CSV support for investment accounts is deferred.
 14. **Chat action handler (V1) does not create investment accounts.** The `account create` action only accepts `checking` or `creditCard`. The AI is instructed (via USER CONTEXT — see [chat.md](chat.md)) to ask the user to create investment accounts manually.
 
@@ -123,6 +129,7 @@ abstract class AccountRepository {
 | `type` | `type` | `AccountType.values.byName(String)` |
 | `bank` | `bank` | `BankType` with fallback to `others` |
 | `balance` | `initialBalance` | `(num).toDouble()` |
+| `currency` | `currency` | `Currency` by name, default `brl` |
 | `creditLimit` | `creditLimit` | `(num?)?.toDouble()` |
 | `closingDay` | `closingDay` | `int?` |
 | `dueDay` | `dueDay` | `int?` |
@@ -134,7 +141,7 @@ Note: Firestore field is `balance`, Dart field is `initialBalance`.
 **Model → Firestore (`toJson`):**
 - Serializes all fields except `id` (Firestore doc ID is separate).
 - `createdAt` serialized as `Timestamp`.
-- `type` and `bank` serialized as `.name` string.
+- `type`, `bank`, and `currency` serialized as `.name` string (`currency` defaults to `'brl'`).
 
 ## State Machines
 

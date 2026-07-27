@@ -111,11 +111,12 @@ class _AddAccountViewState extends State<_AddAccountView> {
     if (!mounted) return;
     result.fold(
       (failure) => context.showSnack(localizedFailure(failure)),
-      // `true` signals the caller to refresh account/investment state.
-      // This page is mounted on the root navigator, OUTSIDE the shell's
-      // providers, so shell-scoped cubits (e.g. InvestmentsCubit — needed
-      // so a deleted account's holdings drop out of the overview) must be
-      // refreshed by the caller, never read from here.
+      // `true` signals the caller to refresh account-scoped state. This page
+      // is mounted on the root navigator, OUTSIDE the shell's providers, so
+      // the caller (AccountsPage) re-reads its shell-scoped AccountsCubit on
+      // the `true` result rather than this page touching it directly. The
+      // delete cascade is transactions + account only — there are no holdings
+      // to drop (holdings live on institutions post-F8).
       (_) => context.pop(true),
     );
   }

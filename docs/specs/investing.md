@@ -1,7 +1,7 @@
 # Investing (V2) — Umbrella Spec
 
 > **Status**: V2 — design (umbrella). Supersedes `investments.md` (V1, tracking-only).
-> **Last updated**: 2026-07-22
+> **Last updated**: 2026-07-26
 > **Coverage**: Scope decisions · reconciled model · entity contracts · target persistence · architecture · migration · phase map · edge cases
 > **Companion**: `docs/investanco-integration-plan.md` (the integration plan + locked decisions this spec formalizes).
 
@@ -44,6 +44,13 @@ Debated in the integration plan §7 and locked before code:
 6. **`AccountType.investment` is kept only for the 50/30/20 feature** (savings/aporte
    tag). It no longer hosts holdings; the account-delete → holdings cascade is
    removed.
+
+> **Superseded by F8 (2026-07-25)**: decisions 5 & 6 are reversed. The
+> `Institution` becomes the single "investment account" record (B1), the
+> `AccountType.investment` account is **retired in data** (removal tracked as
+> F8.6), and 50/30/20 savings is driven by `institutionId`-tagged aporte/resgate
+> cash flows rather than an account type. See
+> [investing_account_unification.md](investing_account_unification.md).
 7. **Existing `asset_holdings` data is discarded** on cutover (inconvertible — no
    ticker/quantity/price). Users re-enter positions via transactions / CSV import.
 8. **Market data**: keyed sources (**brapi**, **Finnhub**) go through **Cloud

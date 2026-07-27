@@ -10,9 +10,11 @@ sibling collection — **not** an overload of `Account` (umbrella §0.5).
 ## Entity
 
 `Institution` (`lib/features/investing/domain/entities/institution.dart`):
-`id, userId, name, kind (InstitutionKind), currency (Currency), createdAt`.
-`Equatable` + `copyWith`. `InstitutionKind = {bank, broker, internationalBroker,
-crypto, other}`.
+`id, userId, name, kind (InstitutionKind), currency (Currency), createdAt,
+bank? (String — a `BankType.name` used to render a brand avatar on the
+Dashboard; F8), color? (int — ARGB display colour for the fallback avatar,
+falls back to a `kind`-derived colour when null)`. `Equatable` + `copyWith`.
+`InstitutionKind = {bank, broker, internationalBroker, crypto, other}`.
 
 ## Business rules
 

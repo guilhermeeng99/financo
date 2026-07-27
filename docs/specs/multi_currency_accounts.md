@@ -1,9 +1,9 @@
 # Multi-Currency Accounts (F9)
 
-**Status:** DRAFT — pending review. Direction confirmed with the user 2026-07-25:
-accounts can be denominated in different currencies (one currency per account),
-amounts stored **native**, and a consolidated **BRL estimate** computed at the
-**current** FX rate. Distinct from F8 (investing unification); Wise is a
+**Status:** Implemented. Direction confirmed with the user 2026-07-25 and
+shipped: accounts can be denominated in different currencies (one currency per
+account), amounts stored **native**, and a consolidated **BRL estimate** computed
+at the **current** FX rate. Distinct from F8 (investing unification); Wise is a
 foreign-currency *spending* account, not an investing institution.
 
 ---

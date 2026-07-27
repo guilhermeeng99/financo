@@ -30,7 +30,11 @@ These were debated and locked before code:
   new `AccountType.investment` is added. The savings bucket spend is the
   **net flow of money transferred from any `checking` account to any
   `investment` account during the month** — resgates (investment →
-  checking) subtract.
+  checking) subtract. *(Superseded by F8: `AccountType.investment` is
+  retired in data and savings is now driven by `institutionId`-tagged
+  aporte/resgate cash flows — see [investing_account_unification.md](investing_account_unification.md)
+  §4 rule 7. The old checking→investment transfer path still counts for
+  any residual legacy data; both are summed — see §2 rule 4.)*
 - **Income base is the sum of `income`-typed transactions in the month**
   (no configurable salary in V1). If the month's income sum is 0, the
   card renders an empty-state explaining why percentages can't be shown.
@@ -101,6 +105,13 @@ Adds `investment`:
 ```dart
 enum AccountType { checking, creditCard, investment }
 ```
+
+> **Superseded by F8**: `AccountType.investment` is deprecated and retired in
+> data by the F8 migration (removal tracked as F8.6). Savings is now driven by
+> `institutionId`-tagged aporte/resgate cash flows on `checking` accounts, not
+> by an `investment` account type — see
+> [investing_account_unification.md](investing_account_unification.md) §4 rule 7.
+> The rules below describe the original (pre-F8) behaviour.
 
 Rules:
 
@@ -188,21 +199,29 @@ actual < target.
    (orphan category), the transaction counts as unclassified.
 3. **Only `expense`-type transactions count toward needs/wants**.
    Transfers excluded.
-4. **Savings calculation**:
-   - Look at every transfer in the month (`linkedTransactionId != null`).
-   - For each transfer pair (one expense leg, one income leg):
-     - If the expense leg's account is `checking` AND the income leg's
-       account is `investment`: ADD `amount`.
-     - If the expense leg's account is `investment` AND the income leg's
-       account is `checking`: SUBTRACT `amount` (resgate).
-     - Any other combination: ignore. Specifically:
-       - checking → checking: not savings, just internal moves
-       - investment → investment: rebalancing within the carteira
-       - any pair involving `creditCard`: cartão payments are not
-         savings
-   - The result is clamped to `≥ 0` in the overview (negative net flow
-     means the user took out more than they put in this month — we
-     surface savings as `0` so the percentage doesn't go negative).
+4. **Savings calculation** — two contributions are summed
+   (`_netSavingsFlow` in `compute_fifty_thirty_twenty.dart`):
+   - **(a) Institution aporte/resgate cash flows (F8.3, the current path).**
+     Every transaction tagged with an `institutionId`
+     (`isInvestmentCashFlow`) is a single-entry investment cash flow, not an
+     account↔account transfer: an **aporte** (`expense` — cash leaving
+     checking into a broker) ADDs `amount`; a **resgate** (`income` — payout
+     back) SUBTRACTs `amount`. This is the savings source post-F8. See
+     [investing_account_unification.md](investing_account_unification.md)
+     §4 rule 7.
+   - **(b) Legacy checking↔investment transfers.** For any residual data
+     that still uses an `AccountType.investment` account:
+     - Look at every transfer in the month (`linkedTransactionId != null`).
+     - For each transfer pair (one expense leg, one income leg):
+       - expense leg `checking` AND income leg `investment`: ADD `amount`.
+       - expense leg `investment` AND income leg `checking`: SUBTRACT `amount` (resgate).
+       - Any other combination: ignore. Specifically:
+         - checking → checking: not savings, just internal moves
+         - investment → investment: rebalancing within the carteira
+         - any pair involving `creditCard`: cartão payments are not savings
+   - The combined net of (a) + (b) is clamped to `≥ 0` in the overview
+     (negative net flow means the user took out more than they put in this
+     month — we surface savings as `0` so the percentage doesn't go negative).
 5. **Targets are customisable**: defaults are 50 / 30 / 20, but the user can
    set custom needs/wants/savings splits via `FiftyThirtyTwentyTargets`
    (persisted under `users/{id}.fiftyThirtyTwentyTargets`). The split must be
@@ -284,7 +303,12 @@ Inputs:
            null    → unclassifiedSpent += t.amount
                      unclassifiedCatIds += rootCat.id
 
-    3. savingsAmount:
+    3. savingsAmount (sum of two contributions):
+       # (a) Institution aporte/resgate cash flows — the F8.3 current path.
+       for each t in periodTransactions where t.isInvestmentCashFlow (institutionId != null):
+         if t.type == expense:  net += t.amount   # aporte
+         else:                  net -= t.amount   # resgate
+       # (b) Legacy checking↔investment transfers (residual pre-F8 data).
        Build a transfer pair map keyed by linkedTransactionId.
        For each pair (expenseLeg, incomeLeg):
          srcType = accountTypeById[expenseLeg.accountId]

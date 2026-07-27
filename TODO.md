@@ -1,7 +1,7 @@
 # TODO — Deferred Items
 
 Tracked follow-ups that are intentionally not being done right now, with the
-reason each one is parked. Last reviewed: 2026-06-12.
+reason each one is parked. Last reviewed: 2026-07-26.
 
 ## Backend / dependencies
 
@@ -48,3 +48,29 @@ reason each one is parked. Last reviewed: 2026-06-12.
 - [ ] **`fifty_thirty_twenty_card.dart:418`** pushes the add-account route
       without refreshing on return — newly created accounts can render stale
       until the next dashboard reload (minor staleness).
+
+## From deep review (2026-07-26)
+
+- [ ] **F8.6 — remove `AccountType.investment`.** Investment accounts are
+      retired in data (all migrated to institutions), but the enum value + ~10
+      usages remain (`add_account_page` pill, `compute_fifty_thirty_twenty`,
+      `account_balance_calculator`, `account_card`, migration planner/cubit).
+      Real work, not a delete; do after confirming no legacy docs need it.
+- [ ] **Dashboard row scaffold + avatar helper.** `DashboardAccountRow` and
+      `DashboardInstitutionRow` still share a near-identical `Material>InkWell>
+      Padding>Row` scaffold, and `_InstitutionAvatar` re-implements
+      `BankAvatar`'s luminance foreground pick. (Checkbox + pill were extracted
+      to `dashboard_row_parts.dart`.) Extract a shared row scaffold + an
+      `initials` mode on `BankAvatar` if a 3rd row type appears.
+- [ ] **Standardize enum-from-string parsing.** Four idioms across the codebase
+      (`byName`, `where().firstOrNull`, `firstWhere(orElse:)`, hand loops). A
+      shared `enumByNameOrNull` helper. Low value vs churn; do opportunistically.
+- [ ] **Merge `lib/features/investments/` into `investing/`.** Two near-homonym
+      feature folders; allocation code is split across both. Rename hazard.
+- [ ] **Decompose oversized build/parse methods.** `add_transaction_page.build`
+      (~208 lines), `import_transactions_csv_usecase._parseCsv` (~155),
+      `dashboard_page.build` (~171) exceed the 5-25 line rule.
+- [ ] **Routine safe dependency bumps.** Deferred from the push-to-main to keep
+      the commit low-risk: Flutter within-constraint minors/patches
+      (`flutter pub upgrade`), functions dev-dep minors (ts-jest,
+      @typescript-eslint/*). No security impact; do in a dedicated bump PR.

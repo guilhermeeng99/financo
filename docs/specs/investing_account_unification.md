@@ -1,9 +1,11 @@
 # Investing Account Unification (F8)
 
-**Status:** DRAFT — pending review. Decisions B1 + automation + guided migration
-locked with the user 2026-07-25. This spec supersedes the relevant parts of
-`investing.md §0` (which deliberately *decoupled* account and institution on
-2026-07-22); F8 is a deliberate re-reversal toward a single record.
+**Status:** Implemented. Decisions B1 + automation + guided migration locked with
+the user 2026-07-25 and shipped; the one residual item is **F8.6 — remove
+`AccountType.investment`** (deprecated in data, enum value still present). This
+spec supersedes the relevant parts of `investing.md §0` (which deliberately
+*decoupled* account and institution on 2026-07-22); F8 is a deliberate
+re-reversal toward a single record.
 
 ---
 
@@ -85,8 +87,10 @@ institution — value is always **derived** from `PortfolioValuation.byInstituti
 ### 3.2 `AccountEntity`
 
 - `AccountType` reduces (effectively) to `{ checking, creditCard }` for **new**
-  data. `investment` is **deprecated**: no longer creatable, retained in the enum
-  only so legacy/in-flight docs deserialize during migration, then removed post-cutover.
+  data. `investment` is **deprecated**, retained in the enum only so
+  legacy/in-flight docs deserialize during migration, then removed post-cutover.
+  *(F8.6 pending: the `investment` pill still renders in `add_account_page.dart`,
+  so the type is technically still creatable until the enum value is removed.)*
 - No other field changes. `linkedAccountId` (credit-card → paying checking) is
   unaffected.
 
@@ -144,10 +148,18 @@ A transaction may represent cash moving between a **checking account** and an
 8. **Optional funding.** A buy/sell with `fundingAccountId=null` generates no
    cash-flow row (cash already at the broker / external). It still affects
    holdings and market value, but not 50/30/20 or any checking balance.
-9. **Currency.** The institution's `currency` is display/native; its Dashboard
-   value is always BRL via FX. The `cashAmount` is always BRL (the checking side).
+9. **Currency.** The institution's `currency` is display/native. A **foreign**
+   institution (e.g. Avenue in US$) renders its Dashboard amount like a foreign
+   cash account: the native figure (`marketValueNative`, from `byCurrency`) on
+   top with a `≈ R$` estimate below; the `≈ R$` line is omitted when no FX rate
+   consolidated the value (so it shows the real US$ instead of R$ 0). A BRL
+   institution shows a single R$ figure. The consolidated **BRL** `marketValue`
+   is what still feeds the Total. Every institution row carries an "Investment"
+   tag (not the currency code — that moved to the amount column).
 10. **No investment account creation.** The add-account form offers only
     `checking`/`creditCard`. Brokers are created in the investing Institutions UI.
+    *(F8.6 pending: the `investment` type pill still renders in
+    `add_account_page.dart` until the enum value is removed.)*
 
 ---
 
