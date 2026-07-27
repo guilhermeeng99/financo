@@ -11,7 +11,6 @@ void main() {
       InvestingOverviewLoaded(
         portfolio: PortfolioValuation.empty(),
         assetsById: const {},
-        snapshots: const [],
         isRefreshing: isRefreshing,
       );
 

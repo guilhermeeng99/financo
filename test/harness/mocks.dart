@@ -93,7 +93,6 @@ import 'package:financo/features/investing/domain/usecases/create_institution_us
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
-import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
@@ -503,8 +502,6 @@ class MockImportAssetsCsvUseCase extends Mock
 
 class MockImportInvestingTransactionsCsvUseCase extends Mock
     implements ImportInvestingTransactionsCsvUseCase {}
-
-class MockGetSnapshotsUseCase extends Mock implements GetSnapshotsUseCase {}
 
 class MockRecordDailySnapshotUseCase extends Mock
     implements RecordDailySnapshotUseCase {}

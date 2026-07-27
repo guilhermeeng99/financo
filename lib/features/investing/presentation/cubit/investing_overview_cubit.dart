@@ -2,11 +2,9 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/portfolio_valuation.dart';
-import 'package:financo/features/investing/domain/entities/snapshot.dart';
 import 'package:financo/features/investing/domain/services/portfolio_pricing_engine.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
-import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/presentation/cubit/portfolio_load_mixin.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,13 +21,11 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
     required PortfolioPricingEngine engine,
     required GetAssetTransactionsUseCase getTransactions,
     required GetAssetsUseCase getAssets,
-    required GetSnapshotsUseCase getSnapshots,
     required RecordDailySnapshotUseCase recordSnapshot,
     required String userId,
   }) : _engine = engine,
        _getTransactions = getTransactions,
        _getAssets = getAssets,
-       _getSnapshots = getSnapshots,
        _recordSnapshot = recordSnapshot,
        _userId = userId,
        super(const InvestingOverviewLoading());
@@ -37,7 +33,6 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
   final PortfolioPricingEngine _engine;
   final GetAssetTransactionsUseCase _getTransactions;
   final GetAssetsUseCase _getAssets;
-  final GetSnapshotsUseCase _getSnapshots;
   final RecordDailySnapshotUseCase _recordSnapshot;
   final String _userId;
 
@@ -69,7 +64,6 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
 
     final transactions = txResult.getOrElse(() => const []);
     final assets = assetsResult.getOrElse(() => const []);
-    var history = await _loadSnapshots(force: force);
 
     // Instant paint from the local quote cache.
     final cached = await _engine.priceFromCache(transactions, assets);
@@ -77,7 +71,6 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
       InvestingOverviewLoaded(
         portfolio: cached.portfolio,
         assetsById: cached.assetsById,
-        snapshots: history,
         isRefreshing: true,
       ),
     );
@@ -87,29 +80,21 @@ class InvestingOverviewCubit extends Cubit<InvestingOverviewState>
     await refreshHeldPositions(transactions, assets, force: force);
 
     final repriced = await _engine.priceFromCache(transactions, assets);
-    // Record today's point, then re-read so the fresh snapshot shows up.
+    // Record today's point so the net-worth history keeps accruing (the read
+    // side lives in the sync service, not this overview).
     await _recordSnapshot(
       userId: _userId,
       portfolio: repriced.portfolio,
       today: DateTime.now(),
     );
-    history = await _loadSnapshots(force: false);
     if (isClosed) return;
     emit(
       InvestingOverviewLoaded(
         portfolio: repriced.portfolio,
         assetsById: repriced.assetsById,
-        snapshots: history,
         isRefreshing: false,
       ),
     );
-  }
-
-  /// Snapshots for the history chart. A read failure is non-fatal — the chart
-  /// just stays empty rather than blocking the whole overview.
-  Future<List<Snapshot>> _loadSnapshots({required bool force}) async {
-    final result = await _getSnapshots(userId: _userId, forceRefresh: force);
-    return result.getOrElse(() => const []);
   }
 }
 
@@ -128,17 +113,15 @@ final class InvestingOverviewLoaded extends InvestingOverviewState {
   const InvestingOverviewLoaded({
     required this.portfolio,
     required this.assetsById,
-    required this.snapshots,
     required this.isRefreshing,
   });
 
   final PortfolioValuation portfolio;
   final Map<String, Asset> assetsById;
-  final List<Snapshot> snapshots;
   final bool isRefreshing;
 
   @override
-  List<Object?> get props => [portfolio, assetsById, snapshots, isRefreshing];
+  List<Object?> get props => [portfolio, assetsById, isRefreshing];
 }
 
 final class InvestingOverviewError extends InvestingOverviewState {

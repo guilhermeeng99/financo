@@ -4,7 +4,6 @@ import 'package:financo/core/errors/failures.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/portfolio_valuation.dart';
-import 'package:financo/features/investing/domain/entities/snapshot.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_overview_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -16,7 +15,6 @@ void main() {
   late MockPortfolioPricingEngine engine;
   late MockGetAssetTransactionsUseCase getTransactions;
   late MockGetAssetsUseCase getAssets;
-  late MockGetSnapshotsUseCase getSnapshots;
   late MockRecordDailySnapshotUseCase recordSnapshot;
 
   final portfolio = PortfolioValuation.empty();
@@ -36,14 +34,7 @@ void main() {
     engine = MockPortfolioPricingEngine();
     getTransactions = MockGetAssetTransactionsUseCase();
     getAssets = MockGetAssetsUseCase();
-    getSnapshots = MockGetSnapshotsUseCase();
     recordSnapshot = MockRecordDailySnapshotUseCase();
-    when(
-      () => getSnapshots(
-        userId: any(named: 'userId'),
-        forceRefresh: any(named: 'forceRefresh'),
-      ),
-    ).thenAnswer((_) async => const Right(<Snapshot>[]));
     when(
       () => recordSnapshot(
         userId: any(named: 'userId'),
@@ -57,7 +48,6 @@ void main() {
     engine: engine,
     getTransactions: getTransactions,
     getAssets: getAssets,
-    getSnapshots: getSnapshots,
     recordSnapshot: recordSnapshot,
     userId: 'user-1',
   );
@@ -93,13 +83,11 @@ void main() {
       InvestingOverviewLoaded(
         portfolio: portfolio,
         assetsById: assetsById,
-        snapshots: const [],
         isRefreshing: true,
       ),
       InvestingOverviewLoaded(
         portfolio: portfolio,
         assetsById: assetsById,
-        snapshots: const [],
         isRefreshing: false,
       ),
     ],
@@ -171,13 +159,11 @@ void main() {
       InvestingOverviewLoaded(
         portfolio: portfolio,
         assetsById: assetsById,
-        snapshots: const [],
         isRefreshing: true,
       ),
       InvestingOverviewLoaded(
         portfolio: portfolio,
         assetsById: assetsById,
-        snapshots: const [],
         isRefreshing: false,
       ),
     ],

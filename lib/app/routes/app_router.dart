@@ -52,7 +52,6 @@ import 'package:financo/features/investing/domain/services/portfolio_pricing_eng
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
-import 'package:financo/features/investing/domain/usecases/get_snapshots_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
@@ -288,7 +287,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
                   engine: GetIt.I<PortfolioPricingEngine>(),
                   getTransactions: GetIt.I<GetAssetTransactionsUseCase>(),
                   getAssets: GetIt.I<GetAssetsUseCase>(),
-                  getSnapshots: GetIt.I<GetSnapshotsUseCase>(),
                   recordSnapshot: GetIt.I<RecordDailySnapshotUseCase>(),
                   userId: userId,
                 );
