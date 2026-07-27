@@ -18,22 +18,24 @@ void main() {
   group('AddAllowedEmailUseCase', () {
     const email = 'new@example.com';
 
-    test('delegates to repository.addAllowedEmail with email and note',
-        () async {
-      when(
-        () => repo.addAllowedEmail(
-          email: any(named: 'email'),
-          note: any(named: 'note'),
-        ),
-      ).thenAnswer((_) async => const Right(null));
+    test(
+      'delegates to repository.addAllowedEmail with email and note',
+      () async {
+        when(
+          () => repo.addAllowedEmail(
+            email: any(named: 'email'),
+            note: any(named: 'note'),
+          ),
+        ).thenAnswer((_) async => const Right(null));
 
-      final result = await useCase(email: email, note: 'invited');
+        final result = await useCase(email: email, note: 'invited');
 
-      expect(result, const Right<Failure, void>(null));
-      verify(
-        () => repo.addAllowedEmail(email: email, note: 'invited'),
-      ).called(1);
-    });
+        expect(result, const Right<Failure, void>(null));
+        verify(
+          () => repo.addAllowedEmail(email: email, note: 'invited'),
+        ).called(1);
+      },
+    );
 
     test('passes a null note through to the repository', () async {
       when(

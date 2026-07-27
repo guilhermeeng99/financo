@@ -112,28 +112,30 @@ Nonexistent,500
       verify(() => mockBudgetRepository.createBudget(any())).called(1);
     });
 
-    test('skips non-expense-root categories (income root + subcategory)',
-        () async {
-      stubCategories();
-      stubExistingBudgets([]);
-      stubCreateBudgetCapturing();
+    test(
+      'skips non-expense-root categories (income root + subcategory)',
+      () async {
+        stubCategories();
+        stubExistingBudgets([]);
+        stubCreateBudgetCapturing();
 
-      const csv = '''
+        const csv = '''
 Category,Amount
 Salary,800
 Restaurants,300
 ''';
 
-      final result = await useCase(csvContent: csv, userId: userId);
+        final result = await useCase(csvContent: csv, userId: userId);
 
-      expect(
-        result,
-        const Right<Failure, BudgetImportResult>(
-          BudgetImportResult(importedCount: 0, skippedCount: 2),
-        ),
-      );
-      verifyNever(() => mockBudgetRepository.createBudget(any()));
-    });
+        expect(
+          result,
+          const Right<Failure, BudgetImportResult>(
+            BudgetImportResult(importedCount: 0, skippedCount: 2),
+          ),
+        );
+        verifyNever(() => mockBudgetRepository.createBudget(any()));
+      },
+    );
 
     test('skips categories that already have a budget', () async {
       stubCategories();
@@ -157,30 +159,32 @@ Transport,300
       verify(() => mockBudgetRepository.createBudget(any())).called(1);
     });
 
-    test('dedupes the same category within the file before importing',
-        () async {
-      stubCategories();
-      stubExistingBudgets([]);
-      final created = stubCreateBudgetCapturing();
+    test(
+      'dedupes the same category within the file before importing',
+      () async {
+        stubCategories();
+        stubExistingBudgets([]);
+        final created = stubCreateBudgetCapturing();
 
-      const csv = '''
+        const csv = '''
 Category,Amount
 Food,800
 Food,900
 ''';
 
-      final result = await useCase(csvContent: csv, userId: userId);
+        final result = await useCase(csvContent: csv, userId: userId);
 
-      // The second "Food" row is dropped at parse time (not counted as a
-      // skip), so the first value wins and only one budget is created.
-      expect(
-        result,
-        const Right<Failure, BudgetImportResult>(
-          BudgetImportResult(importedCount: 1, skippedCount: 0),
-        ),
-      );
-      expect(created.single.amount, 800);
-    });
+        // The second "Food" row is dropped at parse time (not counted as a
+        // skip), so the first value wins and only one budget is created.
+        expect(
+          result,
+          const Right<Failure, BudgetImportResult>(
+            BudgetImportResult(importedCount: 1, skippedCount: 0),
+          ),
+        );
+        expect(created.single.amount, 800);
+      },
+    );
 
     test('rejects a zero / negative amount with row detail', () async {
       stubCategories();

@@ -13,8 +13,7 @@ void main() {
   }
 
   group('LightPaletteCubit', () {
-    test('defaults to indigoCloud and applies it to AppColors.light',
-        () async {
+    test('defaults to indigoCloud and applies it to AppColors.light', () async {
       final cubit = LightPaletteCubit(prefs: await prefsWith({}));
       addTearDown(cubit.close);
       expect(cubit.state, LightPalette.indigoCloud);
@@ -36,8 +35,7 @@ void main() {
       );
     });
 
-    test('falls back to the default when the stored name is unknown',
-        () async {
+    test('falls back to the default when the stored name is unknown', () async {
       final cubit = LightPaletteCubit(
         prefs: await prefsWith({'light_palette': 'doesNotExist'}),
       );

@@ -45,8 +45,9 @@ void main() {
     blocTest<FiftyThirtyTwentyTargetsCubit, FiftyThirtyTwentyTargetsState>(
       'emits loading then ready with the fetched targets',
       setUp: () {
-        when(() => getTargets(userId))
-            .thenAnswer((_) async => const Right(customTargets));
+        when(
+          () => getTargets(userId),
+        ).thenAnswer((_) async => const Right(customTargets));
       },
       build: buildCubit,
       act: (cubit) => cubit.loadTargets(),
@@ -65,8 +66,9 @@ void main() {
     blocTest<FiftyThirtyTwentyTargetsCubit, FiftyThirtyTwentyTargetsState>(
       'keeps the classic fallback and carries the failure on error',
       setUp: () {
-        when(() => getTargets(userId))
-            .thenAnswer((_) async => const Left(ServerFailure()));
+        when(
+          () => getTargets(userId),
+        ).thenAnswer((_) async => const Left(ServerFailure()));
       },
       build: buildCubit,
       act: (cubit) => cubit.loadTargets(),
@@ -86,8 +88,9 @@ void main() {
     blocTest<FiftyThirtyTwentyTargetsCubit, FiftyThirtyTwentyTargetsState>(
       'is a no-op when targets are already loaded cleanly',
       setUp: () {
-        when(() => getTargets(userId))
-            .thenAnswer((_) async => const Right(customTargets));
+        when(
+          () => getTargets(userId),
+        ).thenAnswer((_) async => const Right(customTargets));
       },
       build: buildCubit,
       seed: () => const FiftyThirtyTwentyTargetsState(
@@ -102,8 +105,9 @@ void main() {
     blocTest<FiftyThirtyTwentyTargetsCubit, FiftyThirtyTwentyTargetsState>(
       'retries after a failed load instead of treating it as cached',
       setUp: () {
-        when(() => getTargets(userId))
-            .thenAnswer((_) async => const Right(customTargets));
+        when(
+          () => getTargets(userId),
+        ).thenAnswer((_) async => const Right(customTargets));
       },
       build: buildCubit,
       seed: () => const FiftyThirtyTwentyTargetsState(

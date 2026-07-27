@@ -43,8 +43,7 @@ void main() {
       expect(cubit.state, isNull);
     });
 
-    test('setLocale persists the tag, emits and applies the locale',
-        () async {
+    test('setLocale persists the tag, emits and applies the locale', () async {
       final prefs = await prefsWith({});
       final cubit = AppLocaleCubit(prefs: prefs);
       addTearDown(cubit.close);
@@ -67,8 +66,7 @@ void main() {
       expect(prefs.getString('app_locale'), 'system');
     });
 
-    test('activeFlutterLocale resolves the explicit choice when set',
-        () async {
+    test('activeFlutterLocale resolves the explicit choice when set', () async {
       final cubit = AppLocaleCubit(
         prefs: await prefsWith({'app_locale': 'pt-BR'}),
       );
@@ -76,14 +74,16 @@ void main() {
       expect(cubit.activeFlutterLocale(), AppLocale.ptBr);
     });
 
-    test('activeFlutterLocale falls back to the device locale on system',
-        () async {
-      final cubit = AppLocaleCubit(prefs: await prefsWith({}));
-      addTearDown(cubit.close);
-      expect(
-        cubit.activeFlutterLocale(),
-        AppLocaleUtils.findDeviceLocale(),
-      );
-    });
+    test(
+      'activeFlutterLocale falls back to the device locale on system',
+      () async {
+        final cubit = AppLocaleCubit(prefs: await prefsWith({}));
+        addTearDown(cubit.close);
+        expect(
+          cubit.activeFlutterLocale(),
+          AppLocaleUtils.findDeviceLocale(),
+        );
+      },
+    );
   });
 }

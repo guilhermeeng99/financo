@@ -27,8 +27,9 @@ void main() {
 
     await useCase(txId);
 
-    final captured =
-        verify(() => mockRepository.getTransaction(captureAny())).captured;
+    final captured = verify(
+      () => mockRepository.getTransaction(captureAny()),
+    ).captured;
     expect(captured.single, txId);
   });
 

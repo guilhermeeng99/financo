@@ -67,9 +67,11 @@ void main() {
     final result = await useCase(userId: 'user-1', targets: valid);
 
     expect(result, const Right<Failure, FiftyThirtyTwentyTargets>(valid));
-    final captured = verify(
-      () => repo.updateProfile(captureAny()),
-    ).captured.single as UserEntity;
+    final captured =
+        verify(
+              () => repo.updateProfile(captureAny()),
+            ).captured.single
+            as UserEntity;
     expect(captured.fiftyThirtyTwentyTargets, valid);
   });
 

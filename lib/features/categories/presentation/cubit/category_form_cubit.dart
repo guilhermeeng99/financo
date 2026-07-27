@@ -189,8 +189,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
     // bucket is meaningful only for root expense categories. Income
     // categories don't have one; subcategories inherit from the parent
     // (see docs/specs/categories.md rule 20).
-    final isRootExpense = state.type == CategoryType.expense &&
-        state.parentId == null;
+    final isRootExpense =
+        state.type == CategoryType.expense && state.parentId == null;
     final category = CategoryEntity(
       id: state.existingId ?? '',
       userId: state.userId,
@@ -205,7 +205,8 @@ class CategoryFormCubit extends Cubit<CategoryFormState> {
       // a stale "false" from a type/parent toggle is never written
       // out. The 50/30/20 compute walks up to the parent for
       // subcategories, so the persisted value doesn't matter there.
-      countsIn50_30_20: state.type != CategoryType.income ||
+      countsIn50_30_20:
+          state.type != CategoryType.income ||
           state.parentId != null ||
           state.countsIn50_30_20,
     );

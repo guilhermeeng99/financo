@@ -59,34 +59,39 @@ void main() {
   });
 
   group('addAllowedEmail', () {
-    test('rejects invalid email format with InvalidEmailFormatFailure',
-        () async {
-      final result = await repository.addAllowedEmail(email: 'not-an-email');
+    test(
+      'rejects invalid email format with InvalidEmailFormatFailure',
+      () async {
+        final result = await repository.addAllowedEmail(email: 'not-an-email');
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<InvalidEmailFormatFailure>()),
-        (_) => fail('Expected Left'),
-      );
-      verifyNever(
-        () => mockRemote.addAllowedEmail(
-          email: any(named: 'email'),
-          note: any(named: 'note'),
-        ),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<InvalidEmailFormatFailure>()),
+          (_) => fail('Expected Left'),
+        );
+        verifyNever(
+          () => mockRemote.addAllowedEmail(
+            email: any(named: 'email'),
+            note: any(named: 'note'),
+          ),
+        );
+      },
+    );
 
-    test('rejects master email with MasterEmailAlreadyAllowedFailure',
-        () async {
-      final result =
-          await repository.addAllowedEmail(email: 'guilhermeeng99@gmail.com');
+    test(
+      'rejects master email with MasterEmailAlreadyAllowedFailure',
+      () async {
+        final result = await repository.addAllowedEmail(
+          email: 'guilhermeeng99@gmail.com',
+        );
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<MasterEmailAlreadyAllowedFailure>()),
-        (_) => fail('Expected Left'),
-      );
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<MasterEmailAlreadyAllowedFailure>()),
+          (_) => fail('Expected Left'),
+        );
+      },
+    );
 
     test('lowercases email before delegating to remote', () async {
       when(
@@ -113,8 +118,9 @@ void main() {
 
   group('removeAllowedEmail', () {
     test('rejects master with AuthFailure', () async {
-      final result =
-          await repository.removeAllowedEmail('guilhermeeng99@gmail.com');
+      final result = await repository.removeAllowedEmail(
+        'guilhermeeng99@gmail.com',
+      );
 
       expect(result.isLeft(), isTrue);
       result.fold(

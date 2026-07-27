@@ -34,27 +34,28 @@ void main() {
   }
 
   TransactionEntity capturedUpdate() =>
-      verify(() => repository.updateTransaction(captureAny()))
-          .captured
-          .single as TransactionEntity;
+      verify(() => repository.updateTransaction(captureAny())).captured.single
+          as TransactionEntity;
 
   group('SettleTransactionUseCase', () {
-    test('marks a pending transaction as paid with an explicit settledAt',
-        () async {
-      stubUpdateEcho();
-      final explicit = DateTime(2026, 6, 15, 14, 30);
+    test(
+      'marks a pending transaction as paid with an explicit settledAt',
+      () async {
+        stubUpdateEcho();
+        final explicit = DateTime(2026, 6, 15, 14, 30);
 
-      final result = await usecase(pendingPayable(), settledAt: explicit);
+        final result = await usecase(pendingPayable(), settledAt: explicit);
 
-      expect(result.isRight(), isTrue);
-      final updated = capturedUpdate();
-      expect(updated.settlementStatus, TransactionSettlementStatus.paid);
-      // The settlement date becomes the effective cash-flow date: the
-      // transaction moves from "due on dueDate" to "happened on date".
-      expect(updated.date, explicit);
-      expect(updated.settledAt, explicit);
-      expect(updated.updatedAt, explicit);
-    });
+        expect(result.isRight(), isTrue);
+        final updated = capturedUpdate();
+        expect(updated.settlementStatus, TransactionSettlementStatus.paid);
+        // The settlement date becomes the effective cash-flow date: the
+        // transaction moves from "due on dueDate" to "happened on date".
+        expect(updated.date, explicit);
+        expect(updated.settledAt, explicit);
+        expect(updated.updatedAt, explicit);
+      },
+    );
 
     test('defaults settledAt to now when omitted', () async {
       stubUpdateEcho();
@@ -103,24 +104,27 @@ void main() {
       );
     });
 
-    test('rejects transfers with a ValidationFailure and never hits the repo',
-        () async {
-      final transferLeg = TransactionFactory.transfer().expense;
+    test(
+      'rejects transfers with a ValidationFailure and never hits the repo',
+      () async {
+        final transferLeg = TransactionFactory.transfer().expense;
 
-      final result = await usecase(transferLeg);
+        final result = await usecase(transferLeg);
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (failure) => expect(failure, isA<ValidationFailure>()),
-        (_) => fail('Expected Left'),
-      );
-      verifyNever(() => repository.updateTransaction(any()));
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (failure) => expect(failure, isA<ValidationFailure>()),
+          (_) => fail('Expected Left'),
+        );
+        verifyNever(() => repository.updateTransaction(any()));
+      },
+    );
 
     test('forwards repository failures unchanged', () async {
       const failure = ServerFailure('update exploded');
-      when(() => repository.updateTransaction(any()))
-          .thenAnswer((_) async => const Left(failure));
+      when(
+        () => repository.updateTransaction(any()),
+      ).thenAnswer((_) async => const Left(failure));
 
       final result = await usecase(pendingPayable());
 

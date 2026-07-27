@@ -90,8 +90,7 @@ class _ImportInvestingAssetsPageState extends State<ImportInvestingAssetsPage> {
                       '${t.investing.assets.import.toCreate} '
                       '(${preview.toCreate.length})',
                   children: [
-                    for (final item in preview.toCreate)
-                      _AssetRow(item: item),
+                    for (final item in preview.toCreate) _AssetRow(item: item),
                   ],
                 ),
               if (preview.duplicates.isNotEmpty)

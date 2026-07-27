@@ -17,8 +17,9 @@ void main() {
     firestore = FakeFirebaseFirestore();
     functions = MockFirebaseFunctions();
     callable = MockHttpsCallable();
-    when(() => functions.httpsCallable('deleteUserAsAdmin'))
-        .thenReturn(callable);
+    when(
+      () => functions.httpsCallable('deleteUserAsAdmin'),
+    ).thenReturn(callable);
     datasource = MasterUsersRemoteDataSourceImpl(
       firestore: firestore,
       functions: functions,
@@ -27,14 +28,20 @@ void main() {
 
   group('listAllUsers', () {
     test('returns every user document, newest first', () async {
-      await firestore.collection('users').doc('uid-old').set(
+      await firestore
+          .collection('users')
+          .doc('uid-old')
+          .set(
             UserFactory.model(
               id: 'uid-old',
               name: 'Old',
               createdAt: DateTime(2025),
             ).toJson(),
           );
-      await firestore.collection('users').doc('uid-new').set(
+      await firestore
+          .collection('users')
+          .doc('uid-new')
+          .set(
             UserFactory.model(
               id: 'uid-new',
               name: 'New',
@@ -56,14 +63,17 @@ void main() {
   group('deleteUserAsAdmin', () {
     test('invokes the callable with the target uid', () async {
       final result = MockHttpsCallableResult<dynamic>();
-      when(() => callable.call<dynamic>(any<dynamic>()))
-          .thenAnswer((_) async => result);
+      when(
+        () => callable.call<dynamic>(any<dynamic>()),
+      ).thenAnswer((_) async => result);
 
       await datasource.deleteUserAsAdmin('uid-target');
 
-      final payload = verify(
-        () => callable.call<dynamic>(captureAny<dynamic>()),
-      ).captured.single as Map<String, dynamic>;
+      final payload =
+          verify(
+                () => callable.call<dynamic>(captureAny<dynamic>()),
+              ).captured.single
+              as Map<String, dynamic>;
       expect(payload, {'targetUid': 'uid-target'});
     });
 
@@ -76,8 +86,11 @@ void main() {
       expect(
         () => datasource.deleteUserAsAdmin('uid-target'),
         throwsA(
-          isA<AuthException>()
-              .having((e) => e.message, 'message', 'Not the master.'),
+          isA<AuthException>().having(
+            (e) => e.message,
+            'message',
+            'Not the master.',
+          ),
         ),
       );
     });
@@ -109,8 +122,9 @@ void main() {
     });
 
     test('maps non-Firebase exceptions to ServerException', () async {
-      when(() => callable.call<dynamic>(any<dynamic>()))
-          .thenThrow(Exception('socket closed'));
+      when(
+        () => callable.call<dynamic>(any<dynamic>()),
+      ).thenThrow(Exception('socket closed'));
 
       expect(
         () => datasource.deleteUserAsAdmin('uid-target'),

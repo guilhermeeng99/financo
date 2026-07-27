@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
-import 'package:financo/core/extensions/context_user_extensions.dart';import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
+import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/features/budgets/presentation/cubit/budgets_cubit.dart';
 import 'package:financo/features/chat/domain/action_handlers/account_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/budget_chat_action_handler.dart';
 import 'package:financo/features/chat/domain/action_handlers/category_chat_action_handler.dart';

@@ -45,9 +45,7 @@ class CategoryBreakdownList extends StatelessWidget {
             total: total,
             maxAmount: max,
             isExpense: isExpense,
-            onTap: onCategoryTap == null
-                ? null
-                : () => onCategoryTap!(data[i]),
+            onTap: onCategoryTap == null ? null : () => onCategoryTap!(data[i]),
           ),
         ],
         Padding(

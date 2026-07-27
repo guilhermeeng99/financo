@@ -35,5 +35,4 @@ class Validators {
     }
     return null;
   }
-
 }

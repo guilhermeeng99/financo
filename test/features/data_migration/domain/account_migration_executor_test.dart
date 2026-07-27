@@ -104,9 +104,11 @@ void main() {
     expect(counts.institutionsRemoved, 1);
 
     // The re-tagged leg carries the institution and drops its transfer link.
-    final retagged = verify(
-      () => transactions.updateTransaction(captureAny()),
-    ).captured.single as TransactionEntity;
+    final retagged =
+        verify(
+              () => transactions.updateTransaction(captureAny()),
+            ).captured.single
+            as TransactionEntity;
     expect(retagged.institutionId, 'inst-avenue');
     expect(retagged.linkedTransactionId, isNull);
     expect(retagged.isInvestmentCashFlow, isTrue);
@@ -115,9 +117,11 @@ void main() {
     verify(() => accounts.deleteAccount('acc-avenue')).called(1);
 
     // The Wise institution becomes a EUR checking account.
-    final created = verify(
-      () => accounts.createAccount(captureAny()),
-    ).captured.single as AccountEntity;
+    final created =
+        verify(
+              () => accounts.createAccount(captureAny()),
+            ).captured.single
+            as AccountEntity;
     expect(created.type, AccountType.checking);
     expect(created.currency, Currency.eur);
     expect(created.name, 'Wise Gui');
@@ -155,23 +159,23 @@ void main() {
   // is always the first write attempted.
   AccountMigrationPlan singleAporteMerge(String flowTxId) =>
       AccountMigrationPlan(
-    merges: [
-      InvestmentAccountMerge(
-        account: AccountFactory.investment(id: 'acc-avenue'),
-        institution: InstitutionFactory.avenue(),
-        aportes: [
-          ConvertedCashFlow(
-            transactionId: flowTxId,
-            institutionId: 'inst-avenue',
+        merges: [
+          InvestmentAccountMerge(
+            account: AccountFactory.investment(id: 'acc-avenue'),
+            institution: InstitutionFactory.avenue(),
+            aportes: [
+              ConvertedCashFlow(
+                transactionId: flowTxId,
+                institutionId: 'inst-avenue',
+              ),
+            ],
+            deletedLegIds: const [],
+            orphanTransactionCount: 0,
           ),
         ],
-        deletedLegIds: const [],
-        orphanTransactionCount: 0,
-      ),
-    ],
-    conversions: const [],
-    warnings: const [],
-  );
+        conversions: const [],
+        warnings: const [],
+      );
 
   // A single-merge plan with no aportes and no legs — the first write is the
   // institution update, so it isolates the later merge steps.
@@ -273,18 +277,20 @@ void main() {
     verifyNever(() => accounts.createAccount(any()));
   });
 
-  test('returns the failure when creating the converted account fails',
-      () async {
-    when(
-      () => accounts.createAccount(any()),
-    ).thenAnswer((_) async => const Left(ServerFailure()));
+  test(
+    'returns the failure when creating the converted account fails',
+    () async {
+      when(
+        () => accounts.createAccount(any()),
+      ).thenAnswer((_) async => const Left(ServerFailure()));
 
-    final result = await executor.apply(singleConversionPlan());
+      final result = await executor.apply(singleConversionPlan());
 
-    expect(result, isA<Left<dynamic, dynamic>>());
-    // The institution is never removed once the account create failed.
-    verifyNever(() => institutions.deleteInstitution(any()));
-  });
+      expect(result, isA<Left<dynamic, dynamic>>());
+      // The institution is never removed once the account create failed.
+      verifyNever(() => institutions.deleteInstitution(any()));
+    },
+  );
 
   test(
     'returns the failure when deleting the converted institution fails',

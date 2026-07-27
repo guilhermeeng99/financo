@@ -8,7 +8,8 @@ import 'package:financo/core/constants/access_control.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/features/access_control/domain/entities/allowed_email_entity.dart';
-import 'package:financo/features/auth/domain/entities/user_entity.dart';import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
+import 'package:financo/features/auth/domain/entities/user_entity.dart';
+import 'package:financo/features/master_panel/presentation/cubit/master_panel_cubit.dart';
 import 'package:financo/features/master_panel/presentation/cubit/master_panel_state.dart';
 import 'package:financo/features/master_panel/presentation/widgets/add_allowed_email_dialog.dart';
 import 'package:financo/features/master_panel/presentation/widgets/delete_user_dialog.dart';
@@ -173,9 +174,7 @@ class _UserTile extends StatelessWidget {
               backgroundImage: user.photoUrl != null
                   ? NetworkImage(user.photoUrl!)
                   : null,
-              child: user.photoUrl == null
-                  ? Text(_initials(user.name))
-                  : null,
+              child: user.photoUrl == null ? Text(_initials(user.name)) : null,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -247,9 +246,7 @@ class _UserTile extends StatelessWidget {
     final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty || parts.first.isEmpty) return '?';
     final first = parts.first[0];
-    final last = parts.length > 1 && parts.last.isNotEmpty
-        ? parts.last[0]
-        : '';
+    final last = parts.length > 1 && parts.last.isNotEmpty ? parts.last[0] : '';
     return (first + last).toUpperCase();
   }
 }
@@ -372,8 +369,9 @@ class _AllowedEmailTile extends StatelessWidget {
       destructive: true,
     );
     if (!confirmed || !context.mounted) return;
-    final result =
-        await context.read<MasterPanelCubit>().removeEmail(entry.email);
+    final result = await context.read<MasterPanelCubit>().removeEmail(
+      entry.email,
+    );
     if (!context.mounted) return;
     result.fold(
       (failure) => context.showSnack(localizedFailure(failure)),

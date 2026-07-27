@@ -159,18 +159,18 @@ class DashboardRepositoryImpl implements DashboardRepository {
     final expensesByCategory = _aggregateByCategory(
       periodBrl.where(
         (t) =>
-          t.type == TransactionType.expense &&
-          !t.isTransfer &&
-          !t.isInvestmentCashFlow,
+            t.type == TransactionType.expense &&
+            !t.isTransfer &&
+            !t.isInvestmentCashFlow,
       ),
       categoryMap,
     );
     final incomeByCategory = _aggregateByCategory(
       periodBrl.where(
         (t) =>
-          t.type == TransactionType.income &&
-          !t.isTransfer &&
-          !t.isInvestmentCashFlow,
+            t.type == TransactionType.income &&
+            !t.isTransfer &&
+            !t.isInvestmentCashFlow,
       ),
       categoryMap,
     );

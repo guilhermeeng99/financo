@@ -21,18 +21,20 @@ void main() {
   });
 
   group('UpdateBudgetUseCase', () {
-    test('delegates to repository.updateBudget and forwards the budget',
-        () async {
-      final budget = BudgetFactory.make(amount: 2000);
-      when(
-        () => repo.updateBudget(any()),
-      ).thenAnswer((_) async => Right(budget));
+    test(
+      'delegates to repository.updateBudget and forwards the budget',
+      () async {
+        final budget = BudgetFactory.make(amount: 2000);
+        when(
+          () => repo.updateBudget(any()),
+        ).thenAnswer((_) async => Right(budget));
 
-      final result = await useCase(budget);
+        final result = await useCase(budget);
 
-      expect(result, Right<Failure, BudgetEntity>(budget));
-      verify(() => repo.updateBudget(budget)).called(1);
-    });
+        expect(result, Right<Failure, BudgetEntity>(budget));
+        verify(() => repo.updateBudget(budget)).called(1);
+      },
+    );
 
     test('forwards a Left failure from the repository', () async {
       when(() => repo.updateBudget(any())).thenAnswer(

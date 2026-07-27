@@ -13,16 +13,18 @@ void main() {
   }
 
   group('DarkPaletteCubit', () {
-    test('defaults to midnightIndigo and applies it to AppColors.dark',
-        () async {
-      final cubit = DarkPaletteCubit(prefs: await prefsWith({}));
-      addTearDown(cubit.close);
-      expect(cubit.state, DarkPalette.midnightIndigo);
-      expect(
-        AppColors.dark,
-        DarkPalettes.byId(DarkPalette.midnightIndigo).colors,
-      );
-    });
+    test(
+      'defaults to midnightIndigo and applies it to AppColors.dark',
+      () async {
+        final cubit = DarkPaletteCubit(prefs: await prefsWith({}));
+        addTearDown(cubit.close);
+        expect(cubit.state, DarkPalette.midnightIndigo);
+        expect(
+          AppColors.dark,
+          DarkPalettes.byId(DarkPalette.midnightIndigo).colors,
+        );
+      },
+    );
 
     test('restores a persisted palette on construction', () async {
       final cubit = DarkPaletteCubit(
@@ -36,8 +38,7 @@ void main() {
       );
     });
 
-    test('falls back to the default when the stored name is unknown',
-        () async {
+    test('falls back to the default when the stored name is unknown', () async {
       final cubit = DarkPaletteCubit(
         prefs: await prefsWith({'dark_palette': 'glitter'}),
       );

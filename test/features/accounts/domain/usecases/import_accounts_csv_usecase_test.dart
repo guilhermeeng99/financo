@@ -24,8 +24,9 @@ void main() {
 
   group('ImportAccountsCsvUseCase.preview', () {
     test('parses checking and credit card rows from CSV', () async {
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getAccounts(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
 
       const csv = '''
 Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento
@@ -96,8 +97,9 @@ Nubank Mila,0,Conta Corrente,nubank,,,
     });
 
     test('rejects unknown type values with row + value detail', () async {
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getAccounts(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
 
       const csv = '''
 Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento
@@ -125,8 +127,9 @@ Poupança Mila,0,Conta Poupança,nubank,,,
       // The Mobills export adds an extra `Data Saldo Inicial` column
       // between `Tipo` and `Banco`, plus uses `.` as the decimal
       // separator. The parser must follow the header, not column index.
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getAccounts(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
 
       const csv = '''
 Nome,Saldo inicial,Tipo,Data Saldo Inicial,Banco,Limite,Próximo Vencimento,Fechamento
@@ -159,8 +162,9 @@ Nu Invest,421.95,Conta Corrente,30/06/2021,nubank,,,
     });
 
     test('rejects rows where the type column is empty', () async {
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getAccounts(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
 
       const csv = '''
 Nome,Saldo inicial,Tipo,Banco,Limite,Próximo Vencimento,Fechamento
@@ -188,15 +192,15 @@ Sem Tipo,0,,nubank,,,
     test(
       'creates checking accounts first then credit cards linked by name',
       () async {
-        when(() => mockRepository.getAccounts(userId: userId))
-            .thenAnswer((_) async => const Right([]));
+        when(
+          () => mockRepository.getAccounts(userId: userId),
+        ).thenAnswer((_) async => const Right([]));
 
         var createdCount = 0;
         when(() => mockRepository.createAccount(any())).thenAnswer((
           invocation,
         ) async {
-          final account =
-              invocation.positionalArguments.first as AccountEntity;
+          final account = invocation.positionalArguments.first as AccountEntity;
           createdCount++;
           return Right<Failure, AccountEntity>(
             account.copyWith(id: 'created-$createdCount'),
@@ -226,8 +230,7 @@ Sem Tipo,0,,nubank,,,
         when(() => mockRepository.createAccount(any())).thenAnswer((
           invocation,
         ) async {
-          final account =
-              invocation.positionalArguments.first as AccountEntity;
+          final account = invocation.positionalArguments.first as AccountEntity;
           created.add(account);
           return Right<Failure, AccountEntity>(
             account.copyWith(id: 'created-${created.length}'),
@@ -255,8 +258,9 @@ Sem Tipo,0,,nubank,,,
     );
 
     test('reports progress for each processed item via onProgress', () async {
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+      when(
+        () => mockRepository.getAccounts(userId: userId),
+      ).thenAnswer((_) async => const Right([]));
 
       var createdCount = 0;
       when(() => mockRepository.createAccount(any())).thenAnswer((
@@ -313,45 +317,48 @@ Sem Tipo,0,,nubank,,,
       ]);
     });
 
-    test('skips credit cards whose linked account cannot be resolved',
-        () async {
-      when(() => mockRepository.getAccounts(userId: userId))
-          .thenAnswer((_) async => const Right([]));
+    test(
+      'skips credit cards whose linked account cannot be resolved',
+      () async {
+        when(
+          () => mockRepository.getAccounts(userId: userId),
+        ).thenAnswer((_) async => const Right([]));
 
-      when(() => mockRepository.createAccount(any())).thenAnswer((
-        invocation,
-      ) async {
-        final account = invocation.positionalArguments.first as AccountEntity;
-        return Right<Failure, AccountEntity>(
-          account.copyWith(id: 'created-x'),
+        when(() => mockRepository.createAccount(any())).thenAnswer((
+          invocation,
+        ) async {
+          final account = invocation.positionalArguments.first as AccountEntity;
+          return Right<Failure, AccountEntity>(
+            account.copyWith(id: 'created-x'),
+          );
+        });
+
+        const items = [
+          AccountImportPreviewItem(
+            name: 'Cartão Órfão',
+            type: AccountType.creditCard,
+            bank: BankType.nubank,
+            initialBalance: 0,
+            creditLimit: 1000,
+            closingDay: 7,
+            dueDay: 14,
+            linkedAccountName: 'Inexistente',
+          ),
+        ];
+
+        final result = await useCase.importItems(
+          items: items,
+          userId: userId,
         );
-      });
 
-      const items = [
-        AccountImportPreviewItem(
-          name: 'Cartão Órfão',
-          type: AccountType.creditCard,
-          bank: BankType.nubank,
-          initialBalance: 0,
-          creditLimit: 1000,
-          closingDay: 7,
-          dueDay: 14,
-          linkedAccountName: 'Inexistente',
-        ),
-      ];
-
-      final result = await useCase.importItems(
-        items: items,
-        userId: userId,
-      );
-
-      expect(
-        result,
-        const Right<Failure, AccountImportResult>(
-          AccountImportResult(importedCount: 0, duplicateCount: 0),
-        ),
-      );
-      verifyNever(() => mockRepository.createAccount(any()));
-    });
+        expect(
+          result,
+          const Right<Failure, AccountImportResult>(
+            AccountImportResult(importedCount: 0, duplicateCount: 0),
+          ),
+        );
+        verifyNever(() => mockRepository.createAccount(any()));
+      },
+    );
   });
 }

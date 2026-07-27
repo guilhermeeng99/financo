@@ -49,8 +49,7 @@ class AccountsCubit extends Cubit<AccountsState> {
       _getAccounts(userId: _userId, forceRefresh: forceRefresh),
       _getTransactions(userId: _userId, forceRefresh: forceRefresh),
     ]);
-    final accountsResult =
-        results[0] as Either<Failure, List<AccountEntity>>;
+    final accountsResult = results[0] as Either<Failure, List<AccountEntity>>;
     final transactionsResult =
         results[1] as Either<Failure, List<TransactionEntity>>;
     return accountsResult.map((accounts) {
@@ -182,8 +181,8 @@ extension AccountsStateData on AccountsState {
   /// caller "just wants the accounts" — `is AccountsLoaded` alone drops
   /// the post-import list and silently breaks lookups.
   List<AccountEntity> get accountsOrEmpty => switch (this) {
-        AccountsLoaded(:final accounts) => accounts,
-        AccountsImported(:final accounts) => accounts,
-        _ => const <AccountEntity>[],
-      };
+    AccountsLoaded(:final accounts) => accounts,
+    AccountsImported(:final accounts) => accounts,
+    _ => const <AccountEntity>[],
+  };
 }

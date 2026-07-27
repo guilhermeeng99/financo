@@ -74,53 +74,48 @@ class _ImportInvestingTransactionsPageState
         title: t.investing.transactions.import.previewTitle,
         showBack: true,
       ),
-      body:
-          BlocBuilder<
-            InvestingTransactionsCubit,
-            InvestingTransactionsState
-          >(
-            builder: (context, state) {
-              if (state is InvestingTransactionsImporting) {
-                return ImportProgressInline(progress: state.progress);
-              }
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                children: [
-                  if (!canImport)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        t.investing.transactions.import.empty,
-                        textAlign: TextAlign.center,
-                        style: context.textTheme.bodyMedium?.copyWith(
-                          color: context.appColors.onBackgroundLight,
-                        ),
-                      ),
+      body: BlocBuilder<InvestingTransactionsCubit, InvestingTransactionsState>(
+        builder: (context, state) {
+          if (state is InvestingTransactionsImporting) {
+            return ImportProgressInline(progress: state.progress);
+          }
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            children: [
+              if (!canImport)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    t.investing.transactions.import.empty,
+                    textAlign: TextAlign.center,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: context.appColors.onBackgroundLight,
                     ),
-                  if (canImport)
-                    ImportSection(
-                      title:
-                          '${t.investing.transactions.import.toImport} '
-                          '(${preview.toImport.length})',
-                      children: [
-                        for (final item in preview.toImport)
-                          _TxRow(item: item),
-                      ],
-                    ),
-                  if (preview.skipped.isNotEmpty)
-                    ImportSection(
-                      title:
-                          '${t.investing.transactions.import.skipped} '
-                          '(${preview.skipped.length})',
-                      children: [
-                        for (final item in preview.skipped)
-                          _TxRow(item: item, muted: true),
-                      ],
-                    ),
-                ],
-              );
-            },
-          ),
+                  ),
+                ),
+              if (canImport)
+                ImportSection(
+                  title:
+                      '${t.investing.transactions.import.toImport} '
+                      '(${preview.toImport.length})',
+                  children: [
+                    for (final item in preview.toImport) _TxRow(item: item),
+                  ],
+                ),
+              if (preview.skipped.isNotEmpty)
+                ImportSection(
+                  title:
+                      '${t.investing.transactions.import.skipped} '
+                      '(${preview.skipped.length})',
+                  children: [
+                    for (final item in preview.skipped)
+                      _TxRow(item: item, muted: true),
+                  ],
+                ),
+            ],
+          );
+        },
+      ),
       bottomNavigationBar: canImport
           ? FinancoSubmitBar(
               label: t.investing.transactions.import.confirm,
@@ -208,11 +203,11 @@ class _TxRow extends StatelessWidget {
 
   String _problemLabel(InvestingTransactionImportProblem problem) =>
       switch (problem) {
-    InvestingTransactionImportProblem.assetNotFound =>
-      t.investing.transactions.import.problemAssetNotFound,
-    InvestingTransactionImportProblem.assetAmbiguous =>
-      t.investing.transactions.import.problemAssetAmbiguous,
-    InvestingTransactionImportProblem.assetNoInstitution =>
-      t.investing.transactions.import.problemAssetNoInstitution,
-  };
+        InvestingTransactionImportProblem.assetNotFound =>
+          t.investing.transactions.import.problemAssetNotFound,
+        InvestingTransactionImportProblem.assetAmbiguous =>
+          t.investing.transactions.import.problemAssetAmbiguous,
+        InvestingTransactionImportProblem.assetNoInstitution =>
+          t.investing.transactions.import.problemAssetNoInstitution,
+      };
 }

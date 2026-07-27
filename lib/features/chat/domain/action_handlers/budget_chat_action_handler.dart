@@ -48,8 +48,9 @@ class BudgetChatActionHandler implements ChatActionHandler {
         .where((c) => c.name.toLowerCase() == categoryName.toLowerCase())
         .toList();
     if (matched.isEmpty) {
-      return strings.chat.handlers
-          .budgetCategoryNotFoundCreate(name: categoryName);
+      return strings.chat.handlers.budgetCategoryNotFoundCreate(
+        name: categoryName,
+      );
     }
     final cat = matched.first;
     if (cat.type != CategoryType.expense) {

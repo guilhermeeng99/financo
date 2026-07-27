@@ -72,9 +72,9 @@ class AccessRestrictedPage extends StatelessWidget {
                   SizedBox(
                     height: 52,
                     child: FilledButton(
-                      onPressed: () => context
-                          .read<AuthBloc>()
-                          .add(const AuthSignOutRequested()),
+                      onPressed: () => context.read<AuthBloc>().add(
+                        const AuthSignOutRequested(),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: colors.primary,
                         foregroundColor: Colors.white,

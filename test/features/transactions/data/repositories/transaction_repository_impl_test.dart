@@ -258,8 +258,7 @@ void main() {
       verify(() => mockDao.deleteTransaction(txId)).called(1);
     });
 
-    test('should cascade delete both sides of a transfer atomically',
-        () async {
+    test('should cascade delete both sides of a transfer atomically', () async {
       final pair = TransactionFactory.transfer();
       when(
         () => mockDao.getTransactionById(pair.expense.id),

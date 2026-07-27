@@ -134,8 +134,8 @@ class _WaveformBars extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(_barCount, (i) {
             final x = i / (_barCount - 1);
-            final h = 0.25 + 0.75 *
-                (0.5 + 0.5 * math.sin(phase + x * 4 * math.pi));
+            final h =
+                0.25 + 0.75 * (0.5 + 0.5 * math.sin(phase + x * 4 * math.pi));
             return Container(
               width: 3,
               height: 4 + h * 18,

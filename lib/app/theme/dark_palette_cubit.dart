@@ -20,8 +20,7 @@ class DarkPaletteCubit extends Cubit<DarkPalette> {
     final value = _prefs.getString(_darkPaletteKey);
     final palette = value == null
         ? state
-        : DarkPalette.values.where((p) => p.name == value).firstOrNull ??
-              state;
+        : DarkPalette.values.where((p) => p.name == value).firstOrNull ?? state;
     _apply(palette);
     if (palette != state) emit(palette);
   }

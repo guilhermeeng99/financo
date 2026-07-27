@@ -68,8 +68,7 @@ void main() {
       // proving it surfaced the Right branch from the use case.
       expect(result, 'Category "Bonus" created successfully!');
 
-      final captured =
-          verify(() => mockCreateCategory(captureAny())).captured;
+      final captured = verify(() => mockCreateCategory(captureAny())).captured;
       final category = captured.first as CategoryEntity;
       expect(category.userId, userId);
       expect(category.name, 'Bonus');
@@ -79,28 +78,31 @@ void main() {
       expect(category.id, isEmpty);
     });
 
-    test('defaults to expense type and default icon when meta omits them',
-        () async {
-      stubGetCategories(const []);
-      when(() => mockCreateCategory(any())).thenAnswer(
-        (_) async => Right<Failure, CategoryEntity>(
-          CategoryFactory.expense(name: 'Misc'),
-        ),
-      );
+    test(
+      'defaults to expense type and default icon when meta omits them',
+      () async {
+        stubGetCategories(const []);
+        when(() => mockCreateCategory(any())).thenAnswer(
+          (_) async => Right<Failure, CategoryEntity>(
+            CategoryFactory.expense(name: 'Misc'),
+          ),
+        );
 
-      await handler.handle(
-        userId: userId,
-        meta: const {'action': 'create', 'name': 'Misc'},
-        locale: locale,
-      );
+        await handler.handle(
+          userId: userId,
+          meta: const {'action': 'create', 'name': 'Misc'},
+          locale: locale,
+        );
 
-      final captured =
-          verify(() => mockCreateCategory(captureAny())).captured;
-      final category = captured.first as CategoryEntity;
-      expect(category.type, CategoryType.expense);
-      // Falls back to Icons.category codepoint when no icon is suggested.
-      expect(category.icon, 58332);
-    });
+        final captured = verify(
+          () => mockCreateCategory(captureAny()),
+        ).captured;
+        final category = captured.first as CategoryEntity;
+        expect(category.type, CategoryType.expense);
+        // Falls back to Icons.category codepoint when no icon is suggested.
+        expect(category.icon, 58332);
+      },
+    );
 
     test('surfaces create failure as localized error string', () async {
       stubGetCategories(const []);
@@ -120,27 +122,30 @@ void main() {
   });
 
   group('delete', () {
-    test('resolves category id by case-insensitive name and deletes it',
-        () async {
-      stubGetCategories([
-        CategoryFactory.expense(id: 'cat-food-7'),
-      ]);
-      when(() => mockDeleteCategory(any())).thenAnswer(
-        (_) async => const Right<Failure, void>(null),
-      );
+    test(
+      'resolves category id by case-insensitive name and deletes it',
+      () async {
+        stubGetCategories([
+          CategoryFactory.expense(id: 'cat-food-7'),
+        ]);
+        when(() => mockDeleteCategory(any())).thenAnswer(
+          (_) async => const Right<Failure, void>(null),
+        );
 
-      final result = await handler.handle(
-        userId: userId,
-        // Mixed case to prove the lookup lower-cases both sides.
-        meta: const {'action': 'delete', 'name': 'food'},
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          // Mixed case to prove the lookup lower-cases both sides.
+          meta: const {'action': 'delete', 'name': 'food'},
+          locale: locale,
+        );
 
-      expect(result, 'Category "food" deleted successfully!');
-      final captured =
-          verify(() => mockDeleteCategory(captureAny())).captured;
-      expect(captured.first, 'cat-food-7');
-    });
+        expect(result, 'Category "food" deleted successfully!');
+        final captured = verify(
+          () => mockDeleteCategory(captureAny()),
+        ).captured;
+        expect(captured.first, 'cat-food-7');
+      },
+    );
 
     test('returns not-found message when no category matches', () async {
       stubGetCategories([
@@ -197,24 +202,26 @@ void main() {
     });
   });
 
-  test('unknown action returns dedicated message without touching use cases',
-      () async {
-    final result = await handler.handle(
-      userId: userId,
-      meta: const {'action': 'update'},
-      locale: locale,
-    );
+  test(
+    'unknown action returns dedicated message without touching use cases',
+    () async {
+      final result = await handler.handle(
+        userId: userId,
+        meta: const {'action': 'update'},
+        locale: locale,
+      );
 
-    expect(result, 'Unknown category action.');
-    verifyNever(() => mockCreateCategory(any()));
-    verifyNever(() => mockDeleteCategory(any()));
-    verifyNever(
-      () => mockGetCategories(
-        userId: any(named: 'userId'),
-        forceRefresh: any(named: 'forceRefresh'),
-      ),
-    );
-  });
+      expect(result, 'Unknown category action.');
+      verifyNever(() => mockCreateCategory(any()));
+      verifyNever(() => mockDeleteCategory(any()));
+      verifyNever(
+        () => mockGetCategories(
+          userId: any(named: 'userId'),
+          forceRefresh: any(named: 'forceRefresh'),
+        ),
+      );
+    },
+  );
 
   test('preflight returns null (no confirmation gate)', () async {
     final result = await handler.preflight(

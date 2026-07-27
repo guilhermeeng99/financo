@@ -384,7 +384,6 @@ void main() {
           verify(() => mockUpdate(any())).called(1);
         },
       );
-
     });
 
     group('loadFormData', () {

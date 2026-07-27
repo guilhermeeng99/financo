@@ -96,25 +96,27 @@ void main() {
   });
 
   group('resolveAccount — zero matches (chat spec §10)', () {
-    test('no candidate fails with the not-found message carrying the query',
-        () {
-      const query = 'Nonexistent Bank';
-      final result = resolveAccount(
-        [AccountFactory.checking(name: 'Nubank Gui')],
-        query,
-        locale: locale,
-      );
+    test(
+      'no candidate fails with the not-found message carrying the query',
+      () {
+        const query = 'Nonexistent Bank';
+        final result = resolveAccount(
+          [AccountFactory.checking(name: 'Nubank Gui')],
+          query,
+          locale: locale,
+        );
 
-      expect(result.isResolved, isFalse);
-      expect(result.account, isNull);
-      expect(
-        result.error,
-        strings.chat.handlers.resolveAccountNotFound(query: query),
-      );
-      // The raw query (original casing) must survive into the message so the
-      // user can see exactly what failed to match.
-      expect(result.error, contains(query));
-    });
+        expect(result.isResolved, isFalse);
+        expect(result.account, isNull);
+        expect(
+          result.error,
+          strings.chat.handlers.resolveAccountNotFound(query: query),
+        );
+        // The raw query (original casing) must survive into the message so the
+        // user can see exactly what failed to match.
+        expect(result.error, contains(query));
+      },
+    );
 
     test('empty account list fails with not-found rather than crashing', () {
       const query = 'Anything';

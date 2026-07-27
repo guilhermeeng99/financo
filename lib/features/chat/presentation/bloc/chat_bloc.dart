@@ -411,8 +411,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(
       ChatLoaded(
         messages: List.unmodifiable(next),
-        shouldRefreshTransactions: actionType == 'transaction' ||
-            actionType == 'transfer',
+        shouldRefreshTransactions:
+            actionType == 'transaction' || actionType == 'transfer',
         shouldRefreshBudgets: actionType == 'budget',
       ),
     );

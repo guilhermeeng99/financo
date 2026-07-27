@@ -200,31 +200,33 @@ Transferência,01/04/2026,"-359,91", ,Transferência,Nubank Emergência,Nubank G
         },
       );
 
-      test('should skip rows that are too short to read required cells',
-          () async {
-        // Trailing/blank rows in user CSVs are common — they should not
-        // reject the whole import. A row that lacks enough cells to even
-        // reach the `account` column is treated as incomplete.
-        stubRepositories();
+      test(
+        'should skip rows that are too short to read required cells',
+        () async {
+          // Trailing/blank rows in user CSVs are common — they should not
+          // reject the whole import. A row that lacks enough cells to even
+          // reach the `account` column is treated as incomplete.
+          stubRepositories();
 
-        const csv = '''
+          const csv = '''
 Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
 Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,
 MalformedRow,only,two''';
 
-        final result = await useCase.preview(
-          csvContent: csv,
-          userId: userId,
-        );
+          final result = await useCase.preview(
+            csvContent: csv,
+            userId: userId,
+          );
 
-        result.fold(
-          (_) => fail('Expected Right'),
-          (preview) {
-            expect(preview.rows.length, 1);
-            expect(preview.skippedRows, 1);
-          },
-        );
-      });
+          result.fold(
+            (_) => fail('Expected Right'),
+            (preview) {
+              expect(preview.rows.length, 1);
+              expect(preview.skippedRows, 1);
+            },
+          );
+        },
+      );
 
       test('rejects unknown type values with row + value detail', () async {
         stubRepositories();
@@ -250,8 +252,7 @@ Saidinha,01/04/2026,"-1,00",,Gui,Nubank Gui,''';
         );
       });
 
-      test('tolerates extra columns and resolves layout by header',
-          () async {
+      test('tolerates extra columns and resolves layout by header', () async {
         // The CSV adds a `Notas` column the parser doesn't know about,
         // shifting Conta to a later index. Header-based mapping must
         // ignore the extra column and still find Conta correctly.
@@ -275,35 +276,37 @@ Despesa,01/04/2026,"-9,99",coffee,extra notes,Gui,Nubank Gui,''';
         });
       });
 
-      test('collapses Mobills-style mirror transfer rows into one row',
-          () async {
-        // Mobills/similar exporters emit two rows per transfer: a
-        // negative on the source account and a positive on the
-        // destination. Both refer to the same money movement and must
-        // collapse to a single import row (otherwise we double-count
-        // and create reverse-direction transfers too).
-        stubRepositories();
+      test(
+        'collapses Mobills-style mirror transfer rows into one row',
+        () async {
+          // Mobills/similar exporters emit two rows per transfer: a
+          // negative on the source account and a positive on the
+          // destination. Both refer to the same money movement and must
+          // collapse to a single import row (otherwise we double-count
+          // and create reverse-direction transfers too).
+          stubRepositories();
 
-        const csv = '''
+          const csv = '''
 Tipo,Data,Valor,Descrição,Categoria,Conta,Conta transferência
 Transferência,02/01/2026,"-1060,10", ,Transferência,Nu Invest,Nubank Gui
 Transferência,02/01/2026,"1060,10", ,Transferência,Nubank Gui,Nu Invest''';
 
-        final result = await useCase.preview(
-          csvContent: csv,
-          userId: userId,
-        );
+          final result = await useCase.preview(
+            csvContent: csv,
+            userId: userId,
+          );
 
-        expect(result.isRight(), isTrue);
-        result.fold((_) => fail('Expected Right'), (preview) {
-          expect(preview.rows, hasLength(1));
-          // Negative leg wins — its `Conta` is already the source.
-          expect(preview.rows.first.accountName, 'Nu Invest');
-          expect(preview.rows.first.destinationAccountName, 'Nubank Gui');
-          expect(preview.rows.first.amount, closeTo(1060.10, 0.001));
-          expect(preview.skippedRows, 1);
-        });
-      });
+          expect(result.isRight(), isTrue);
+          result.fold((_) => fail('Expected Right'), (preview) {
+            expect(preview.rows, hasLength(1));
+            // Negative leg wins — its `Conta` is already the source.
+            expect(preview.rows.first.accountName, 'Nu Invest');
+            expect(preview.rows.first.destinationAccountName, 'Nubank Gui');
+            expect(preview.rows.first.amount, closeTo(1060.10, 0.001));
+            expect(preview.skippedRows, 1);
+          });
+        },
+      );
 
       test('keeps each leg of repeated identical transfers', () async {
         // Three real transfers of the same amount on the same day = six
@@ -889,10 +892,12 @@ Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,''';
 
   group('ImportTransactionsCsvUseCase.importRows', () {
     setUp(() {
-      when(() => mockCategoryRepo.getCategories(userId: userId))
-          .thenAnswer((_) async => Right(categories));
-      when(() => mockAccountRepo.getAccounts(userId: userId))
-          .thenAnswer((_) async => Right(accounts));
+      when(
+        () => mockCategoryRepo.getCategories(userId: userId),
+      ).thenAnswer((_) async => Right(categories));
+      when(
+        () => mockAccountRepo.getAccounts(userId: userId),
+      ).thenAnswer((_) async => Right(accounts));
     });
 
     test('creates expense and income rows using user-edited names', () async {
@@ -939,8 +944,7 @@ Despesa,01/04/2026,"-9,99",,Gui,Nubank Gui,''';
       verify(() => mockTransactionRepo.createTransaction(any())).called(2);
     });
 
-    test('skips rows whose account is not found in the latest state',
-        () async {
+    test('skips rows whose account is not found in the latest state', () async {
       when(() => mockTransactionRepo.createTransaction(any())).thenAnswer(
         (_) async => Right<Failure, TransactionEntity>(
           TransactionEntity(

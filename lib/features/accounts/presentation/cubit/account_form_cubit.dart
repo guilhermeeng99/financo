@@ -71,8 +71,7 @@ class AccountFormCubit extends Cubit<AccountFormState> {
   void updateBank(BankType value) => emit(state.copyWith(bank: value));
 
   /// Sets the account currency (create only — see [AccountFormState.currency]).
-  void updateCurrency(Currency value) =>
-      emit(state.copyWith(currency: value));
+  void updateCurrency(Currency value) => emit(state.copyWith(currency: value));
 
   /// Records the picker's selection: both the id (persisted) and the
   /// display name (shown in the form row).

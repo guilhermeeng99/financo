@@ -31,9 +31,7 @@ class ProfileRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final iconColor = destructive
-        ? colors.error
-        : (accent ?? colors.primary);
+    final iconColor = destructive ? colors.error : (accent ?? colors.primary);
     final titleColor = destructive ? colors.error : colors.onBackground;
 
     return Material(

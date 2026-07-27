@@ -176,8 +176,8 @@ extension CategoriesStateData on CategoriesState {
   /// caller "just wants the categories" — `is CategoriesLoaded` alone
   /// drops the post-import list and silently breaks lookups.
   List<CategoryEntity> get categoriesOrEmpty => switch (this) {
-        CategoriesLoaded(:final categories) => categories,
-        CategoriesImported(:final categories) => categories,
-        _ => const <CategoryEntity>[],
-      };
+    CategoriesLoaded(:final categories) => categories,
+    CategoriesImported(:final categories) => categories,
+    _ => const <CategoryEntity>[],
+  };
 }

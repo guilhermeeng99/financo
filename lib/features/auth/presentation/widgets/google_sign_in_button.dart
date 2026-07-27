@@ -31,8 +31,8 @@ class GoogleSignInButton extends StatelessWidget {
               onTap: isLoading
                   ? null
                   : () => context.read<AuthBloc>().add(
-                        const AuthGoogleSignInRequested(),
-                      ),
+                      const AuthGoogleSignInRequested(),
+                    ),
               borderRadius: BorderRadius.circular(14),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

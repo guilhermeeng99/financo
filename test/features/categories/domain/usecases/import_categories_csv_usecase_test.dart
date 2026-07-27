@@ -335,45 +335,48 @@ Food,,Expense
       ]);
     });
 
-    test('skips children whose parent was removed from the items list',
-        () async {
-      when(
-        () => mockRepository.getCategories(userId: userId),
-      ).thenAnswer((_) async => const Right([]));
+    test(
+      'skips children whose parent was removed from the items list',
+      () async {
+        when(
+          () => mockRepository.getCategories(userId: userId),
+        ).thenAnswer((_) async => const Right([]));
 
-      var createdCount = 0;
-      when(() => mockRepository.createCategory(any())).thenAnswer((
-        invocation,
-      ) async {
-        final category = invocation.positionalArguments.first as CategoryEntity;
-        createdCount++;
-        return Right<Failure, CategoryEntity>(
-          category.copyWith(id: 'created-$createdCount'),
+        var createdCount = 0;
+        when(() => mockRepository.createCategory(any())).thenAnswer((
+          invocation,
+        ) async {
+          final category =
+              invocation.positionalArguments.first as CategoryEntity;
+          createdCount++;
+          return Right<Failure, CategoryEntity>(
+            category.copyWith(id: 'created-$createdCount'),
+          );
+        });
+
+        final items = [
+          const CategoryImportPreviewItem(
+            name: 'Restaurants',
+            type: CategoryType.expense,
+            parentName: 'Food',
+            icon: 100,
+            color: 0xFF000000,
+          ),
+        ];
+
+        final result = await useCase.importItems(
+          items: items,
+          userId: userId,
         );
-      });
 
-      final items = [
-        const CategoryImportPreviewItem(
-          name: 'Restaurants',
-          type: CategoryType.expense,
-          parentName: 'Food',
-          icon: 100,
-          color: 0xFF000000,
-        ),
-      ];
-
-      final result = await useCase.importItems(
-        items: items,
-        userId: userId,
-      );
-
-      expect(
-        result,
-        const Right<Failure, CategoryImportResult>(
-          CategoryImportResult(importedCount: 0, duplicateCount: 0),
-        ),
-      );
-      verifyNever(() => mockRepository.createCategory(any()));
-    });
+        expect(
+          result,
+          const Right<Failure, CategoryImportResult>(
+            CategoryImportResult(importedCount: 0, duplicateCount: 0),
+          ),
+        );
+        verifyNever(() => mockRepository.createCategory(any()));
+      },
+    );
   });
 }

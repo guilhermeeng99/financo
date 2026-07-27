@@ -54,8 +54,7 @@ void main() {
         userId: any(named: 'userId'),
         month: any(named: 'month'),
         forceRefresh: any(named: 'forceRefresh'),
-        fiftyThirtyTwentyTargets:
-            any(named: 'fiftyThirtyTwentyTargets'),
+        fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
       ),
     ).thenAnswer(
       (_) async => Right<Failure, DashboardSummary>(
@@ -117,8 +116,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => const Left<Failure, DashboardSummary>(
@@ -158,8 +156,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(
@@ -210,8 +207,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).called(1);
       },
@@ -271,8 +267,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(
@@ -347,8 +342,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => const Left<Failure, DashboardSummary>(
@@ -407,8 +401,7 @@ void main() {
             userId: any(named: 'userId'),
             month: any(named: 'month'),
             forceRefresh: any(named: 'forceRefresh'),
-            fiftyThirtyTwentyTargets:
-                any(named: 'fiftyThirtyTwentyTargets'),
+            fiftyThirtyTwentyTargets: any(named: 'fiftyThirtyTwentyTargets'),
           ),
         ).thenAnswer(
           (_) async => Right<Failure, DashboardSummary>(

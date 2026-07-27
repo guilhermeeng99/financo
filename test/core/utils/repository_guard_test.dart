@@ -11,19 +11,21 @@ void main() {
       expect(result, const Right<Failure, int>(42));
     });
 
-    test('maps ServerException to Left(ServerFailure) with its message',
-        () async {
-      final result = await guardServer<int>(
-        () async => throw const ServerException('boom'),
-      );
-      result.fold(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'boom');
-        },
-        (_) => fail('expected a failure'),
-      );
-    });
+    test(
+      'maps ServerException to Left(ServerFailure) with its message',
+      () async {
+        final result = await guardServer<int>(
+          () async => throw const ServerException('boom'),
+        );
+        result.fold(
+          (failure) {
+            expect(failure, isA<ServerFailure>());
+            expect(failure.message, 'boom');
+          },
+          (_) => fail('expected a failure'),
+        );
+      },
+    );
 
     test('does not catch non-ServerException errors', () {
       expect(

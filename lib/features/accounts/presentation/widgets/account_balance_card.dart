@@ -90,9 +90,7 @@ class AccountBalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            isCredit
-                ? t.accounts.availableCredit
-                : t.accounts.currentBalance,
+            isCredit ? t.accounts.availableCredit : t.accounts.currentBalance,
             style: context.textTheme.labelSmall?.copyWith(
               color: colors.onBackgroundLight,
               fontWeight: FontWeight.w600,

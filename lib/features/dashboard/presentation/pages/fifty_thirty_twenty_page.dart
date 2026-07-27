@@ -129,72 +129,77 @@ class _FiftyThirtyTwentyViewState extends State<_FiftyThirtyTwentyView> {
           BlocListener<DateFilterCubit, DateFilterState>(
             listener: (context, state) => _reload(),
           ),
-          BlocListener<FiftyThirtyTwentyTargetsCubit,
-              FiftyThirtyTwentyTargetsState>(
+          BlocListener<
+            FiftyThirtyTwentyTargetsCubit,
+            FiftyThirtyTwentyTargetsState
+          >(
             listenWhen: (previous, current) =>
                 previous.targets != current.targets,
             listener: (context, state) => _reload(),
           ),
         ],
-        child: BlocBuilder<FiftyThirtyTwentyDetailCubit,
-            FiftyThirtyTwentyDetailState>(
-          builder: (context, state) {
-            if (state.status == FiftyThirtyTwentyDetailStatus.loading ||
-                state.status == FiftyThirtyTwentyDetailStatus.initial) {
-              return const LoadingShimmer();
-            }
-            if (state.status == FiftyThirtyTwentyDetailStatus.error) {
-              return ErrorView(
-                failure: state.failure,
-                onRetry: _reload,
-              );
-            }
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-              children: [
-                if (isMobile) ...const [
-                  Center(child: FinancoMonthFilterPill()),
-                  SizedBox(height: 16),
-                ],
-                FiftyThirtyTwentyCard(overview: state.overview)
-                    .animate()
-                    .fadeIn(duration: 350.ms)
-                    .slideY(
-                      begin: 0.05,
-                      end: 0,
-                      duration: 350.ms,
-                      curve: Curves.easeOut,
-                    ),
-                const SizedBox(height: 20),
-                FiftyThirtyTwentyBreakdownSection(
-                  breakdown: state.breakdown,
-                  overview: state.overview,
-                  periodTransactions: state.periodTransactions,
-                )
-                    .animate()
-                    .fadeIn(delay: 75.ms, duration: 350.ms)
-                    .slideY(
-                      begin: 0.05,
-                      end: 0,
-                      delay: 75.ms,
-                      duration: 350.ms,
-                      curve: Curves.easeOut,
-                    ),
-                const SizedBox(height: 20),
-                FiftyThirtyTwentyHistoryChart(history: state.history)
-                    .animate()
-                    .fadeIn(delay: 150.ms, duration: 350.ms)
-                    .slideY(
-                      begin: 0.05,
-                      end: 0,
-                      delay: 150.ms,
-                      duration: 350.ms,
-                      curve: Curves.easeOut,
-                    ),
-              ],
-            );
-          },
-        ),
+        child:
+            BlocBuilder<
+              FiftyThirtyTwentyDetailCubit,
+              FiftyThirtyTwentyDetailState
+            >(
+              builder: (context, state) {
+                if (state.status == FiftyThirtyTwentyDetailStatus.loading ||
+                    state.status == FiftyThirtyTwentyDetailStatus.initial) {
+                  return const LoadingShimmer();
+                }
+                if (state.status == FiftyThirtyTwentyDetailStatus.error) {
+                  return ErrorView(
+                    failure: state.failure,
+                    onRetry: _reload,
+                  );
+                }
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                  children: [
+                    if (isMobile) ...const [
+                      Center(child: FinancoMonthFilterPill()),
+                      SizedBox(height: 16),
+                    ],
+                    FiftyThirtyTwentyCard(overview: state.overview)
+                        .animate()
+                        .fadeIn(duration: 350.ms)
+                        .slideY(
+                          begin: 0.05,
+                          end: 0,
+                          duration: 350.ms,
+                          curve: Curves.easeOut,
+                        ),
+                    const SizedBox(height: 20),
+                    FiftyThirtyTwentyBreakdownSection(
+                          breakdown: state.breakdown,
+                          overview: state.overview,
+                          periodTransactions: state.periodTransactions,
+                        )
+                        .animate()
+                        .fadeIn(delay: 75.ms, duration: 350.ms)
+                        .slideY(
+                          begin: 0.05,
+                          end: 0,
+                          delay: 75.ms,
+                          duration: 350.ms,
+                          curve: Curves.easeOut,
+                        ),
+                    const SizedBox(height: 20),
+                    FiftyThirtyTwentyHistoryChart(history: state.history)
+                        .animate()
+                        .fadeIn(delay: 150.ms, duration: 350.ms)
+                        .slideY(
+                          begin: 0.05,
+                          end: 0,
+                          delay: 150.ms,
+                          duration: 350.ms,
+                          curve: Curves.easeOut,
+                        ),
+                  ],
+                );
+              },
+            ),
       ),
     );
   }

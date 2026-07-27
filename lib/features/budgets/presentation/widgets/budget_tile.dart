@@ -50,8 +50,7 @@ class BudgetTile extends StatelessWidget {
     // shows the uncapped value, so an overspend of 120% reads "120%" but
     // the bar stops at the right edge.
     final progress = overview.percentage.clamp(0.0, 1.0);
-    final percentageLabel =
-        '${(overview.percentage * 100).round()}%';
+    final percentageLabel = '${(overview.percentage * 100).round()}%';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

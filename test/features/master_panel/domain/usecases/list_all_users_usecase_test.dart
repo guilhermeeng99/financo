@@ -18,16 +18,18 @@ void main() {
   });
 
   group('ListAllUsersUseCase', () {
-    test('delegates to repository.listAllUsers and forwards the list',
-        () async {
-      final users = UserFactory.list();
-      when(() => repo.listAllUsers()).thenAnswer((_) async => Right(users));
+    test(
+      'delegates to repository.listAllUsers and forwards the list',
+      () async {
+        final users = UserFactory.list();
+        when(() => repo.listAllUsers()).thenAnswer((_) async => Right(users));
 
-      final result = await useCase();
+        final result = await useCase();
 
-      expect(result, Right<Failure, List<UserEntity>>(users));
-      verify(() => repo.listAllUsers()).called(1);
-    });
+        expect(result, Right<Failure, List<UserEntity>>(users));
+        verify(() => repo.listAllUsers()).called(1);
+      },
+    );
 
     test('forwards a Left failure from the repository', () async {
       when(() => repo.listAllUsers()).thenAnswer(

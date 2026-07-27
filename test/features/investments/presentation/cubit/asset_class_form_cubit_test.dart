@@ -121,8 +121,9 @@ void main() {
     blocTest<AssetClassFormCubit, AssetClassFormState>(
       'creates a new class with a trimmed name and emits success',
       setUp: () {
-        when(() => createAssetClass(any()))
-            .thenAnswer((_) async => Right(AssetClassFactory.stocks()));
+        when(
+          () => createAssetClass(any()),
+        ).thenAnswer((_) async => Right(AssetClassFactory.stocks()));
       },
       build: buildCubit,
       act: (cubit) async {
@@ -145,9 +146,9 @@ void main() {
         ),
       ],
       verify: (_) {
-        final entity = verify(() => createAssetClass(captureAny()))
-            .captured
-            .single as AssetClassEntity;
+        final entity =
+            verify(() => createAssetClass(captureAny())).captured.single
+                as AssetClassEntity;
         expect(entity.name, 'Stocks');
         expect(entity.targetPercent, 25);
         expect(entity.userId, userId);
@@ -159,8 +160,9 @@ void main() {
     blocTest<AssetClassFormCubit, AssetClassFormState>(
       'routes edits through the update use case keeping the id',
       setUp: () {
-        when(() => updateAssetClass(any()))
-            .thenAnswer((_) async => Right(AssetClassFactory.stocks()));
+        when(
+          () => updateAssetClass(any()),
+        ).thenAnswer((_) async => Right(AssetClassFactory.stocks()));
       },
       build: () => buildCubit(existing: AssetClassFactory.stocks()),
       act: (cubit) async {
@@ -181,9 +183,9 @@ void main() {
         ),
       ],
       verify: (_) {
-        final entity = verify(() => updateAssetClass(captureAny()))
-            .captured
-            .single as AssetClassEntity;
+        final entity =
+            verify(() => updateAssetClass(captureAny())).captured.single
+                as AssetClassEntity;
         expect(entity.id, AssetClassFactory.stocks().id);
         expect(entity.name, 'Renamed');
         verifyNever(() => createAssetClass(any()));

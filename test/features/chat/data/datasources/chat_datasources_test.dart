@@ -22,10 +22,10 @@ void main() {
       functions = MockFirebaseFunctions();
       chatCallable = MockHttpsCallable();
       transcribeCallable = MockHttpsCallable();
-      when(() => functions.httpsCallable('chatSend'))
-          .thenReturn(chatCallable);
-      when(() => functions.httpsCallable('transcribeChatAudio'))
-          .thenReturn(transcribeCallable);
+      when(() => functions.httpsCallable('chatSend')).thenReturn(chatCallable);
+      when(
+        () => functions.httpsCallable('transcribeChatAudio'),
+      ).thenReturn(transcribeCallable);
       datasource = ChatBackendDataSourceImpl(functions: functions);
     });
 
@@ -37,9 +37,13 @@ void main() {
       ).thenAnswer((_) async => result);
     }
 
-    Map<String, dynamic> capturedPayload() => verify(
-      () => chatCallable.call<Map<Object?, Object?>>(captureAny<dynamic>()),
-    ).captured.single as Map<String, dynamic>;
+    Map<String, dynamic> capturedPayload() =>
+        verify(
+              () => chatCallable.call<Map<Object?, Object?>>(
+                captureAny<dynamic>(),
+              ),
+            ).captured.single
+            as Map<String, dynamic>;
 
     group('sendMessage', () {
       test('maps the callable response into an assistant message', () async {
@@ -190,30 +194,35 @@ void main() {
     });
 
     group('transcribeAudio', () {
-      test('returns the trimmed transcript and sends the audio payload',
-          () async {
-        final result = MockHttpsCallableResult<Map<Object?, Object?>>();
-        when(() => result.data).thenReturn({'transcript': '  hello world  '});
-        when(
-          () => transcribeCallable.call<Map<Object?, Object?>>(any<dynamic>()),
-        ).thenAnswer((_) async => result);
+      test(
+        'returns the trimmed transcript and sends the audio payload',
+        () async {
+          final result = MockHttpsCallableResult<Map<Object?, Object?>>();
+          when(() => result.data).thenReturn({'transcript': '  hello world  '});
+          when(
+            () =>
+                transcribeCallable.call<Map<Object?, Object?>>(any<dynamic>()),
+          ).thenAnswer((_) async => result);
 
-        final transcript = await datasource.transcribeAudio(
-          base64Data: 'YXVkaW8=',
-          mimeType: 'audio/m4a',
-        );
+          final transcript = await datasource.transcribeAudio(
+            base64Data: 'YXVkaW8=',
+            mimeType: 'audio/m4a',
+          );
 
-        expect(transcript, 'hello world');
-        final payload = verify(
-          () => transcribeCallable.call<Map<Object?, Object?>>(
-            captureAny<dynamic>(),
-          ),
-        ).captured.single as Map<String, dynamic>;
-        expect(payload['audio'], {
-          'data': 'YXVkaW8=',
-          'mimeType': 'audio/m4a',
-        });
-      });
+          expect(transcript, 'hello world');
+          final payload =
+              verify(
+                    () => transcribeCallable.call<Map<Object?, Object?>>(
+                      captureAny<dynamic>(),
+                    ),
+                  ).captured.single
+                  as Map<String, dynamic>;
+          expect(payload['audio'], {
+            'data': 'YXVkaW8=',
+            'mimeType': 'audio/m4a',
+          });
+        },
+      );
 
       test('wraps FirebaseFunctionsException into AiException', () async {
         final exception = MockFirebaseFunctionsException();
@@ -252,41 +261,45 @@ void main() {
 
       await datasource.saveChatMessage(message);
 
-      final doc =
-          await firestore.collection('chat_messages').doc('msg-1').get();
+      final doc = await firestore
+          .collection('chat_messages')
+          .doc('msg-1')
+          .get();
       expect(doc.exists, isTrue);
       expect(doc.data()!['content'], message.content);
       expect(doc.data()!['role'], 'user');
       expect(doc.data()!['metadata'], {'actionType': 'transaction'});
     });
 
-    test("getChatHistory returns only the user's messages, oldest first",
-        () async {
-      await datasource.saveChatMessage(
-        ChatMessageFactory.model(
-          id: 'msg-newer',
-          content: 'second',
-          createdAt: DateTime(2026, 6, 2),
-        ),
-      );
-      await datasource.saveChatMessage(
-        ChatMessageFactory.model(
-          id: 'msg-older',
-          content: 'first',
-          createdAt: DateTime(2026, 6),
-        ),
-      );
-      await datasource.saveChatMessage(
-        ChatMessageFactory.model(
-          id: 'msg-foreign',
-          userId: 'user-2',
-          content: 'not mine',
-        ),
-      );
+    test(
+      "getChatHistory returns only the user's messages, oldest first",
+      () async {
+        await datasource.saveChatMessage(
+          ChatMessageFactory.model(
+            id: 'msg-newer',
+            content: 'second',
+            createdAt: DateTime(2026, 6, 2),
+          ),
+        );
+        await datasource.saveChatMessage(
+          ChatMessageFactory.model(
+            id: 'msg-older',
+            content: 'first',
+            createdAt: DateTime(2026, 6),
+          ),
+        );
+        await datasource.saveChatMessage(
+          ChatMessageFactory.model(
+            id: 'msg-foreign',
+            userId: 'user-2',
+            content: 'not mine',
+          ),
+        );
 
-      final history = await datasource.getChatHistory(userId: userId);
+        final history = await datasource.getChatHistory(userId: userId);
 
-      expect(history.map((m) => m.content).toList(), ['first', 'second']);
-    });
+        expect(history.map((m) => m.content).toList(), ['first', 'second']);
+      },
+    );
   });
 }

@@ -188,8 +188,9 @@ void main() {
     });
 
     test('effectiveBalance returns currentBalance when set', () {
-      final account = AccountFactory.checking(initialBalance: 100)
-          .copyWith(currentBalance: 320);
+      final account = AccountFactory.checking(
+        initialBalance: 100,
+      ).copyWith(currentBalance: 320);
       expect(account.effectiveBalance, 320);
     });
 

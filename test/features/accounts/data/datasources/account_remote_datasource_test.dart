@@ -17,21 +17,23 @@ void main() {
   });
 
   group('createAccount + getAccount', () {
-    test('persists the model and reads it back with the generated id',
-        () async {
-      final model = AccountModel.fromEntity(AccountFactory.checking());
+    test(
+      'persists the model and reads it back with the generated id',
+      () async {
+        final model = AccountModel.fromEntity(AccountFactory.checking());
 
-      final created = await datasource.createAccount(model);
+        final created = await datasource.createAccount(model);
 
-      expect(created.id, isNotEmpty);
-      expect(created.id, isNot(model.id));
-      final fetched = await datasource.getAccount(created.id);
-      expect(fetched.name, model.name);
-      expect(fetched.type, model.type);
-      expect(fetched.bank, model.bank);
-      expect(fetched.initialBalance, model.initialBalance);
-      expect(fetched.userId, userId);
-    });
+        expect(created.id, isNotEmpty);
+        expect(created.id, isNot(model.id));
+        final fetched = await datasource.getAccount(created.id);
+        expect(fetched.name, model.name);
+        expect(fetched.type, model.type);
+        expect(fetched.bank, model.bank);
+        expect(fetched.initialBalance, model.initialBalance);
+        expect(fetched.userId, userId);
+      },
+    );
 
     test('round-trips credit-card-only fields', () async {
       final model = AccountModel.fromEntity(AccountFactory.creditCard());
@@ -47,34 +49,36 @@ void main() {
   });
 
   group('getAccounts', () {
-    test("returns only the given user's accounts ordered by createdAt",
-        () async {
-      await datasource.createAccount(
-        AccountModel.fromEntity(
-          AccountFactory.checking(
-            name: 'Newest',
-            createdAt: DateTime(2026, 2),
+    test(
+      "returns only the given user's accounts ordered by createdAt",
+      () async {
+        await datasource.createAccount(
+          AccountModel.fromEntity(
+            AccountFactory.checking(
+              name: 'Newest',
+              createdAt: DateTime(2026, 2),
+            ),
           ),
-        ),
-      );
-      await datasource.createAccount(
-        AccountModel.fromEntity(
-          AccountFactory.checking(
-            name: 'Oldest',
-            createdAt: DateTime(2026),
+        );
+        await datasource.createAccount(
+          AccountModel.fromEntity(
+            AccountFactory.checking(
+              name: 'Oldest',
+              createdAt: DateTime(2026),
+            ),
           ),
-        ),
-      );
-      await datasource.createAccount(
-        AccountModel.fromEntity(
-          AccountFactory.checking(name: 'Foreign', userId: 'user-2'),
-        ),
-      );
+        );
+        await datasource.createAccount(
+          AccountModel.fromEntity(
+            AccountFactory.checking(name: 'Foreign', userId: 'user-2'),
+          ),
+        );
 
-      final accounts = await datasource.getAccounts(userId: userId);
+        final accounts = await datasource.getAccounts(userId: userId);
 
-      expect(accounts.map((a) => a.name).toList(), ['Oldest', 'Newest']);
-    });
+        expect(accounts.map((a) => a.name).toList(), ['Oldest', 'Newest']);
+      },
+    );
 
     test('returns an empty list when the user has no accounts', () async {
       expect(await datasource.getAccounts(userId: userId), isEmpty);

@@ -70,34 +70,35 @@ void main() {
   }
 
   group('handle - create', () {
-    test('builds a budget for the resolved category and returns success',
-        () async {
-      stubCategories([foodCategory]);
-      when(() => mockCreateBudget(any())).thenAnswer(
-        (_) async => Right<Failure, BudgetEntity>(
-          BudgetFactory.make(categoryId: 'cat-food', amount: 800),
-        ),
-      );
+    test(
+      'builds a budget for the resolved category and returns success',
+      () async {
+        stubCategories([foodCategory]);
+        when(() => mockCreateBudget(any())).thenAnswer(
+          (_) async => Right<Failure, BudgetEntity>(
+            BudgetFactory.make(categoryId: 'cat-food', amount: 800),
+          ),
+        );
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'action': 'create',
-          'category': 'Food',
-          'amount': 800,
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'action': 'create',
+            'category': 'Food',
+            'amount': 800,
+          },
+          locale: locale,
+        );
 
-      final captured =
-          verify(() => mockCreateBudget(captureAny())).captured;
-      final budget = captured.single as BudgetEntity;
-      expect(budget.categoryId, 'cat-food');
-      expect(budget.userId, userId);
-      expect(budget.amount, 800);
-      // budgetCreated embeds the resolved category name.
-      expect(result, contains('Food'));
-    });
+        final captured = verify(() => mockCreateBudget(captureAny())).captured;
+        final budget = captured.single as BudgetEntity;
+        expect(budget.categoryId, 'cat-food');
+        expect(budget.userId, userId);
+        expect(budget.amount, 800);
+        // budgetCreated embeds the resolved category name.
+        expect(result, contains('Food'));
+      },
+    );
 
     test('resolves category case-insensitively', () async {
       stubCategories([foodCategory]);
@@ -117,28 +118,29 @@ void main() {
         locale: locale,
       );
 
-      final captured =
-          verify(() => mockCreateBudget(captureAny())).captured;
+      final captured = verify(() => mockCreateBudget(captureAny())).captured;
       expect((captured.single as BudgetEntity).categoryId, 'cat-food');
     });
 
-    test('non-positive amount returns invalidAmount without creating',
-        () async {
-      stubCategories([foodCategory]);
+    test(
+      'non-positive amount returns invalidAmount without creating',
+      () async {
+        stubCategories([foodCategory]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'action': 'create',
-          'category': 'Food',
-          'amount': 0,
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'action': 'create',
+            'category': 'Food',
+            'amount': 0,
+          },
+          locale: locale,
+        );
 
-      expect(result, 'Invalid amount.');
-      verifyNever(() => mockCreateBudget(any()));
-    });
+        expect(result, 'Invalid amount.');
+        verifyNever(() => mockCreateBudget(any()));
+      },
+    );
 
     test('createBudget failure surfaces the error message', () async {
       stubCategories([foodCategory]);
@@ -162,59 +164,62 @@ void main() {
   });
 
   group('handle - update', () {
-    test('updates the existing budget for the category and returns success',
-        () async {
-      stubCategories([foodCategory]);
-      stubBudgets([
-        BudgetFactory.make(id: 'b-1', categoryId: 'cat-food', amount: 100),
-      ]);
-      when(() => mockUpdateBudget(any())).thenAnswer(
-        (_) async => Right<Failure, BudgetEntity>(
-          BudgetFactory.make(id: 'b-1', categoryId: 'cat-food', amount: 999),
-        ),
-      );
+    test(
+      'updates the existing budget for the category and returns success',
+      () async {
+        stubCategories([foodCategory]);
+        stubBudgets([
+          BudgetFactory.make(id: 'b-1', categoryId: 'cat-food', amount: 100),
+        ]);
+        when(() => mockUpdateBudget(any())).thenAnswer(
+          (_) async => Right<Failure, BudgetEntity>(
+            BudgetFactory.make(id: 'b-1', categoryId: 'cat-food', amount: 999),
+          ),
+        );
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'action': 'update',
-          'category': 'Food',
-          'amount': 999,
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'action': 'update',
+            'category': 'Food',
+            'amount': 999,
+          },
+          locale: locale,
+        );
 
-      final captured =
-          verify(() => mockUpdateBudget(captureAny())).captured;
-      final budget = captured.single as BudgetEntity;
-      expect(budget.id, 'b-1');
-      expect(budget.amount, 999);
-      expect(result, contains('Food'));
-    });
+        final captured = verify(() => mockUpdateBudget(captureAny())).captured;
+        final budget = captured.single as BudgetEntity;
+        expect(budget.id, 'b-1');
+        expect(budget.amount, 999);
+        expect(result, contains('Food'));
+      },
+    );
 
-    test('non-positive amount returns invalidAmount without loading budgets',
-        () async {
-      stubCategories([foodCategory]);
+    test(
+      'non-positive amount returns invalidAmount without loading budgets',
+      () async {
+        stubCategories([foodCategory]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'action': 'update',
-          'category': 'Food',
-          'amount': -5,
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'action': 'update',
+            'category': 'Food',
+            'amount': -5,
+          },
+          locale: locale,
+        );
 
-      expect(result, 'Invalid amount.');
-      verifyNever(
-        () => mockGetBudgets(
-          userId: any(named: 'userId'),
-          forceRefresh: any(named: 'forceRefresh'),
-        ),
-      );
-      verifyNever(() => mockUpdateBudget(any()));
-    });
+        expect(result, 'Invalid amount.');
+        verifyNever(
+          () => mockGetBudgets(
+            userId: any(named: 'userId'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        );
+        verifyNever(() => mockUpdateBudget(any()));
+      },
+    );
 
     test('returns budgetNoActive when category has no budget', () async {
       stubCategories([foodCategory]);
@@ -256,8 +261,7 @@ void main() {
         locale: locale,
       );
 
-      final captured =
-          verify(() => mockDeleteBudget(captureAny())).captured;
+      final captured = verify(() => mockDeleteBudget(captureAny())).captured;
       expect(captured.single, 'b-1');
       expect(result, contains('Food'));
     });

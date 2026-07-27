@@ -41,8 +41,7 @@ class DashboardAccountSelectionCubit
   }
 
   /// Returns true when the account contributes to the dashboard total.
-  bool isIncluded(String accountId) =>
-      !state.excludedIds.contains(accountId);
+  bool isIncluded(String accountId) => !state.excludedIds.contains(accountId);
 }
 
 class DashboardAccountSelectionState extends Equatable {

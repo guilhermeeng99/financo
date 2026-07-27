@@ -45,8 +45,7 @@ class _LinkedAccountPickerSheet extends StatefulWidget {
       _LinkedAccountPickerSheetState();
 }
 
-class _LinkedAccountPickerSheetState
-    extends State<_LinkedAccountPickerSheet> {
+class _LinkedAccountPickerSheetState extends State<_LinkedAccountPickerSheet> {
   List<AccountEntity>? _accounts;
 
   @override
@@ -65,8 +64,7 @@ class _LinkedAccountPickerSheetState
     setState(() {
       _accounts = result.fold(
         (_) => <AccountEntity>[],
-        (all) =>
-            all.where((a) => a.type == AccountType.checking).toList(),
+        (all) => all.where((a) => a.type == AccountType.checking).toList(),
       );
     });
   }
@@ -134,9 +132,7 @@ class _AccountRow extends StatelessWidget {
                   account.name,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: colors.onBackground,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

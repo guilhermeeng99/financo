@@ -109,6 +109,7 @@ class TransactionEntity extends Equatable {
       updatedAt: updatedAt,
     );
   }
+
   bool get isRecurring => recurrence != TransactionRecurrence.single;
   bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
   bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;

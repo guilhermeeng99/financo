@@ -71,22 +71,22 @@ class _GradientBackdrop extends StatelessWidget {
     final colors = context.appColors;
     final isDark = context.isDarkMode;
     return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: const Alignment(0, -0.4),
-          radius: 1.1,
-          colors: isDark
-              ? [
-                  colors.primary.withValues(alpha: 0.18),
-                  colors.background,
-                ]
-              : [
-                  colors.primary.withValues(alpha: 0.10),
-                  colors.background,
-                ],
-        ),
-      ),
-    )
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(0, -0.4),
+              radius: 1.1,
+              colors: isDark
+                  ? [
+                      colors.primary.withValues(alpha: 0.18),
+                      colors.background,
+                    ]
+                  : [
+                      colors.primary.withValues(alpha: 0.10),
+                      colors.background,
+                    ],
+            ),
+          ),
+        )
         .animate(onPlay: (c) => c.repeat(reverse: true))
         .fadeIn(duration: 600.ms)
         .then()
@@ -111,36 +111,36 @@ class _BrandColumn extends StatelessWidget {
         // Brand mark — same gradient F tile used in the sidebar, scaled up.
         // Entrance: spring scale + fade. Idle: gentle pulse.
         Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [colors.primary, colors.primaryLight],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: colors.primary.withValues(alpha: 0.32),
-                blurRadius: 40,
-                spreadRadius: -4,
-                offset: const Offset(0, 16),
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [colors.primary, colors.primaryLight],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.32),
+                    blurRadius: 40,
+                    spreadRadius: -4,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              AppConstants.appName.substring(0, 1),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 44,
-                height: 1,
+              child: Center(
+                child: Text(
+                  AppConstants.appName.substring(0, 1),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 44,
+                    height: 1,
+                  ),
+                ),
               ),
-            ),
-          ),
-        )
+            )
             .animate()
             .scale(
               duration: 700.ms,
@@ -159,13 +159,13 @@ class _BrandColumn extends StatelessWidget {
             ),
         const SizedBox(height: 32),
         Text(
-          AppConstants.appName,
-          style: context.textTheme.displaySmall?.copyWith(
-            color: colors.onBackground,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
-        )
+              AppConstants.appName,
+              style: context.textTheme.displaySmall?.copyWith(
+                color: colors.onBackground,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            )
             .animate()
             .fadeIn(delay: 350.ms, duration: 500.ms)
             .slideY(
@@ -177,11 +177,11 @@ class _BrandColumn extends StatelessWidget {
             ),
         const SizedBox(height: 8),
         Text(
-          t.startup.tagline,
-          style: context.textTheme.bodyMedium?.copyWith(
-            color: colors.onBackgroundLight,
-          ),
-        )
+              t.startup.tagline,
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: colors.onBackgroundLight,
+              ),
+            )
             .animate()
             .fadeIn(delay: 550.ms, duration: 500.ms)
             .slideY(
@@ -281,20 +281,21 @@ class _ProgressBar extends StatelessWidget {
           builder: (_, value, _) {
             return FractionallySizedBox(
               widthFactor: value,
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colors.primary, colors.primaryLight],
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              )
-                  .animate(onPlay: (c) => c.repeat())
-                  .shimmer(
-                    duration: 1600.ms,
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
+              child:
+                  Container(
+                        height: 4,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [colors.primary, colors.primaryLight],
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      )
+                      .animate(onPlay: (c) => c.repeat())
+                      .shimmer(
+                        duration: 1600.ms,
+                        color: Colors.white.withValues(alpha: 0.4),
+                      ),
             );
           },
         ),

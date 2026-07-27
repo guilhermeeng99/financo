@@ -182,7 +182,6 @@ class _CategoryDetailsDialogState extends State<_CategoryDetailsDialog>
       ),
     );
   }
-
 }
 
 class _CategoryTransactionsTab extends StatelessWidget {

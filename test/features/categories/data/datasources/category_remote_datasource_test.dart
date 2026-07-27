@@ -48,8 +48,7 @@ void main() {
   });
 
   group('getCategories', () {
-    test("returns only the given user's categories ordered by name",
-        () async {
+    test("returns only the given user's categories ordered by name", () async {
       await datasource.createCategory(
         CategoryModel.fromEntity(CategoryFactory.expense(name: 'Zoo')),
       );

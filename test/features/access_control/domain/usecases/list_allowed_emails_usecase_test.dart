@@ -17,25 +17,27 @@ void main() {
   });
 
   group('ListAllowedEmailsUseCase', () {
-    test('delegates to repository.listAllowedEmails and forwards the list',
-        () async {
-      final emails = [
-        AllowedEmailEntity(email: 'a@example.com', addedAt: DateTime(2026)),
-        AllowedEmailEntity(
-          email: 'b@example.com',
-          addedAt: DateTime(2026, 2),
-          note: 'beta tester',
-        ),
-      ];
-      when(
-        () => repo.listAllowedEmails(),
-      ).thenAnswer((_) async => Right(emails));
+    test(
+      'delegates to repository.listAllowedEmails and forwards the list',
+      () async {
+        final emails = [
+          AllowedEmailEntity(email: 'a@example.com', addedAt: DateTime(2026)),
+          AllowedEmailEntity(
+            email: 'b@example.com',
+            addedAt: DateTime(2026, 2),
+            note: 'beta tester',
+          ),
+        ];
+        when(
+          () => repo.listAllowedEmails(),
+        ).thenAnswer((_) async => Right(emails));
 
-      final result = await useCase();
+        final result = await useCase();
 
-      expect(result, Right<Failure, List<AllowedEmailEntity>>(emails));
-      verify(() => repo.listAllowedEmails()).called(1);
-    });
+        expect(result, Right<Failure, List<AllowedEmailEntity>>(emails));
+        verify(() => repo.listAllowedEmails()).called(1);
+      },
+    );
 
     test('forwards a Left failure from the repository', () async {
       when(() => repo.listAllowedEmails()).thenAnswer(

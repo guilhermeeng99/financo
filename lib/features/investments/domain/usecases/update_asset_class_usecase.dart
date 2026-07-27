@@ -46,8 +46,9 @@ class UpdateAssetClassUseCase {
           return const SubclassCannotBeParentFailure();
         }
         // Demoting a root that owns subclasses → would create a chain.
-        final hasOwnSubclasses =
-            classes.any((c) => c.parentId == assetClass.id);
+        final hasOwnSubclasses = classes.any(
+          (c) => c.parentId == assetClass.id,
+        );
         if (hasOwnSubclasses) {
           return const ClassOwnsSubclassesFailure();
         }

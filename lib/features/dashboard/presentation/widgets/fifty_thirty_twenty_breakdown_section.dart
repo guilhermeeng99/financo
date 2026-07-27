@@ -35,9 +35,8 @@ class FiftyThirtyTwentyBreakdownSection extends StatelessWidget {
     final colors = context.appColors;
     // Total period expenses used for the % column inside the drill-down
     // dialog (same denominator the dashboard uses).
-    final totalExpenses = overview.needsSpent +
-        overview.wantsSpent +
-        overview.unclassifiedSpent;
+    final totalExpenses =
+        overview.needsSpent + overview.wantsSpent + overview.unclassifiedSpent;
     final sections = <Widget>[
       _BucketSection(
         label: t.fiftyThirtyTwenty.needsLabel,
@@ -181,62 +180,62 @@ class _CategoryRow extends StatelessWidget {
       onTap: () => _openDrillDown(context),
       borderRadius: BorderRadius.circular(10),
       child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: tint.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Icon(
-                materialIconFor(row.categoryIcon),
-                size: 16,
-                color: tint,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: tint.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Icon(
+                  materialIconFor(row.categoryIcon),
+                  size: 16,
+                  color: tint,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  row.categoryName,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    row.categoryName,
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: colors.onBackground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: share.clamp(0.0, 1.0),
-                    minHeight: 4,
-                    backgroundColor: colors.surfaceVariant,
-                    valueColor: AlwaysStoppedAnimation<Color>(tint),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: share.clamp(0.0, 1.0),
+                      minHeight: 4,
+                      backgroundColor: colors.surfaceVariant,
+                      valueColor: AlwaysStoppedAnimation<Color>(tint),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            formatCurrency(row.amount),
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: colors.onBackground,
-              fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+            Text(
+              formatCurrency(row.amount),
+              style: context.textTheme.bodyMedium?.copyWith(
+                color: colors.onBackground,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

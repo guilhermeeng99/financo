@@ -169,8 +169,9 @@ void main() {
         locale: locale,
       );
 
-      final captured =
-          verify(() => mockCreateTransaction(captureAny())).captured;
+      final captured = verify(
+        () => mockCreateTransaction(captureAny()),
+      ).captured;
       final tx = captured.first as TransactionEntity;
       expect(tx.accountId, 'acc-target');
     });

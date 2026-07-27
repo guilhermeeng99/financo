@@ -100,11 +100,12 @@ class _FiftyThirtyTwentyTargetsSheetState
     final isValid = _draft.isValid;
     final sumPercent = ((_draft.needs + _draft.wants + _draft.savings) * 100)
         .round();
-    return BlocBuilder<FiftyThirtyTwentyTargetsCubit,
-        FiftyThirtyTwentyTargetsState>(
+    return BlocBuilder<
+      FiftyThirtyTwentyTargetsCubit,
+      FiftyThirtyTwentyTargetsState
+    >(
       builder: (context, state) {
-        final isSaving =
-            state.status == FiftyThirtyTwentyTargetsStatus.saving;
+        final isSaving = state.status == FiftyThirtyTwentyTargetsStatus.saving;
         return SafeArea(
           top: false,
           child: Padding(

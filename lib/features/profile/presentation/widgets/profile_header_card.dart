@@ -90,8 +90,7 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final hasPhoto =
-        photoUrl != null && photoUrl!.isNotEmpty && !imageError;
+    final hasPhoto = photoUrl != null && photoUrl!.isNotEmpty && !imageError;
     return Container(
       width: 64,
       height: 64,

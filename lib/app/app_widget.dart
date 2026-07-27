@@ -52,8 +52,9 @@ class _FinancoAppState extends State<FinancoApp> {
                       // switch — needed because cached page widgets
                       // (FinancoLargeAppBar titles in particular) capture
                       // their string values at construction time.
-                      final activeLocale =
-                          TranslationProvider.of(context).flutterLocale;
+                      final activeLocale = TranslationProvider.of(
+                        context,
+                      ).flutterLocale;
                       return MaterialApp.router(
                         key: ValueKey(activeLocale.toLanguageTag()),
                         title: AppConstants.appName,

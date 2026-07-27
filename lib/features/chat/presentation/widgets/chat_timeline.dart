@@ -91,7 +91,8 @@ class ChatTimeline extends StatelessWidget {
         ),
       );
 
-      final isProposal = m.role == ChatRole.assistant &&
+      final isProposal =
+          m.role == ChatRole.assistant &&
           m.metadata != null &&
           (m.metadata!['actionType'] as String?) != null;
 
@@ -111,11 +112,11 @@ class ChatTimeline extends StatelessWidget {
             status: status,
             onConfirm: status == null
                 ? () => context.read<ChatBloc>().add(
-                      ChatActionConfirmed(
-                        actionMessageId: m.id,
-                        metadata: m.metadata!,
-                      ),
-                    )
+                    ChatActionConfirmed(
+                      actionMessageId: m.id,
+                      metadata: m.metadata!,
+                    ),
+                  )
                 : null,
             onCancel: status == null ? () => onActionCancelled(m.id) : null,
           ),

@@ -44,13 +44,12 @@ class _BankPickerSheetState extends State<_BankPickerSheet> {
   static final List<BankType> _displayOrder = _buildDisplayOrder();
 
   static List<BankType> _buildDisplayOrder() {
-    final banks =
-        BankType.values.where((b) => b != BankType.others).toList()
-          ..sort(
-            (a, b) => normalizeForMatch(
-              BankBrand.of(a).label,
-            ).compareTo(normalizeForMatch(BankBrand.of(b).label)),
-          );
+    final banks = BankType.values.where((b) => b != BankType.others).toList()
+      ..sort(
+        (a, b) => normalizeForMatch(
+          BankBrand.of(a).label,
+        ).compareTo(normalizeForMatch(BankBrand.of(b).label)),
+      );
     return [...banks, BankType.others];
   }
 
@@ -160,9 +159,7 @@ class _BankRow extends StatelessWidget {
                   brand.label,
                   style: context.textTheme.bodyMedium?.copyWith(
                     color: colors.onBackground,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),

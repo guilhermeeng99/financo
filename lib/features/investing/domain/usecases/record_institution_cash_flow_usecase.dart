@@ -154,12 +154,14 @@ class RecordInstitutionCashFlowUseCase {
     );
     if (existingFailure != null) return Left(existingFailure);
 
-    final match = existingResult.getOrElse(() => const []).where(
-      (a) =>
-          a.kind == AssetKind.cash &&
-          a.institutionId == institutionId &&
-          a.currency == currency,
-    );
+    final match = existingResult
+        .getOrElse(() => const [])
+        .where(
+          (a) =>
+              a.kind == AssetKind.cash &&
+              a.institutionId == institutionId &&
+              a.currency == currency,
+        );
     if (match.isNotEmpty) return Right(match.first);
 
     final cashAsset = Asset(

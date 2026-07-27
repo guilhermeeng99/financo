@@ -117,7 +117,8 @@ class FiftyThirtyTwentyOverview extends Equatable {
     if (unclassifiedSpent > needsSpent + wantsSpent) {
       return FiftyThirtyTwentyStatus.unclassifiedDominant;
     }
-    final allOnTrack = needsStatus == BucketStatus.onTrack &&
+    final allOnTrack =
+        needsStatus == BucketStatus.onTrack &&
         wantsStatus == BucketStatus.onTrack &&
         savingsStatus == BucketStatus.onTrack;
     return allOnTrack

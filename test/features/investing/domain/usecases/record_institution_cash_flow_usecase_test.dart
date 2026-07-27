@@ -80,48 +80,53 @@ void main() {
   }
 
   group('deposit', () {
-    test('creates the cash asset on first deposit and writes both legs',
-        () async {
-      stubExistingAssets(const []);
-      when(
-        () => assetRepo.createAsset(any()),
-      ).thenAnswer((_) async => Right(cashAsset()));
+    test(
+      'creates the cash asset on first deposit and writes both legs',
+      () async {
+        stubExistingAssets(const []);
+        when(
+          () => assetRepo.createAsset(any()),
+        ).thenAnswer((_) async => Right(cashAsset()));
 
-      final result = await usecase.call(
-        userId: userId,
-        institutionId: institutionId,
-        checkingAccountId: checkingId,
-        amount: 7000,
-        direction: InstitutionCashDirection.deposit,
-      );
+        final result = await usecase.call(
+          userId: userId,
+          institutionId: institutionId,
+          checkingAccountId: checkingId,
+          amount: 7000,
+          direction: InstitutionCashDirection.deposit,
+        );
 
-      expect(result.isRight(), isTrue);
+        expect(result.isRight(), isTrue);
 
-      final createdAsset =
-          verify(() => assetRepo.createAsset(captureAny())).captured.single
-              as Asset;
-      expect(createdAsset.kind, AssetKind.cash);
-      expect(createdAsset.institutionId, institutionId);
-      expect(createdAsset.currency, Currency.brl);
+        final createdAsset =
+            verify(() => assetRepo.createAsset(captureAny())).captured.single
+                as Asset;
+        expect(createdAsset.kind, AssetKind.cash);
+        expect(createdAsset.institutionId, institutionId);
+        expect(createdAsset.currency, Currency.brl);
 
-      final inv = verify(() => saveAssetTx(captureAny())).captured.single
-          as AssetTransaction;
-      expect(inv.kind, TransactionKind.buy);
-      expect(inv.quantity, 7000);
-      expect(inv.assetId, 'cash-1');
-      expect(inv.institutionId, institutionId);
-      expect(inv.fundingAccountId, checkingId);
-      expect(inv.cashAmount, Money.fromMajor(7000, Currency.brl));
+        final inv =
+            verify(() => saveAssetTx(captureAny())).captured.single
+                as AssetTransaction;
+        expect(inv.kind, TransactionKind.buy);
+        expect(inv.quantity, 7000);
+        expect(inv.assetId, 'cash-1');
+        expect(inv.institutionId, institutionId);
+        expect(inv.fundingAccountId, checkingId);
+        expect(inv.cashAmount, Money.fromMajor(7000, Currency.brl));
 
-      final cash = verify(
-        () => txRepo.createTransaction(captureAny()),
-      ).captured.single as TransactionEntity;
-      expect(cash.type, TransactionType.expense);
-      expect(cash.amount, 7000);
-      expect(cash.accountId, checkingId);
-      expect(cash.institutionId, institutionId);
-      expect(cash.linkedInvestmentTransactionId, 'inv-1');
-    });
+        final cash =
+            verify(
+                  () => txRepo.createTransaction(captureAny()),
+                ).captured.single
+                as TransactionEntity;
+        expect(cash.type, TransactionType.expense);
+        expect(cash.amount, 7000);
+        expect(cash.accountId, checkingId);
+        expect(cash.institutionId, institutionId);
+        expect(cash.linkedInvestmentTransactionId, 'inv-1');
+      },
+    );
 
     test('reuses an existing cash holding instead of creating one', () async {
       stubExistingAssets([cashAsset(id: 'cash-existing')]);
@@ -136,8 +141,9 @@ void main() {
 
       expect(result.isRight(), isTrue);
       verifyNever(() => assetRepo.createAsset(any()));
-      final inv = verify(() => saveAssetTx(captureAny())).captured.single
-          as AssetTransaction;
+      final inv =
+          verify(() => saveAssetTx(captureAny())).captured.single
+              as AssetTransaction;
       expect(inv.assetId, 'cash-existing');
     });
   });
@@ -154,12 +160,15 @@ void main() {
         direction: InstitutionCashDirection.withdraw,
       );
 
-      final inv = verify(() => saveAssetTx(captureAny())).captured.single
-          as AssetTransaction;
+      final inv =
+          verify(() => saveAssetTx(captureAny())).captured.single
+              as AssetTransaction;
       expect(inv.kind, TransactionKind.sell);
-      final cash = verify(
-        () => txRepo.createTransaction(captureAny()),
-      ).captured.single as TransactionEntity;
+      final cash =
+          verify(
+                () => txRepo.createTransaction(captureAny()),
+              ).captured.single
+              as TransactionEntity;
       expect(cash.type, TransactionType.income);
     });
   });

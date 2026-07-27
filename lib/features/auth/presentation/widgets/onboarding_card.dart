@@ -29,23 +29,23 @@ class OnboardingCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  accent.withValues(alpha: 0.18),
-                  accent.withValues(alpha: 0.04),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(36),
-            ),
-            child: Center(
-              child: FaIcon(icon, size: 56, color: accent),
-            ),
-          )
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      accent.withValues(alpha: 0.18),
+                      accent.withValues(alpha: 0.04),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(36),
+                ),
+                child: Center(
+                  child: FaIcon(icon, size: 56, color: accent),
+                ),
+              )
               .animate()
               .scale(
                 duration: 500.ms,
@@ -56,26 +56,26 @@ class OnboardingCard extends StatelessWidget {
               .fadeIn(duration: 400.ms),
           const SizedBox(height: 32),
           Text(
-            title,
-            textAlign: TextAlign.center,
-            style: context.textTheme.headlineMedium?.copyWith(
-              color: colors.onBackground,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
-            ),
-          )
+                title,
+                textAlign: TextAlign.center,
+                style: context.textTheme.headlineMedium?.copyWith(
+                  color: colors.onBackground,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+              )
               .animate()
               .fadeIn(delay: 200.ms, duration: 400.ms)
               .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 400.ms),
           const SizedBox(height: 12),
           Text(
-            body,
-            textAlign: TextAlign.center,
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: colors.onBackgroundLight,
-              height: 1.5,
-            ),
-          )
+                body,
+                textAlign: TextAlign.center,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: colors.onBackgroundLight,
+                  height: 1.5,
+                ),
+              )
               .animate()
               .fadeIn(delay: 350.ms, duration: 400.ms)
               .slideY(begin: 0.2, end: 0, delay: 350.ms, duration: 400.ms),

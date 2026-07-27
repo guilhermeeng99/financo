@@ -73,8 +73,7 @@ class DashboardFactory {
               amount: 3000,
             ),
           ],
-      fiftyThirtyTwenty:
-          fiftyThirtyTwenty ?? FiftyThirtyTwentyOverview.empty,
+      fiftyThirtyTwenty: fiftyThirtyTwenty ?? FiftyThirtyTwentyOverview.empty,
     );
   }
 

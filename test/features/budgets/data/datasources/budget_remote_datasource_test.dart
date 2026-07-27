@@ -30,37 +30,39 @@ void main() {
   });
 
   group('getBudgets', () {
-    test("returns only the given user's budgets ordered by createdAt",
-        () async {
-      await datasource.createBudget(
-        BudgetModel.fromEntity(
-          BudgetFactory.make(
-            categoryId: 'cat-late',
-            createdAt: DateTime(2026, 5),
+    test(
+      "returns only the given user's budgets ordered by createdAt",
+      () async {
+        await datasource.createBudget(
+          BudgetModel.fromEntity(
+            BudgetFactory.make(
+              categoryId: 'cat-late',
+              createdAt: DateTime(2026, 5),
+            ),
           ),
-        ),
-      );
-      await datasource.createBudget(
-        BudgetModel.fromEntity(
-          BudgetFactory.make(
-            categoryId: 'cat-early',
-            createdAt: DateTime(2026),
+        );
+        await datasource.createBudget(
+          BudgetModel.fromEntity(
+            BudgetFactory.make(
+              categoryId: 'cat-early',
+              createdAt: DateTime(2026),
+            ),
           ),
-        ),
-      );
-      await datasource.createBudget(
-        BudgetModel.fromEntity(
-          BudgetFactory.make(categoryId: 'cat-foreign', userId: 'user-2'),
-        ),
-      );
+        );
+        await datasource.createBudget(
+          BudgetModel.fromEntity(
+            BudgetFactory.make(categoryId: 'cat-foreign', userId: 'user-2'),
+          ),
+        );
 
-      final budgets = await datasource.getBudgets(userId: userId);
+        final budgets = await datasource.getBudgets(userId: userId);
 
-      expect(
-        budgets.map((b) => b.categoryId).toList(),
-        ['cat-early', 'cat-late'],
-      );
-    });
+        expect(
+          budgets.map((b) => b.categoryId).toList(),
+          ['cat-early', 'cat-late'],
+        );
+      },
+    );
 
     test('returns an empty list when the user has no budgets', () async {
       expect(await datasource.getBudgets(userId: userId), isEmpty);

@@ -295,36 +295,37 @@ void main() {
       expect(out.unclassifiedCount, 1);
     });
 
-    test('subcategory whose parent was deleted charges spent but not count',
-        () {
-      // The orphan-parent subcategory inflates unclassifiedSpent (the
-      // user still sees the spend), but there's nothing to classify
-      // (the parent is gone, the child can't carry a bucket), so the
-      // count stays at the root-backlog only — here, zero.
-      final orphanChild = CategoryFactory.subcategory(
-        id: 'child-orphan',
-        name: 'Forgotten',
-        parentId: 'parent-deleted',
-      );
-      final txs = [
-        TransactionFactory.income(amount: 5000, categoryId: incomeCat.id),
-        TransactionFactory.expense(
-          id: 'tx-on-orphan-child',
-          amount: 70,
-          categoryId: orphanChild.id,
-        ),
-      ];
-      final out = compute50_30_20Overview(
-        periodTransactions: txs,
-        categories: [incomeCat, orphanChild],
-        accounts: [checking],
-      );
-      expect(out.unclassifiedSpent, 70);
-      expect(out.unclassifiedCount, 0);
-    });
+    test(
+      'subcategory whose parent was deleted charges spent but not count',
+      () {
+        // The orphan-parent subcategory inflates unclassifiedSpent (the
+        // user still sees the spend), but there's nothing to classify
+        // (the parent is gone, the child can't carry a bucket), so the
+        // count stays at the root-backlog only — here, zero.
+        final orphanChild = CategoryFactory.subcategory(
+          id: 'child-orphan',
+          name: 'Forgotten',
+          parentId: 'parent-deleted',
+        );
+        final txs = [
+          TransactionFactory.income(amount: 5000, categoryId: incomeCat.id),
+          TransactionFactory.expense(
+            id: 'tx-on-orphan-child',
+            amount: 70,
+            categoryId: orphanChild.id,
+          ),
+        ];
+        final out = compute50_30_20Overview(
+          periodTransactions: txs,
+          categories: [incomeCat, orphanChild],
+          accounts: [checking],
+        );
+        expect(out.unclassifiedSpent, 70);
+        expect(out.unclassifiedCount, 0);
+      },
+    );
 
-    test('orphan-category expense charges unclassifiedSpent but not count',
-        () {
+    test('orphan-category expense charges unclassifiedSpent but not count', () {
       // Orphan transactions hit a category the user can't classify
       // (it's been deleted), so they inflate the spend bar but not the
       // backlog count. The user has no unclassified roots in their
@@ -559,8 +560,7 @@ void main() {
       expect(out.savingsAmount, 0);
     });
 
-    test('hasInvestmentAccount surfaces presence regardless of transfers',
-        () {
+    test('hasInvestmentAccount surfaces presence regardless of transfers', () {
       final withInvest = compute50_30_20Overview(
         periodTransactions: const [],
         categories: const [],
@@ -740,56 +740,60 @@ void main() {
       expect(out.savingsShortfall, 0);
     });
 
-    test('counts an investment aporte (institutionId) as savings, not expense',
-        () {
-      final aporte = TransactionFactory.expense(
-        id: 'tx-aporte',
-        accountId: 'acc-chk',
-        amount: 1000,
-      ).copyWith(institutionId: 'inst-avenue');
-      final salary = TransactionFactory.income(
-        id: 'tx-salary',
-        accountId: 'acc-chk',
-        amount: 5000,
-      );
+    test(
+      'counts an investment aporte (institutionId) as savings, not expense',
+      () {
+        final aporte = TransactionFactory.expense(
+          id: 'tx-aporte',
+          accountId: 'acc-chk',
+          amount: 1000,
+        ).copyWith(institutionId: 'inst-avenue');
+        final salary = TransactionFactory.income(
+          id: 'tx-salary',
+          accountId: 'acc-chk',
+          amount: 5000,
+        );
 
-      final out = compute50_30_20Overview(
-        periodTransactions: [salary, aporte],
-        categories: const [],
-        accounts: [AccountFactory.checking(id: 'acc-chk')],
-      );
+        final out = compute50_30_20Overview(
+          periodTransactions: [salary, aporte],
+          categories: const [],
+          accounts: [AccountFactory.checking(id: 'acc-chk')],
+        );
 
-      expect(out.income, 5000);
-      expect(out.savingsAmount, 1000);
-      // The aporte is not a needs/wants/unclassified expense.
-      expect(out.needsSpent, 0);
-      expect(out.wantsSpent, 0);
-      expect(out.unclassifiedSpent, 0);
-    });
+        expect(out.income, 5000);
+        expect(out.savingsAmount, 1000);
+        // The aporte is not a needs/wants/unclassified expense.
+        expect(out.needsSpent, 0);
+        expect(out.wantsSpent, 0);
+        expect(out.unclassifiedSpent, 0);
+      },
+    );
 
-    test('an investment resgate (institutionId income) subtracts from savings',
-        () {
-      final aporte = TransactionFactory.expense(
-        id: 'tx-aporte',
-        accountId: 'acc-chk',
-        amount: 1000,
-      ).copyWith(institutionId: 'inst-avenue');
-      final resgate = TransactionFactory.income(
-        id: 'tx-resgate',
-        accountId: 'acc-chk',
-        amount: 300,
-      ).copyWith(institutionId: 'inst-avenue');
+    test(
+      'an investment resgate (institutionId income) subtracts from savings',
+      () {
+        final aporte = TransactionFactory.expense(
+          id: 'tx-aporte',
+          accountId: 'acc-chk',
+          amount: 1000,
+        ).copyWith(institutionId: 'inst-avenue');
+        final resgate = TransactionFactory.income(
+          id: 'tx-resgate',
+          accountId: 'acc-chk',
+          amount: 300,
+        ).copyWith(institutionId: 'inst-avenue');
 
-      final out = compute50_30_20Overview(
-        periodTransactions: [aporte, resgate],
-        categories: const [],
-        accounts: [AccountFactory.checking(id: 'acc-chk')],
-      );
+        final out = compute50_30_20Overview(
+          periodTransactions: [aporte, resgate],
+          categories: const [],
+          accounts: [AccountFactory.checking(id: 'acc-chk')],
+        );
 
-      // 1000 aporte − 300 resgate = 700.
-      expect(out.savingsAmount, 700);
-      // The resgate is not counted as income.
-      expect(out.income, 0);
-    });
+        // 1000 aporte − 300 resgate = 700.
+        expect(out.savingsAmount, 700);
+        // The resgate is not counted as income.
+        expect(out.income, 0);
+      },
+    );
   });
 }

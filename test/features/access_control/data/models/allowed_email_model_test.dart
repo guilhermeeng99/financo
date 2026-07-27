@@ -22,19 +22,21 @@ void main() {
   }
 
   group('fromFirestore', () {
-    test('reads the email from the doc id and converts the timestamp',
-        () async {
-      final snapshot = await snapshotFor('friend@example.com', {
-        'addedAt': Timestamp.fromDate(DateTime(2026, 5, 10)),
-        'note': 'college buddy',
-      });
+    test(
+      'reads the email from the doc id and converts the timestamp',
+      () async {
+        final snapshot = await snapshotFor('friend@example.com', {
+          'addedAt': Timestamp.fromDate(DateTime(2026, 5, 10)),
+          'note': 'college buddy',
+        });
 
-      final model = AllowedEmailModel.fromFirestore(snapshot);
+        final model = AllowedEmailModel.fromFirestore(snapshot);
 
-      expect(model.email, 'friend@example.com');
-      expect(model.addedAt, DateTime(2026, 5, 10));
-      expect(model.note, 'college buddy');
-    });
+        expect(model.email, 'friend@example.com');
+        expect(model.addedAt, DateTime(2026, 5, 10));
+        expect(model.note, 'college buddy');
+      },
+    );
 
     test('tolerates a missing note', () async {
       final snapshot = await snapshotFor('friend@example.com', {

@@ -48,22 +48,24 @@ void main() {
   }
 
   group('getAssetClasses', () {
-    test('returns local cache without touching remote when not forced',
-        () async {
-      final classes = [buildEntity()];
-      when(
-        () => mockDao.getAssetClasses(userId),
-      ).thenAnswer((_) async => classes);
+    test(
+      'returns local cache without touching remote when not forced',
+      () async {
+        final classes = [buildEntity()];
+        when(
+          () => mockDao.getAssetClasses(userId),
+        ).thenAnswer((_) async => classes);
 
-      final result = await repository.getAssetClasses(userId: userId);
+        final result = await repository.getAssetClasses(userId: userId);
 
-      expect(result, Right<Failure, List<AssetClassEntity>>(classes));
-      verify(() => mockDao.getAssetClasses(userId)).called(1);
-      verifyNever(
-        () => mockRemote.getAssetClasses(userId: any(named: 'userId')),
-      );
-      verifyNever(() => mockDao.deleteAllAssetClasses());
-    });
+        expect(result, Right<Failure, List<AssetClassEntity>>(classes));
+        verify(() => mockDao.getAssetClasses(userId)).called(1);
+        verifyNever(
+          () => mockRemote.getAssetClasses(userId: any(named: 'userId')),
+        );
+        verifyNever(() => mockDao.deleteAllAssetClasses());
+      },
+    );
 
     test(
       'force refresh fetches remote, clears cache, inserts, then reads local',
@@ -147,8 +149,7 @@ void main() {
   });
 
   group('createAssetClass', () {
-    test('creates remotely with mapped model and upserts the result',
-        () async {
+    test('creates remotely with mapped model and upserts the result', () async {
       final entity = buildEntity();
       final created = AssetClassModel.fromEntity(buildEntity(name: 'Created'));
 
@@ -161,35 +162,38 @@ void main() {
 
       expect(result, Right<Failure, AssetClassEntity>(created));
       // Entity is converted to its model before reaching the datasource.
-      final captured = verify(
-        () => mockRemote.createAssetClass(captureAny()),
-      ).captured.single as AssetClassModel;
+      final captured =
+          verify(
+                () => mockRemote.createAssetClass(captureAny()),
+              ).captured.single
+              as AssetClassModel;
       expect(captured.id, entity.id);
       expect(captured.name, entity.name);
       // The remote-returned row (not the input) is what gets cached.
       verify(() => mockDao.upsertAssetClass(created)).called(1);
     });
 
-    test('maps ServerException to Left(ServerFailure) and skips cache',
-        () async {
-      when(
-        () => mockRemote.createAssetClass(any()),
-      ).thenThrow(const ServerException('Failed to create asset class.'));
+    test(
+      'maps ServerException to Left(ServerFailure) and skips cache',
+      () async {
+        when(
+          () => mockRemote.createAssetClass(any()),
+        ).thenThrow(const ServerException('Failed to create asset class.'));
 
-      final result = await repository.createAssetClass(buildEntity());
+        final result = await repository.createAssetClass(buildEntity());
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (f) => expect(f, isA<ServerFailure>()),
-        (_) => fail('expected Left'),
-      );
-      verifyNever(() => mockDao.upsertAssetClass(any()));
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (f) => expect(f, isA<ServerFailure>()),
+          (_) => fail('expected Left'),
+        );
+        verifyNever(() => mockDao.upsertAssetClass(any()));
+      },
+    );
   });
 
   group('updateAssetClass', () {
-    test('updates remotely with mapped model and upserts the result',
-        () async {
+    test('updates remotely with mapped model and upserts the result', () async {
       final entity = buildEntity(name: 'Updated', targetPercent: 55);
       final updated = AssetClassModel.fromEntity(entity);
 
@@ -201,29 +205,33 @@ void main() {
       final result = await repository.updateAssetClass(entity);
 
       expect(result, Right<Failure, AssetClassEntity>(updated));
-      final captured = verify(
-        () => mockRemote.updateAssetClass(captureAny()),
-      ).captured.single as AssetClassModel;
+      final captured =
+          verify(
+                () => mockRemote.updateAssetClass(captureAny()),
+              ).captured.single
+              as AssetClassModel;
       expect(captured.id, entity.id);
       expect(captured.targetPercent, 55);
       verify(() => mockDao.upsertAssetClass(updated)).called(1);
     });
 
-    test('maps ServerException to Left(ServerFailure) and skips cache',
-        () async {
-      when(
-        () => mockRemote.updateAssetClass(any()),
-      ).thenThrow(const ServerException('Failed to update asset class.'));
+    test(
+      'maps ServerException to Left(ServerFailure) and skips cache',
+      () async {
+        when(
+          () => mockRemote.updateAssetClass(any()),
+        ).thenThrow(const ServerException('Failed to update asset class.'));
 
-      final result = await repository.updateAssetClass(buildEntity());
+        final result = await repository.updateAssetClass(buildEntity());
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (f) => expect(f, isA<ServerFailure>()),
-        (_) => fail('expected Left'),
-      );
-      verifyNever(() => mockDao.upsertAssetClass(any()));
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (f) => expect(f, isA<ServerFailure>()),
+          (_) => fail('expected Left'),
+        );
+        verifyNever(() => mockDao.upsertAssetClass(any()));
+      },
+    );
   });
 
   group('deleteAssetClass', () {
@@ -242,20 +250,22 @@ void main() {
       ]);
     });
 
-    test('maps ServerException to Left(ServerFailure) and skips local delete',
-        () async {
-      when(
-        () => mockRemote.deleteAssetClass(any()),
-      ).thenThrow(const ServerException('Failed to delete asset class.'));
+    test(
+      'maps ServerException to Left(ServerFailure) and skips local delete',
+      () async {
+        when(
+          () => mockRemote.deleteAssetClass(any()),
+        ).thenThrow(const ServerException('Failed to delete asset class.'));
 
-      final result = await repository.deleteAssetClass(id);
+        final result = await repository.deleteAssetClass(id);
 
-      expect(result.isLeft(), isTrue);
-      result.fold(
-        (f) => expect(f, isA<ServerFailure>()),
-        (_) => fail('expected Left'),
-      );
-      verifyNever(() => mockDao.deleteAssetClass(any()));
-    });
+        expect(result.isLeft(), isTrue);
+        result.fold(
+          (f) => expect(f, isA<ServerFailure>()),
+          (_) => fail('expected Left'),
+        );
+        verifyNever(() => mockDao.deleteAssetClass(any()));
+      },
+    );
   });
 }

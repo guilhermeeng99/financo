@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 /// Builds the scrollable body of a [FinancoPickerSheet]. Attach
 /// [scrollController] to the inner scrollable (`ListView`, `GridView`…)
 /// so dragging the list content also drags the sheet.
-typedef FinancoPickerSheetBodyBuilder = Widget Function(
-  ScrollController scrollController,
-);
+typedef FinancoPickerSheetBodyBuilder =
+    Widget Function(
+      ScrollController scrollController,
+    );
 
 /// Design-system chrome for modal picker bottom sheets: rounded surface,
 /// drag handle and a left-aligned title, shared by every picker so they

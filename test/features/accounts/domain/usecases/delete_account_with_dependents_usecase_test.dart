@@ -26,9 +26,9 @@ void main() {
   });
 
   List<TransactionEntity> twoTransactions() => [
-        TransactionFactory.expense(id: 'tx-1'),
-        TransactionFactory.expense(id: 'tx-2'),
-      ];
+    TransactionFactory.expense(id: 'tx-1'),
+    TransactionFactory.expense(id: 'tx-2'),
+  ];
 
   void stubGetTransactions(Either<Failure, List<TransactionEntity>> result) {
     when(
@@ -41,10 +41,12 @@ void main() {
 
   test('deletes every transaction, then the account', () async {
     stubGetTransactions(Right(twoTransactions()));
-    when(() => txRepo.deleteTransaction(any()))
-        .thenAnswer((_) async => const Right<Failure, void>(null));
-    when(() => accountRepo.deleteAccount(any()))
-        .thenAnswer((_) async => const Right<Failure, void>(null));
+    when(
+      () => txRepo.deleteTransaction(any()),
+    ).thenAnswer((_) async => const Right<Failure, void>(null));
+    when(
+      () => accountRepo.deleteAccount(any()),
+    ).thenAnswer((_) async => const Right<Failure, void>(null));
 
     final result = await useCase(userId: userId, accountId: accountId);
 
@@ -54,21 +56,24 @@ void main() {
     verify(() => accountRepo.deleteAccount(accountId)).called(1);
   });
 
-  test('returns Left and never deletes the account if loading tx fails',
-      () async {
-    stubGetTransactions(const Left(ServerFailure()));
+  test(
+    'returns Left and never deletes the account if loading tx fails',
+    () async {
+      stubGetTransactions(const Left(ServerFailure()));
 
-    final result = await useCase(userId: userId, accountId: accountId);
+      final result = await useCase(userId: userId, accountId: accountId);
 
-    expect(result, isA<Left<Failure, void>>());
-    verifyNever(() => txRepo.deleteTransaction(any()));
-    verifyNever(() => accountRepo.deleteAccount(any()));
-  });
+      expect(result, isA<Left<Failure, void>>());
+      verifyNever(() => txRepo.deleteTransaction(any()));
+      verifyNever(() => accountRepo.deleteAccount(any()));
+    },
+  );
 
   test('short-circuits to Left when a transaction fails to delete', () async {
     stubGetTransactions(Right(twoTransactions()));
-    when(() => txRepo.deleteTransaction('tx-1'))
-        .thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
+    when(
+      () => txRepo.deleteTransaction('tx-1'),
+    ).thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
 
     final result = await useCase(userId: userId, accountId: accountId);
 
@@ -80,8 +85,9 @@ void main() {
 
   test('returns Left when the account delete fails', () async {
     stubGetTransactions(const Right([]));
-    when(() => accountRepo.deleteAccount(any()))
-        .thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
+    when(
+      () => accountRepo.deleteAccount(any()),
+    ).thenAnswer((_) async => const Left<Failure, void>(ServerFailure()));
 
     final result = await useCase(userId: userId, accountId: accountId);
 

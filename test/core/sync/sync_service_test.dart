@@ -102,24 +102,31 @@ void main() {
     when(() => database.clearAllTables()).thenAnswer((_) async {});
     when(() => usersDao.upsertUser(any())).thenAnswer((_) async {});
     when(() => accountsDao.insertAllAccounts(any())).thenAnswer((_) async {});
-    when(() => categoriesDao.insertAllCategories(any()))
-        .thenAnswer((_) async {});
-    when(() => transactionsDao.insertAllTransactions(any()))
-        .thenAnswer((_) async {});
+    when(
+      () => categoriesDao.insertAllCategories(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => transactionsDao.insertAllTransactions(any()),
+    ).thenAnswer((_) async {});
     when(() => budgetsDao.insertAllBudgets(any())).thenAnswer((_) async {});
 
     // Investing side defaults to empty so the guarded Drift inserts stay
     // no-ops and the existing cash-side assertions are unaffected.
-    when(() => assetClassRemote.getAssetClasses(userId: userId))
-        .thenAnswer((_) async => []);
-    when(() => institutionRemote.getInstitutions(userId: userId))
-        .thenAnswer((_) async => []);
-    when(() => assetRemote.getAssets(userId: userId))
-        .thenAnswer((_) async => []);
-    when(() => assetTransactionRemote.getTransactions(userId: userId))
-        .thenAnswer((_) async => []);
-    when(() => snapshotRemote.getSnapshots(userId: userId))
-        .thenAnswer((_) async => []);
+    when(
+      () => assetClassRemote.getAssetClasses(userId: userId),
+    ).thenAnswer((_) async => []);
+    when(
+      () => institutionRemote.getInstitutions(userId: userId),
+    ).thenAnswer((_) async => []);
+    when(
+      () => assetRemote.getAssets(userId: userId),
+    ).thenAnswer((_) async => []);
+    when(
+      () => assetTransactionRemote.getTransactions(userId: userId),
+    ).thenAnswer((_) async => []);
+    when(
+      () => snapshotRemote.getSnapshots(userId: userId),
+    ).thenAnswer((_) async => []);
   });
 
   void stubRemotes({
@@ -128,14 +135,18 @@ void main() {
     List<TransactionModel>? transactionList,
     List<BudgetModel>? budgetList,
   }) {
-    when(() => accountRemote.getAccounts(userId: userId))
-        .thenAnswer((_) async => accountList ?? accounts);
-    when(() => categoryRemote.getCategories(userId: userId))
-        .thenAnswer((_) async => categoryList ?? categories);
-    when(() => transactionRemote.getTransactions(userId: userId))
-        .thenAnswer((_) async => transactionList ?? transactions);
-    when(() => budgetRemote.getBudgets(userId: userId))
-        .thenAnswer((_) async => budgetList ?? budgets);
+    when(
+      () => accountRemote.getAccounts(userId: userId),
+    ).thenAnswer((_) async => accountList ?? accounts);
+    when(
+      () => categoryRemote.getCategories(userId: userId),
+    ).thenAnswer((_) async => categoryList ?? categories);
+    when(
+      () => transactionRemote.getTransactions(userId: userId),
+    ).thenAnswer((_) async => transactionList ?? transactions);
+    when(
+      () => budgetRemote.getBudgets(userId: userId),
+    ).thenAnswer((_) async => budgetList ?? budgets);
   }
 
   group('fullSync', () {
@@ -154,8 +165,7 @@ void main() {
       ]);
     });
 
-    test('skips empty collections so Drift batches stay no-op free',
-        () async {
+    test('skips empty collections so Drift batches stay no-op free', () async {
       stubRemotes(
         accountList: const [],
         categoryList: const [],
@@ -176,14 +186,18 @@ void main() {
     test('a fetch failure leaves the local cache untouched', () async {
       // Phase ordering matters: every remote read happens before the first
       // local write, so a network blow-up cannot wipe usable cached data.
-      when(() => accountRemote.getAccounts(userId: userId))
-          .thenThrow(Exception('network down'));
-      when(() => categoryRemote.getCategories(userId: userId))
-          .thenAnswer((_) async => categories);
-      when(() => transactionRemote.getTransactions(userId: userId))
-          .thenAnswer((_) async => transactions);
-      when(() => budgetRemote.getBudgets(userId: userId))
-          .thenAnswer((_) async => budgets);
+      when(
+        () => accountRemote.getAccounts(userId: userId),
+      ).thenThrow(Exception('network down'));
+      when(
+        () => categoryRemote.getCategories(userId: userId),
+      ).thenAnswer((_) async => categories);
+      when(
+        () => transactionRemote.getTransactions(userId: userId),
+      ).thenAnswer((_) async => transactions);
+      when(
+        () => budgetRemote.getBudgets(userId: userId),
+      ).thenAnswer((_) async => budgets);
 
       await expectLater(
         service.fullSync(userId: userId, user: user),
@@ -197,8 +211,9 @@ void main() {
 
     test('a late fetch failure (budgets) still precedes any write', () async {
       stubRemotes();
-      when(() => budgetRemote.getBudgets(userId: userId))
-          .thenThrow(Exception('budgets fetch failed'));
+      when(
+        () => budgetRemote.getBudgets(userId: userId),
+      ).thenThrow(Exception('budgets fetch failed'));
 
       await expectLater(
         service.fullSync(userId: userId, user: user),
@@ -209,20 +224,23 @@ void main() {
       verifyNever(() => transactionsDao.insertAllTransactions(any()));
     });
 
-    test('an investing fetch failure does not abort the sync (best-effort)',
-        () async {
-      // Regression: the snapshot query once needed a composite Firestore index;
-      // a throw here used to fail the whole startup sync. Investing pulls are
-      // now best-effort — the cash side still clears + persists.
-      stubRemotes();
-      when(() => snapshotRemote.getSnapshots(userId: userId))
-          .thenThrow(Exception('missing composite index'));
+    test(
+      'an investing fetch failure does not abort the sync (best-effort)',
+      () async {
+        // Regression: the snapshot query once needed a composite Firestore
+        // index; a throw here used to fail the whole startup sync. Investing
+        // pulls are now best-effort — the cash side still clears + persists.
+        stubRemotes();
+        when(
+          () => snapshotRemote.getSnapshots(userId: userId),
+        ).thenThrow(Exception('missing composite index'));
 
-      await service.fullSync(userId: userId, user: user);
+        await service.fullSync(userId: userId, user: user);
 
-      verify(() => database.clearAllTables()).called(1);
-      verify(() => accountsDao.insertAllAccounts(accounts)).called(1);
-    });
+        verify(() => database.clearAllTables()).called(1);
+        verify(() => accountsDao.insertAllAccounts(accounts)).called(1);
+      },
+    );
   });
 
   group('clearLocalData', () {

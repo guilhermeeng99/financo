@@ -160,8 +160,8 @@ class _CreditUsageBar extends StatelessWidget {
     final accent = progress < 0.6
         ? colors.primary
         : progress < 0.85
-            ? colors.warning
-            : colors.expense;
+        ? colors.warning
+        : colors.expense;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

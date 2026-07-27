@@ -48,26 +48,30 @@ void main() {
   });
 
   group('reassignTransactions', () {
-    test('moves every matching doc to the new category, leaving others',
-        () async {
-      for (var i = 0; i < 3; i++) {
-        await firestore
-            .collection('transactions')
-            .add({'categoryId': 'old', 'userId': 'u'});
-      }
-      await firestore
-          .collection('transactions')
-          .add({'categoryId': 'keep', 'userId': 'u'});
+    test(
+      'moves every matching doc to the new category, leaving others',
+      () async {
+        for (var i = 0; i < 3; i++) {
+          await firestore.collection('transactions').add({
+            'categoryId': 'old',
+            'userId': 'u',
+          });
+        }
+        await firestore.collection('transactions').add({
+          'categoryId': 'keep',
+          'userId': 'u',
+        });
 
-      await datasource.reassignTransactions(
-        fromCategoryId: 'old',
-        toCategoryId: 'new',
-      );
+        await datasource.reassignTransactions(
+          fromCategoryId: 'old',
+          toCategoryId: 'new',
+        );
 
-      expect(await countWhere('categoryId', 'old'), 0);
-      expect(await countWhere('categoryId', 'new'), 3);
-      expect(await countWhere('categoryId', 'keep'), 1);
-    });
+        expect(await countWhere('categoryId', 'old'), 0);
+        expect(await countWhere('categoryId', 'new'), 3);
+        expect(await countWhere('categoryId', 'keep'), 1);
+      },
+    );
   });
 
   group('deleteTransfer', () {

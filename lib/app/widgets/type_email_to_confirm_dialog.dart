@@ -78,8 +78,7 @@ class _TypeEmailToConfirmDialog extends StatefulWidget {
       _TypeEmailToConfirmDialogState();
 }
 
-class _TypeEmailToConfirmDialogState
-    extends State<_TypeEmailToConfirmDialog> {
+class _TypeEmailToConfirmDialogState extends State<_TypeEmailToConfirmDialog> {
   final _controller = TextEditingController();
   bool _matches = false;
 

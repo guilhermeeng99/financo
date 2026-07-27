@@ -42,8 +42,7 @@ class ChatInput extends StatefulWidget {
   State<ChatInput> createState() => _ChatInputState();
 }
 
-class _ChatInputState extends State<ChatInput>
-    with TickerProviderStateMixin {
+class _ChatInputState extends State<ChatInput> with TickerProviderStateMixin {
   // Factory-registered: each composer gets its own recorder instance and
   // owns its lifecycle (disposed below), mirroring a per-widget plugin.
   final ChatAudioRecorder _audioRecorder = GetIt.I<ChatAudioRecorder>();
@@ -362,16 +361,16 @@ class _ChatInputState extends State<ChatInput>
                     waveformController: _waveformController,
                   )
                 : isTranscribing
-                    ? const ChatTranscribingRow()
-                    : _DefaultRow(
-                        controller: widget.controller,
-                        pickedImage: _pickedImage,
-                        isEncodingImage: _isEncodingImage,
-                        onRemoveImage: _clearPickedImage,
-                        onAttach: () => unawaited(_showAttachMenu()),
-                        onSend: _handleSend,
-                        onStartRecording: () => unawaited(_startRecording()),
-                      ),
+                ? const ChatTranscribingRow()
+                : _DefaultRow(
+                    controller: widget.controller,
+                    pickedImage: _pickedImage,
+                    isEncodingImage: _isEncodingImage,
+                    onRemoveImage: _clearPickedImage,
+                    onAttach: () => unawaited(_showAttachMenu()),
+                    onSend: _handleSend,
+                    onStartRecording: () => unawaited(_startRecording()),
+                  ),
           ),
         );
       },

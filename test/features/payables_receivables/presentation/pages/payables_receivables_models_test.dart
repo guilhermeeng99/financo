@@ -170,8 +170,7 @@ void main() {
   // find.byIcon expects Material IconData; FontAwesome glyphs are wrapped
   // in FaIconData, so match on the underlying data instead.
   Finder settleButton() => find.byWidgetPredicate(
-    (widget) =>
-        widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
+    (widget) => widget is FaIcon && widget.icon == FontAwesomeIcons.check.data,
   );
 
   // FinancoSectionHeader upper-cases its title before rendering.
@@ -306,8 +305,7 @@ void main() {
       },
     );
 
-    testWidgets('a payable due today lands in the today group',
-        (tester) async {
+    testWidgets('a payable due today lands in the today group', (tester) async {
       stubTransactions([
         pendingPayable(
           id: 'tx-today',
@@ -382,8 +380,9 @@ void main() {
   });
 
   group('summary card', () {
-    testWidgets('totals pending payables and receivables for the month',
-        (tester) async {
+    testWidgets('totals pending payables and receivables for the month', (
+      tester,
+    ) async {
       stubTransactions([
         pendingPayable(
           id: 'tx-1',
@@ -409,14 +408,27 @@ void main() {
       await pumpPage(tester, month: currentMonth);
 
       // formatCurrency puts a non-breaking space after the symbol.
-      expect(find.text(r'R$' ' 400,00'), findsOneWidget);
-      expect(find.text(r'R$' ' 90,00'), findsOneWidget);
+      expect(
+        find.text(
+          r'R$'
+          ' 400,00',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          r'R$'
+          ' 90,00',
+        ),
+        findsOneWidget,
+      );
     });
   });
 
   group('view toggle', () {
-    testWidgets('switching to receivables swaps the visible list',
-        (tester) async {
+    testWidgets('switching to receivables swaps the visible list', (
+      tester,
+    ) async {
       stubTransactions([
         pendingPayable(id: 'tx-pay', description: 'Rent', dueDate: dueToday),
         TransactionFactory.income(

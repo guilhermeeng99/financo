@@ -76,8 +76,7 @@ void main() {
           when(
             () => mockGetCurrentUser(),
           ).thenAnswer(
-            (_) async =>
-                const Left(AccessDeniedFailure('blocked@example.com')),
+            (_) async => const Left(AccessDeniedFailure('blocked@example.com')),
           );
         },
         build: buildBloc,
@@ -85,8 +84,7 @@ void main() {
         expect: () => [
           predicate<AuthState>(
             (state) =>
-                state is AccessDenied &&
-                state.email == 'blocked@example.com',
+                state is AccessDenied && state.email == 'blocked@example.com',
           ),
         ],
       );
@@ -124,8 +122,7 @@ void main() {
         'emits [Loading, AccessDenied] when allowlist gate blocks',
         setUp: () {
           when(() => mockSignInWithGoogle()).thenAnswer(
-            (_) async =>
-                const Left(AccessDeniedFailure('friend@example.com')),
+            (_) async => const Left(AccessDeniedFailure('friend@example.com')),
           );
         },
         build: buildBloc,
@@ -133,8 +130,8 @@ void main() {
         expect: () => [
           isA<AuthLoading>(),
           predicate<AuthState>(
-            (state) => state is AccessDenied &&
-                state.email == 'friend@example.com',
+            (state) =>
+                state is AccessDenied && state.email == 'friend@example.com',
           ),
         ],
       );

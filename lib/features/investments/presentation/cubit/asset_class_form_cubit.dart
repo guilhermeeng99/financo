@@ -88,15 +88,12 @@ class AssetClassFormCubit extends Cubit<AssetClassFormState> {
       createdAt: state.createdAt,
     );
 
-    (state.isEditing
-            ? await _update(entity)
-            : await _create(entity))
-        .fold(
-          (failure) => emit(
-            state.copyWith(status: FormStatus.failure, failure: failure),
-          ),
-          (_) => emit(state.copyWith(status: FormStatus.success)),
-        );
+    (state.isEditing ? await _update(entity) : await _create(entity)).fold(
+      (failure) => emit(
+        state.copyWith(status: FormStatus.failure, failure: failure),
+      ),
+      (_) => emit(state.copyWith(status: FormStatus.success)),
+    );
   }
 }
 
@@ -129,7 +126,8 @@ class AssetClassFormState extends Equatable {
       // When pre-creating a subclass, the page passes the parent's
       // icon/color so the form mirrors the parent immediately.
       icon: existing?.icon ?? presetParentIcon ?? _defaultIcon,
-      color: existing?.color ??
+      color:
+          existing?.color ??
           presetParentColor ??
           CategoryColors.forIndex(existingClassCount),
       targetPercent: existing?.targetPercent ?? 0,

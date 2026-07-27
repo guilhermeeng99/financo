@@ -23,7 +23,10 @@ void main() {
       );
 
       final plan = planner.plan(
-        accounts: [AccountFactory.checking(id: 'acc-chk'), avenueAccount],
+        accounts: [
+          AccountFactory.checking(id: 'acc-chk'),
+          avenueAccount,
+        ],
         institutions: [avenueInstitution],
         transactions: [transfer.expense, transfer.income],
         accountToInstitutionId: const {'acc-avenue': 'inst-avenue'},

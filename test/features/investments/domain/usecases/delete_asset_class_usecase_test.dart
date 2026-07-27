@@ -45,8 +45,7 @@ void main() {
       verify(() => classRepository.deleteAssetClass(classId)).called(1);
     });
 
-    test('blocks deletion when subclasses still reference the class',
-        () async {
+    test('blocks deletion when subclasses still reference the class', () async {
       final root = AssetClassFactory.stocks();
       final sub = AssetClassFactory.subclass(
         id: 'sub-apple',

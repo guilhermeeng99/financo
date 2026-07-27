@@ -18,14 +18,16 @@ void main() {
   });
 
   group('isEmailAllowed', () {
-    test('master email short-circuits to true without a Firestore read',
-        () async {
-      expect(await datasource.isEmailAllowed(kMasterEmail), isTrue);
-      expect(
-        await datasource.isEmailAllowed(kMasterEmail.toUpperCase()),
-        isTrue,
-      );
-    });
+    test(
+      'master email short-circuits to true without a Firestore read',
+      () async {
+        expect(await datasource.isEmailAllowed(kMasterEmail), isTrue);
+        expect(
+          await datasource.isEmailAllowed(kMasterEmail.toUpperCase()),
+          isTrue,
+        );
+      },
+    );
 
     test('returns true when the lowercased doc exists', () async {
       await firestore
@@ -40,32 +42,40 @@ void main() {
       expect(await datasource.isEmailAllowed('stranger@example.com'), isFalse);
     });
 
-    test('permission-denied maps to false (fail-closed), not an exception',
-        () async {
-      // Regression: the auth gate fails OPEN on thrown errors, so a rules
-      // misconfiguration that denies this read used to admit every
-      // non-master account. permission-denied must read as "not allowed".
-      final mockFirestore = MockFirebaseFirestore();
-      final collection = MockMapCollectionReference();
-      final doc = MockMapDocumentReference();
-      when(() => mockFirestore.collection(kAllowedEmailsCollection))
-          .thenReturn(collection);
-      when(() => collection.doc('blocked@example.com')).thenReturn(doc);
-      when(doc.get).thenThrow(
-        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
-      );
-      final denied =
-          AccessControlRemoteDataSourceImpl(firestore: mockFirestore);
+    test(
+      'permission-denied maps to false (fail-closed), not an exception',
+      () async {
+        // Regression: the auth gate fails OPEN on thrown errors, so a rules
+        // misconfiguration that denies this read used to admit every
+        // non-master account. permission-denied must read as "not allowed".
+        final mockFirestore = MockFirebaseFirestore();
+        final collection = MockMapCollectionReference();
+        final doc = MockMapDocumentReference();
+        when(
+          () => mockFirestore.collection(kAllowedEmailsCollection),
+        ).thenReturn(collection);
+        when(() => collection.doc('blocked@example.com')).thenReturn(doc);
+        when(doc.get).thenThrow(
+          FirebaseException(
+            plugin: 'cloud_firestore',
+            code: 'permission-denied',
+          ),
+        );
+        final denied = AccessControlRemoteDataSourceImpl(
+          firestore: mockFirestore,
+        );
 
-      expect(await denied.isEmailAllowed('blocked@example.com'), isFalse);
-    });
+        expect(await denied.isEmailAllowed('blocked@example.com'), isFalse);
+      },
+    );
 
     test('other Firestore errors still surface as ServerException', () async {
       final mockFirestore = MockFirebaseFirestore();
       final collection = MockMapCollectionReference();
       final doc = MockMapDocumentReference();
-      when(() => mockFirestore.collection(kAllowedEmailsCollection))
-          .thenReturn(collection);
+      when(
+        () => mockFirestore.collection(kAllowedEmailsCollection),
+      ).thenReturn(collection);
       when(() => collection.doc('friend@example.com')).thenReturn(doc);
       when(doc.get).thenThrow(
         FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),

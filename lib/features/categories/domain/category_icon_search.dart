@@ -22,10 +22,9 @@ List<CategoryIconOption> searchCategoryIcons(
   }).toList();
 }
 
-List<String> _tokenize(String input) => normalizeForSearch(input)
-    .split(RegExp(r'\s+'))
-    .where((s) => s.isNotEmpty)
-    .toList();
+List<String> _tokenize(String input) => normalizeForSearch(
+  input,
+).split(RegExp(r'\s+')).where((s) => s.isNotEmpty).toList();
 
 /// Lowercases [input] and strips Latin diacritics so the search matches
 /// "Café" against the keyword "cafe". Exposed for tests.
@@ -38,10 +37,31 @@ String normalizeForSearch(String input) {
 }
 
 const _diacritics = <String, String>{
-  'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
-  'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
-  'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
-  'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
-  'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
-  'ç': 'c', 'ñ': 'n', 'ý': 'y', 'ÿ': 'y',
+  'á': 'a',
+  'à': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'ä': 'a',
+  'å': 'a',
+  'é': 'e',
+  'è': 'e',
+  'ê': 'e',
+  'ë': 'e',
+  'í': 'i',
+  'ì': 'i',
+  'î': 'i',
+  'ï': 'i',
+  'ó': 'o',
+  'ò': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ö': 'o',
+  'ú': 'u',
+  'ù': 'u',
+  'û': 'u',
+  'ü': 'u',
+  'ç': 'c',
+  'ñ': 'n',
+  'ý': 'y',
+  'ÿ': 'y',
 };

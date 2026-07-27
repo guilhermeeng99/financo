@@ -7,6 +7,5 @@ class DeleteBudgetUseCase {
 
   final BudgetRepository _repository;
 
-  Future<Either<Failure, void>> call(String id) =>
-      _repository.deleteBudget(id);
+  Future<Either<Failure, void>> call(String id) => _repository.deleteBudget(id);
 }

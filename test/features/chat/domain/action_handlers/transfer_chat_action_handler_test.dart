@@ -66,43 +66,49 @@ void main() {
   });
 
   group('handle — validation guards (no transfer created)', () {
-    test('amount <= 0 returns invalid-amount and never creates a transfer',
-        () async {
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {'amount': 0, 'from': 'Nubank Gui', 'to': 'XP Invest'},
-        locale: locale,
-      );
+    test(
+      'amount <= 0 returns invalid-amount and never creates a transfer',
+      () async {
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {'amount': 0, 'from': 'Nubank Gui', 'to': 'XP Invest'},
+          locale: locale,
+        );
 
-      expect(result, locale.translations.chat.handlers.invalidAmount);
-      verifyNever(() => mockGetAccounts(
+        expect(result, locale.translations.chat.handlers.invalidAmount);
+        verifyNever(
+          () => mockGetAccounts(
             userId: any(named: 'userId'),
             forceRefresh: any(named: 'forceRefresh'),
-          ));
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+          ),
+        );
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
-    test('missing amount returns invalid-amount and never creates a transfer',
-        () async {
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {'from': 'Nubank Gui', 'to': 'XP Invest'},
-        locale: locale,
-      );
+    test(
+      'missing amount returns invalid-amount and never creates a transfer',
+      () async {
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {'from': 'Nubank Gui', 'to': 'XP Invest'},
+          locale: locale,
+        );
 
-      expect(result, locale.translations.chat.handlers.invalidAmount);
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        expect(result, locale.translations.chat.handlers.invalidAmount);
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
     test('missing from/to returns accounts-required, no transfer', () async {
       final result = await handler.handle(
@@ -123,135 +129,144 @@ void main() {
       );
     });
 
-    test('fewer than two accounts returns min-two-accounts, no transfer',
-        () async {
-      stubAccounts([source]);
+    test(
+      'fewer than two accounts returns min-two-accounts, no transfer',
+      () async {
+        stubAccounts([source]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {'amount': 100, 'from': 'Nubank Gui', 'to': 'XP Invest'},
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {'amount': 100, 'from': 'Nubank Gui', 'to': 'XP Invest'},
+          locale: locale,
+        );
 
-      expect(
-        result,
-        locale.translations.chat.handlers.transferMinTwoAccounts,
-      );
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        expect(
+          result,
+          locale.translations.chat.handlers.transferMinTwoAccounts,
+        );
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
-    test('unresolved source account returns resolver error, no transfer',
-        () async {
-      stubAccounts([source, destination]);
+    test(
+      'unresolved source account returns resolver error, no transfer',
+      () async {
+        stubAccounts([source, destination]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'amount': 100,
-          'from': 'Nonexistent',
-          'to': 'XP Invest',
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'amount': 100,
+            'from': 'Nonexistent',
+            'to': 'XP Invest',
+          },
+          locale: locale,
+        );
 
-      // Resolver surfaces a not-found message naming the unknown query.
-      expect(result, contains('Nonexistent'));
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        // Resolver surfaces a not-found message naming the unknown query.
+        expect(result, contains('Nonexistent'));
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
-    test('unresolved destination account returns resolver error, no transfer',
-        () async {
-      stubAccounts([source, destination]);
+    test(
+      'unresolved destination account returns resolver error, no transfer',
+      () async {
+        stubAccounts([source, destination]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'amount': 100,
-          'from': 'Nubank Gui',
-          'to': 'Nonexistent',
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'amount': 100,
+            'from': 'Nubank Gui',
+            'to': 'Nonexistent',
+          },
+          locale: locale,
+        );
 
-      expect(result, contains('Nonexistent'));
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        expect(result, contains('Nonexistent'));
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
-    test('same source and destination returns source-dest-same, no transfer',
-        () async {
-      stubAccounts([source, destination]);
+    test(
+      'same source and destination returns source-dest-same, no transfer',
+      () async {
+        stubAccounts([source, destination]);
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {
-          'amount': 100,
-          'from': 'Nubank Gui',
-          'to': 'Nubank Gui',
-        },
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {
+            'amount': 100,
+            'from': 'Nubank Gui',
+            'to': 'Nubank Gui',
+          },
+          locale: locale,
+        );
 
-      expect(
-        result,
-        locale.translations.chat.handlers.transferSourceDestSame,
-      );
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        expect(
+          result,
+          locale.translations.chat.handlers.transferSourceDestSame,
+        );
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
 
-    test('getAccounts failure returns load-accounts-failed, no transfer',
-        () async {
-      when(
-        () => mockGetAccounts(
-          userId: any(named: 'userId'),
-          forceRefresh: any(named: 'forceRefresh'),
-        ),
-      ).thenAnswer(
-        (_) async =>
-            const Left<Failure, List<AccountEntity>>(ServerFailure('boom')),
-      );
+    test(
+      'getAccounts failure returns load-accounts-failed, no transfer',
+      () async {
+        when(
+          () => mockGetAccounts(
+            userId: any(named: 'userId'),
+            forceRefresh: any(named: 'forceRefresh'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              const Left<Failure, List<AccountEntity>>(ServerFailure('boom')),
+        );
 
-      final result = await handler.handle(
-        userId: userId,
-        meta: const {'amount': 100, 'from': 'Nubank Gui', 'to': 'XP Invest'},
-        locale: locale,
-      );
+        final result = await handler.handle(
+          userId: userId,
+          meta: const {'amount': 100, 'from': 'Nubank Gui', 'to': 'XP Invest'},
+          locale: locale,
+        );
 
-      expect(
-        result,
-        locale.translations.chat.handlers.transactionLoadAccountsFailed,
-      );
-      verifyNever(
-        () => mockCreateTransfer(
-          expense: any(named: 'expense'),
-          income: any(named: 'income'),
-        ),
-      );
-    });
+        expect(
+          result,
+          locale.translations.chat.handlers.transactionLoadAccountsFailed,
+        );
+        verifyNever(
+          () => mockCreateTransfer(
+            expense: any(named: 'expense'),
+            income: any(named: 'income'),
+          ),
+        );
+      },
+    );
   });
 
   group('handle — happy path', () {
-    test(
-        'creates transfer with expense leg on source and income leg on '
+    test('creates transfer with expense leg on source and income leg on '
         'destination, matching amounts', () async {
       stubAccounts([source, destination]);
       when(
@@ -324,20 +339,24 @@ void main() {
   });
 
   group('preflight — pre-submit validation', () {
-    test('amount <= 0 returns invalid-amount without loading accounts',
-        () async {
-      final result = await handler.preflight(
-        userId: userId,
-        meta: const {'amount': 0, 'from': 'Nubank Gui', 'to': 'XP Invest'},
-        locale: locale,
-      );
+    test(
+      'amount <= 0 returns invalid-amount without loading accounts',
+      () async {
+        final result = await handler.preflight(
+          userId: userId,
+          meta: const {'amount': 0, 'from': 'Nubank Gui', 'to': 'XP Invest'},
+          locale: locale,
+        );
 
-      expect(result, locale.translations.chat.handlers.invalidAmount);
-      verifyNever(() => mockGetAccounts(
+        expect(result, locale.translations.chat.handlers.invalidAmount);
+        verifyNever(
+          () => mockGetAccounts(
             userId: any(named: 'userId'),
             forceRefresh: any(named: 'forceRefresh'),
-          ));
-    });
+          ),
+        );
+      },
+    );
 
     test('valid resolvable transfer passes preflight (null)', () async {
       stubAccounts([source, destination]);

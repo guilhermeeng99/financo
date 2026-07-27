@@ -41,14 +41,11 @@ class AppLocaleCubit extends Cubit<AppLocale?> {
     emit(locale);
   }
 
-  AppLocale activeFlutterLocale() =>
-      state ?? AppLocaleUtils.findDeviceLocale();
+  AppLocale activeFlutterLocale() => state ?? AppLocaleUtils.findDeviceLocale();
 
   AppLocale? _resolveStored(String? stored) {
     if (stored == null || stored == _systemSentinel) return null;
-    return AppLocale.values
-        .where((l) => _languageTag(l) == stored)
-        .firstOrNull;
+    return AppLocale.values.where((l) => _languageTag(l) == stored).firstOrNull;
   }
 
   static String _languageTag(AppLocale locale) {

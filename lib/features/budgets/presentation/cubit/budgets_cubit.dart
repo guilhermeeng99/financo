@@ -62,7 +62,8 @@ class BudgetsCubit extends Cubit<BudgetsState> {
   }) async {
     final target = month ?? _lastMonth ?? DateTime.now();
     final current = state;
-    final sameMonth = current is BudgetsLoaded &&
+    final sameMonth =
+        current is BudgetsLoaded &&
         current.month.year == target.year &&
         current.month.month == target.month;
 
@@ -81,8 +82,7 @@ class BudgetsCubit extends Cubit<BudgetsState> {
     );
     result.fold(
       (failure) => emit(BudgetsError(failure)),
-      (overviews) =>
-          emit(BudgetsLoaded(overviews: overviews, month: target)),
+      (overviews) => emit(BudgetsLoaded(overviews: overviews, month: target)),
     );
   }
 
@@ -128,8 +128,7 @@ final class BudgetsLoaded extends BudgetsState {
       overviews.fold<double>(0, (sum, o) => sum + o.budget.amount);
 
   /// Sum of all spend across every tracked category.
-  double get totalSpent =>
-      overviews.fold<double>(0, (sum, o) => sum + o.spent);
+  double get totalSpent => overviews.fold<double>(0, (sum, o) => sum + o.spent);
 
   double get totalRemaining {
     final r = totalCap - totalSpent;

@@ -387,8 +387,11 @@ void main() {
           isA<TransactionsImporting>()
               .having((s) => s.processed, 'processed', 0)
               .having((s) => s.total, 'total', 0),
-          isA<TransactionsError>()
-              .having((s) => s.failure.message, 'message', 'boom'),
+          isA<TransactionsError>().having(
+            (s) => s.failure.message,
+            'message',
+            'boom',
+          ),
         ],
       );
     });

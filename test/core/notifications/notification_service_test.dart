@@ -153,30 +153,32 @@ void main() {
       },
     );
 
-    test('does not touch other users while deleting the current token',
-        () async {
-      // The cross-account isolation case: both A (current) and B (test
-      // account) have the same physical token registered. Sign-out on A
-      // must only delete A's copy.
-      await seedToken('uid-A', 'tok-shared');
-      await seedToken('uid-B', 'tok-shared');
-      when(() => messaging.getToken()).thenAnswer((_) async => 'tok-shared');
+    test(
+      'does not touch other users while deleting the current token',
+      () async {
+        // The cross-account isolation case: both A (current) and B (test
+        // account) have the same physical token registered. Sign-out on A
+        // must only delete A's copy.
+        await seedToken('uid-A', 'tok-shared');
+        await seedToken('uid-B', 'tok-shared');
+        when(() => messaging.getToken()).thenAnswer((_) async => 'tok-shared');
 
-      await service.removeTokenOnSignOut('uid-A');
+        await service.removeTokenOnSignOut('uid-A');
 
-      final a = await firestore
-          .collection('users')
-          .doc('uid-A')
-          .collection('fcmTokens')
-          .get();
-      final b = await firestore
-          .collection('users')
-          .doc('uid-B')
-          .collection('fcmTokens')
-          .get();
-      expect(a.docs, isEmpty);
-      expect(b.docs, hasLength(1));
-    });
+        final a = await firestore
+            .collection('users')
+            .doc('uid-A')
+            .collection('fcmTokens')
+            .get();
+        final b = await firestore
+            .collection('users')
+            .doc('uid-B')
+            .collection('fcmTokens')
+            .get();
+        expect(a.docs, isEmpty);
+        expect(b.docs, hasLength(1));
+      },
+    );
 
     test('no-op when getToken returns null', () async {
       await seedToken('uid-1', 'tok-123');

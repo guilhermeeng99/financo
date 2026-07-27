@@ -348,12 +348,14 @@ class _ActionPreview {
     return switch (actionType) {
       'transaction' => _ActionPreview.transaction(context, meta),
       'transfer' => _ActionPreview.transfer(context, meta),
-      'account' => action == 'delete'
-          ? _ActionPreview.accountDelete(context, meta)
-          : _ActionPreview.accountCreate(context, meta),
-      'category' => action == 'delete'
-          ? _ActionPreview.categoryDelete(context, meta)
-          : _ActionPreview.categoryCreate(context, meta),
+      'account' =>
+        action == 'delete'
+            ? _ActionPreview.accountDelete(context, meta)
+            : _ActionPreview.accountCreate(context, meta),
+      'category' =>
+        action == 'delete'
+            ? _ActionPreview.categoryDelete(context, meta)
+            : _ActionPreview.categoryCreate(context, meta),
       'budget' => switch (action) {
         'delete' => _ActionPreview.budgetDelete(context, meta),
         'update' => _ActionPreview.budgetUpdate(context, meta),
@@ -378,9 +380,7 @@ class _ActionPreview {
       title: isIncome
           ? t.chat.action.transactionIncome
           : t.chat.action.transactionExpense,
-      icon: isIncome
-          ? FontAwesomeIcons.arrowDown
-          : FontAwesomeIcons.arrowUp,
+      icon: isIncome ? FontAwesomeIcons.arrowDown : FontAwesomeIcons.arrowUp,
       accent: isIncome ? colors.income : colors.expense,
       amount: formatCurrency(amount),
       headline: meta['description'] as String?,
@@ -490,9 +490,7 @@ class _ActionPreview {
     return _ActionPreview(
       title: t.chat.action.categoryCreate,
       icon: FontAwesomeIcons.tag,
-      accent: isIncome
-          ? context.appColors.income
-          : context.appColors.primary,
+      accent: isIncome ? context.appColors.income : context.appColors.primary,
       headline: meta['name'] as String?,
       fields: [
         (
