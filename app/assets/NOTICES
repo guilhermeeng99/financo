@@ -2788,8 +2788,11 @@ google_sign_in_web
 image_picker_for_web
 image_picker_macos
 image_picker_platform_interface
+path_provider
 path_provider_android
 path_provider_foundation
+path_provider_linux
+path_provider_platform_interface
 shared_preferences
 shared_preferences_android
 shared_preferences_foundation
@@ -7419,9 +7422,6 @@ google_sign_in
 google_sign_in_platform_interface
 image_picker_linux
 image_picker_windows
-path_provider
-path_provider_linux
-path_provider_platform_interface
 path_provider_windows
 plugin_platform_interface
 shared_preferences_linux
@@ -23330,6 +23330,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
 jni_flutter
+jni_util
 
 Copyright 2026, the Dart project authors.
 
@@ -27688,7 +27689,7 @@ rx
 
 The MIT License
 
-Copyright (c) 2019-2023 Lukas Renggli.
+Copyright (c) 2019-2025 Lukas Renggli.
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
