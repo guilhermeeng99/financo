@@ -10,6 +10,7 @@ import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/app/widgets/transaction_tile.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/account_statement_cubit.dart';
@@ -268,20 +269,25 @@ class _SummarySide extends StatelessWidget {
         AccountDetailSection(
           label: t.accounts.statement,
           rows: [
+            // Every figure here is in the account's own currency — the totals
+            // are sums of its rows, never FX-converted (F9 multi-currency).
             _SummaryRow(
               label: t.accounts.monthIncome,
               amount: state.totalIncome,
               color: colors.income,
+              currency: account.currency,
             ),
             _SummaryRow(
               label: t.accounts.monthExpenses,
               amount: -state.totalExpenses,
               color: colors.expense,
+              currency: account.currency,
             ),
             _SummaryRow(
               label: t.accounts.monthResult,
               amount: state.result,
               color: state.result >= 0 ? colors.income : colors.expense,
+              currency: account.currency,
               bold: true,
             ),
           ],
@@ -293,11 +299,17 @@ class _SummarySide extends StatelessWidget {
             rows: [
               AccountDetailRow(
                 label: t.accounts.creditLimit,
-                value: formatCurrency(account.creditLimit ?? 0),
+                value: formatCurrency(
+                  account.creditLimit ?? 0,
+                  account.currency,
+                ),
               ),
               AccountDetailRow(
                 label: t.accounts.availableCredit,
-                value: formatCurrency(account.availableCredit),
+                value: formatCurrency(
+                  account.availableCredit,
+                  account.currency,
+                ),
               ),
               AccountDetailRow(
                 label: t.accounts.closingDay,
@@ -360,12 +372,14 @@ class _SummaryRow extends StatelessWidget {
     required this.label,
     required this.amount,
     required this.color,
+    required this.currency,
     this.bold = false,
   });
 
   final String label;
   final double amount;
   final Color color;
+  final Currency currency;
   final bool bold;
 
   @override
@@ -375,6 +389,7 @@ class _SummaryRow extends StatelessWidget {
       child: AmountText(
         amount: amount,
         fontSize: bold ? 16 : 14,
+        currency: currency,
       ),
     );
   }
@@ -431,6 +446,9 @@ class _TransactionsSide extends StatelessWidget {
           transaction: tx,
           categoryLabel: label,
           showSettlementStatus: true,
+          // Rows on this page belong to one account, so they are all in its
+          // currency — a cross-currency transfer stores each leg natively.
+          currency: state.account.currency,
           // Awaited via the parent so the statement reloads after edit
           // or delete; `context.push` directly would not refresh.
           onTap: () => onTransactionTap(tx),

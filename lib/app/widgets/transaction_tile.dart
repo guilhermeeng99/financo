@@ -1,6 +1,7 @@
 import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/app/widgets/amount_text.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/date_helpers.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
@@ -21,11 +22,17 @@ class TransactionTile extends StatelessWidget {
     this.categoryLabel,
     this.accountLabel,
     this.showSettlementStatus = false,
+    this.currency = Currency.brl,
     this.onTap,
     super.key,
   });
 
   final TransactionEntity transaction;
+
+  /// Currency the row's amount is denominated in. Defaults to BRL; the account
+  /// statement passes the account's own currency so a foreign account's rows
+  /// aren't mislabelled as reais (F9 multi-currency).
+  final Currency currency;
 
   /// Optional secondary label appended to the date, e.g. category name or
   /// "Source → Destination" for transfers.
@@ -100,6 +107,7 @@ class TransactionTile extends StatelessWidget {
               AmountText(
                 amount: isIncome ? transaction.amount : -transaction.amount,
                 fontSize: 15,
+                currency: currency,
               ),
             ],
           ),

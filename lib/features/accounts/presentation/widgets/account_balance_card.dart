@@ -99,7 +99,9 @@ class AccountBalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            formatCurrency(balance),
+            // The balance is held in the account's own currency — a Wise EUR
+            // account reads `1.234,56 €`, not reais (F9 multi-currency).
+            formatCurrency(balance, account.currency),
             style: context.textTheme.displaySmall?.copyWith(
               color: colors.onBackground,
               fontWeight: FontWeight.w700,
@@ -132,7 +134,7 @@ class _CreditMetaStrip extends StatelessWidget {
       children: [
         _CreditMetaItem(
           label: t.accounts.creditLimit,
-          value: formatCurrency(account.creditLimit ?? 0),
+          value: formatCurrency(account.creditLimit ?? 0, account.currency),
         ),
         _CreditMetaItem(
           label: t.accounts.closingDay,

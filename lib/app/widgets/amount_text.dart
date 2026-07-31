@@ -1,5 +1,6 @@
 import 'package:financo/app/theme/app_typography.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:flutter/material.dart';
 
@@ -13,11 +14,17 @@ class AmountText extends StatelessWidget {
   const AmountText({
     required this.amount,
     this.fontSize = 18,
+    this.currency = Currency.brl,
     super.key,
   });
 
   final double amount;
   final double fontSize;
+
+  /// The currency [amount] is denominated in. Defaults to BRL, the app's home
+  /// currency; pass the account's own currency when rendering a foreign
+  /// account's money so it isn't mislabelled as reais (F9 multi-currency).
+  final Currency currency;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +32,8 @@ class AmountText extends StatelessWidget {
     final isNegative = amount < 0;
     final color = isNegative ? colors.expense : colors.income;
     final text = isNegative
-        ? '-${formatCurrency(amount.abs())}'
-        : formatCurrency(amount);
+        ? '-${formatCurrency(amount.abs(), currency)}'
+        : formatCurrency(amount, currency);
 
     return Text(
       text,

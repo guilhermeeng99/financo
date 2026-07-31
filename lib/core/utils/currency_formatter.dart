@@ -8,8 +8,16 @@ final _currencyFormat = NumberFormat.currency(
   decimalDigits: 2,
 );
 
-/// Formats a BRL [double] amount (the cash side of the app) as `R$ 1.234,56`.
-String formatCurrency(double value) => _currencyFormat.format(value);
+/// Formats a [double] amount from the cash side of the app as `R$ 1.234,56`.
+///
+/// [currency] defaults to BRL — the app's home currency and what most cash
+/// screens carry. Pass the account's own currency on a foreign account (F9
+/// multi-currency) so a Wise EUR balance reads `1.234,56 €` instead of being
+/// mislabelled as reais.
+String formatCurrency(double value, [Currency currency = Currency.brl]) {
+  if (currency == Currency.brl) return _currencyFormat.format(value);
+  return formatMoney(Money.fromMajor(value, currency));
+}
 
 /// Cached per-currency formatters — building a [NumberFormat] is not free and
 /// there are only three currencies.
