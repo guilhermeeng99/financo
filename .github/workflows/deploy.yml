@@ -9,6 +9,30 @@ permissions:
   contents: write
 
 jobs:
+  # The backend is deployed manually (`firebase deploy --only functions`), so
+  # nothing here used to run its checks — a broken Cloud Function could reach
+  # main unnoticed. This job mirrors the README's backend checklist. It runs
+  # alongside `deploy` rather than gating it: the Flutter release does not ship
+  # any of this code, so a red backend should be visible, not blocking.
+  functions:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: functions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   deploy:
     runs-on: ubuntu-latest
     steps:
@@ -35,13 +59,18 @@ jobs:
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: dart run slang
+      # The project's post-change checklist requires zero analyzer issues;
+      # only `flutter test` was enforced here before.
+      - run: flutter analyze
       - run: flutter test
+      # Both tags must track the resolved versions in pubspec.lock (sqlite3,
+      # drift) and the copies documented in README.md — bump all four together.
       - name: Download Drift web assets
         run: |
           curl -L -o web/sqlite3.wasm \
-            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.2/sqlite3.wasm"
+            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.0/sqlite3.wasm"
           curl -L -o web/drift_worker.dart.js \
-            "https://github.com/simolus3/drift/releases/download/drift-2.34.0/drift_worker.js"
+            "https://github.com/simolus3/drift/releases/download/drift-2.34.3/drift_worker.js"
       - name: Build web
         env:
           GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
@@ -79,7 +108,10 @@ jobs:
 
       - name: Build landing site
         run: |
-          pnpm -C site install
+          # --frozen-lockfile so the deployed bundle resolves exactly what
+          # pnpm-lock.yaml pins, instead of whatever is latest at build time.
+          pnpm -C site install --frozen-lockfile
+          pnpm -C site typecheck
           pnpm -C site build
 
       - name: Assemble GitHub Pages bundle
