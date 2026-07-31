@@ -15,6 +15,14 @@ import { defineSecret } from 'firebase-functions/params';
  */
 export const FINNHUB_TOKEN = defineSecret('FINNHUB_TOKEN');
 
+/**
+ * Shape a market symbol may take: letters, digits, dot and dash. Anything
+ * else is not a ticker any of these sources would recognise, and a caller
+ * sending one is either broken or probing — either way it is dropped before
+ * reaching an upstream URL.
+ */
+const TICKER_PATTERN = /^[A-Za-z0-9.-]{1,20}$/;
+
 /** One requested quote: which asset, its ticker, and which source prices it. */
 export interface QuoteItem {
   assetId: string;
@@ -58,15 +66,29 @@ export async function fetchInvestmentQuotes(
   return { quotes };
 }
 
-/** Batched brapi request; maps regularMarketPrice/PreviousClose per symbol. */
+/**
+ * Batched brapi request; maps regularMarketPrice/PreviousClose per symbol.
+ *
+ * Tickers are caller-supplied and land in the URL **path**, so each one is
+ * percent-encoded individually — the comma separator has to stay literal, and
+ * an unencoded `/`, `..`, `?` or `#` would otherwise rewrite the request path.
+ * Symbols that survive `TICKER_PATTERN` are already tame; the encode is the
+ * belt to that suspenders.
+ */
 async function fetchBrapi(items: QuoteItem[]): Promise<QuoteResult[]> {
   const byTicker = new Map(
-    items.map((i): [string, QuoteItem] => [i.ticker.toUpperCase(), i]),
+    items
+      .filter((i) => TICKER_PATTERN.test(i.ticker))
+      .map((i): [string, QuoteItem] => [i.ticker.toUpperCase(), i]),
   );
+  if (byTicker.size === 0) return [];
   const token = process.env.BRAPI_TOKEN ?? '';
-  const tickers = Array.from(byTicker.keys()).join(',');
+  const tickers = Array.from(byTicker.keys())
+    .map(encodeURIComponent)
+    .join(',');
   const url =
-    `https://brapi.dev/api/quote/${tickers}` + (token ? `?token=${token}` : '');
+    `https://brapi.dev/api/quote/${tickers}` +
+    (token ? `?token=${encodeURIComponent(token)}` : '');
 
   const response = await fetch(url);
   if (!response.ok) return [];
@@ -93,9 +115,10 @@ async function fetchBrapi(items: QuoteItem[]): Promise<QuoteResult[]> {
 async function fetchFinnhubOne(item: QuoteItem): Promise<QuoteResult | null> {
   const token = FINNHUB_TOKEN.value();
   if (!token) return null;
+  if (!TICKER_PATTERN.test(item.ticker)) return null;
   const url =
     `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(item.ticker)}` +
-    `&token=${token}`;
+    `&token=${encodeURIComponent(token)}`;
 
   const response = await fetch(url);
   if (!response.ok) return null;

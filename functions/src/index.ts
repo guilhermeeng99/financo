@@ -1,6 +1,6 @@
-import * as admin from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions/v2';
+import { logger } from 'firebase-functions/logger';
 import { runChatTurn } from './chat/pipeline';
 import { transcribeAudio } from './chat/transcribe';
 import type { HistoryTurn } from './chat/types';
@@ -15,8 +15,18 @@ import {
   FINNHUB_TOKEN,
   type QuoteItem,
 } from './quotes/fetchInvestmentQuotes';
+import {
+  ALLOWED_AUDIO_MIME_TYPES,
+  ALLOWED_IMAGE_MIME_TYPES,
+  assertChatContentWithinLimit,
+  MAX_AUDIO_BASE64_CHARS,
+  MAX_HISTORY_TURN_CHARS,
+  MAX_HISTORY_TURNS,
+  MAX_IMAGE_BASE64_CHARS,
+  validateInlineData,
+} from './limits';
 
-admin.initializeApp();
+initializeApp();
 
 export { notifyTransactionsDue };
 
@@ -26,8 +36,17 @@ export { notifyTransactionsDue };
  * failure. Validation must happen *before* entering `work` so that only
  * genuine server-side failures end up logged here.
  *
+ * The upstream error text is logged but **never** forwarded to the client:
+ * these callables sit in front of Vertex and the market-data proxy, whose
+ * errors quote request URLs carrying `FINNHUB_TOKEN` / `BRAPI_TOKEN`. The
+ * client only ever sees [fallbackMessage], which it maps to a localized
+ * failure anyway — it never rendered the upstream string.
+ *
+ * An `HttpsError` thrown by [work] passes through untouched, so deliberate
+ * `invalid-argument` / `permission-denied` codes still reach the client.
+ *
  * @param callableName Used as the log prefix (`<name> failed`).
- * @param fallbackMessage Client-facing message when the error has none.
+ * @param fallbackMessage The only message the client receives.
  * @param work The callable's core async work.
  * @returns Whatever `work` resolves to.
  * @example
@@ -41,8 +60,9 @@ async function wrapCallableErrors<T>(
   try {
     return await work();
   } catch (error) {
+    if (error instanceof HttpsError) throw error;
     logger.error(`${callableName} failed`, error);
-    throw new HttpsError('internal', (error as Error).message ?? fallbackMessage);
+    throw new HttpsError('internal', fallbackMessage);
   }
 }
 
@@ -62,12 +82,15 @@ export const chatSend = onCall<ChatSendRequest>(
   async (request) => {
     const { uid: userId } = await assertAllowedCaller(request);
 
-    const content = (request.data?.content ?? '').toString();
-    const rawImage = request.data?.image;
-    const image =
-      rawImage && typeof rawImage.data === 'string' && typeof rawImage.mimeType === 'string'
-        ? { data: rawImage.data, mimeType: rawImage.mimeType }
-        : undefined;
+    const content = assertChatContentWithinLimit(
+      (request.data?.content ?? '').toString(),
+    );
+    const image = validateInlineData(
+      request.data?.image,
+      'image',
+      ALLOWED_IMAGE_MIME_TYPES,
+      MAX_IMAGE_BASE64_CHARS,
+    );
 
     if (!content.trim() && !image) {
       throw new HttpsError(
@@ -76,10 +99,14 @@ export const chatSend = onCall<ChatSendRequest>(
       );
     }
 
+    // History is replayed verbatim into the model, so it is capped on both
+    // axes: turn count and per-turn length. Only the count was bounded before,
+    // which left the total payload unbounded.
     const history: HistoryTurn[] = Array.isArray(request.data?.history)
       ? request.data.history
         .filter((t) => t && typeof t.content === 'string' && (t.role === 'user' || t.role === 'assistant'))
-        .slice(-50)
+        .slice(-MAX_HISTORY_TURNS)
+        .map((t) => ({ ...t, content: t.content.slice(0, MAX_HISTORY_TURN_CHARS) }))
       : [];
 
     return wrapCallableErrors('chatSend', 'Chat failed', () =>
@@ -162,8 +189,13 @@ export const transcribeChatAudio = onCall<TranscribeRequest>(
   },
   async (request) => {
     await assertAllowedCaller(request);
-    const audio = request.data?.audio;
-    if (!audio?.data || !audio.mimeType) {
+    const audio = validateInlineData(
+      request.data?.audio,
+      'audio',
+      ALLOWED_AUDIO_MIME_TYPES,
+      MAX_AUDIO_BASE64_CHARS,
+    );
+    if (!audio) {
       throw new HttpsError('invalid-argument', 'audio.data and audio.mimeType are required.');
     }
     return wrapCallableErrors('transcribeChatAudio', 'Transcription failed', async () => {
