@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 
 interface AccountContext {
   name: string;
@@ -17,7 +17,7 @@ interface BudgetContext {
   amount: number;
 }
 
-const db = (): admin.firestore.Firestore => admin.firestore();
+const db = (): Firestore => getFirestore();
 
 const fetchAccounts = async (userId: string): Promise<AccountContext[]> => {
   const snap = await db()

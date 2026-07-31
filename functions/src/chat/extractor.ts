@@ -33,17 +33,17 @@ const STRIP_PATTERN =
 
 export interface ExtractionResult {
   cleanText: string;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
 }
 
 export const extractAction = (responseText: string): ExtractionResult => {
-  let metadata: Record<string, any> | null = null;
+  let metadata: Record<string, unknown> | null = null;
 
   for (const { type, pattern } of ACTIONS) {
     const match = pattern.exec(responseText);
     if (!match) continue;
     try {
-      const parsed = JSON.parse(match[1]) as Record<string, any>;
+      const parsed = JSON.parse(match[1]) as Record<string, unknown>;
       metadata = { actionType: type, ...parsed };
     } catch {
       // Malformed JSON — keep current metadata (possibly from earlier action).

@@ -1,5 +1,10 @@
-import * as admin from 'firebase-admin';
-import { logger } from 'firebase-functions/v2';
+import {
+  getFirestore,
+  Timestamp,
+  type Firestore,
+} from 'firebase-admin/firestore';
+import { getMessaging, type SendResponse } from 'firebase-admin/messaging';
+import { logger } from 'firebase-functions/logger';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 export interface PendingTransaction {
@@ -11,7 +16,7 @@ export interface PendingTransaction {
   dueDate: Date;
 }
 
-const db = (): admin.firestore.Firestore => admin.firestore();
+const db = (): Firestore => getFirestore();
 
 const startOfToday = (): Date => {
   const now = new Date();
@@ -33,7 +38,7 @@ const endOfToday = (): Date => {
 
 const toDate = (value: unknown): Date => {
   if (value && typeof (value as { toDate?: unknown }).toDate === 'function') {
-    return (value as admin.firestore.Timestamp).toDate();
+    return (value as Timestamp).toDate();
   }
   return new Date(value as string | number | Date);
 };
@@ -42,7 +47,7 @@ const fetchDueTransactions = async (): Promise<PendingTransaction[]> => {
   const snap = await db()
     .collection('transactions')
     .where('settlementStatus', '==', 'pending')
-    .where('dueDate', '<=', admin.firestore.Timestamp.fromDate(endOfToday()))
+    .where('dueDate', '<=', Timestamp.fromDate(endOfToday()))
     .get();
 
   return snap.docs.map((d) => {
@@ -147,7 +152,7 @@ export const buildMessage = (
 const cleanupInvalidTokens = async (
   userId: string,
   tokens: string[],
-  responses: admin.messaging.SendResponse[],
+  responses: SendResponse[],
 ): Promise<void> => {
   const toDelete: Promise<unknown>[] = [];
   responses.forEach((resp, idx) => {
@@ -195,7 +200,7 @@ export const notifyTransactionsDue = onSchedule(
       byUser.set(transaction.userId, list);
     }
 
-    const messaging = admin.messaging();
+    const messaging = getMessaging();
     let totalSent = 0;
     let totalFailed = 0;
 

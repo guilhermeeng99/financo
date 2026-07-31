@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import * as adminFirestore from 'firebase-admin/firestore';
 import {
   loadHistory,
   loadMessageById,
@@ -8,10 +8,11 @@ import type { ChatMessage } from '../src/chat/types';
 import { HISTORY_LIMIT } from '../src/config';
 
 // Minimal firebase-admin stub covering both chains the module uses:
-//   firestore().collection().where().orderBy().limit().get()  (history)
-//   firestore().collection().doc().set()/.get()               (save/load by id)
-// `firestore` doubles as namespace, so Timestamp.fromDate is attached to it.
-jest.mock('firebase-admin', () => {
+//   getFirestore().collection().where().orderBy().limit().get()  (history)
+//   getFirestore().collection().doc().set()/.get()               (save/load by id)
+// `Timestamp` is a sibling export of the modular entry point, so the stub
+// exposes it alongside getFirestore rather than hanging off it.
+jest.mock('firebase-admin/firestore', () => {
   const queryGet = jest.fn();
   const limit = jest.fn(() => ({ get: queryGet }));
   const orderBy = jest.fn(() => ({ limit }));
@@ -21,11 +22,10 @@ jest.mock('firebase-admin', () => {
   const doc = jest.fn(() => ({ set, get: docGet }));
   const collection = jest.fn(() => ({ where, doc }));
   const fromDate = jest.fn((date: Date) => ({ toDate: () => date }));
-  const firestore = Object.assign(jest.fn(() => ({ collection })), {
-    Timestamp: { fromDate },
-  });
+  const getFirestore = jest.fn(() => ({ collection }));
   return {
-    firestore,
+    getFirestore,
+    Timestamp: { fromDate },
     __mocks: {
       collection,
       where,
@@ -42,7 +42,7 @@ jest.mock('firebase-admin', () => {
 
 // Typed handle on the stub created above so tests can drive query results
 // and assert the arguments forwarded down each chain.
-const mocks = (admin as unknown as {
+const mocks = (adminFirestore as unknown as {
   __mocks: {
     collection: jest.Mock;
     where: jest.Mock;

@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import * as adminFirestore from 'firebase-admin/firestore';
 import { buildUserContext } from '../src/chat/context';
 
 interface SeedDoc {
@@ -14,9 +14,9 @@ interface WhereCall {
 }
 
 // Minimal firebase-admin stub: only the
-// firestore().collection().where().get() chain the context builder touches.
+// getFirestore().collection().where().get() chain the context builder touches.
 // Docs are seeded per collection name so each test controls its snapshot.
-jest.mock('firebase-admin', () => {
+jest.mock('firebase-admin/firestore', () => {
   const state = {
     seeded: {} as Record<string, SeedDoc[]>,
     whereCalls: [] as WhereCall[],
@@ -34,15 +34,15 @@ jest.mock('firebase-admin', () => {
       };
     },
   }));
-  const firestore = jest.fn(() => ({ collection }));
-  return { firestore, __mocks: { firestore, collection, state } };
+  const getFirestore = jest.fn(() => ({ collection }));
+  return { getFirestore, __mocks: { getFirestore, collection, state } };
 });
 
 // Typed handle on the stub created above so tests can seed collections and
 // inspect the where() filters the builder applied.
-const mocks = (admin as unknown as {
+const mocks = (adminFirestore as unknown as {
   __mocks: {
-    firestore: jest.Mock;
+    getFirestore: jest.Mock;
     collection: jest.Mock;
     state: { seeded: Record<string, SeedDoc[]>; whereCalls: WhereCall[] };
   };

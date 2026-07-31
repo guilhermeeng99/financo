@@ -1,4 +1,4 @@
-import { logger } from 'firebase-functions/v2';
+import { logger } from 'firebase-functions/logger';
 import { GEMINI_MODEL } from '../config';
 import { vertex } from './vertexClient';
 
@@ -52,8 +52,8 @@ export interface AudioPayload {
 
 export const transcribeAudio = async (audio: AudioPayload): Promise<string> => {
   try {
-    const model = vertex().getGenerativeModel({ model: GEMINI_MODEL });
-    const result = await model.generateContent({
+    const response = await vertex().models.generateContent({
+      model: GEMINI_MODEL,
       contents: [
         {
           role: 'user',
@@ -69,10 +69,15 @@ export const transcribeAudio = async (audio: AudioPayload): Promise<string> => {
         },
       ],
     });
-    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
-    return (text ?? '').trim();
+    // `.text` concatenates the candidate's text parts for us, replacing the
+    // manual candidates[0].content.parts[0] walk the old SDK required.
+    return (response.text ?? '').trim();
   } catch (error) {
     logger.error('Audio transcription failed', error);
-    throw new Error(`Transcription failed: ${(error as Error).message}`);
+    // `cause` keeps the upstream Vertex error attached for logs; the callable
+    // wrapper in index.ts is what stops it reaching the client.
+    throw new Error(`Transcription failed: ${(error as Error).message}`, {
+      cause: error,
+    });
   }
 };

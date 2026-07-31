@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import * as adminFirestore from 'firebase-admin/firestore';
 import { isEmailAllowed } from '../src/access/allowlist';
 import {
   ALLOWED_EMAILS_COLLECTION,
@@ -8,20 +8,20 @@ import {
 } from '../src/config';
 
 // Minimal firebase-admin stub: only the
-// firestore().collection().doc().get() chain the allowlist touches.
-jest.mock('firebase-admin', () => {
+// getFirestore().collection().doc().get() chain the allowlist touches.
+jest.mock('firebase-admin/firestore', () => {
   const get = jest.fn();
   const doc = jest.fn(() => ({ get }));
   const collection = jest.fn(() => ({ doc }));
-  const firestore = jest.fn(() => ({ collection }));
-  return { firestore, __mocks: { firestore, collection, doc, get } };
+  const getFirestore = jest.fn(() => ({ collection }));
+  return { getFirestore, __mocks: { getFirestore, collection, doc, get } };
 });
 
 // Typed handle on the stub created above so tests can drive .get() results
 // and assert the arguments forwarded down the chain.
-const mocks = (admin as unknown as {
+const mocks = (adminFirestore as unknown as {
   __mocks: {
-    firestore: jest.Mock;
+    getFirestore: jest.Mock;
     collection: jest.Mock;
     doc: jest.Mock;
     get: jest.Mock;
@@ -51,32 +51,32 @@ describe('isEmailAllowed', () => {
 
   it('returns false for null without touching firestore', async () => {
     await expect(isEmailAllowed(null)).resolves.toBe(false);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns false for undefined without touching firestore', async () => {
     await expect(isEmailAllowed(undefined)).resolves.toBe(false);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns false for empty string without touching firestore', async () => {
     await expect(isEmailAllowed('')).resolves.toBe(false);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns true for the master email without touching firestore', async () => {
     await expect(isEmailAllowed(MASTER_EMAIL)).resolves.toBe(true);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns true for the master email in uppercase (normalized)', async () => {
     await expect(isEmailAllowed(MASTER_EMAIL.toUpperCase())).resolves.toBe(true);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns true for the master email with surrounding whitespace', async () => {
     await expect(isEmailAllowed(`  ${MASTER_EMAIL}  `)).resolves.toBe(true);
-    expect(mocks.firestore).not.toHaveBeenCalled();
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
   });
 
   it('returns true when the allowlist doc exists', async () => {

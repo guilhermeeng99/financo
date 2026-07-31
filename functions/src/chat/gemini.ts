@@ -1,5 +1,5 @@
-import { type Content, type Part } from '@google-cloud/vertexai';
-import { logger } from 'firebase-functions/v2';
+import { type Content, type Part } from '@google/genai';
+import { logger } from 'firebase-functions/logger';
 import { GEMINI_MODEL } from '../config';
 import { GEMINI_SYSTEM_PROMPT } from './systemPrompt';
 import type { HistoryTurn } from './types';
@@ -9,15 +9,6 @@ export interface ImagePayload {
   data: string;
   mimeType: string;
 }
-
-const buildModel = (userContext: string) =>
-  vertex().getGenerativeModel({
-    model: GEMINI_MODEL,
-    systemInstruction: {
-      role: 'system',
-      parts: [{ text: `${GEMINI_SYSTEM_PROMPT}\n\n${userContext}` }],
-    },
-  });
 
 const todayIsoDate = (): string => new Date().toISOString().split('T')[0];
 
@@ -49,8 +40,16 @@ export const callGemini = async (
   image?: ImagePayload,
 ): Promise<string> => {
   try {
-    const model = buildModel(userContext);
-    const chat = model.startChat({ history: buildHistoryContents(history) });
+    // The system prompt is passed as a plain string: `systemInstruction`
+    // accepts a ContentUnion, and a bare string is the documented form since
+    // the role on a system instruction is implicit.
+    const chat = vertex().chats.create({
+      model: GEMINI_MODEL,
+      config: {
+        systemInstruction: `${GEMINI_SYSTEM_PROMPT}\n\n${userContext}`,
+      },
+      history: buildHistoryContents(history),
+    });
 
     const parts: Part[] = [];
     if (image) {
@@ -71,11 +70,16 @@ export const callGemini = async (
       });
     }
 
-    const result = await chat.sendMessage(parts);
-    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text ?? 'Sorry, I could not process that.';
+    const response = await chat.sendMessage({ message: parts });
+    // `.text` concatenates the candidate's text parts for us, replacing the
+    // manual candidates[0].content.parts[0] walk the old SDK required.
+    return response.text ?? 'Sorry, I could not process that.';
   } catch (error) {
     logger.error('Gemini call failed', error);
-    throw new Error(`AI processing failed: ${(error as Error).message}`);
+    // `cause` keeps the upstream Vertex error attached for logs; the callable
+    // wrapper in index.ts is what stops it reaching the client.
+    throw new Error(`AI processing failed: ${(error as Error).message}`, {
+      cause: error,
+    });
   }
 };

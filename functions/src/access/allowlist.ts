@@ -1,4 +1,4 @@
-import * as admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 import {
   ALLOWED_EMAILS_COLLECTION,
   isMasterEmail,
@@ -19,8 +19,7 @@ export async function isEmailAllowed(
   if (!email) return false;
   const normalized = normalizeEmail(email);
   if (isMasterEmail(normalized)) return true;
-  const doc = await admin
-    .firestore()
+  const doc = await getFirestore()
     .collection(ALLOWED_EMAILS_COLLECTION)
     .doc(normalized)
     .get();

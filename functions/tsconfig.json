@@ -1,7 +1,19 @@
 {
   "compilerOptions": {
-    "module": "node16",
-    "moduleResolution": "node16",
+    // `nodenext` rather than `node16` because @google/genai is published as a
+    // dual package under `"type": "module"` but ships a single ESM-flavoured
+    // node.d.ts for both conditions. node16 therefore rejects the import with
+    // TS1479 even though the `require` condition resolves to a real
+    // dist/node/index.cjs. nodenext models Node 22's actual capabilities and
+    // allows it; the emit is still CommonJS.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    // Pin the ambient type packages explicitly instead of letting TypeScript
+    // hoover up every @types folder in node_modules. No-op on TS 6, but TS 7
+    // defaults `types` to [], so naming them here is what will keep the Node
+    // and Jest globals resolving whenever that upgrade becomes possible
+    // (blocked today: @typescript-eslint and ts-jest both reject TS 7).
+    "types": ["node", "jest"],
     "isolatedModules": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
@@ -16,5 +28,7 @@
     "forceConsistentCasingInFileNames": true
   },
   "compileOnSave": true,
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

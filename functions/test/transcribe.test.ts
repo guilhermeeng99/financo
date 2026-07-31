@@ -1,4 +1,4 @@
-import { logger } from 'firebase-functions/v2';
+import { logger } from 'firebase-functions/logger';
 import { GEMINI_MODEL } from '../src/config';
 import { transcribeAudio } from '../src/chat/transcribe';
 import { vertex } from '../src/chat/vertexClient';
@@ -7,30 +7,28 @@ import { vertex } from '../src/chat/vertexClient';
 // network is needed; tests drive generateContent results directly.
 jest.mock('../src/chat/vertexClient', () => {
   const generateContent = jest.fn();
-  const getGenerativeModel = jest.fn(() => ({ generateContent }));
   return {
-    vertex: jest.fn(() => ({ getGenerativeModel })),
-    __mocks: { generateContent, getGenerativeModel },
+    vertex: jest.fn(() => ({ models: { generateContent } })),
+    __mocks: { generateContent },
   };
 });
 
 // Silence the error log on the failure path while still letting us assert
 // the failure was logged.
-jest.mock('firebase-functions/v2', () => ({
+jest.mock('firebase-functions/logger', () => ({
   logger: { error: jest.fn() },
 }));
 
 const vertexMocks = (jest.requireMock('../src/chat/vertexClient') as {
-  __mocks: { generateContent: jest.Mock; getGenerativeModel: jest.Mock };
+  __mocks: { generateContent: jest.Mock };
 }).__mocks;
 
 const audio = { data: 'base64-audio-bytes', mimeType: 'audio/m4a' };
 
-const responseWithText = (text: string) => ({
-  response: {
-    candidates: [{ content: { parts: [{ text }] } }],
-  },
-});
+// @google/genai exposes the joined candidate text as a plain `.text` getter,
+// so the stub response is just that field rather than the old SDK's
+// candidates[0].content.parts[0] nesting.
+const responseWithText = (text: string) => ({ text });
 
 describe('transcribeAudio', () => {
   beforeEach(() => {
@@ -46,9 +44,11 @@ describe('transcribeAudio', () => {
     await expect(transcribeAudio(audio)).resolves.toBe(
       'Gastei 45 reais no iFood.',
     );
-    expect(vertexMocks.getGenerativeModel).toHaveBeenCalledWith({
-      model: GEMINI_MODEL,
-    });
+    // The model id now travels in the generateContent request itself rather
+    // than in a separate getGenerativeModel() call.
+    expect(vertexMocks.generateContent).toHaveBeenCalledWith(
+      expect.objectContaining({ model: GEMINI_MODEL }),
+    );
   });
 
   it('sends the instruction first and the audio as inline data', async () => {
@@ -68,16 +68,17 @@ describe('transcribeAudio', () => {
     });
   });
 
-  it('returns an empty string when the model yields no candidates', async () => {
-    vertexMocks.generateContent.mockResolvedValueOnce({ response: {} });
+  // The SDK collapses "no candidates" and "candidate carries no text part"
+  // into a single undefined `.text`, so both upstream shapes are pinned here
+  // as the two ways that field can come back empty.
+  it('returns an empty string when the response carries no text', async () => {
+    vertexMocks.generateContent.mockResolvedValueOnce({ text: undefined });
 
     await expect(transcribeAudio(audio)).resolves.toBe('');
   });
 
-  it('returns an empty string when the candidate has no text part', async () => {
-    vertexMocks.generateContent.mockResolvedValueOnce({
-      response: { candidates: [{ content: { parts: [{}] } }] },
-    });
+  it('returns an empty string when the response omits text entirely', async () => {
+    vertexMocks.generateContent.mockResolvedValueOnce({});
 
     await expect(transcribeAudio(audio)).resolves.toBe('');
   });

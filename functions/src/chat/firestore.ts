@@ -1,20 +1,25 @@
-import * as admin from 'firebase-admin';
+import {
+  getFirestore,
+  Timestamp,
+  type Firestore,
+  type QueryDocumentSnapshot,
+} from 'firebase-admin/firestore';
 import { HISTORY_LIMIT } from '../config';
 import type { ChatMessage, ChatRole } from './types';
 
 const COLLECTION = 'chat_messages';
 
-const db = (): admin.firestore.Firestore => admin.firestore();
+const db = (): Firestore => getFirestore();
 
-const docToMessage = (doc: admin.firestore.QueryDocumentSnapshot): ChatMessage => {
+const docToMessage = (doc: QueryDocumentSnapshot): ChatMessage => {
   const data = doc.data();
   return {
     id: doc.id,
     userId: data.userId as string,
     role: data.role as ChatRole,
     content: data.content as string,
-    metadata: (data.metadata as Record<string, any> | null) ?? null,
-    createdAt: (data.createdAt as admin.firestore.Timestamp).toDate(),
+    metadata: (data.metadata as Record<string, unknown> | null) ?? null,
+    createdAt: (data.createdAt as Timestamp).toDate(),
   };
 };
 
@@ -38,12 +43,12 @@ export const saveMessage = async (message: ChatMessage): Promise<void> => {
       role: message.role,
       content: message.content,
       metadata: message.metadata ?? null,
-      createdAt: admin.firestore.Timestamp.fromDate(message.createdAt),
+      createdAt: Timestamp.fromDate(message.createdAt),
     });
 };
 
 export const loadMessageById = async (id: string): Promise<ChatMessage | null> => {
   const doc = await db().collection(COLLECTION).doc(id).get();
   if (!doc.exists) return null;
-  return docToMessage(doc as admin.firestore.QueryDocumentSnapshot);
+  return docToMessage(doc as QueryDocumentSnapshot);
 };
