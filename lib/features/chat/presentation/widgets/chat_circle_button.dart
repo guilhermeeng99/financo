@@ -1,3 +1,4 @@
+import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -49,7 +50,7 @@ class ChatCircleButton extends StatelessWidget {
                   icon,
                   key: ValueKey(icon),
                   size: iconSize,
-                  color: Colors.white,
+                  color: context.appColors.onPrimary,
                 ),
               ),
             ),

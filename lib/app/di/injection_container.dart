@@ -152,8 +152,26 @@ Future<void> initDependencies() async {
     await GoogleSignIn.instance.initialize();
   }
 
+  _registerExternal(sl, prefs: prefs, appInfo: appInfo, appVersion: appVersion);
+  _registerLocalDatabase(sl);
+  _registerDatasources(sl);
+  _registerRepositories(sl);
+  _registerUseCases(sl);
+  _registerChat(sl);
+  _registerStateHolders(sl, prefs: prefs);
+
+  // V2 investing module (registrations isolated in its own DI file).
+  registerInvestingDependencies(sl);
+}
+
+/// External services, prefs and app metadata resolved at startup.
+void _registerExternal(
+  GetIt sl, {
+  required SharedPreferences prefs,
+  required AppInfoService appInfo,
+  required AppVersion appVersion,
+}) {
   sl
-    // ─── External ────────────────────────────────────────────
     ..registerLazySingleton(() => FirebaseAuth.instance)
     ..registerLazySingleton(() => FirebaseFirestore.instance)
     ..registerLazySingleton(() => FirebaseFunctions.instance)
@@ -161,8 +179,12 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => GoogleSignIn.instance)
     // ─── App Info ───────────────────────────────────────────
     ..registerLazySingleton<AppInfoService>(() => appInfo)
-    ..registerSingleton<AppVersion>(appVersion)
-    // ─── Local Database ─────────────────────────────────────
+    ..registerSingleton<AppVersion>(appVersion);
+}
+
+/// Drift database, DAOs and the sync service.
+void _registerLocalDatabase(GetIt sl) {
+  sl
     ..registerLazySingleton(AppDatabase.new)
     ..registerLazySingleton(() => UsersDao(sl<AppDatabase>()))
     ..registerLazySingleton(() => AccountsDao(sl<AppDatabase>()))
@@ -194,8 +216,12 @@ Future<void> initDependencies() async {
         usersDao: sl(),
         database: sl(),
       ),
-    )
-    // ─── Datasources ────────────────────────────────────────
+    );
+}
+
+/// Firestore/remote datasources.
+void _registerDatasources(GetIt sl) {
+  sl
     ..registerLazySingleton<AccessControlRemoteDataSource>(
       () => AccessControlRemoteDataSourceImpl(firestore: sl()),
     )
@@ -235,8 +261,12 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton<AssetClassRemoteDataSource>(
       () => AssetClassRemoteDataSourceImpl(firestore: sl()),
-    )
-    // ─── Repositories ───────────────────────────────────────
+    );
+}
+
+/// Repository implementations bound to their interfaces.
+void _registerRepositories(GetIt sl) {
+  sl
     ..registerLazySingleton<AccessControlRepository>(
       () => AccessControlRepositoryImpl(remoteDataSource: sl()),
     )
@@ -316,8 +346,12 @@ Future<void> initDependencies() async {
         remoteDataSource: sl(),
         assetClassesDao: sl(),
       ),
-    )
-    // ─── Use Cases ──────────────────────────────────────────
+    );
+}
+
+/// Domain use cases.
+void _registerUseCases(GetIt sl) {
+  sl
     ..registerLazySingleton(() => IsEmailAllowedUseCase(sl()))
     ..registerLazySingleton(() => ListAllowedEmailsUseCase(sl()))
     ..registerLazySingleton(() => AddAllowedEmailUseCase(sl()))
@@ -428,8 +462,12 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(
       () => TranscribeAudioUseCase(sl()),
-    )
-    // ─── Chat Action Handlers ───────────────────────────────
+    );
+}
+
+/// Chat action handlers and services.
+void _registerChat(GetIt sl) {
+  sl
     ..registerLazySingleton(
       () => AccountChatActionHandler(
         createAccount: sl(),
@@ -495,8 +533,12 @@ Future<void> initDependencies() async {
     ..registerLazySingleton(() => UpdateAssetClassUseCase(sl()))
     ..registerLazySingleton(
       () => DeleteAssetClassUseCase(assetClassRepository: sl()),
-    )
-    // ─── Blocs / Cubits (global singletons) ─────────────────
+    );
+}
+
+/// Session-independent blocs and cubits (see CLAUDE.md lifecycle).
+void _registerStateHolders(GetIt sl, {required SharedPreferences prefs}) {
+  sl
     ..registerLazySingleton(
       () => AuthBloc(
         signInWithGoogleUseCase: sl(),
@@ -525,7 +567,4 @@ Future<void> initDependencies() async {
     )
     ..registerLazySingleton(DateFilterCubit.new)
     ..registerLazySingleton(NotificationService.new);
-
-  // V2 investing module (registrations isolated in its own DI file).
-  registerInvestingDependencies(sl);
 }

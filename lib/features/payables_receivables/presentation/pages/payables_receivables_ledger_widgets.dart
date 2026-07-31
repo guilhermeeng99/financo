@@ -207,7 +207,10 @@ class _DismissibleTransactionTile extends StatelessWidget {
           color: context.appColors.expense,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const FaIcon(FontAwesomeIcons.trash, color: Colors.white),
+        child: FaIcon(
+          FontAwesomeIcons.trash,
+          color: context.appColors.onPrimary,
+        ),
       ),
       child: _TransactionTile(
         transaction: transaction,
@@ -447,7 +450,7 @@ class _EmptyLedger extends StatelessWidget {
               border: Border.all(color: colors.surfaceVariant),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: context.appColors.scrim.withValues(alpha: 0.08),
                   blurRadius: 24,
                   offset: const Offset(0, 12),
                 ),

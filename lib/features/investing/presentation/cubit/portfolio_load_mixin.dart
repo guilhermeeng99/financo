@@ -11,14 +11,18 @@ mixin PortfolioLoadMixin {
   /// The pricing engine the host cubit owns (mutable FX/index state).
   PortfolioPricingEngine get engine;
 
-  bool _warmStarted = false;
+  Future<void>? _warmStart;
 
   /// Warm-starts [engine] exactly once per cubit lifetime (seeding FX + index
   /// series from the durable cache before the first paint).
-  Future<void> warmStartOnce() async {
-    if (_warmStarted) return;
-    await engine.warmStart();
-    _warmStarted = true;
+  ///
+  /// Memoises the in-flight future rather than flipping a bool after the
+  /// `await`: a plain flag set on completion lets two overlapping callers both
+  /// pass the guard and warm twice, which is exactly the case this exists to
+  /// prevent. Reachable whenever a page mounts and the user immediately
+  /// pull-to-refreshes. Concurrent callers now await the same future.
+  Future<void> warmStartOnce() {
+    return _warmStart ??= engine.warmStart();
   }
 
   /// Best-effort network refresh of the currently held positions, skipped when

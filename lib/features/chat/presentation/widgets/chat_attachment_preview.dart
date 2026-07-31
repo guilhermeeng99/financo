@@ -93,14 +93,14 @@ class _EncodingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: Container(
-        color: Colors.black.withValues(alpha: 0.45),
+        color: context.appColors.scrim.withValues(alpha: 0.45),
         alignment: Alignment.center,
-        child: const SizedBox(
+        child: SizedBox(
           width: 20,
           height: 20,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            color: Colors.white,
+            color: context.appColors.onPrimary,
           ),
         ),
       ),

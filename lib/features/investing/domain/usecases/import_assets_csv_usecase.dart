@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 import 'package:financo/features/investing/domain/services/investing_csv_parsers.dart';
@@ -113,18 +114,17 @@ class ImportAssetsCsvUseCase {
     required String csvContent,
     required String userId,
   }) async {
-    try {
-      final parsed = _parseCsv(csvContent);
-      final existingResult = await _getAssets(userId: userId);
-      return existingResult.fold(
-        Left.new,
-        (existing) => Right(_buildPreview(parsed, existing)),
-      );
-    } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
-    } on Exception {
-      return const Left(ServerFailure('Failed to import assets.'));
-    }
+    return guardCsvParse(
+      () async {
+        final parsed = _parseCsv(csvContent);
+        final existingResult = await _getAssets(userId: userId);
+        return existingResult.fold(
+          Left.new,
+          (existing) => Right(_buildPreview(parsed, existing)),
+        );
+      },
+      serverMessage: 'Failed to import assets.',
+    );
   }
 
   Future<Either<Failure, AssetImportResult>> call({

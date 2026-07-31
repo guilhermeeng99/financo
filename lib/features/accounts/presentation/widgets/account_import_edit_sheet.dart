@@ -1,5 +1,7 @@
 import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
+import 'package:financo/app/widgets/financo_picker_row.dart';
+import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
@@ -368,97 +370,28 @@ class _LinkedAccountPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return DraggableScrollableSheet(
-      minChildSize: 0.3,
-      maxChildSize: 0.85,
-      expand: false,
-      builder: (_, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.onBackgroundLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
+    // Was 107 lines hand-rolling the sheet chrome and row that
+    // FinancoPickerSheet + FinancoPickerRow already provide.
+    return FinancoPickerSheet(
+      title: t.accounts.pickLinkedAccount,
+      bodyBuilder: (scrollController) => ListView.separated(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+        itemCount: candidates.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 4),
+        itemBuilder: (_, i) {
+          final name = candidates[i];
+          return FinancoPickerRow(
+            leading: FaIcon(
+              FontAwesomeIcons.buildingColumns,
+              size: 14,
+              color: colors.onBackgroundLight,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  t.accounts.pickLinkedAccount,
-                  style: context.textTheme.titleLarge?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                itemCount: candidates.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 4),
-                itemBuilder: (_, i) {
-                  final name = candidates[i];
-                  final isSelected =
-                      name.toLowerCase() == selectedName?.toLowerCase();
-                  return Material(
-                    color: isSelected
-                        ? colors.primary.withValues(alpha: 0.08)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context, name),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            FaIcon(
-                              FontAwesomeIcons.buildingColumns,
-                              size: 14,
-                              color: colors.onBackgroundLight,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: context.textTheme.bodyMedium?.copyWith(
-                                  color: colors.onBackground,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              FaIcon(
-                                FontAwesomeIcons.check,
-                                size: 14,
-                                color: colors.primary,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+            title: name,
+            isSelected: name.toLowerCase() == selectedName?.toLowerCase(),
+            onTap: () => Navigator.pop(context, name),
+          );
+        },
       ),
     );
   }

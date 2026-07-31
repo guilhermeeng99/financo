@@ -11,6 +11,7 @@ import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/money_format.dart';
 import 'package:financo/core/utils/validators.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/fixed_income_terms.dart';
@@ -81,11 +82,19 @@ class _AssetFormPageState extends State<AssetFormPage> {
       _tickerController.text = existing.ticker;
       _nameController.text = existing.name;
       final target = AllocationMetadata.target(existing);
-      if (target > 0) _allocationTargetController.text = _trimRate(target);
+      if (target > 0) {
+        _allocationTargetController.text = compactDecimal(
+          target,
+          maxFractionDigits: 2,
+        );
+      }
       final parsed = FixedIncomeMetadata.read(existing);
       if (parsed != null) {
         _fiBasis = parsed.$1;
-        _fiRateController.text = _trimRate(parsed.$2);
+        _fiRateController.text = compactDecimal(
+          parsed.$2,
+          maxFractionDigits: 2,
+        );
       }
     }
     unawaited(_loadFormData());
@@ -113,11 +122,6 @@ class _AssetFormPageState extends State<AssetFormPage> {
       _classes = classes.getOrElse(() => const []);
       _loadingFormData = false;
     });
-  }
-
-  String _trimRate(double v) {
-    final s = v.toStringAsFixed(2);
-    return s.endsWith('.00') ? s.substring(0, s.length - 3) : s;
   }
 
   Map<String, String> _buildMetadata() {

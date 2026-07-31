@@ -1,3 +1,4 @@
+import 'package:financo/app/widgets/financo_picker_row.dart';
 import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -127,53 +128,25 @@ class _NoneRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Material(
-      color: isSelected
-          ? colors.primary.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: FaIcon(
-                    FontAwesomeIcons.minus,
-                    size: 14,
-                    color: colors.onBackgroundLight,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  t.categories.noParent,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              if (isSelected)
-                FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 14,
-                  color: colors.primary,
-                ),
-            ],
+    return FinancoPickerRow(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: FaIcon(
+            FontAwesomeIcons.minus,
+            size: 14,
+            color: colors.onBackgroundLight,
           ),
         ),
       ),
+      title: t.categories.noParent,
+      isSelected: isSelected,
+      onTap: onTap,
     );
   }
 }
@@ -191,57 +164,22 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final tint = Color(category.color);
-    return Material(
-      color: isSelected
-          ? colors.primary.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: tint.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Icon(
-                    materialIconFor(category.icon),
-                    size: 18,
-                    color: tint,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  category.name,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isSelected)
-                FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 14,
-                  color: colors.primary,
-                ),
-            ],
-          ),
+    return FinancoPickerRow(
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: tint.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Center(
+          child: Icon(materialIconFor(category.icon), size: 18, color: tint),
         ),
       ),
+      title: category.name,
+      isSelected: isSelected,
+      onTap: onTap,
     );
   }
 }

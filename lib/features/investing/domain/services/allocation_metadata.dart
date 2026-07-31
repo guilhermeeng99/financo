@@ -1,3 +1,4 @@
+import 'package:financo/core/utils/money_format.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 
 /// Reads and writes the allocation link an [Asset] carries in its `metadata`
@@ -43,14 +44,8 @@ abstract final class AllocationMetadata {
         ..remove(targetKey);
     } else {
       next[classIdKey] = classId;
-      next[targetKey] = _formatTarget(targetPercent);
+      next[targetKey] = compactDecimal(targetPercent, maxFractionDigits: 2);
     }
     return next;
   }
-
-  /// Trims a target percent to a compact string: `57.0` → `"57"`, `12.5` →
-  /// `"12.5"`. Keeps the stored metadata free of noisy trailing zeros.
-  static String _formatTarget(double value) => value == value.roundToDouble()
-      ? value.toStringAsFixed(0)
-      : value.toString();
 }

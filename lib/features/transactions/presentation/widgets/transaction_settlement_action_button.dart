@@ -32,7 +32,7 @@ class TransactionSettlementActionButton extends StatelessWidget {
         ? TransactionSettlementStatus.pending
         : TransactionSettlementStatus.paid;
     final tooltip = isPaid ? paidLabel : t.transactions.leavePending;
-    final foreground = isPaid ? Colors.white : colors.onBackgroundLight;
+    final foreground = isPaid ? colors.onPrimary : colors.onBackgroundLight;
     final background = isPaid
         ? colors.income
         : colors.surfaceVariant.withValues(alpha: 0.9);

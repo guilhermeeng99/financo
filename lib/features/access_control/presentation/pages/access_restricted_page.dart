@@ -77,7 +77,7 @@ class AccessRestrictedPage extends StatelessWidget {
                       ),
                       style: FilledButton.styleFrom(
                         backgroundColor: colors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: context.appColors.onPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),

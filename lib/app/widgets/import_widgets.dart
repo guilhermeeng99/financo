@@ -26,7 +26,7 @@ class ImportProgressOverlay extends StatelessWidget {
     final percent = (progress * 100).clamp(0, 100).toStringAsFixed(0);
 
     return ColoredBox(
-      color: Colors.black.withValues(alpha: 0.45),
+      color: context.appColors.scrim.withValues(alpha: 0.45),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),

@@ -1,5 +1,6 @@
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/money_format.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/presentation/asset_visuals.dart';
 import 'package:financo/features/investing/presentation/pages/assets_page.dart'
@@ -123,7 +124,7 @@ class _LegendRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${(fraction * 100).toStringAsFixed(0)}%',
+            '${percentWhole(fraction)}%',
             style: context.textTheme.labelMedium?.copyWith(
               color: colors.onBackground,
               fontWeight: FontWeight.w700,

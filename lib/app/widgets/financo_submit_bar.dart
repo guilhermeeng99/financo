@@ -85,18 +85,18 @@ class FinancoSubmitBar extends StatelessWidget {
       style: FilledButton.styleFrom(
         backgroundColor: colors.primary,
         disabledBackgroundColor: colors.primary.withValues(alpha: 0.4),
-        foregroundColor: Colors.white,
+        foregroundColor: colors.onPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.white,
+                color: colors.onPrimary,
               ),
             )
           : Text(
@@ -115,7 +115,7 @@ class FinancoSubmitBar extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: colors.primary,
           disabledBackgroundColor: colors.primary.withValues(alpha: 0.4),
-          foregroundColor: Colors.white,
+          foregroundColor: colors.onPrimary,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),

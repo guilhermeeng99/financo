@@ -268,7 +268,7 @@ class _CardPrimaryButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white,
+          foregroundColor: context.appColors.onPrimary,
           minimumSize: const Size(0, 42),
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(

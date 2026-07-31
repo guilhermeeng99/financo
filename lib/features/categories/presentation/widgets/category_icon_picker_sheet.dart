@@ -150,7 +150,7 @@ class _IconCell extends StatelessWidget {
             Center(
               child: Icon(
                 icon,
-                color: isSelected ? Colors.white : colors.onBackgroundLight,
+                color: isSelected ? colors.onPrimary : colors.onBackgroundLight,
                 size: 22,
               ),
             ),
@@ -161,8 +161,8 @@ class _IconCell extends StatelessWidget {
                 child: Container(
                   width: 14,
                   height: 14,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: colors.onPrimary,
                     shape: BoxShape.circle,
                   ),
                   child: Center(

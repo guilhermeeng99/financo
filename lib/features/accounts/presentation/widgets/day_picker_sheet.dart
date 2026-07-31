@@ -79,7 +79,7 @@ class _DayButton extends StatelessWidget {
           child: Text(
             '$day',
             style: context.textTheme.titleSmall?.copyWith(
-              color: isSelected ? Colors.white : colors.onBackground,
+              color: isSelected ? colors.onPrimary : colors.onBackground,
               fontWeight: FontWeight.w600,
             ),
           ),

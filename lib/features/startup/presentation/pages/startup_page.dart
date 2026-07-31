@@ -352,7 +352,7 @@ class _ErrorBlock extends StatelessWidget {
                 unawaited(context.read<StartupCubit>().initialize()),
             style: FilledButton.styleFrom(
               backgroundColor: colors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: context.appColors.onPrimary,
               minimumSize: const Size(0, 44),
               padding: const EdgeInsets.symmetric(horizontal: 24),
               shape: RoundedRectangleBorder(

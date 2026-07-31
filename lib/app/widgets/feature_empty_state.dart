@@ -202,7 +202,7 @@ class _ActionButton extends StatelessWidget {
       label: Text(label),
       style: FilledButton.styleFrom(
         backgroundColor: context.appColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: context.appColors.onPrimary,
         minimumSize: const Size(0, 48),
         padding: const EdgeInsets.symmetric(horizontal: 24),
         shape: RoundedRectangleBorder(

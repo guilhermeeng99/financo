@@ -1,3 +1,4 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:flutter/material.dart';
 
@@ -41,9 +42,7 @@ class AssetAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final background = assetKindColor(kind);
-    final foreground = background.computeLuminance() > 0.55
-        ? Colors.black
-        : Colors.white;
+    final foreground = foregroundOn(background);
     final initials = tickerInitials(ticker);
     return Container(
       width: size,

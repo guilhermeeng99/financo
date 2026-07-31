@@ -54,7 +54,7 @@ class CategoryIconPickerLauncher extends StatelessWidget {
                 child: Center(
                   child: Icon(
                     materialIconFor(selectedIcon),
-                    color: Colors.white,
+                    color: context.appColors.onPrimary,
                     size: 20,
                   ),
                 ),

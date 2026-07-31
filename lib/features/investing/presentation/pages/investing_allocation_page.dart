@@ -12,7 +12,7 @@ import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:financo/core/utils/money_format.dart';
 import 'package:financo/features/investing/domain/entities/allocation_overview.dart';
-import 'package:financo/features/investing/domain/services/allocation_service.dart';
+import 'package:financo/features/investing/presentation/allocation_slice_display.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_allocation_cubit.dart';
 import 'package:financo/features/investing/presentation/widgets/allocation_class_donut.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
@@ -169,14 +169,9 @@ class _ClassRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final classColor = Color(slice.color);
-    final actual = (slice.currentPercent * 100).toStringAsFixed(0);
-    final target = (slice.targetPercent * 100).toStringAsFixed(0);
-    final onTarget =
-        slice.delta.minorUnits.abs() <
-        AllocationService.rebalanceThresholdMinor;
-    final deltaColor = onTarget
-        ? colors.onBackgroundLight
-        : (slice.isUnderTarget ? colors.income : colors.expense);
+    final actual = slice.actualPercentLabel;
+    final target = slice.targetPercentLabel;
+    final deltaColor = slice.deltaColor(colors);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
@@ -241,7 +236,7 @@ class _ClassRow extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _deltaLabel(),
+                          slice.deltaLabel,
                           style: context.textTheme.bodySmall?.copyWith(
                             color: deltaColor,
                             fontWeight: FontWeight.w600,
@@ -261,7 +256,7 @@ class _ClassRow extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
                   child: LinearProgressIndicator(
-                    value: _progress(),
+                    value: slice.progress,
                     minHeight: 8,
                     backgroundColor: colors.surfaceVariant,
                     valueColor: AlwaysStoppedAnimation<Color>(classColor),
@@ -273,24 +268,6 @@ class _ClassRow extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Bar fills current/target, capped at full when over target.
-  double _progress() {
-    final target = slice.targetPercent;
-    if (target <= 0) return slice.currentPercent.clamp(0.0, 1.0);
-    return (slice.currentPercent / target).clamp(0.0, 1.0);
-  }
-
-  String _deltaLabel() {
-    if (slice.delta.minorUnits.abs() <
-        AllocationService.rebalanceThresholdMinor) {
-      return t.investing.allocation.onTarget;
-    }
-    final amount = absMoney(slice.delta);
-    return slice.isUnderTarget
-        ? t.investing.allocation.below(amount: amount)
-        : t.investing.allocation.above(amount: amount);
   }
 }
 

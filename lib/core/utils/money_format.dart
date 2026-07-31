@@ -27,3 +27,28 @@ String signedPercent(double ratio) {
 /// A 0–1 fraction as a one-decimal percent: `0.451` → `45.1%`.
 String percentFraction(double fraction) =>
     '${(fraction * 100).toStringAsFixed(1)}%';
+
+/// A 0–1 fraction as a whole percent, no suffix: `0.451` → `45`.
+///
+/// The allocation screens compose their own strings around the number
+/// (`'$actual% de $target%'`), so this returns the digits only. Six call sites
+/// were hand-rolling `(x * 100).toStringAsFixed(0)`.
+String percentWhole(double fraction) => (fraction * 100).toStringAsFixed(0);
+
+/// Trims trailing zeros from a decimal, keeping at most [maxFractionDigits].
+///
+/// `1.50` → `1.5`, `2.0` → `2`, `1.92012` → `1.9201`. Used for quantities and
+/// rates, which read badly at a fixed precision — a holding of 8 shares should
+/// not render as `8.0000`. Three separate implementations of this existed
+/// (regex, `endsWith('.00')`, and a `roundToDouble` compare) before the
+/// 2026-07-31 audit.
+///
+/// Not for money: monetary values always show their currency's full precision
+/// via `formatMoney`/`formatCurrency`.
+String compactDecimal(double value, {int maxFractionDigits = 4}) {
+  final fixed = value.toStringAsFixed(maxFractionDigits);
+  if (!fixed.contains('.')) return fixed;
+  return fixed
+      .replaceFirst(RegExp(r'0+$'), '')
+      .replaceFirst(RegExp(r'\.$'), '');
+}

@@ -111,22 +111,22 @@ class _Avatar extends StatelessWidget {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   onImageError();
                 });
-                return _initialFallback();
+                return _initialFallback(context);
               },
             )
-          : _initialFallback(),
+          : _initialFallback(context),
     );
   }
 
-  Widget _initialFallback() {
+  Widget _initialFallback(BuildContext context) {
     final initial = name.trim().isNotEmpty
         ? name.trim().substring(0, 1).toUpperCase()
         : '?';
     return Center(
       child: Text(
         initial,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: context.appColors.onPrimary,
           fontWeight: FontWeight.w700,
           fontSize: 26,
           height: 1,

@@ -157,8 +157,8 @@ class _BrandMark extends StatelessWidget {
           child: Center(
             child: Text(
               AppConstants.appName.substring(0, 1),
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.appColors.onPrimary,
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
                 height: 1,

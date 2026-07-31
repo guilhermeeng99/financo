@@ -1,14 +1,13 @@
 import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_row.dart';
 import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
-import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_query_filter.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Modal bottom sheet for picking the root expense category to budget.
 ///
@@ -144,42 +143,11 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Material(
-      color: isSelected
-          ? colors.primary.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              FinancoCategoryAvatar(category: category),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  category.name,
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isSelected)
-                FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 14,
-                  color: colors.primary,
-                ),
-            ],
-          ),
-        ),
-      ),
+    return FinancoPickerRow(
+      leading: FinancoCategoryAvatar(category: category),
+      title: category.name,
+      isSelected: isSelected,
+      onTap: onTap,
     );
   }
 }

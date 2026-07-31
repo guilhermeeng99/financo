@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
@@ -133,19 +134,18 @@ class ImportAccountsCsvUseCase {
     required String csvContent,
     required String userId,
   }) async {
-    try {
-      final parsedItems = _parseCsv(csvContent);
-      final existingResult = await _repository.getAccounts(userId: userId);
+    return guardCsvParse(
+      () async {
+        final parsedItems = _parseCsv(csvContent);
+        final existingResult = await _repository.getAccounts(userId: userId);
 
-      return existingResult.fold(
-        Left.new,
-        (existing) => Right(_buildPreview(parsedItems, existing)),
-      );
-    } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
-    } on Exception {
-      return const Left(ServerFailure('Failed to import accounts.'));
-    }
+        return existingResult.fold(
+          Left.new,
+          (existing) => Right(_buildPreview(parsedItems, existing)),
+        );
+      },
+      serverMessage: 'Failed to import accounts.',
+    );
   }
 
   Future<Either<Failure, AccountImportResult>> call({

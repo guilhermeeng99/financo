@@ -59,7 +59,7 @@ class FinancoBottomBar extends StatelessWidget {
                   // Single soft shadow — the brief calls for "subtle depth,
                   // not heavy shadows" so we drop the previous double-stack.
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: context.appColors.scrim.withValues(alpha: 0.06),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),

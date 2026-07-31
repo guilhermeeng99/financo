@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:financo/app/routes/app_routes.dart';
-import 'package:financo/app/widgets/financo_mobile_nav.dart';
-import 'package:financo/app/widgets/financo_sidebar.dart';
+import 'package:financo/app/routes/shell_with_sidebar.dart';
 import 'package:financo/app/widgets/sub_page_scope.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/features/access_control/domain/usecases/add_allowed_email_usecase.dart';
@@ -309,7 +308,7 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
               },
             ),
           ],
-          child: _ShellWithSidebar(child: child),
+          child: ShellWithSidebar(child: child),
         );
       },
       routes: [
@@ -648,74 +647,3 @@ class GoRouterRefreshStream extends ChangeNotifier {
 /// and `Navigator.canPop()` are both unreliable for sibling pushes inside
 /// a ShellRoute — the shell-level match doesn't refresh and the navigator
 /// stack appears flat after the push transition settles.
-class _ShellWithSidebar extends StatefulWidget {
-  const _ShellWithSidebar({required this.child});
-
-  final Widget child;
-
-  static const double _mobileBreakpoint = 600;
-
-  @override
-  State<_ShellWithSidebar> createState() => _ShellWithSidebarState();
-}
-
-class _ShellWithSidebarState extends State<_ShellWithSidebar> {
-  GoRouter? _router;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final router = GoRouter.of(context);
-    if (router != _router) {
-      _router?.routerDelegate.removeListener(_onRouteChange);
-      _router = router;
-      _router!.routerDelegate.addListener(_onRouteChange);
-    }
-  }
-
-  @override
-  void dispose() {
-    _router?.routerDelegate.removeListener(_onRouteChange);
-    super.dispose();
-  }
-
-  void _onRouteChange() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isMobile =
-        MediaQuery.of(context).size.width < _ShellWithSidebar._mobileBreakpoint;
-
-    if (isMobile) {
-      return ValueListenableBuilder<int>(
-        valueListenable: subPageDepthListenable,
-        builder: (context, depth, _) {
-          final isOnSubPage = depth > 0;
-          final showBottomBar = !isOnSubPage;
-
-          return Scaffold(
-            // Lets scrollable content flow behind the floating bottom bar
-            // so it visually "lifts" off the page instead of clipping the
-            // body.
-            extendBody: true,
-            body: widget.child,
-            bottomNavigationBar: showBottomBar
-                ? const FinancoBottomBar()
-                : null,
-          );
-        },
-      );
-    }
-
-    return Scaffold(
-      body: Row(
-        children: [
-          const FinancoSidebar(),
-          Expanded(child: widget.child),
-        ],
-      ),
-    );
-  }
-}

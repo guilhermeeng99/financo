@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
@@ -84,21 +85,20 @@ class ImportCategoriesCsvUseCase {
     required String csvContent,
     required String userId,
   }) async {
-    try {
-      final parsedItems = _parseCsv(csvContent);
-      final existingResult = await _repository.getCategories(userId: userId);
+    return guardCsvParse(
+      () async {
+        final parsedItems = _parseCsv(csvContent);
+        final existingResult = await _repository.getCategories(userId: userId);
 
-      return existingResult.fold(
-        Left.new,
-        (existingCategories) => Right(
-          _buildPreview(parsedItems, existingCategories),
-        ),
-      );
-    } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
-    } on Exception {
-      return const Left(ServerFailure('Failed to import categories.'));
-    }
+        return existingResult.fold(
+          Left.new,
+          (existingCategories) => Right(
+            _buildPreview(parsedItems, existingCategories),
+          ),
+        );
+      },
+      serverMessage: 'Failed to import categories.',
+    );
   }
 
   Future<Either<Failure, CategoryImportResult>> call({

@@ -1,12 +1,11 @@
 import 'package:financo/app/widgets/bank_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_row.dart';
 import 'package:financo/app/widgets/financo_picker_sheet.dart';
-import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/presentation/cubit/accounts_cubit.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Bottom sheet for picking an account on the transaction form. The label
 /// adapts to the calling context — "Account", "Source account",
@@ -85,62 +84,17 @@ class _AccountRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
     final typeLabel = switch (account.type) {
       AccountType.creditCard => t.accounts.creditCard,
       AccountType.investment => t.accounts.investment,
       AccountType.checking => t.accounts.checking,
     };
-    return Material(
-      color: isSelected
-          ? colors.primary.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              BankAvatar(bank: account.bank),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      account.name,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      typeLabel,
-                      style: context.textTheme.labelSmall?.copyWith(
-                        color: colors.onBackgroundLight,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 14,
-                  color: colors.primary,
-                ),
-            ],
-          ),
-        ),
-      ),
+    return FinancoPickerRow(
+      leading: BankAvatar(bank: account.bank),
+      title: account.name,
+      subtitle: typeLabel,
+      isSelected: isSelected,
+      onTap: onTap,
     );
   }
 }

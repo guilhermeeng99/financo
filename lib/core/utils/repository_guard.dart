@@ -38,3 +38,35 @@ Future<Either<Failure, void>> guardServerVoid(
     return Left(ServerFailure(e.message));
   }
 }
+
+/// Runs a CSV **preview** [body], mapping the two failure shapes every
+/// importer shares: a malformed file surfaces the parser's own message as a
+/// `ValidationFailure` (the user can act on "row 3: unknown column"), while
+/// anything else becomes an opaque `ServerFailure` carrying [serverMessage].
+///
+/// Five importers (accounts, categories, transactions, investing assets,
+/// investing transactions) had written this same try/catch by hand. The split
+/// matters: swapping the two would either hide a fixable CSV problem behind a
+/// generic error, or leak an internal exception message into the UI.
+///
+/// Example:
+/// ```dart
+/// Future<Either<Failure, AssetImportPreview>> preview(String csv) {
+///   return guardCsvParse(
+///     () async => _buildPreview(_parseCsv(csv)),
+///     serverMessage: 'Failed to import assets.',
+///   );
+/// }
+/// ```
+Future<Either<Failure, T>> guardCsvParse<T>(
+  Future<Either<Failure, T>> Function() body, {
+  required String serverMessage,
+}) async {
+  try {
+    return await body();
+  } on FormatException catch (e) {
+    return Left(ValidationFailure(e.message));
+  } on Exception {
+    return Left(ServerFailure(serverMessage));
+  }
+}

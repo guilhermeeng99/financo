@@ -67,7 +67,7 @@ class _PositionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final ticker = asset?.ticker ?? holding.assetId;
-    final quantity = _trimQuantity(holding.quantity);
+    final quantity = compactDecimal(holding.quantity, maxFractionDigits: 6);
     final subtitle = institution == null
         ? quantity
         : '${institution!.name}  ·  $quantity';
@@ -161,15 +161,4 @@ class _PositionTile extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Trims a share quantity to a compact string (drops trailing zeros).
-String _trimQuantity(double quantity) {
-  if (quantity == quantity.roundToDouble()) {
-    return quantity.toStringAsFixed(0);
-  }
-  return quantity
-      .toStringAsFixed(6)
-      .replaceAll(RegExp(r'0+$'), '')
-      .replaceAll(RegExp(r'\.$'), '');
 }

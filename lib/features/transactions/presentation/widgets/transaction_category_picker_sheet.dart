@@ -1,7 +1,7 @@
 import 'package:financo/app/widgets/financo_category_avatar.dart';
+import 'package:financo/app/widgets/financo_picker_row.dart';
 import 'package:financo/app/widgets/financo_picker_sheet.dart';
 import 'package:financo/app/widgets/financo_search_field.dart';
-import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/categories/presentation/utils/category_display_order.dart';
@@ -10,7 +10,6 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Modal bottom sheet for picking a category. Filters by transaction type
 /// — expense transactions show expense categories, income shows income —
@@ -158,71 +157,19 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    final parentName = showParent ? _parentName() : null;
     // Indentation groups subcategories under their parent in the normal
     // (unsearched) view; while searching the parent name (subtitle) carries
     // that context instead, so the rows sit flush-left.
-    final leftPadding = showParent
-        ? 12.0
-        : (category.isSubcategory ? 36.0 : 12.0);
-    return Material(
-      color: isSelected
-          ? colors.primary.withValues(alpha: 0.08)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(leftPadding, 10, 12, 10),
-          child: Row(
-            children: [
-              FinancoCategoryAvatar(
-                category: category,
-                allCategories: allCategories,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      category.name,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: colors.onBackground,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (parentName != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        parentName,
-                        style: context.textTheme.bodySmall?.copyWith(
-                          color: colors.onBackgroundLight,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (isSelected)
-                FaIcon(
-                  FontAwesomeIcons.check,
-                  size: 14,
-                  color: colors.primary,
-                ),
-            ],
-          ),
-        ),
+    return FinancoPickerRow(
+      leading: FinancoCategoryAvatar(
+        category: category,
+        allCategories: allCategories,
       ),
+      title: category.name,
+      subtitle: showParent ? _parentName() : null,
+      indent: !showParent && category.isSubcategory ? 24 : 0,
+      isSelected: isSelected,
+      onTap: onTap,
     );
   }
 }

@@ -68,13 +68,13 @@ class _DisabledSpinner extends StatelessWidget {
       child: Material(
         color: color.withValues(alpha: 0.6),
         shape: const CircleBorder(),
-        child: const Center(
+        child: Center(
           child: SizedBox(
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Colors.white,
+              color: context.appColors.onPrimary,
             ),
           ),
         ),

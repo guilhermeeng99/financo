@@ -152,7 +152,7 @@ class _AccountTotalRow extends StatelessWidget {
               value: row.isSelected,
               onChanged: (_) => onTap?.call(),
               activeColor: colors.primary,
-              checkColor: Colors.white,
+              checkColor: context.appColors.onPrimary,
               visualDensity: VisualDensity.compact,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -298,8 +298,8 @@ List<TransactionEntity> _filterByAvailableAccounts(
       .toList();
 }
 
-Color _readableTextColor(Color background, AppColorsData colors) {
-  return background.computeLuminance() > 0.55
-      ? colors.background
-      : Colors.white;
-}
+/// Text colour for a chip filled with an arbitrary [background]. Unlike the
+/// generic [foregroundOn], the light branch uses the theme's own background so
+/// the chip label matches the surrounding surface rather than pure black.
+Color _readableTextColor(Color background, AppColorsData colors) =>
+    background.computeLuminance() > 0.55 ? colors.background : colors.onPrimary;

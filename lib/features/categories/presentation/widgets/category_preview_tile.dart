@@ -1,3 +1,4 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/utils/dynamic_icon.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class CategoryPreviewTile extends StatelessWidget {
               child: Icon(
                 materialIconFor(icon),
                 size: 20,
-                color: Colors.white,
+                color: foregroundOn(tint),
               ),
             ),
           ),

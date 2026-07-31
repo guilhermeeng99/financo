@@ -64,6 +64,24 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  /// Opens the database over a caller-supplied [executor] instead of the
+  /// on-device/web connection.
+  ///
+  /// Exists so DAO tests can run against `NativeDatabase.memory()` — the
+  /// default constructor is hard-wired to `driftDatabase()`, which needs a real
+  /// platform (and, on web, a worker), making the DAOs untestable.
+  ///
+  /// Example:
+  /// ```dart
+  /// final db = AppDatabase.forTesting(NativeDatabase.memory());
+  /// addTearDown(db.close);
+  /// ```
+  // Parameter is named `e` only because it forwards to the generated
+  // `_$AppDatabase(QueryExecutor e)` — the two super-parameter lints
+  // (`use_super_parameters` + `matching_super_parameters`) together allow no
+  // other spelling.
+  AppDatabase.forTesting(super.e);
+
   // 12: V2 investing ledger (institutions, investment_assets,
   // investment_transactions). 13: derived market caches (quotes, fx_rates,
   // index_points) — device-local, never mirrored. 14: net-worth history

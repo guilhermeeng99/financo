@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/csv_parsing.dart';
+import 'package:financo/core/utils/repository_guard.dart';
 import 'package:financo/core/utils/string_normalize.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
@@ -55,35 +56,34 @@ class ImportTransactionsCsvUseCase {
     required String csvContent,
     required String userId,
   }) async {
-    try {
-      final parsed = _parseCsv(csvContent);
-      final rows = parsed.rows;
-      final skippedRows = parsed.skippedRows;
+    return guardCsvParse(
+      () async {
+        final parsed = _parseCsv(csvContent);
+        final rows = parsed.rows;
+        final skippedRows = parsed.skippedRows;
 
-      final categoriesResult = await _categoryRepository.getCategories(
-        userId: userId,
-      );
-      final accountsResult = await _accountRepository.getAccounts(
-        userId: userId,
-      );
+        final categoriesResult = await _categoryRepository.getCategories(
+          userId: userId,
+        );
+        final accountsResult = await _accountRepository.getAccounts(
+          userId: userId,
+        );
 
-      return categoriesResult.fold(Left.new, (categories) {
-        return accountsResult.fold(Left.new, (accounts) {
-          return Right(
-            _buildPreview(
-              rows: rows,
-              categories: categories,
-              accounts: accounts,
-              skippedRows: skippedRows,
-            ),
-          );
+        return categoriesResult.fold(Left.new, (categories) {
+          return accountsResult.fold(Left.new, (accounts) {
+            return Right(
+              _buildPreview(
+                rows: rows,
+                categories: categories,
+                accounts: accounts,
+                skippedRows: skippedRows,
+              ),
+            );
+          });
         });
-      });
-    } on FormatException catch (e) {
-      return Left(ValidationFailure(e.message));
-    } on Exception {
-      return const Left(ServerFailure('Failed to parse transactions CSV.'));
-    }
+      },
+      serverMessage: 'Failed to parse transactions CSV.',
+    );
   }
 
   Future<Either<Failure, TransactionImportResult>> call({

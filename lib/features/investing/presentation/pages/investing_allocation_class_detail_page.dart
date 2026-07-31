@@ -6,6 +6,7 @@ import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
 import 'package:financo/app/widgets/financo_large_app_bar.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_navigation_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
 import 'package:financo/core/utils/dynamic_icon.dart';
@@ -14,6 +15,7 @@ import 'package:financo/features/investing/domain/entities/allocation_overview.d
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/services/allocation_service.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
+import 'package:financo/features/investing/presentation/allocation_slice_display.dart';
 import 'package:financo/features/investing/presentation/cubit/investing_allocation_cubit.dart';
 import 'package:financo/features/investments/domain/entities/asset_class_entity.dart';
 import 'package:financo/features/investments/domain/usecases/get_asset_classes_usecase.dart';
@@ -42,9 +44,8 @@ class AllocationClassDetailPage extends StatelessWidget {
       listenWhen: (previous, current) =>
           current is InvestingAllocationLoaded &&
           _sliceIn(current, classId) == null,
-      listener: (context, state) {
-        if (context.canPop()) context.pop();
-      },
+      listener: (context, state) =>
+          context.popOrGo(AppRoutes.investingAllocation),
       builder: (context, state) {
         final slice = state is InvestingAllocationLoaded
             ? _sliceIn(state, classId)
@@ -207,23 +208,11 @@ class _HeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final tint = Color(slice.color);
-    final actual = (slice.currentPercent * 100).toStringAsFixed(0);
-    final target = (slice.targetPercent * 100).toStringAsFixed(0);
-    final onTarget =
-        slice.delta.minorUnits.abs() <
-        AllocationService.rebalanceThresholdMinor;
-    final deltaColor = onTarget
-        ? colors.onBackgroundLight
-        : (slice.isUnderTarget ? colors.income : colors.expense);
-    final deltaLabel = onTarget
-        ? t.investing.allocation.onTarget
-        : (slice.isUnderTarget
-              ? t.investing.allocation.below(amount: absMoney(slice.delta))
-              : t.investing.allocation.above(amount: absMoney(slice.delta)));
-    final targetFraction = slice.targetPercent;
-    final progress = targetFraction <= 0
-        ? slice.currentPercent.clamp(0.0, 1.0)
-        : (slice.currentPercent / targetFraction).clamp(0.0, 1.0);
+    final actual = slice.actualPercentLabel;
+    final target = slice.targetPercentLabel;
+    final deltaColor = slice.deltaColor(colors);
+    final deltaLabel = slice.deltaLabel;
+    final progress = slice.progress;
 
     return Container(
       width: double.infinity,
@@ -319,7 +308,7 @@ class _AssetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final actual = (asset.percentOfClass * 100).toStringAsFixed(0);
+    final actual = percentWhole(asset.percentOfClass);
     final target = asset.targetPercent.toStringAsFixed(0);
     final hasTarget = asset.targetPercent > 0;
     final deltaMinor = asset.suggestedDelta.minorUnits;

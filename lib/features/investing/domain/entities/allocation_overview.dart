@@ -31,12 +31,20 @@ class AllocationAssetSlice extends Equatable {
   final double percentOfClass;
 
   /// Share of the whole portfolio (0–1).
+  ///
+  /// Computed and covered by `allocation_service_test.dart` per rule 47 of
+  /// `docs/specs/allocation.md`, but nothing renders it yet — the class-detail
+  /// page shows [percentOfClass]. Kept because it is a contracted output of
+  /// the service, not an accident.
   final double percentOfTotal;
 
   /// Target share **within its class** (0–100).
   final double targetPercent;
 
   /// Ideal value = class target value × [targetPercent] / 100 (base).
+  ///
+  /// Like [percentOfTotal], spec'd and tested but not yet rendered — the UI
+  /// shows the derived [suggestedDelta] instead.
   final Money suggestedValue;
 
   /// `suggestedValue − currentValue` (base). Positive → add (aporte),

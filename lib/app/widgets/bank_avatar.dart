@@ -1,3 +1,4 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +19,7 @@ class BankAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final brand = BankBrand.of(bank);
     final background = Color(brand.color);
-    final foreground = background.computeLuminance() > 0.55
-        ? Colors.black
-        : Colors.white;
+    final foreground = foregroundOn(background);
     final isOthers = bank == BankType.others;
     return Container(
       width: size,

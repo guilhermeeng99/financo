@@ -1,3 +1,4 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/features/categories/domain/category_colors.dart';
 import 'package:flutter/material.dart';
@@ -72,11 +73,11 @@ class _Swatch extends StatelessWidget {
                 ),
               ),
               child: isSelected
-                  ? const Center(
+                  ? Center(
                       child: FaIcon(
                         FontAwesomeIcons.check,
                         size: 12,
-                        color: Colors.white,
+                        color: foregroundOn(color),
                       ),
                     )
                   : null,
