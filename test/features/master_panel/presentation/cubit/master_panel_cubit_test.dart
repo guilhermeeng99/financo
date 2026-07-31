@@ -112,23 +112,38 @@ void main() {
   });
 
   group('deleteUser', () {
-    blocTest<MasterPanelCubit, MasterPanelState>(
-      'returns failure when repo rejects',
-      setUp: () {
-        when(
-          () => masterRepo.deleteUserAsAdmin(any()),
-        ).thenAnswer(
-          (_) async => const Left(AuthFailure('Not authorized')),
-        );
-      },
-      build: buildCubit,
-      seed: () => const MasterPanelLoaded(users: [], allowedEmails: []),
-      act: (cubit) => cubit.deleteUser('uid-1'),
-      verify: (cubit) {
-        // We don't assert states here — the contract is that the future
-        // resolves to Left(failure) so the UI can show a snackbar.
-        // (state machine verified by the load + addEmail tests.)
-      },
-    );
+    // The contract the UI depends on is the *returned* Either, not the state:
+    // the page awaits deleteUser and shows a snackbar from the Left. A blocTest
+    // cannot assert a return value, so this is a plain test.
+    test('resolves to Left carrying the repo failure', () async {
+      when(
+        () => masterRepo.deleteUserAsAdmin(any()),
+      ).thenAnswer(
+        (_) async => const Left(AuthFailure('Not authorized')),
+      );
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+
+      final result = await cubit.deleteUser('uid-1');
+
+      expect(result, const Left<Failure, void>(AuthFailure('Not authorized')));
+      verify(() => masterRepo.deleteUserAsAdmin('uid-1')).called(1);
+      // A rejected delete must not reload — nothing changed server-side.
+      verifyNever(() => masterRepo.listAllUsers());
+    });
+
+    test('resolves to Right and reloads when the repo accepts', () async {
+      stubLoadOk();
+      when(
+        () => masterRepo.deleteUserAsAdmin(any()),
+      ).thenAnswer((_) async => const Right(null));
+      final cubit = buildCubit();
+      addTearDown(cubit.close);
+
+      final result = await cubit.deleteUser('uid-1');
+
+      expect(result.isRight(), isTrue);
+      verify(() => masterRepo.listAllUsers()).called(1);
+    });
   });
 }
