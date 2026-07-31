@@ -249,16 +249,28 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
     if (isClosed) return;
     result.fold((_) {}, (counterpart) {
       final isExpenseLeg = counterpart.type == TransactionType.expense;
+      final sourceId = isExpenseLeg ? counterpart.accountId : state.accountId;
+      final destinationId = isExpenseLeg
+          ? state.destinationAccountId
+          : counterpart.accountId;
       emit(
         state.copyWith(
           accountId: isExpenseLeg ? counterpart.accountId : null,
           destinationAccountId: isExpenseLeg ? null : counterpart.accountId,
           originalCreatedAt: isExpenseLeg ? counterpart.createdAt : null,
           destinationCreatedAt: isExpenseLeg ? null : counterpart.createdAt,
-          // F9.5: when the tapped leg is the expense (source), the income
-          // counterpart carries the received amount — recover it so an edited
-          // cross-currency transfer keeps its far-side value.
+          // F9.5: each leg holds its own native amount, so whichever one the
+          // user did *not* tap is recovered here. Without this the form would
+          // submit the tapped leg's figure on both sides and silently rewrite
+          // the other currency's value.
+          amount: isExpenseLeg ? counterpart.amount : null,
           destinationAmount: isExpenseLeg ? null : counterpart.amount,
+          // The account this fills in is half of the cross-currency test, so
+          // its currency has to be resolved here too. If the account list is
+          // still loading these fall back to BRL and `_loadAccountCurrencies`
+          // corrects them when it lands — the two run in either order.
+          accountCurrency: _currencyForId(sourceId),
+          destinationCurrency: _currencyForId(destinationId),
         ),
       );
     });

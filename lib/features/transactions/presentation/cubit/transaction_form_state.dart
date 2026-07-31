@@ -98,7 +98,12 @@ class TransactionFormState extends Equatable {
     return TransactionFormState(
       userId: userId,
       type: tapped.type,
-      amount: tapped.amount,
+      // `amount` always means the **source** amount and `destinationAmount`
+      // the far side, so a cross-currency pair keeps each leg in its own
+      // currency (F9.5). Tapping the income leg therefore seeds the
+      // destination, not the source — the source arrives with the counterpart.
+      amount: tappedIsExpense ? tapped.amount : 0,
+      destinationAmount: tappedIsExpense ? 0 : tapped.amount,
       description: tapped.description,
       date: tapped.date,
       accountId: tappedIsExpense ? tapped.accountId : '',

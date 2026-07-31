@@ -11,7 +11,9 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_navigation_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
+import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/services/recurring_transaction_builder.dart';
@@ -41,7 +43,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 
 enum _Mode { expense, income, transfer }
 
@@ -171,13 +172,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     return confirmed ? TransactionSequenceScope.onlyThis : null;
   }
 
-  void _navigateBack() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go(AppRoutes.dashboard);
-    }
-  }
+  void _navigateBack() => context.popOrGo(AppRoutes.dashboard);
 
   Future<void> _pickDate() async {
     final cubit = context.read<TransactionFormCubit>();
@@ -266,6 +261,7 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     BuildContext context,
     TransactionFormState state,
   ) {
+    _syncMoneyControllers(state);
     if (state.status == FormStatus.success) {
       context.showSnack(
         state.isTransfer && !state.isEditing
@@ -289,6 +285,38 @@ class _AddTransactionViewState extends State<_AddTransactionView> {
     } else if (state.status == FormStatus.failure) {
       context.showSnack(localizedFailure(state.failure));
     }
+  }
+
+  /// Re-seeds the money fields from state when their value arrives after the
+  /// first frame. Editing a transfer fetches the counterpart leg, and the
+  /// account currencies load asynchronously — so both the source and received
+  /// amounts (and the formatting they use) can only be known after `initState`.
+  ///
+  /// Writes only when the field's parsed value actually differs, so typing is
+  /// never interrupted: each keystroke pushes the same number into state, which
+  /// comes back equal and leaves the controller alone.
+  void _syncMoneyControllers(TransactionFormState state) {
+    _syncMoneyField(_amountController, state.amount, state.accountCurrency);
+    if (!state.isCrossCurrency) return;
+    _syncMoneyField(
+      _receivedController,
+      state.destinationAmount,
+      state.destinationCurrency,
+    );
+  }
+
+  void _syncMoneyField(
+    TextEditingController controller,
+    double value,
+    Currency currency,
+  ) {
+    if (value <= 0) return;
+    final formatted = CurrencyInputFormatter.format(value, currency);
+    // Equality on the formatted string covers both "the number changed" and
+    // "the currency resolved, so the separators changed", and is what makes
+    // typing a no-op: the keystroke's own value formats back to itself.
+    if (controller.text == formatted) return;
+    controller.text = formatted;
   }
 
   Future<void> _pickNumber({

@@ -1168,6 +1168,79 @@ void main() {
           addTearDown(cubit.close);
         },
       );
+
+      // Regression: editing a cross-currency transfer used to copy the tapped
+      // leg's amount onto `amount` regardless of which side it was, so opening
+      // the income leg showed the EUR figure as the BRL source and left the
+      // received field at zero — an Update would then rewrite both legs with
+      // the wrong number.
+      group('editing seeds each leg from its own side', () {
+        test('tapping the income (destination) leg', () async {
+          when(() => mockGet('tx-exp')).thenAnswer(
+            (_) async => Right(
+              TransactionFactory.expense(
+                id: 'tx-exp',
+                accountId: 'acc-brl',
+                amount: 7000,
+                linkedTransactionId: 'tx-inc',
+              ),
+            ),
+          );
+
+          final cubit = buildCubit(
+            existing: TransactionFactory.income(
+              id: 'tx-inc',
+              accountId: 'acc-eur',
+              amount: 1100,
+              linkedTransactionId: 'tx-exp',
+            ),
+          );
+          // The received amount is known from the tapped leg immediately.
+          expect(cubit.state.destinationAmount, 1100);
+          expect(cubit.state.amount, 0);
+
+          await Future<void>.delayed(Duration.zero);
+
+          expect(cubit.state.amount, 7000);
+          expect(cubit.state.accountId, 'acc-brl');
+          expect(cubit.state.destinationAmount, 1100);
+          expect(cubit.state.destinationAccountId, 'acc-eur');
+          expect(cubit.state.isCrossCurrency, isTrue);
+          expect(cubit.state.isValid, isTrue);
+          addTearDown(cubit.close);
+        });
+
+        test('tapping the expense (source) leg', () async {
+          when(() => mockGet('tx-inc')).thenAnswer(
+            (_) async => Right(
+              TransactionFactory.income(
+                id: 'tx-inc',
+                accountId: 'acc-eur',
+                amount: 1100,
+                linkedTransactionId: 'tx-exp',
+              ),
+            ),
+          );
+
+          final cubit = buildCubit(
+            existing: TransactionFactory.expense(
+              id: 'tx-exp',
+              accountId: 'acc-brl',
+              amount: 7000,
+              linkedTransactionId: 'tx-inc',
+            ),
+          );
+          expect(cubit.state.amount, 7000);
+
+          await Future<void>.delayed(Duration.zero);
+
+          expect(cubit.state.amount, 7000);
+          expect(cubit.state.destinationAmount, 1100);
+          expect(cubit.state.destinationAccountId, 'acc-eur');
+          expect(cubit.state.isCrossCurrency, isTrue);
+          addTearDown(cubit.close);
+        });
+      });
     });
   });
 }
