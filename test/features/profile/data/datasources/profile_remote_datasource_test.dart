@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:financo/core/database/user_scoped_collections.dart';
 import 'package:financo/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,30 +31,27 @@ void main() {
   }
 
   group('wipeUserData', () {
+    // Driven off the canonical list rather than a hand-written enumeration:
+    // a collection added to `kUserScopedCollections` gets coverage for free,
+    // and one that is *missing* from it is caught by
+    // `test/core/database/user_scoped_collections_test.dart`, which derives
+    // its expectation from firestore.rules. Two earlier regressions — budgets,
+    // then asset_classes/asset_holdings — got through precisely because both
+    // the wipe list and its test were edited by hand, together.
     test('deletes documents across every user-scoped collection', () async {
-      // Regression: budgets used to be missing from the wipe list, leaving
-      // orphan budget rows that pointed at deleted categoryIds.
-      await seed('bills', userId, count: 2);
-      await seed('transactions', userId);
-      await seed('chat_messages', userId);
-      await seed('categories', userId);
-      await seed('accounts', userId);
-      await seed('budgets', userId, count: 3);
-      // Regression: asset_classes/asset_holdings were missing from the wipe
-      // list, leaving orphaned investment data live after "clear account".
-      await seed('asset_classes', userId, count: 2);
-      await seed('asset_holdings', userId, count: 4);
+      for (final collection in kUserScopedCollections) {
+        await seed(collection, userId, count: 2);
+      }
 
       await datasource.wipeUserData(userId);
 
-      expect(await docsFor('bills', userId), 0);
-      expect(await docsFor('transactions', userId), 0);
-      expect(await docsFor('chat_messages', userId), 0);
-      expect(await docsFor('categories', userId), 0);
-      expect(await docsFor('accounts', userId), 0);
-      expect(await docsFor('budgets', userId), 0);
-      expect(await docsFor('asset_classes', userId), 0);
-      expect(await docsFor('asset_holdings', userId), 0);
+      for (final collection in kUserScopedCollections) {
+        expect(
+          await docsFor(collection, userId),
+          0,
+          reason: '$collection survived the wipe',
+        );
+      }
     });
 
     test('does not touch documents owned by other users', () async {

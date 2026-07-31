@@ -1,6 +1,13 @@
-import * as admin from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
+import {
+  getFirestore,
+  type CollectionReference,
+  type DocumentData,
+  type Firestore,
+  type Query,
+} from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { logger } from 'firebase-functions/v2';
+import { logger } from 'firebase-functions/logger';
 import {
   ALLOWED_EMAILS_COLLECTION,
   isMasterEmail,
@@ -19,6 +26,10 @@ interface DeletedCounts {
   budgets: number;
   asset_classes: number;
   asset_holdings: number;
+  institutions: number;
+  investment_assets: number;
+  investment_transactions: number;
+  investment_snapshots: number;
   chat_messages: number;
   fcm_tokens: number;
 }
@@ -38,8 +49,18 @@ const FIRESTORE_BATCH_LIMIT = 500;
 
 // Every top-level collection scoped by `userId` that a full user delete must
 // sweep. Exported so a test can assert none are forgotten (a missing entry
-// orphans that collection's docs after a delete). Keep in sync with the
-// Flutter clear-account-data path and firestore.rules.
+// orphans that collection's docs after a delete).
+//
+// This list is duplicated, by necessity, across a language boundary — the
+// Flutter clear-account-data path keeps its own copy in
+// `lib/core/database/user_scoped_collections.dart`. Adding a user-scoped
+// collection means editing BOTH, plus `firestore.rules` and the CLAUDE.md
+// collection map. Each side has a test pinning the exact expected set so a
+// drift shows up as a failing assertion rather than silently orphaned docs.
+//
+// `bills` and `asset_holdings` are retired (2026-06-10 and F7) but stay here:
+// a wipe must clear historical rows too, and legacy docs are precisely the
+// ones nothing else would ever touch again.
 export const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
   'accounts',
   'transactions',
@@ -48,6 +69,10 @@ export const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
   'budgets',
   'asset_classes',
   'asset_holdings',
+  'institutions',
+  'investment_assets',
+  'investment_transactions',
+  'investment_snapshots',
   'chat_messages',
 ];
 
@@ -56,18 +81,16 @@ export const PER_USER_COLLECTIONS: ReadonlyArray<keyof DeletedCounts> = [
  * panel. Steps run in this order so a partial failure leaves Auth alive
  * (re-running succeeds because each Firestore step is "delete where exists"):
  *
- *   1. accounts where userId == targetUid
- *   2. transactions where userId == targetUid
- *   3. categories where userId == targetUid
- *   4. legacy bills where userId == targetUid
- *   5. budgets where userId == targetUid
- *   6. asset_classes where userId == targetUid
- *   7. asset_holdings where userId == targetUid
- *   8. chat_messages where userId == targetUid
- *   9. users/{targetUid}/fcmTokens/* (subcollection)
- *  10. users/{targetUid}
- *  11. allowed_emails/{targetEmail} if present
- *  12. Firebase Auth user (admin.auth().deleteUser)
+ *   1. every collection in PER_USER_COLLECTIONS, where userId == targetUid,
+ *      in the order declared there
+ *   2. users/{targetUid}/fcmTokens/* (subcollection)
+ *   3. users/{targetUid}
+ *   4. allowed_emails/{targetEmail} if present
+ *   5. Firebase Auth user (getAuth().deleteUser)
+ *
+ * Step 1 is deliberately not spelled out collection-by-collection here — the
+ * previous enumeration silently went stale when the F8 investing collections
+ * landed, so the list has exactly one home now.
  */
 export async function deleteUserAsAdmin(
   data: DeleteUserAsAdminRequest,
@@ -75,7 +98,7 @@ export async function deleteUserAsAdmin(
   callerUid: string,
 ): Promise<DeleteUserAsAdminResponse> {
   const targetUid = validateDeleteRequest(data, callerEmail, callerUid);
-  const db = admin.firestore();
+  const db = getFirestore();
 
   const target = await resolveTargetUser(db, targetUid);
   assertTargetIsNotMaster(target.email);
@@ -120,7 +143,7 @@ function validateDeleteRequest(
  * (the user may have been partially deleted already).
  */
 async function resolveTargetUser(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   targetUid: string,
 ): Promise<TargetUser> {
   const userDoc = await db.collection('users').doc(targetUid).get();
@@ -151,16 +174,20 @@ const emptyDeletedCounts = (): DeletedCounts => ({
   budgets: 0,
   asset_classes: 0,
   asset_holdings: 0,
+  institutions: 0,
+  investment_assets: 0,
+  investment_transactions: 0,
+  investment_snapshots: 0,
   chat_messages: 0,
   fcm_tokens: 0,
 });
 
 /**
- * Cascade steps 1-10: sweep every per-user top-level collection, the
- * fcmTokens subcollection, and finally the user doc itself.
+ * Sweeps every per-user top-level collection, the fcmTokens subcollection,
+ * and finally the user doc itself.
  */
 async function cascadeDeleteUserData(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   targetUid: string,
   userDocExists: boolean,
 ): Promise<DeletedCounts> {
@@ -187,7 +214,7 @@ async function cascadeDeleteUserData(
  * simply sign in again and recreate their account.
  */
 async function removeAllowlistEntry(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   targetEmail: string,
 ): Promise<void> {
   if (!targetEmail) return;
@@ -208,7 +235,7 @@ async function removeAllowlistEntry(
  */
 async function deleteAuthUser(targetUid: string): Promise<void> {
   try {
-    await admin.auth().deleteUser(targetUid);
+    await getAuth().deleteUser(targetUid);
   } catch (error: unknown) {
     const code = (error as { code?: string })?.code;
     if (code !== 'auth/user-not-found') {
@@ -224,15 +251,16 @@ async function deleteAuthUser(targetUid: string): Promise<void> {
  * an empty result set (returns 0).
  */
 async function deleteWhere(
-  query:
-    | FirebaseFirestore.Query<FirebaseFirestore.DocumentData>
-    | FirebaseFirestore.CollectionReference<FirebaseFirestore.DocumentData>,
+  query: Query<DocumentData> | CollectionReference<DocumentData>,
 ): Promise<number> {
   let deleted = 0;
   for (;;) {
     const snapshot = await query.limit(FIRESTORE_BATCH_LIMIT).get();
     if (snapshot.empty) break;
-    const batch = admin.firestore().batch();
+    // Batch from the query's own Firestore instance, not a fresh
+    // `getFirestore()` — the two are the same handle in production but
+    // diverge under a test that injects a second app.
+    const batch = query.firestore.batch();
     for (const doc of snapshot.docs) {
       batch.delete(doc.ref);
     }

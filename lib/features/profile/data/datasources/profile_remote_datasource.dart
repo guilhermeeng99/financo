@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/database/firestore_batch.dart';
+import 'package:financo/core/database/user_scoped_collections.dart';
 import 'package:financo/core/errors/exceptions.dart';
 import 'package:financo/features/auth/data/models/user_model.dart';
 import 'package:financo/features/auth/domain/entities/user_entity.dart';
@@ -18,22 +19,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     : _firestore = firestore;
 
   final FirebaseFirestore _firestore;
-
-  /// Every top-level collection scoped by `userId`. Keep this list in sync
-  /// with the Firestore schema (CLAUDE.md → Firebase — Firestore Collections).
-  /// Forgetting one here leaves orphan rows behind on account wipe.
-  /// `bills` is legacy-only, but still wiped so old migrated data does not
-  /// survive account deletion.
-  static const _userScopedCollections = <String>[
-    'bills',
-    'transactions',
-    'chat_messages',
-    'categories',
-    'accounts',
-    'budgets',
-    'asset_classes',
-    'asset_holdings',
-  ];
 
   @override
   Future<UserModel> getProfile(String userId) async {
@@ -58,7 +43,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<void> wipeUserData(String userId) async {
     try {
-      for (final collection in _userScopedCollections) {
+      for (final collection in kUserScopedCollections) {
         await _deleteCollectionDocs(collection, userId);
       }
     } on Exception {
