@@ -9,8 +9,12 @@ Personal finance manager for Android and Web. Natural-language data entry powere
 - **Categories** — income and expense, with optional parent (sub-category) hierarchy and Material icons.
 - **Transactions** — single-account or **transfers** (linked expense/income across two own accounts), with running balance per account.
 - **Payables and receivables** — future-dated transactions can remain pending, become overdue in their month, and be marked as paid/received.
-- **Investing** — custody institutions; assets (BR/US equities, ETFs, FIIs, crypto, fixed income) with buy/sell/dividend transactions and derived holdings; market-value net worth with multi-currency FX and live quotes (brapi/Finnhub proxy + keyless CoinGecko/Tesouro/BCB); target allocation with rebalance suggestions; daily net-worth snapshots.
+- **Multi-currency accounts** — an account is denominated in BRL, USD or EUR (chosen at creation, immutable after). Amounts are stored native; the dashboard adds a consolidated BRL estimate at the current FX rate. A transfer between accounts in different currencies records each leg in its own currency.
+- **Budgets** — a monthly cap per category, with spent-vs-budget progress and CSV import.
+- **50/30/20 planning** — needs / wants / savings split for the month against user-customisable targets, with a per-category breakdown and a 3-month history. Savings is the net aporte flow into custody institutions.
+- **Investing** — custody institutions; assets (BR/US equities, ETFs, FIIs, crypto, fixed income, cash) with buy/sell/dividend transactions and derived holdings; market-value net worth with multi-currency FX and live quotes (brapi/Finnhub proxy + keyless CoinGecko/Tesouro/BCB); target allocation with rebalance suggestions. A buy or sell can be funded from a checking account, which writes the matching cash movement automatically.
 - **AI chat** — Vertex AI Gemini accessed through Cloud Functions. The model proposes structured actions (transactions, transfers, accounts, categories) that the user confirms via an action card. Supports text, image (receipts/notification screenshots/invoices), and voice (audio transcription).
+- **Access control** — sign-in is gated by an `allowed_emails` allowlist; a master-only panel lists users and can wipe an account (Firestore data + Auth user) through a Cloud Function.
 - **CSV import** — bulk-create accounts, categories, transactions, budgets, and investing assets + transactions from CSV files (samples shipped in `lib/app/assets/samples/`).
 - **Notifications** — Firebase Cloud Messaging foreground rendering, plus a scheduled Cloud Function that pings users about overdue / due-today pending transactions.
 
@@ -31,7 +35,8 @@ functions/
     ├── admin/    # deleteUserAsAdmin callable (master-only user wipe)
     ├── chat/     # Gemini pipeline, action extractor
     ├── quotes/   # fetchInvestmentQuotes market-data proxy (brapi / Finnhub)
-    └── transactions/ # Scheduled pending-transaction notifier
+    ├── transactions/ # Scheduled pending-transaction notifier
+    └── limits.ts # Request-size caps + mimetype allowlists for the AI callables
 
 docs/specs/       # Per-feature contracts (entities, business rules, state machines)
 test/
@@ -88,13 +93,18 @@ flutterfire configure
 flutter run
 ```
 
-For web builds you also need the Drift web assets:
+For web builds you also need the Drift web assets. **Both tags must match the
+resolved package versions in `pubspec.lock`** (`sqlite3` and `drift`) — a
+mismatch ships a worker built against a different schema surface than the app.
+The same two URLs are pinned in
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml); bump them
+together.
 
 ```bash
 curl -L -o web/sqlite3.wasm \
-  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.3.2/sqlite3.wasm
+  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.0/sqlite3.wasm
 curl -L -o web/drift_worker.dart.js \
-  https://github.com/simolus3/drift/releases/download/drift-2.34.0/drift_worker.js
+  https://github.com/simolus3/drift/releases/download/drift-2.34.3/drift_worker.js
 ```
 
 ## Backend (Cloud Functions)
