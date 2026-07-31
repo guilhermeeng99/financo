@@ -20,13 +20,22 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 ///   periodTransactions: txs,
 ///   categories: cats,
 ///   accounts: accs,
+///   hasInvestmentDestination: institutions.isNotEmpty,
 /// );
 /// final percent = (overview.needsPercent * 100).round();
 /// ```
+///
+/// [hasInvestmentDestination] — whether the user has anywhere to send an
+/// aporte. Passed in rather than derived here because the destination is an
+/// **institution** after F8, and this dashboard service deliberately stays
+/// free of investing types (the two features join in
+/// `DashboardRepositoryImpl`). Callers that only need the numbers — the
+/// history chart — can leave it false; it drives advice copy only.
 FiftyThirtyTwentyOverview compute50_30_20Overview({
   required List<TransactionEntity> periodTransactions,
   required List<CategoryEntity> categories,
   required List<AccountEntity> accounts,
+  bool hasInvestmentDestination = false,
   FiftyThirtyTwentyTargets targets = FiftyThirtyTwentyTargets.classic,
 }) {
   final settledTransactions = periodTransactions
@@ -48,10 +57,6 @@ FiftyThirtyTwentyOverview compute50_30_20Overview({
     settledTransactions,
     accountTypeById,
   );
-  final hasInvestmentAccount = accounts.any(
-    (a) => a.type == AccountType.investment,
-  );
-
   return FiftyThirtyTwentyOverview(
     income: income,
     needsSpent: expenseBuckets.needs,
@@ -59,7 +64,7 @@ FiftyThirtyTwentyOverview compute50_30_20Overview({
     savingsAmount: savingsAmount,
     unclassifiedSpent: expenseBuckets.unclassifiedSpent,
     unclassifiedCount: _unclassifiedRootCount(categories),
-    hasInvestmentAccount: hasInvestmentAccount,
+    hasInvestmentDestination: hasInvestmentDestination,
     targets: targets,
   );
 }

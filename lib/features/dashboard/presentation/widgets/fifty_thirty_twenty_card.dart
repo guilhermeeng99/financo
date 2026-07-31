@@ -403,7 +403,7 @@ class _FooterAdvice extends StatelessWidget {
       );
     }
     if (overview.savingsStatus == BucketStatus.under) {
-      if (overview.hasInvestmentAccount) {
+      if (overview.hasInvestmentDestination) {
         return _Advice(
           text: t.fiftyThirtyTwenty.tipSavingsShortWithAccount(
             value: formatCurrency(overview.savingsShortfall),
@@ -415,7 +415,9 @@ class _FooterAdvice extends StatelessWidget {
         text: t.fiftyThirtyTwenty.tipSavingsShortNoAccount,
         icon: FontAwesomeIcons.piggyBank,
         ctaLabel: t.fiftyThirtyTwenty.ctaCreateInvestment,
-        onCtaTap: () => context.push(AppRoutes.addAccount),
+        // Brokers are institutions after F8; the add-account form only makes
+        // checking accounts and credit cards.
+        onCtaTap: () => context.push(AppRoutes.addInstitution),
       );
     }
     if (overview.hasUnclassified) {

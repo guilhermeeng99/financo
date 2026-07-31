@@ -22,6 +22,7 @@ void main() {
   late MockGetCategoriesUseCase getCategories;
   late MockGetTransactionsUseCase getTransactions;
   late MockGetFiftyThirtyTwentyHistoryUseCase getHistory;
+  late MockGetInstitutionsUseCase getInstitutions;
 
   const userId = 'user-1';
   final month = DateTime(2026, 3);
@@ -34,6 +35,13 @@ void main() {
     getCategories = MockGetCategoriesUseCase();
     getTransactions = MockGetTransactionsUseCase();
     getHistory = MockGetFiftyThirtyTwentyHistoryUseCase();
+    getInstitutions = MockGetInstitutionsUseCase();
+    when(
+      () => getInstitutions(
+        userId: any(named: 'userId'),
+        forceRefresh: any(named: 'forceRefresh'),
+      ),
+    ).thenAnswer((_) async => const Right([]));
   });
 
   FiftyThirtyTwentyDetailCubit buildCubit() => FiftyThirtyTwentyDetailCubit(
@@ -41,6 +49,7 @@ void main() {
     getCategories: getCategories,
     getTransactions: getTransactions,
     getHistory: getHistory,
+    getInstitutions: getInstitutions,
     userId: userId,
   );
 

@@ -38,7 +38,7 @@ class FiftyThirtyTwentyOverview extends Equatable {
     required this.savingsAmount,
     required this.unclassifiedSpent,
     required this.unclassifiedCount,
-    required this.hasInvestmentAccount,
+    required this.hasInvestmentDestination,
     this.targets = FiftyThirtyTwentyTargets.classic,
   });
 
@@ -51,7 +51,7 @@ class FiftyThirtyTwentyOverview extends Equatable {
     savingsAmount: 0,
     unclassifiedSpent: 0,
     unclassifiedCount: 0,
-    hasInvestmentAccount: false,
+    hasInvestmentDestination: false,
   );
 
   /// Sum of income-type, non-transfer transactions in the period. This is
@@ -82,9 +82,16 @@ class FiftyThirtyTwentyOverview extends Equatable {
   /// this number because there's no category for the user to classify.
   final int unclassifiedCount;
 
-  /// Whether the user has at least one investment account. Drives which
-  /// of the two "under-target" tips renders for savings.
-  final bool hasInvestmentAccount;
+  /// Whether the user has anywhere to send an aporte — i.e. at least one
+  /// custody **institution**. Drives which of the two "under-target" tips
+  /// renders for savings.
+  ///
+  /// Named for the destination, not for an "investment account", because F8
+  /// retired `AccountType.investment`: brokers live in `institutions` now, so
+  /// a check against `accounts` would be permanently false and would pin every
+  /// user to the "create one first" tip
+  /// (`docs/specs/investing_account_unification.md` rule 1).
+  final bool hasInvestmentDestination;
 
   /// Active target split. Defaults to [FiftyThirtyTwentyTargets.classic]
   /// so legacy call-sites and the [empty] singleton continue to compile;
@@ -164,7 +171,7 @@ class FiftyThirtyTwentyOverview extends Equatable {
     savingsAmount,
     unclassifiedSpent,
     unclassifiedCount,
-    hasInvestmentAccount,
+    hasInvestmentDestination,
     targets,
   ];
 }

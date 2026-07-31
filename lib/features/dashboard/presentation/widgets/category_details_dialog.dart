@@ -546,7 +546,7 @@ class _CategoryDonut extends StatelessWidget {
                         ? _percentLabel(data[i].amount, total)
                         : '',
                     titleStyle: context.textTheme.labelSmall!.copyWith(
-                      color: Colors.white,
+                      color: context.appColors.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
                     ),

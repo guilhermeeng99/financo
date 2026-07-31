@@ -560,20 +560,26 @@ void main() {
       expect(out.savingsAmount, 0);
     });
 
-    test('hasInvestmentAccount surfaces presence regardless of transfers', () {
+    // F8: the destination is an institution, so it is passed in rather than
+    // sniffed out of `accounts`. Regression — deriving it from
+    // `AccountType.investment` made the flag permanently false once the
+    // migration retired those account docs, pinning every user to the
+    // "add a broker first" tip.
+    test('hasInvestmentDestination is the caller-supplied flag', () {
       final withInvest = compute50_30_20Overview(
         periodTransactions: const [],
         categories: const [],
-        accounts: [checking, investment],
+        accounts: [checking],
+        hasInvestmentDestination: true,
       );
-      expect(withInvest.hasInvestmentAccount, isTrue);
+      expect(withInvest.hasInvestmentDestination, isTrue);
 
       final withoutInvest = compute50_30_20Overview(
         periodTransactions: const [],
         categories: const [],
-        accounts: [checking],
+        accounts: [checking, investment],
       );
-      expect(withoutInvest.hasInvestmentAccount, isFalse);
+      expect(withoutInvest.hasInvestmentDestination, isFalse);
     });
   });
 

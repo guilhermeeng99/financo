@@ -9,6 +9,7 @@ import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_t
 import 'package:financo/features/dashboard/domain/services/compute_fifty_thirty_twenty.dart';
 import 'package:financo/features/dashboard/domain/services/compute_fifty_thirty_twenty_breakdown.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,11 +26,13 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
     required GetCategoriesUseCase getCategories,
     required GetTransactionsUseCase getTransactions,
     required GetFiftyThirtyTwentyHistoryUseCase getHistory,
+    required GetInstitutionsUseCase getInstitutions,
     required String userId,
   }) : _getAccounts = getAccounts,
        _getCategories = getCategories,
        _getTransactions = getTransactions,
        _getHistory = getHistory,
+       _getInstitutions = getInstitutions,
        _userId = userId,
        super(const FiftyThirtyTwentyDetailState.initial());
 
@@ -37,6 +40,7 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
   final GetCategoriesUseCase _getCategories;
   final GetTransactionsUseCase _getTransactions;
   final GetFiftyThirtyTwentyHistoryUseCase _getHistory;
+  final GetInstitutionsUseCase _getInstitutions;
   final String _userId;
 
   /// Loads the overview, breakdown and history for [month] using
@@ -61,6 +65,10 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
       referenceMonth: month,
       targets: targets,
     );
+    // Institutions only decide which savings tip the card shows, so a failure
+    // here degrades the copy rather than the page — it is not in the guard
+    // below with the four reads the page cannot render without.
+    final institutionsResult = await _getInstitutions(userId: _userId);
 
     final accounts = accountsResult.fold((_) => null, (a) => a);
     final categories = categoriesResult.fold((_) => null, (c) => c);
@@ -95,6 +103,9 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
       periodTransactions: txs,
       categories: categories,
       accounts: accounts,
+      hasInvestmentDestination: institutionsResult
+          .getOrElse(() => const [])
+          .isNotEmpty,
       targets: targets,
     );
     final breakdown = compute50_30_20Breakdown(

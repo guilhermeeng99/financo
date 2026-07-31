@@ -357,7 +357,9 @@ void main() {
           expect(overview.needsSpent, 2500);
           expect(overview.wantsSpent, 1500);
           expect(overview.savingsAmount, 1000);
-          expect(overview.hasInvestmentAccount, isTrue);
+          // No institutions stubbed — the legacy `acc-inv` account must not
+          // stand in for one (F8 retired that account type).
+          expect(overview.hasInvestmentDestination, isFalse);
           expect(overview.unclassifiedSpent, 0);
         },
       );
@@ -669,6 +671,12 @@ void main() {
             expect(nu.marketValue, 0);
             expect(nu.nativeValue, 0);
             expect(nu.currencyCode, 'BRL');
+            // Having a broker is what unlocks the "you're short on savings"
+            // tip; before F8 this read `accounts` and was always false.
+            expect(
+              summary.fiftyThirtyTwenty.hasInvestmentDestination,
+              isTrue,
+            );
           },
         );
       },

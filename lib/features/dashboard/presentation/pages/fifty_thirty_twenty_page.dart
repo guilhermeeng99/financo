@@ -16,6 +16,7 @@ import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twe
 import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_card.dart';
 import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_history_chart.dart';
 import 'package:financo/features/dashboard/presentation/widgets/fifty_thirty_twenty_targets_sheet.dart';
+import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,7 @@ class FiftyThirtyTwentyPage extends StatelessWidget {
         getCategories: GetIt.I<GetCategoriesUseCase>(),
         getTransactions: GetIt.I<GetTransactionsUseCase>(),
         getHistory: GetIt.I<GetFiftyThirtyTwentyHistoryUseCase>(),
+        getInstitutions: GetIt.I<GetInstitutionsUseCase>(),
         userId: userId,
       ),
       child: _FiftyThirtyTwentyView(embedded: embedded),

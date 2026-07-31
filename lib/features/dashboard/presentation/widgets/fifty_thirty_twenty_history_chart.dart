@@ -274,7 +274,7 @@ class _ValuePill extends StatelessWidget {
           border: Border.all(color: tint.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
+              color: context.appColors.scrim.withValues(alpha: 0.18),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),

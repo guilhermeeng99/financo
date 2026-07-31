@@ -179,6 +179,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
       periodTransactions: periodBrl,
       categories: categories,
       accounts: adjustedAccounts,
+      // An aporte lands on an institution, not on an account (F8) — this is
+      // the join point where the dashboard already holds both.
+      hasInvestmentDestination: institutions.isNotEmpty,
       targets: fiftyThirtyTwentyTargets,
     );
 
