@@ -15,20 +15,37 @@ void main() {
 
   late MockAssetTransactionRepository transactions;
   late MockAssetRepository assets;
+  late MockSyncInvestmentCashFlowUseCase syncCashFlow;
   late SaveAssetTransactionUseCase useCase;
 
   setUp(() {
     transactions = MockAssetTransactionRepository();
     assets = MockAssetRepository();
+    syncCashFlow = MockSyncInvestmentCashFlowUseCase();
     useCase = SaveAssetTransactionUseCase(
       transactionRepository: transactions,
       assetRepository: assets,
+      syncCashFlow: syncCashFlow,
     );
+    when(
+      () =>
+          syncCashFlow(any(), investingDeleted: any(named: 'investingDeleted')),
+    ).thenAnswer((_) async => const Right(null));
   });
 
   void stubAsset({String? institutionId = 'inst-avenue'}) {
     when(() => assets.getAssets(userId: 'user-1')).thenAnswer(
       (_) async => Right([AssetFactory.stockUs(institutionId: institutionId)]),
+    );
+  }
+
+  void stubSaveable() {
+    when(
+      () => transactions.getTransactions(userId: 'user-1'),
+    ).thenAnswer((_) async => const Right([]));
+    when(() => transactions.saveTransaction(any())).thenAnswer(
+      (invocation) async =>
+          Right(invocation.positionalArguments.first as AssetTransaction),
     );
   }
 
@@ -77,16 +94,70 @@ void main() {
 
   test('saves a valid buy', () async {
     stubAsset();
-    when(
-      () => transactions.getTransactions(userId: 'user-1'),
-    ).thenAnswer((_) async => const Right([]));
-    when(() => transactions.saveTransaction(any())).thenAnswer(
-      (invocation) async =>
-          Right(invocation.positionalArguments.first as AssetTransaction),
-    );
+    stubSaveable();
 
     final result = await useCase(AssetTransactionFactory.buy());
     expect(result.isRight(), isTrue);
     verify(() => transactions.saveTransaction(any())).called(1);
+  });
+
+  group('cash-flow pairing (F8.4)', () {
+    test('reconciles the cash row with the saved transaction', () async {
+      stubAsset();
+      stubSaveable();
+
+      await useCase(
+        AssetTransactionFactory.buy(fundingAccountId: 'acc-nubank-gui'),
+      );
+
+      final synced =
+          verify(
+                () => syncCashFlow(
+                  captureAny(),
+                  investingDeleted: any(named: 'investingDeleted'),
+                ),
+              ).captured.single
+              as AssetTransaction;
+      expect(synced.fundingAccountId, 'acc-nubank-gui');
+    });
+
+    test('rolls the new investing row back when the cash row fails', () async {
+      stubAsset();
+      stubSaveable();
+      when(
+        () => transactions.deleteTransaction(any()),
+      ).thenAnswer((_) async => const Right(null));
+      when(
+        () => syncCashFlow(
+          any(),
+          investingDeleted: any(named: 'investingDeleted'),
+        ),
+      ).thenAnswer((_) async => const Left(ServerFailure()));
+
+      final result = await useCase(
+        AssetTransactionFactory.buy(id: '', fundingAccountId: 'acc-1'),
+      );
+
+      expect(result.isLeft(), isTrue);
+      verify(() => transactions.deleteTransaction(any())).called(1);
+    });
+
+    test('keeps an edited row when the cash row fails', () async {
+      stubAsset();
+      stubSaveable();
+      when(
+        () => syncCashFlow(
+          any(),
+          investingDeleted: any(named: 'investingDeleted'),
+        ),
+      ).thenAnswer((_) async => const Left(ServerFailure()));
+
+      final result = await useCase(
+        AssetTransactionFactory.buy(id: 'tx-1', fundingAccountId: 'acc-1'),
+      );
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => transactions.deleteTransaction(any()));
+    });
   });
 }

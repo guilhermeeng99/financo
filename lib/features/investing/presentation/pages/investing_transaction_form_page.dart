@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:financo/app/errors/failure_localizer.dart';
+import 'package:financo/app/routes/app_routes.dart';
 import 'package:financo/app/widgets/financo_app_bar_icon_button.dart';
+import 'package:financo/app/widgets/financo_currency_field.dart';
 import 'package:financo/app/widgets/financo_form_section.dart';
 import 'package:financo/app/widgets/financo_picker_field.dart';
 import 'package:financo/app/widgets/financo_picker_sheet.dart';
@@ -9,20 +11,24 @@ import 'package:financo/app/widgets/financo_pill_toggle.dart';
 import 'package:financo/app/widgets/financo_submit_bar.dart';
 import 'package:financo/app/widgets/financo_text_field.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
+import 'package:financo/core/extensions/context_navigation_extensions.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/amount_parser.dart';
+import 'package:financo/features/accounts/domain/entities/account_entity.dart';
+import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/services/transaction_amounts.dart';
 import 'package:financo/features/investing/domain/usecases/delete_asset_transaction_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
+import 'package:financo/features/investing/presentation/widgets/funding_account_picker_sheet.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 /// Create/edit form for an investing transaction (buy/sell/dividend). The
@@ -46,13 +52,16 @@ class _InvestingTransactionFormPageState
   final _amountController = TextEditingController();
   final _feesController = TextEditingController();
   final _notesController = TextEditingController();
+  final _cashAmountController = TextEditingController();
 
   TransactionKind _kind = TransactionKind.buy;
   String? _assetId;
+  String? _fundingAccountId;
   late DateTime _date;
 
   List<Asset> _assets = const [];
-  bool _loadingAssets = true;
+  List<AccountEntity> _accounts = const [];
+  bool _loadingForm = true;
   bool _submitting = false;
 
   bool get _isEditing => widget.existing != null;
@@ -65,13 +74,18 @@ class _InvestingTransactionFormPageState
     if (existing != null) {
       _kind = existing.kind;
       _assetId = existing.assetId;
+      _fundingAccountId = existing.fundingAccountId;
       _quantityController.text = _trim(existing.quantity);
-      _unitPriceController.text = _trim(existing.unitPrice.major);
-      _amountController.text = _trim(existing.amount.major);
-      _feesController.text = _trim(existing.fees.major);
       _notesController.text = existing.notes ?? '';
+      // Money fields are currency-formatted inputs, so they seed through the
+      // same formatter that will reformat them on the next keystroke.
+      _unitPriceController.text = _money(existing.unitPrice);
+      _amountController.text = _money(existing.amount);
+      _feesController.text = _money(existing.fees);
+      final cash = existing.cashAmount;
+      if (cash != null) _cashAmountController.text = _money(cash);
     }
-    unawaited(_loadAssets());
+    unawaited(_loadForm());
   }
 
   @override
@@ -81,17 +95,25 @@ class _InvestingTransactionFormPageState
     _amountController.dispose();
     _feesController.dispose();
     _notesController.dispose();
+    _cashAmountController.dispose();
     super.dispose();
   }
 
   String get _userId => context.currentUserId;
 
-  Future<void> _loadAssets() async {
-    final result = await GetIt.I<GetAssetsUseCase>()(userId: _userId);
+  Future<void> _loadForm() async {
+    final assets = await GetIt.I<GetAssetsUseCase>()(userId: _userId);
+    final accounts = await GetIt.I<GetAccountsUseCase>()(userId: _userId);
     if (!mounted) return;
     setState(() {
-      _assets = result.getOrElse(() => const []);
-      _loadingAssets = false;
+      _assets = assets.getOrElse(() => const []);
+      // Only a checking account can fund an aporte or receive a resgate — a
+      // credit card has no cash to move.
+      _accounts = [
+        for (final account in accounts.getOrElse(() => const []))
+          if (account.type == AccountType.checking) account,
+      ];
+      _loadingForm = false;
     });
   }
 
@@ -101,8 +123,14 @@ class _InvestingTransactionFormPageState
     return s.replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
   }
 
-  double _parse(TextEditingController c) =>
-      double.tryParse(c.text.replaceAll(',', '.')) ?? 0;
+  /// Seeds a money field with the currency's own formatting (`2.000,00` /
+  /// `2,000.00`), matching what [FinancoCurrencyField] produces while typing.
+  String _money(Money value) =>
+      CurrencyInputFormatter.format(value.major, value.currency);
+
+  /// Reads a field that may be BR- or EN-formatted — quantity is typed raw,
+  /// money fields arrive grouped by the currency's locale.
+  double _parse(TextEditingController c) => parseDecimalAmount(c.text) ?? 0;
 
   Asset? get _asset {
     final id = _assetId;
@@ -112,6 +140,19 @@ class _InvestingTransactionFormPageState
     }
     return null;
   }
+
+  AccountEntity? get _fundingAccount {
+    final id = _fundingAccountId;
+    if (id == null) return null;
+    for (final a in _accounts) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
+  /// A dividend is yield credited at the broker, not cash crossing between the
+  /// two ledgers, so it never offers a funding account.
+  bool get _supportsFunding => _kind != TransactionKind.dividend;
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -132,6 +173,7 @@ class _InvestingTransactionFormPageState
     );
     final existing = widget.existing;
     final now = DateTime.now();
+    final fundingAccountId = _supportsFunding ? _fundingAccountId : null;
     final tx = AssetTransaction(
       id: existing?.id ?? '',
       userId: _userId,
@@ -146,6 +188,10 @@ class _InvestingTransactionFormPageState
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
+      fundingAccountId: fundingAccountId,
+      cashAmount: fundingAccountId == null
+          ? null
+          : Money.fromMajor(_cashAmount(resolved.amount), Currency.brl),
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     );
@@ -153,28 +199,40 @@ class _InvestingTransactionFormPageState
     final result = await GetIt.I<SaveAssetTransactionUseCase>()(tx);
     if (!mounted) return;
     setState(() => _submitting = false);
-    result.fold(
-      (failure) => context.showSnack(localizedFailure(failure)),
-      (_) => context
-        ..showSnack(t.investing.transactions.saved)
-        ..pop(true),
-    );
+    result.fold((failure) => context.showSnack(localizedFailure(failure)), (_) {
+      context.showSnack(t.investing.transactions.saved);
+      _leave();
+    });
+  }
+
+  /// The reais that actually moved on the checking side. Defaults to the
+  /// transaction's own amount, which is already BRL for a BRL asset; a foreign
+  /// asset needs the field because the debit is in reais, not the native
+  /// currency (F8 O2).
+  double _cashAmount(Money nativeAmount) {
+    final typed = _parse(_cashAmountController);
+    if (typed > 0) return typed;
+    return nativeAmount.major;
   }
 
   Future<void> _delete() async {
     final existing = widget.existing;
     if (existing == null) return;
     setState(() => _submitting = true);
-    final result = await GetIt.I<DeleteAssetTransactionUseCase>()(existing.id);
+    final result = await GetIt.I<DeleteAssetTransactionUseCase>()(existing);
     if (!mounted) return;
     setState(() => _submitting = false);
-    result.fold(
-      (failure) => context.showSnack(localizedFailure(failure)),
-      (_) => context
-        ..showSnack(t.investing.transactions.deleted)
-        ..pop(true),
-    );
+    result.fold((failure) => context.showSnack(localizedFailure(failure)), (_) {
+      context.showSnack(t.investing.transactions.deleted);
+      _leave();
+    });
   }
+
+  /// Closes the form. Falls back to the transactions list when there is
+  /// nothing to pop — the page is deep-linkable (`/investing/transaction/add`),
+  /// and on a direct hit `pop` would strand the user on a form with no exit.
+  void _leave() =>
+      context.popOrGo(AppRoutes.investingTransactions, result: true);
 
   Future<void> _pickAsset() async {
     if (_assets.isEmpty) {
@@ -211,7 +269,37 @@ class _InvestingTransactionFormPageState
         ),
       ),
     );
-    if (picked != null) setState(() => _assetId = picked.id);
+    if (picked == null) return;
+    final previous = _asset?.currency ?? Currency.brl;
+    setState(() => _assetId = picked.id);
+    // The money fields are formatted per currency; a BRL→USD switch would
+    // otherwise leave `1.234,56` sitting under a `$` prefix until the next
+    // keystroke reformatted it.
+    if (picked.currency != previous) _reformatNativeMoney(picked.currency);
+  }
+
+  void _reformatNativeMoney(Currency currency) {
+    for (final controller in [
+      _unitPriceController,
+      _amountController,
+      _feesController,
+    ]) {
+      if (controller.text.isEmpty) continue;
+      controller.text = CurrencyInputFormatter.format(
+        _parse(controller),
+        currency,
+      );
+    }
+  }
+
+  Future<void> _pickFundingAccount() async {
+    final picked = await showFundingAccountPicker(
+      context: context,
+      accounts: _accounts,
+      selectedId: _fundingAccountId,
+    );
+    if (picked == null) return;
+    setState(() => _fundingAccountId = picked.isEmpty ? null : picked);
   }
 
   Future<void> _pickDate() async {
@@ -224,20 +312,61 @@ class _InvestingTransactionFormPageState
     if (picked != null) setState(() => _date = picked);
   }
 
+  /// Optional checking account the cash moved to/from. Picking one is what
+  /// turns a buy/sell into a single-entry aporte/resgate (F8.4).
+  Widget _fundingSection() {
+    final isBuy = _kind == TransactionKind.buy;
+    final preview = _previewCashAmount();
+    return FinancoFormSection(
+      label: t.investing.transactions.funding,
+      children: [
+        FinancoPickerField(
+          label: isBuy
+              ? t.investing.transactions.fundingDebit
+              : t.investing.transactions.fundingCredit,
+          value: _fundingAccount?.name,
+          placeholder: t.investing.transactions.fundingNone,
+          onTap: () => unawaited(_pickFundingAccount()),
+        ),
+        if (_fundingAccountId != null) ...[
+          const SizedBox(height: 12),
+          FinancoCurrencyField(
+            controller: _cashAmountController,
+            label: t.investing.transactions.cashAmount,
+            hintText: preview > 0
+                ? CurrencyInputFormatter.format(preview)
+                : null,
+          ),
+        ],
+        const SizedBox(height: 12),
+        Text(
+          t.investing.transactions.fundingHint,
+          style: context.textTheme.bodySmall?.copyWith(
+            color: context.appColors.onBackgroundLight,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// What the cash field defaults to when left blank — shown as its hint so the
+  /// user can see the amount before deciding to override it.
+  double _previewCashAmount() =>
+      _parse(_unitPriceController) * _parse(_quantityController);
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    if (_loadingAssets) {
+    if (_loadingForm) {
       return Scaffold(
         backgroundColor: colors.background,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     final isDividend = _kind == TransactionKind.dividend;
-    final currencyCode = _asset?.currency.code ?? Currency.brl.code;
-    final amountLabel = '${t.investing.transactions.amount} ($currencyCode)';
-    final priceLabel = '${t.investing.transactions.unitPrice} ($currencyCode)';
-    final feesLabel = '${t.investing.transactions.fees} ($currencyCode)';
+    // Money fields speak the asset's own currency — symbol prefix and
+    // grouping/decimal separators both follow it (F9 multi-currency).
+    final currency = _asset?.currency ?? Currency.brl;
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -246,6 +375,22 @@ class _InvestingTransactionFormPageState
         scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
+        // Explicit leading: `automaticallyImplyLeading` hides the arrow when
+        // the route can't pop, which is exactly the deep-link case where the
+        // user most needs a way out.
+        automaticallyImplyLeading: false,
+        leadingWidth: 60,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Center(
+            child: FinancoAppBarIconButton(
+              icon: FontAwesomeIcons.chevronLeft,
+              color: colors.onBackground,
+              tooltip: t.general.back,
+              onPressed: _leave,
+            ),
+          ),
+        ),
         title: Text(
           _isEditing
               ? t.investing.transactions.edit
@@ -316,41 +461,42 @@ class _InvestingTransactionFormPageState
                     : t.investing.transactions.quantity,
                 children: [
                   if (isDividend)
-                    FinancoTextField(
+                    FinancoCurrencyField(
                       controller: _amountController,
-                      label: amountLabel,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                      currency: currency,
+                      label: t.investing.transactions.amount,
                     )
                   else ...[
                     FinancoTextField(
                       controller: _quantityController,
                       label: t.investing.transactions.quantity,
+                      // Rebuild so the cash field's default-amount hint tracks
+                      // quantity × unit price as the user types.
+                      onChanged: (_) => setState(() {}),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    FinancoTextField(
+                    FinancoCurrencyField(
                       controller: _unitPriceController,
-                      label: priceLabel,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                      currency: currency,
+                      label: t.investing.transactions.unitPrice,
+                      onChanged: (_) => setState(() {}),
                     ),
                   ],
                   const SizedBox(height: 12),
-                  FinancoTextField(
+                  FinancoCurrencyField(
                     controller: _feesController,
-                    label: feesLabel,
-                    subdued: true,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
+                    currency: currency,
+                    label: t.investing.transactions.fees,
                   ),
                 ],
               ),
+              if (_supportsFunding) ...[
+                const SizedBox(height: 20),
+                _fundingSection(),
+              ],
               const SizedBox(height: 20),
               FinancoFormSection(
                 label: t.investing.transactions.date,

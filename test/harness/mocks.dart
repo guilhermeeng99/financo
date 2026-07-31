@@ -97,6 +97,7 @@ import 'package:financo/features/investing/domain/usecases/import_assets_csv_use
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/sync_investment_cash_flow_usecase.dart';
 import 'package:financo/features/investments/data/datasources/asset_class_remote_datasource.dart';
 import 'package:financo/features/investments/domain/repositories/asset_class_repository.dart';
 import 'package:financo/features/investments/domain/usecases/create_asset_class_usecase.dart';
@@ -496,6 +497,9 @@ class MockCreateInstitutionUseCase extends Mock
 
 class MockSaveAssetTransactionUseCase extends Mock
     implements SaveAssetTransactionUseCase {}
+
+class MockSyncInvestmentCashFlowUseCase extends Mock
+    implements SyncInvestmentCashFlowUseCase {}
 
 class MockImportAssetsCsvUseCase extends Mock
     implements ImportAssetsCsvUseCase {}

@@ -30,13 +30,12 @@ import 'package:financo/features/investing/domain/usecases/delete_asset_usecase.
 import 'package:financo/features/investing/domain/usecases/delete_institution_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_asset_transactions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_assets_usecase.dart';
-import 'package:financo/features/investing/domain/usecases/get_holdings_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/get_institutions_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_assets_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/record_daily_snapshot_usecase.dart';
-import 'package:financo/features/investing/domain/usecases/record_institution_cash_flow_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/save_asset_transaction_usecase.dart';
+import 'package:financo/features/investing/domain/usecases/sync_investment_cash_flow_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_asset_usecase.dart';
 import 'package:financo/features/investing/domain/usecases/update_institution_usecase.dart';
 import 'package:get_it/get_it.dart';
@@ -114,24 +113,18 @@ void registerInvestingDependencies(GetIt sl) {
       ),
     )
     ..registerLazySingleton(() => GetAssetTransactionsUseCase(sl()))
+    // F8.4: the checking-side cash row of a funded buy/sell. Save and delete
+    // both go through it so the aporte/resgate can never drift from its
+    // investing leg.
+    ..registerLazySingleton(() => SyncInvestmentCashFlowUseCase(sl()))
     ..registerLazySingleton(
       () => SaveAssetTransactionUseCase(
         transactionRepository: sl(),
         assetRepository: sl(),
+        syncCashFlow: sl(),
       ),
     )
-    ..registerLazySingleton(() => DeleteAssetTransactionUseCase(sl()))
-    // F8.4: single-entry cash deposit/withdrawal between a checking account
-    // and an institution (money in/out as a cash holding).
-    ..registerLazySingleton(
-      () => RecordInstitutionCashFlowUseCase(
-        assetRepository: sl(),
-        assetTransactionRepository: sl(),
-        saveAssetTransaction: sl(),
-        transactionRepository: sl(),
-      ),
-    )
-    ..registerLazySingleton(() => GetHoldingsUseCase(sl()))
+    ..registerLazySingleton(() => DeleteAssetTransactionUseCase(sl(), sl()))
     ..registerLazySingleton(() => RecordDailySnapshotUseCase(sl()))
     // ─── Allocation (F5) ────────────────────────────────────
     ..registerLazySingleton(AllocationService.new)

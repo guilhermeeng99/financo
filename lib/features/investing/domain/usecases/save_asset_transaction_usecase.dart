@@ -5,21 +5,29 @@ import 'package:financo/features/investing/domain/entities/asset_transaction.dar
 import 'package:financo/features/investing/domain/repositories/asset_repository.dart';
 import 'package:financo/features/investing/domain/repositories/asset_transaction_repository.dart';
 import 'package:financo/features/investing/domain/services/oversell_check.dart';
+import 'package:financo/features/investing/domain/usecases/sync_investment_cash_flow_usecase.dart';
 
 /// Creates or updates a transaction after enforcing the rules in
 /// `investing_transactions.md`: future-date, institution-match with the asset,
 /// non-positive quantity for buy/sell, and no oversell across the whole
 /// re-validated position timeline. Both the form and the CSV importer go
 /// through this use case.
+///
+/// When the transaction carries a `fundingAccountId`, saving it also reconciles
+/// the paired checking-side cash row (F8.4), so an aporte/resgate is a single
+/// user action across both ledgers.
 class SaveAssetTransactionUseCase {
   const SaveAssetTransactionUseCase({
     required AssetTransactionRepository transactionRepository,
     required AssetRepository assetRepository,
+    required SyncInvestmentCashFlowUseCase syncCashFlow,
   }) : _transactions = transactionRepository,
-       _assets = assetRepository;
+       _assets = assetRepository,
+       _syncCashFlow = syncCashFlow;
 
   final AssetTransactionRepository _transactions;
   final AssetRepository _assets;
+  final SyncInvestmentCashFlowUseCase _syncCashFlow;
 
   Future<Either<Failure, AssetTransaction>> call(AssetTransaction tx) async {
     if (tx.date.isAfter(DateTime.now())) {
@@ -64,7 +72,22 @@ class SaveAssetTransactionUseCase {
     ];
     if (oversellsTimeline(position)) return const Left(OversellFailure());
 
-    return _transactions.saveTransaction(tx);
+    final savedResult = await _transactions.saveTransaction(tx);
+    final saveFailure = savedResult.fold<Failure?>((f) => f, (_) => null);
+    if (saveFailure != null) return Left(saveFailure);
+    final saved = savedResult.getOrElse(() => tx);
+
+    final syncResult = await _syncCashFlow(saved);
+    final syncFailure = syncResult.fold<Failure?>((f) => f, (_) => null);
+    if (syncFailure == null) return Right(saved);
+
+    // The cash leg is what makes the money show up on the checking account and
+    // in 50/30/20; a half-landed aporte is worse than none. A create can be
+    // undone cleanly, so roll it back. An edit cannot (the previous values are
+    // gone), so surface the failure and leave the investing row updated — the
+    // next save reconciles the cash row again.
+    if (tx.id.isEmpty) await _transactions.deleteTransaction(saved.id);
+    return Left(syncFailure);
   }
 
   Asset? _findById(List<Asset> assets, String id) {

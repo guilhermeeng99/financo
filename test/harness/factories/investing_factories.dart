@@ -120,6 +120,8 @@ class AssetTransactionFactory {
     DateTime? date,
     DateTime? createdAt,
     String? notes,
+    String? fundingAccountId,
+    Money? cashAmount,
   }) {
     final price = unitPrice ?? Money.fromMajor(100, currency);
     final fee = fees ?? Money.zero(currency);
@@ -138,6 +140,8 @@ class AssetTransactionFactory {
       createdAt: createdAt ?? when,
       updatedAt: createdAt ?? when,
       notes: notes,
+      fundingAccountId: fundingAccountId,
+      cashAmount: cashAmount,
     );
   }
 
@@ -153,6 +157,8 @@ class AssetTransactionFactory {
     DateTime? date,
     DateTime? createdAt,
     String? notes,
+    String? fundingAccountId,
+    Money? cashAmount,
   }) {
     final price = unitPrice ?? Money.fromMajor(150, currency);
     final fee = fees ?? Money.zero(currency);
@@ -171,6 +177,8 @@ class AssetTransactionFactory {
       createdAt: createdAt ?? when,
       updatedAt: createdAt ?? when,
       notes: notes,
+      fundingAccountId: fundingAccountId,
+      cashAmount: cashAmount,
     );
   }
 
