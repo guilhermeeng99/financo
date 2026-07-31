@@ -67,6 +67,12 @@ Colors are **semantic**, never literal. The full token set
 - Positive/zero → `income`. Negative → `expense` with a `-` prefix.
 - This is automated by **`AmountText`** and `FinancoCurrencyField` — use them;
   don't hand-color money.
+- **Currency is a parameter, not an assumption.** `formatCurrency`,
+  `AmountText` and `TransactionTile` all default to BRL but take a `Currency`
+  (F9.7). Any screen showing money that belongs to a specific account must pass
+  `account.currency`; the default is for screens that are BRL by construction
+  (budgets, consolidated dashboard totals). Investing money is `Money` and goes
+  through `formatMoney` instead.
 
 ### Palette system (runtime-switchable)
 `AppColors.light` / `AppColors.dark` are **mutable** statics. The user can pick
@@ -191,6 +197,7 @@ comment in its source.
 | `FinancoDateField` | Read-only date tile (`InputDecorator` look) that opens a picker on tap. `label`, `value`, `onTap`. |
 | `FinancoPickerField` | Tap-to-open "row selector" tile: leading icon, label, value/placeholder, chevron. Backs Account/Category pickers. |
 | `FinancoPickerSheet` | Design-system chrome for modal picker bottom sheets: rounded surface, drag handle, left-aligned title. Draggable variant takes a `bodyBuilder(scrollController)` (+ optional `header` widgets, e.g. a search field); `FinancoPickerSheet.fixed` is a shrink-wrapped column for short content (day grid, short lists). |
+| `FinancoPickerRow` | One selectable row **inside** a `FinancoPickerSheet`: optional `leading` widget (avatar/icon disc), `title`, optional `subtitle`, `isSelected` (tinted `primary` @ 8% + check mark + w600 title), `onTap`, `indent`. Eight pickers had each hand-rolled this `Material > InkWell > Padding > Row` and drifted on the selected alpha, the radius and the title weight — **do not build a ninth**. `leading` is a widget, not an icon, because the pickers legitimately differ there and nowhere else. |
 | `FinancoPickerSheetEmpty` | Centered muted placeholder for picker bodies with nothing to list (no data or no search hits). `message`. |
 | `FinancoPillToggle<T>` | Segmented control (e.g. Expense/Income/Transfer). `options`, `selected`, `onChanged`, `disabled`. |
 | `FinancoSearchField` | App-wide search input used by every search-as-you-type sheet. |
@@ -210,8 +217,8 @@ comment in its source.
 ### Display & feedback
 | Widget | Purpose |
 |--------|---------|
-| `AmountText` | Money with automatic income/expense coloring + sign. **Always use for money.** |
-| `TransactionTile` | Standard transaction row (icon disc, title, category label, `AmountText`). |
+| `AmountText` | Money with automatic income/expense coloring + sign. **Always use for money.** `amount`, `fontSize` (18), **`currency`** (default `Currency.brl`, F9.7) — pass the account's own currency on a foreign account so a Wise balance isn't mislabelled as reais. |
+| `TransactionTile` | Standard transaction row (icon disc, title, category label, `AmountText`). **`currency`** (default `Currency.brl`, F9.7) is forwarded to the `AmountText`; the account statement passes `account.currency` for every row, since all rows on that page belong to one account. |
 | `FinancoCategoryAvatar` | Category icon on its tinted disc. |
 | `BankAvatar` | Bank brand disc (color + abbreviation from `BankBrand`). |
 | `FinancoDialog` | App dialog: icon badge, title, message, weighted action buttons (`FinancoDialogAction`). Use `showFinancoConfirmDialog` for confirms. |
@@ -224,9 +231,19 @@ comment in its source.
 | `ImportPreviewScaffold<B, S>` | Shared chrome for CSV import-preview pages: large app bar, type pill toggle, optional notice banners, the row list, importing progress overlay, bottom submit bar. Pages supply state handling (`onStateChanged`) and the toggle/notices/list; the scaffold owns layout and bloc wiring. |
 | `context.showSnack(message)` | Extension on `BuildContext` (`lib/core/extensions/context_extensions.dart`) — the project's default feedback channel for plain-text snackbars. Snackbars needing actions, custom content, or durations still call `ScaffoldMessenger` directly. |
 
-**Feature-level shared widget:** `DashboardSection`
-(`lib/features/dashboard/.../widgets/dashboard_section.dart`) — section header
-**with** a trailing slot and a surface card, used across dashboard cards.
+**Feature-level shared widgets:**
+
+- `DashboardSection` (`lib/features/dashboard/.../widgets/dashboard_section.dart`)
+  — section header **with** a trailing slot and a surface card, used across
+  dashboard cards.
+- `showFundingAccountPicker`
+  (`lib/features/investing/presentation/widgets/funding_account_picker_sheet.dart`)
+  — the F8.4 "which checking account funded this buy/sell" sheet. Built from
+  `FinancoPickerSheet` + `FinancoPickerRow` (`BankAvatar` leading, the currency
+  code as subtitle). Its **first row clears the choice**, so it resolves to
+  three distinguishable things: an account id, `''` for "cleared", or `null`
+  when the sheet was dismissed. Callers must tell the last two apart —
+  dismissing must not silently un-fund a transaction.
 
 ---
 
@@ -293,8 +310,11 @@ cubit `isValid`; show `isLoading` during submit.
 ### Pickers
 Selection of an account/category/etc. opens a **bottom sheet** built on
 `FinancoPickerSheet` (drag handle + title chrome; search-as-you-type via a
-`FinancoSearchField` in the `header` slot); the trigger on the form is a
-`FinancoPickerField`. Empty/no-hits bodies render `FinancoPickerSheetEmpty`.
+`FinancoSearchField` in the `header` slot); each row is a `FinancoPickerRow`;
+the trigger on the form is a `FinancoPickerField`. Empty/no-hits bodies render
+`FinancoPickerSheetEmpty`. A picker that can be *unset* puts the clear option as
+the **first row** with its own placeholder avatar (see
+`showFundingAccountPicker`), rather than adding a separate clear button.
 
 ---
 
@@ -304,6 +324,7 @@ Selection of an account/category/etc. opens a **bottom sheet** built on
 - Use tokens (`context.appColors`) and the type scale (`context.textTheme`).
 - Use the `Financo*` widget for the job; extend it if it's close.
 - Format money with `formatCurrency()` / `AmountText` — never show a raw double.
+  Pass the owning account's `currency` when the value isn't BRL by construction.
 - Route every user-facing string through slang (`t.section.key`).
 - Apply `const`, keep widgets small, follow the spacing/radius scale (§4).
 

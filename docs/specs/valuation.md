@@ -103,5 +103,18 @@ idempotency requires a deterministic key). Mirrored + cached in the
 
 `RecordDailySnapshotUseCase` runs at the end of every overview refresh from the
 already-priced portfolio; a zero-value **and** zero-invested portfolio is skipped
-so an empty/loading portfolio never writes a misleading flat line. Snapshots are
-read back via `GetSnapshotsUseCase` (cache-first; `forceRefresh` pulls remote).
+so an empty/loading portfolio never writes a misleading flat line.
+
+**Snapshots are currently write-only.** There is no `GetSnapshotsUseCase` (an
+earlier version of this spec cited one; it does not exist). The read side stops
+at the repository: `SnapshotRepository.getSnapshots(userId, forceRefresh)` is
+implemented cache-first, and `SyncService` pulls the collection at sign-in to
+warm the Drift cache — but **no cubit or page renders a snapshot**. The
+net-worth history sparkline that would have consumed them was dropped from the
+overview page (see above), which left the write path without a reader.
+
+Keeping the writes is deliberate: the history is only useful if it was being
+recorded *before* someone asks for the chart, and one idempotent document per
+user per day costs nothing. When a history view lands, it reads
+`SnapshotRepository.getSnapshots` directly or through a thin use case — the data
+is already there.

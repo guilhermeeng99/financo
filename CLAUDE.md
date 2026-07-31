@@ -173,10 +173,21 @@ Test infrastructure lives in `test/harness/`:
 * Use package imports (`package:financo/...`)
 * Apply `const` constructors wherever possible
 
+### Shared helpers — reach for these instead of re-rolling
+
+| Helper | Where | Use it for |
+| ------ | ----- | ---------- |
+| `enumByNameOrNull(values, raw)` / `enumByName(values, raw, orElse)` | `lib/core/utils/enum_parse.dart` | Parsing an enum from a persisted `enum.name`. **Never `Values.byName`** at a Firestore/Drift boundary — it throws on an unknown value, turning one bad row into a crashed screen. The fallback stays visible at the call site. |
+| `context.popOrGo(fallbackRoute, {result})` | `lib/core/extensions/context_navigation_extensions.dart` | Closing a pushed sub-page. Every sub-page is URL-reachable on web, so a deep-linked route has an empty stack and a bare `pop()` strands the user. |
+| `kUserScopedCollections` | `lib/core/database/user_scoped_collections.dart` | The Dart-side list of top-level collections carrying a `userId`. **Cross-language duplicate**: `functions/src/admin/deleteUser.ts` (`PER_USER_COLLECTIONS`) must match, and both are pinned by tests derived from `firestore.rules`. Adding a user-scoped collection means editing both, plus the rules and the map below. |
+| `formatCurrency(value, [currency])` / `formatMoney(Money)` | `lib/core/utils/currency_formatter.dart` | Cash-side `double` vs investing `Money`. Separate names — Dart has no overloading. |
+| `parseDecimalAmount(text)` | `lib/core/utils/amount_parser.dart` | Reading a typed amount; accepts BR (`1.234,56`) and EN (`1,234.56`). |
+
 ### UI & Formatting
 
 * Every user-facing string via slang (`t.section.key`) — never hardcode
-* Monetary values formatted with `formatCurrency()` — never display raw doubles
+* Monetary values formatted with `formatCurrency()` — never display raw doubles.
+  Pass the owning account's `Currency` when it isn't BRL by construction (F9).
 
 ---
 
@@ -255,15 +266,16 @@ users/{userId}                       → name, email, photoUrl, createdAt, fifty
 users/{userId}/fcmTokens/{tokenId}   → token, platform, updatedAt
 accounts/{id}                        → userId, name, type, bank, balance (Dart: initialBalance), currency (default 'brl'), creditLimit?, closingDay?, dueDay?, linkedAccountId?, createdAt
 categories/{id}                      → userId, name, icon, color, type (income | expense), parentId?, bucket? (needs | wants), countsIn50_30_20
-transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, settlementStatus (pending | paid), dueDate, settledAt?, recurrence (single | installment | fixed), recurrenceGroupId?, recurrenceIntervalMonths?, recurrenceIndex?, recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?, notes?, linkedTransactionId?, institutionId? (investment aporte/resgate tag — F8), linkedInvestmentTransactionId? (buy/sell that generated this cash-flow row), sourceBillId? (legacy migration trace), parentTransactionId? (legacy migration trace), createdAt, updatedAt
+transactions/{id}                    → userId, accountId, categoryId, type, amount, description, date, settlementStatus (pending | paid), dueDate, settledAt?, recurrence (single | installment | fixed), recurrenceGroupId?, recurrenceIntervalMonths?, recurrenceIndex?, recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?, notes?, linkedTransactionId?, institutionId? (investment aporte/resgate tag — F8), linkedInvestmentTransactionId? (buy/sell that generated this cash-flow row), createdAt, updatedAt
+                                       ⚠ `sourceBillId` / `parentTransactionId` also exist on rows written by the 2026-06-10 bills migration (`scripts/migrate_bills_to_transactions.js`), but nothing in `lib/` reads or writes them — they are not on the entity, the model, or the Drift table. Don't add them to new code.
 bills/{id}                           → legacy/read-only after the 2026-06-10 migration; retained for rollback/audit and account-wipe cleanup only. The app must not query or notify from this collection. Previous shape: userId, type (payable | receivable), description, amount, dueDate, status (pending | paid), recurrence (oneShot | monthly), categoryId?, notes?, paidAt?, paidTransactionId?, parentBillId?, rejectedTransactionIds, createdAt, updatedAt
 budgets/{id}                         → userId, categoryId, amount, createdAt, updatedAt
 asset_classes/{id}                   → userId, name, icon, color, targetPercent, parentId?, createdAt  (allocation buckets; assets link via investment_assets.metadata.allocationClassId)
 asset_holdings/{id}                  → legacy/read-only after the F7 V2 investing migration; superseded by the investment_* collections. Previous shape: userId, accountId, assetClassId, amount, notes?, updatedAt
 institutions/{id}                    → userId, name, kind, currency, bank? (BankType.name display hint), color? (ARGB int display hint), createdAt
-investment_assets/{id}               → userId, ticker, name, kind (stockBr | stockUs | fiiBr | etfBr | etfUs | bdrBr | crypto | fixedIncome), market, currency, institutionId, metadata (Map: allocationClassId?, allocationTargetPercent?, fiBasis?, fiRate?), createdAt
+investment_assets/{id}               → userId, ticker, name, kind (stockBr | fiiBr | etfBr | bdrBr | stockUs | etfUs | crypto | treasury | fixedIncome | fund | cash — see `AssetKind`; the form's Type picker only offers `AssetKind.selectableKinds` = etfUs, crypto, fixedIncome, cash, but every value still deserializes), market, currency, institutionId, metadata (Map: allocationClassId?, allocationTargetPercent?, fiBasis?, fiRate?, tesouroName?, coingeckoId?), createdAt
 investment_transactions/{id}         → userId, institutionId, assetId, kind (buy | sell | dividend), quantity, unitPriceMinor, feesMinor, amountMinor, currency, date, notes?, fundingAccountId? (checking account funding the aporte/receiving the resgate — F8), cashAmountMinor? (BRL moved on the checking side; set only with fundingAccountId), createdAt, updatedAt
-investment_snapshots/{id}            → doc id = "${userId}_${yyyy-MM-dd}"; userId, date, totalValueMinor, totalInvestedMinor, totalPlMinor, currency
+investment_snapshots/{id}            → doc id = "${userId}_${yyyy-MM-dd}"; userId, date, totalValueMinor, totalInvestedMinor, unrealizedPlMinor, currency
 chat_messages/{id}                   → userId, role, content, metadata, createdAt
 allowed_emails/{email}               → addedAt, note?  (doc id is the lower-cased email; gates onboarding — see access_control)
 ```

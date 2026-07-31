@@ -42,11 +42,14 @@ Keys centralized in a `FixedIncomeMetadata` / `AllocationMetadata` helper
 2. `institutionId` required on save; must resolve to an existing institution.
    Legacy rows without it load, but editing requires choosing one.
 3. `(ticker, market)` unique per user (case-insensitive) → else
-   `ValidationFailure(duplicateAsset)`, enforced in the repository.
+   `DuplicateAssetFailure(ticker)`, enforced in `CreateAssetUseCase` /
+   `UpdateAssetUseCase` — **not** the repository impl (the check needs the
+   current asset list). The CSV importer goes through `CreateAssetUseCase`, so
+   it is guarded too.
 4. `kind` determines the pricing strategy (`quotes.md`); `currency` defaults from
    `market` (`br→brl`, `us→usd`).
-5. Deleting an asset with transactions is **blocked** → `InUseFailure` (delete its
-   transactions first).
+5. Deleting an asset with transactions is **blocked** → `AssetInUseFailure`,
+   enforced in `DeleteAssetUseCase` (delete its transactions first).
 
 ## Repository contract
 
@@ -64,7 +67,8 @@ abstract class AssetRepository {
 
 Firestore-primary + Drift cache. Collection `investment_assets/{id}`, scoped by
 `userId`. `metadata` serialized as a JSON string column in Drift / a map in
-Firestore.
+Firestore. The repository validates nothing — rules 3 and 5 live in the use
+cases (same split as `institutions.md`).
 
 ## State machine
 
@@ -76,7 +80,7 @@ return `Failure?`.
 | Scenario | Behaviour |
 |---|---|
 | Unknown ticker (no quote) | Asset valid; UI flags "price unavailable" (valuation). |
-| Duplicate `(ticker, market)` | `ValidationFailure(duplicateAsset)`. |
+| Duplicate `(ticker, market)` | `DuplicateAssetFailure(ticker)`. |
 | Legacy asset with no `institutionId` | Listed with "no institution" chip; save requires one. |
 | Change `kind`/`currency` after transactions exist | Allowed; warns (pricing reinterpreted). |
-| Delete asset with transactions | `InUseFailure`. |
+| Delete asset with transactions | `AssetInUseFailure`. |

@@ -227,13 +227,27 @@ overdue, or scheduled from the account context. Pending rows are visual only:
 they do not affect `runningBalance`, `totalIncome`, `totalExpenses`, or
 `result`.
 
+**Currency (F9.7).** Every figure on the page renders in `account.currency`:
+`AccountStatementPage` passes it to the summary rows, the credit-card
+limit/available lines and every `TransactionTile`. All rows belong to one
+account, so they are all native to it — a cross-currency transfer stores each
+leg in its own account's currency, and the leg shown here is this account's.
+
+**No `≈ R$` estimate here — deliberate.** The BRL estimate is a *dashboard*
+affordance ("what is this worth today"); a statement is a record of a past
+month, and stamping the current FX rate on it would read as historical fact
+while silently changing every time the page is opened. `AccountStatementCubit`
+therefore has no `AccountFxConverter` dependency, and the totals are plain sums
+of the page's own rows. See
+[multi_currency_accounts.md](multi_currency_accounts.md) §5.
+
 ## Edge Cases
 
 - **Empty account list** — Loaded with empty list, not error.
 - **Credit card without linked account** — form validation blocks submit.
 - **Balance parsing** — `double.tryParse` with fallback to 0.
 - **Unknown bank type from Firestore** — fallback to `BankType.others`.
-- **Unknown account type from Firestore** — `AccountType.values.byName` throws on invalid value (no fallback currently).
+- **Unknown account type from Firestore** — fallback to `AccountType.checking`. (Previously `AccountType.values.byName`, which *threw*; `AccountModel.fromMap` now uses the shared `enumByName` helper, so a bad stored value degrades instead of crashing the read. Same for `bank` → `others` and `currency` → `brl`.)
 - **Delete with transactions** — cascades to delete all linked transactions.
 - **Statement with no transactions** — runningBalance = initialBalance, zero totals.
 - **Statement with pending-only transactions** — list renders the pending rows; totals and running balance remain unchanged.

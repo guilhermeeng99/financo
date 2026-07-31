@@ -2,6 +2,18 @@
 
 > Documento de decisão. Investanco permanece intacto; portamos **para dentro** do Financo, substituindo o módulo `lib/features/investments/` (tracking-only, Model A). Fonte: auditorias paralelas de ambos os codebases (7 agentes, 2026-07-22). Financo é spec-driven — cada fase escreve `docs/specs/<feature>.md` **antes** de código.
 
+> **Artefato histórico — congelado em 2026-07-22.** O que foi de fato construído
+> está em `docs/specs/investing.md` e nas specs por feature; quando os dois
+> divergem, a spec vence. Duas divergências já conhecidas:
+> **(a)** "`formatCurrency(double)` … vira `formatCurrency(Money)` … overload"
+> (§1 do quadro Core Money e a linha F0) nunca foi implementável — Dart não tem
+> sobrecarga de função. O que existe é `formatMoney(Money)` ao lado de
+> `formatCurrency(double, [Currency = brl])`.
+> **(b)** A resolução "desacoplar investimento da conta" foi **revertida** em
+> 2026-07-25 pela decisão D1 de
+> [investing_account_unification.md](specs/investing_account_unification.md): a
+> `Institution` passou a ser o único registro de "conta de investimento".
+
 ---
 
 ## 0. Notas do CTO (revisão do plano)

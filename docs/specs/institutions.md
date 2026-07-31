@@ -3,9 +3,18 @@
 > Part of the V2 investing module (`docs/specs/investing.md`). Entity field table
 > lives in the umbrella §3; this spec adds rules, repository, state and edges.
 
-Where assets are custodied: Nubank, Avenue, a broker, a bank. Pure organizational
-grouping used to segment holdings and (later) attach an auto-import source. A
-sibling collection — **not** an overload of `Account` (umbrella §0.5).
+Where assets are custodied: Nubank, Avenue, a broker, a bank.
+
+> **Superseded by F8 (2026-07-25)**: this spec originally described an
+> institution as "pure organizational grouping … a sibling collection, **not**
+> an overload of `Account`" (umbrella §0 decision 5). F8 decision **D1**
+> reverses that: the `Institution` **is** the single "investment account"
+> record. `AccountType.investment` is retired in data (removal tracked as
+> F8.6), an institution's Dashboard value is its derived market value, and it
+> carries `bank`/`color` display hints so it renders like an account row. See
+> [investing_account_unification.md](investing_account_unification.md) §2–§4.
+> The rules below still hold — F8 added responsibilities, it did not change the
+> entity's CRUD contract.
 
 ## Entity
 
@@ -19,10 +28,18 @@ falls back to a `kind`-derived colour when null)`. `Equatable` + `copyWith`.
 ## Business rules
 
 1. `name` required, trimmed, unique per user (case-insensitive) → else
-   `ValidationFailure(duplicateInstitutionName)`, enforced in the repository so the
-   form and CSV import are both guarded. Length ≤ 60 enforced by the Drift column.
-2. Deleting an institution referenced by any asset or transaction is **blocked** →
-   `InUseFailure`. Reassign/delete the assets first.
+   `DuplicateInstitutionNameFailure`, enforced in
+   `CreateInstitutionUseCase` / `UpdateInstitutionUseCase` (**not** the
+   repository impl — the check needs the current list, and both the form and
+   the CSV importer's find-or-create path go through the use cases). Length
+   ≤ 60 enforced by the Drift column.
+2. Deleting an institution referenced by any asset or transaction is **blocked**
+   → `InstitutionInUseFailure`, enforced in `DeleteInstitutionUseCase`.
+   Reassign/delete the assets first.
+   > The F9.6 guided migration calls `InstitutionRepository.deleteInstitution`
+   > **directly**, bypassing this guard. Its own asset-count check
+   > ([data_migration.md](data_migration.md) rule 8) is what stands in for it;
+   > note that check counts *assets*, not transactions.
 3. `kind` is informational — it never affects pricing (pricing is per-asset).
 4. No seed defaults — the user adds institutions manually; the empty state suggests
    "Nubank, Avenue, …".
@@ -46,12 +63,22 @@ abstract class InstitutionRepository {
 Firestore-primary + Drift cache (Financo pattern): `forceRefresh:false` → local;
 `forceRefresh:true` → Firestore → replace local. Create/update write Firestore
 then upsert local; delete inverts. Collection `institutions/{id}`, scoped by
-`userId`. Duplicate-name and in-use checks run in the repository impl (need the
-current list + reference counts).
+`userId`.
+
+The repository is a **plain persistence seam** — it validates nothing.
+Duplicate-name and in-use checks live in the use cases
+(`create_institution_usecase.dart`, `update_institution_usecase.dart`,
+`delete_institution_usecase.dart`), because each needs a second read (the
+current list, or the asset/transaction reference counts) that a repository impl
+has no business owning.
 
 ## State machine
 
-`InstitutionsCubit` — page-scoped for the institutions management page (F3). States
+`InstitutionsCubit` — **shell-scoped**, not page-scoped: `app_router.dart`
+creates it in the shell's `BlocProvider` list with `userId` from `AuthBloc` and
+eagerly calls `load()`, because the Dashboard and the investing overview both
+read the institution list, not just the management page (CLAUDE.md § State
+Management → Lifecycle). States
 `InstitutionsLoading → InstitutionsLoaded(list) | InstitutionsError`; mutations
 return a `Failure?` for the form.
 
@@ -61,4 +88,5 @@ return a `Failure?` for the form.
 |---|---|
 | Duplicate name (case-insensitive) | `ValidationFailure(duplicateInstitutionName)` |
 | Delete while referenced | `InUseFailure`; list unchanged |
-| Empty list | Empty state with "add institution" CTA |
+| Empty list | Empty state with "add institution" CTA. Also drives the 50/30/20 "cadastre a corretora" tip → `/investing/institution/add` (`fifty_thirty_twenty.md` rule 9) |
+| Mis-modelled as a foreign cash account (Wise) | Converted to a `checking` account by the guided migration, then deleted — only when it holds **zero** assets. See [data_migration.md](data_migration.md) rules 8/14 |

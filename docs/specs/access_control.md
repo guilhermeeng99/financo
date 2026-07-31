@@ -57,19 +57,35 @@ export const isMasterEmail = (email?: string | null): boolean =>
 
 10. **List users** — master reads `users/` (no filter). Result includes self.
 11. **Cascade delete** — master invokes the `deleteUserAsAdmin({ targetUid })` callable Cloud Function. Cannot delete self (UI hides; function rejects with `failed-precondition`). Cascade order:
-    1. `accounts` where `userId == targetUid`
-    2. `transactions` where `userId == targetUid`
-    3. `categories` where `userId == targetUid`
-    4. `bills` where `userId == targetUid`
-    5. `budgets` where `userId == targetUid`
-    6. `asset_classes` where `userId == targetUid`
-    7. `asset_holdings` where `userId == targetUid`
-    8. `chat_messages` where `userId == targetUid`
-    9. `users/{targetUid}/fcmTokens/*`
-    10. `users/{targetUid}` itself
-    11. `allowed_emails/{targetEmail}` (if present)
-    12. Firebase Auth user via `admin.auth().deleteUser(targetUid)`
-    Each Firestore step uses batched writes of 500 (Firestore limit). All 9 Firestore steps run before the Auth delete — so a partial failure leaves the Auth user alive and a re-run cleans up. Idempotent: re-running on a partially-deleted user finishes the job without error.
+    1. every collection in `PER_USER_COLLECTIONS`, where `userId == targetUid`, **in the order declared there** — `functions/src/admin/deleteUser.ts`
+    2. `users/{targetUid}/fcmTokens/*`
+    3. `users/{targetUid}` itself
+    4. `allowed_emails/{targetEmail}` (if present)
+    5. Firebase Auth user via `admin.auth().deleteUser(targetUid)`
+
+    Step 1 is **deliberately not enumerated here.** The previous version of this
+    spec listed eight collections by hand and went stale the moment the F8
+    investing collections landed, leaving `institutions`,
+    `investment_assets`, `investment_transactions` and `investment_snapshots`
+    orphaned on every account wipe (found and fixed in the 2026-07-31 audit).
+    The list has exactly one home per language:
+
+    | Language | Constant | File |
+    |---|---|---|
+    | TypeScript | `PER_USER_COLLECTIONS` | `functions/src/admin/deleteUser.ts` |
+    | Dart | `kUserScopedCollections` | `lib/core/database/user_scoped_collections.dart` |
+
+    Both must match each other **and** the user-scoped collections in
+    `firestore.rules`; both sides have a test pinning the exact expected set, so
+    a divergence fails an assertion instead of silently orphaning data. Adding a
+    user-scoped collection means editing both constants, the rules, and the
+    CLAUDE.md collection map. Retired collections (`bills`, `asset_holdings`)
+    stay listed on purpose — legacy rows are exactly what nothing else cleans up.
+
+    Each Firestore step uses batched writes of 500 (Firestore limit). All the
+    Firestore steps run before the Auth delete — so a partial failure leaves the
+    Auth user alive and a re-run cleans up. Idempotent: re-running on a
+    partially-deleted user finishes the job without error.
 12. **Type-to-confirm** — UI requires master to type the target's email exactly (case-insensitive comparison) before the delete button enables.
 
 ## Repository contracts
@@ -122,7 +138,14 @@ abstract class MasterUsersRepository {
 ```
 Input:  { targetUid: string }
 Auth:   request.auth.token.email == MASTER_EMAIL  (else permission-denied)
-Output: { deletedCounts: { accounts, transactions, categories, bills, budgets, asset_classes, asset_holdings, chat_messages, fcm_tokens } }
+Output: { deletedCounts: { <one key per PER_USER_COLLECTIONS entry>, fcm_tokens } }
+        // today: accounts, transactions, categories, bills, budgets,
+        //        asset_classes, asset_holdings, institutions,
+        //        investment_assets, investment_transactions,
+        //        investment_snapshots, chat_messages, fcm_tokens
+        // `PER_USER_COLLECTIONS` is typed `ReadonlyArray<keyof DeletedCounts>`,
+        // so adding a collection to the list without a counter is a compile
+        // error — the two can't drift.
 ```
 
 Errors:
@@ -234,9 +257,16 @@ function ownsResource() {
 }
 ```
 
-Per collection (`accounts`, `transactions`, `categories`, `bills`, `budgets`, `asset_classes`, `asset_holdings`, `chat_messages`):
+Per user-scoped collection (`accounts`, `transactions`, `categories`, `bills`, `budgets`, `asset_classes`, `asset_holdings`, `institutions`, `investment_assets`, `investment_transactions`, `investment_snapshots`, `chat_messages` — same set as `PER_USER_COLLECTIONS`, see rule 11):
 - `create`: `isAllowed() && request.resource.data.userId == request.auth.uid`
 - `read, update, delete`: `(isAllowed() && ownsResource()) || isMaster()`
+
+Two collections deviate:
+- `categories` — `read` is a bare `isAllowed()`, because default categories
+  carry `userId == null` and every allowed user must be able to read them.
+  `update`/`delete` keep the owner/master shape.
+- `chat_messages` — no `update` rule at all; messages are append-and-delete
+  only.
 
 For `users/{userId}`:
 - `read, update, create, delete`: `(isAllowed() && request.auth.uid == userId) || isMaster()`

@@ -51,6 +51,16 @@ guard sees covering buys first. A save failure (e.g. an oversell in the data)
 stops the import and returns the failure. **No dedup** — one row → one
 transaction, so re-importing the same file duplicates.
 
+**No funding column (F8.4 gap).** The CSV has no way to name the checking
+account that paid for a buy, so imported rows always land with
+`fundingAccountId == null` — i.e. "cash was already at the broker"
+(`investing_transactions.md` rule 8). No paired cash row is written and the
+purchases never reach the 50/30/20 savings bucket.
+`SyncInvestmentCashFlowUseCase` short-circuits this path before its ledger read
+(`wanted == null && transaction.id.isEmpty`), so the import pays nothing for
+it. Adding the column means resolving an account by name per row, the same way
+the assets importer resolves institutions. Tracked in `TODO.md`.
+
 ## Presentation
 
 `AssetsCubit` / `InvestingTransactionsCubit` gain `previewCsv` and

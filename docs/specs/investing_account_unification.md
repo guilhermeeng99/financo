@@ -53,6 +53,24 @@ Dashboard, and single-entry purchases that also feed the 50/30/20 savings bucket
   modelled as a `cash` holding (`AssetKind.cash` already exists and is
   authoritative-not-stale in valuation). *Recommended: yes* — so the institution
   balance = invested holdings + uninvested cash, matching reality.
+  > **Not implemented (2026-07-31).** `RecordInstitutionCashFlowUseCase`, the
+  > one-call path this decision needed, was **deleted** in the 2026-07-31 audit
+  > because it had zero callers: nothing in the form, the CSV importer or the
+  > chat ever invoked it, so it was untested dead weight sitting on the money
+  > path. The pieces it was built from all survive — `AssetKind.cash` is in
+  > `selectableKinds`, valuation treats it as face-value-never-stale, and
+  > `SyncInvestmentCashFlowUseCase` writes the checking-side row for any funded
+  > buy/sell. **Today the user gets O1 by hand**: create a `cash` asset at the
+  > institution and record a `buy` against it with a funding account; the aporte
+  > row and the 50/30/20 credit follow automatically.
+  >
+  > *To bring it back*: reintroduce a use case that (a) finds-or-creates the
+  > per-currency `cash` asset for an institution, (b) builds a `buy`/`sell`
+  > `AssetTransaction` against it with `fundingAccountId` set, and (c) delegates
+  > to `SaveAssetTransactionUseCase` — which already routes through
+  > `SyncInvestmentCashFlowUseCase`, so step (c) needs no new money logic. Wire
+  > it to a real entry point (a "deposit cash" action on the institution detail
+  > page) **in the same change**, or it will be dead again.
 - **O2 — Aporte amount / FX.** A USD buy debits BRL from checking. The BRL amount
   actually left the account, so it is authoritative for 50/30/20. *Recommended:*
   user enters the **BRL debited** (default computed via the day's FX, editable);
@@ -177,9 +195,20 @@ A transaction may represent cash moving between a **checking account** and an
 ## 5. Repository / cubit contracts
 
 - **`InstitutionRepository`** — gains `bank`/`color` in create/update. Unchanged CRUD.
-- **New `CreateAssetTransactionUseCase` behaviour** — when `fundingAccountId != null`,
-  it also writes the paired `transactions` row (batched write for atomicity) and
-  stamps both docs with the cross-link ids. Update/delete cascade the paired row.
+- **`SyncInvestmentCashFlowUseCase`** (`investing/domain/usecases/`) — owns the
+  paired `transactions` row. Given an `AssetTransaction` it derives the row that
+  transaction *should* have and makes reality match: create, update, delete when
+  the funding account is cleared, delete when the investing row is deleted
+  (`investingDeleted: true`), and drop duplicates. `SaveAssetTransactionUseCase`
+  and `DeleteAssetTransactionUseCase` both route through it, so **any** writer
+  that carries a `fundingAccountId` gets the behaviour for free — today that is
+  only the transaction form (see the F8.4 note in §7). The two writes are not
+  one batch (they target different collections); a failed cash row rolls back a
+  newly created investing row, but not an edited one — see
+  `investing_transactions.md` rule 12.
+- ~~**`RecordInstitutionCashFlowUseCase`**~~ — **deleted 2026-07-31** (zero
+  callers). It was the O1 "cash parked at a broker" entry point; see the O1 note
+  in §2 for the manual workaround and how to reinstate it.
 - **`AccountRepository`** — no longer returns `investment` accounts post-migration.
 - **`DashboardRepositoryImpl.getDashboardSummary`** — gains an investing input:
   it must obtain `byInstitution` market values (from the latest snapshot / a shared
@@ -195,6 +224,12 @@ A transaction may represent cash moving between a **checking account** and an
 - `DashboardBloc` — same states; summary now includes institution rows. Also
   reloads (plain `DashboardLoadRequested`) on the investing overview
   refresh-settle edge so the warmed market values surface on first paint.
+- `InvestingTransactionFormPage` — a "Cash movement" section on buy/sell only:
+  an optional checking-account picker (its first entry clears the choice) and a
+  BRL amount whose hint is `quantity × unitPrice`, so a BRL asset needs no typing
+  and a foreign one can state the reais actually debited (O2). Dividends hide the
+  section (`investing_transactions.md` rule 11). Credit cards are excluded from
+  the picker — they have no cash to move.
 - `InvestingOverviewCubit` — unchanged valuation; the buy/sell forms gain the
   funding-account picker + BRL amount field. Eager-loaded at shell mount
   (`lazy: false`) to warm the market-quote cache at startup; the Portfolio app
@@ -204,6 +239,14 @@ A transaction may represent cash moving between a **checking account** and an
 ---
 
 ## 6. Migration (guided, F8-M)
+
+> **Implemented** as `lib/features/data_migration/` (route `/migration`), which
+> also carries F9.6. The steps below are the *intent*; the shipped contract —
+> planner rules, executor write order, the 5-state cubit, what a partial run
+> leaves behind — is [data_migration.md](data_migration.md). Two deliberate
+> departures from this list: step 1's JSON backup is **not** automated (the
+> executor has no rollback; a partial run is finished by re-opening the page),
+> and step 5's cutover flag does not exist (the unified model was never gated).
 
 Applied to the user's **production** Firestore, one reversible step at a time,
 each previewed and approved:
@@ -237,8 +280,28 @@ Rollback = restore the backed-up docs.
   from institutions; Total Balance = net worth. (Old investment accounts still exist.)
 - **F8.3** — 50/30/20 switches to `institutionId` aporte flow (dual-read during transition).
 - **F8.4** — Automation: funding-account picker + BRL amount on buy/sell forms;
-  paired cash-flow write + linked lifecycle. Chat/CSV updated.
-- **F8.5** — Guided migration (F8-M) on real data.
+  paired cash-flow write + linked lifecycle. *(Shipped in two parts: the entity
+  fields and `RecordInstitutionCashFlowUseCase` landed first, but nothing wrote
+  the paired row for a plain buy/sell and the form had no picker — a funded sale
+  was unreachable from the UI. Completed 2026-07-31 by
+  `SyncInvestmentCashFlowUseCase` + the form's Cash-movement section; the unused
+  `RecordInstitutionCashFlowUseCase` was deleted in the same pass.)*
+
+  **Chat and CSV are *not* updated** (an earlier draft of this row claimed they
+  were). Verified 2026-07-31:
+  - `ImportInvestingTransactionsCsvUseCase` never sets `fundingAccountId` — the
+    CSV format has no funding column, so an imported buy is always "cash already
+    at the broker" (rule 8) and generates no aporte. `SyncInvestmentCashFlowUseCase`
+    short-circuits that path without a ledger read (`wanted == null &&
+    id.isEmpty`), so it costs nothing, but the 50/30/20 savings bucket does not
+    see imported purchases.
+  - `lib/features/chat/` has **no investing action at all** — the AI proposes
+    transactions, transfers, accounts and categories only. This matches
+    `investing.md` §9 ("AI-chat actions for investing entities" is out of scope
+    for V2); the F8.4 row was simply wrong. Tracked in `TODO.md`.
+- **F8.5** — Guided migration (F8-M) on real data. Shipped as an in-app,
+  plan-then-apply screen at `/migration` — full contract in
+  [data_migration.md](data_migration.md).
 - **F8.6** — Remove `AccountType.investment`, dead code, stale docs; update
   `accounts.md`, `investing.md`, `dashboard.md`, `fifty_thirty_twenty.md`,
   `institutions.md`, CLAUDE.md Firestore notes.

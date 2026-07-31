@@ -97,8 +97,10 @@ statement layers. Returns null when no rate is cached (O3).
    `fx(BRL) = 1`. Null rate → excluded from BRL totals (O3).
 3. **Dashboard total = BRL net worth estimate.** `Σ brl(non-muted checking) +
    Σ institution market values (F8.2)`, with a "≈" marker since FX is current.
-4. **Per-account native display.** Each account row shows its native balance
-   (e.g. `€1.234,56`) and, when currency ≠ BRL, a smaller `≈ R$…` estimate.
+4. **Per-account native display.** Each Dashboard account row shows its native
+   balance (e.g. `€1.234,56`) and, when currency ≠ BRL, a smaller `≈ R$…`
+   estimate. The **account statement is native-only** — no `≈ R$` line, no
+   FX-converted totals (§5, F9.7).
 5. **Income/Expense/50-30-20 in BRL.** Each transaction is converted to BRL at
    current FX before aggregation (O2). A BRL-only user sees identical numbers to
    today (fx = 1, no behaviour change).
@@ -117,8 +119,11 @@ statement layers. Returns null when no rate is cached (O3).
 
 - `AccountEntity`/model/Drift table/DAO gain `currency` (enum name), default `brl`.
 - `AccountBalanceCalculator` stays native (no FX) — it already only sums deltas.
-- Dashboard (`DashboardRepositoryImpl`) + statement gain an `AccountFxConverter`
-  to produce BRL estimates and consolidated totals; native values stay untouched.
+- `DashboardRepositoryImpl` takes an `AccountFxConverter` to produce BRL
+  estimates and consolidated totals; native values stay untouched. It is the
+  **only** consumer — the statement was originally slated for one too, but that
+  was dropped with the native-only decision below (`AccountStatementCubit` has
+  no FX dependency).
 - `compute50_30_20`/category aggregation convert per-transaction to BRL via the
   converter.
 - The transfer form supports two leg amounts when the accounts' currencies differ.
@@ -130,9 +135,31 @@ statement layers. Returns null when no rate is cached (O3).
   `destinationCurrency` for the cross-currency received field); the account form
   passes the picked `currency`; the transactions-import sheet resolves the source
   account's currency by name. `parseDecimalAmount` reads both BR and EN styles,
-  so the display format stays decoupled from parsing. Budgets and the accounts-
-  import sheet stay BRL (no per-row currency); investing buy/sell money fields
-  already carry the asset currency in their labels.
+  so the display format stays decoupled from parsing.
+
+  **Exclusions.** Budgets and the accounts-import sheet stay BRL — neither has a
+  per-row currency to pass. The investing transaction form's money fields
+  (`unitPrice`, `fees`, `amount`, and the F8.4 cash amount) *are*
+  `FinancoCurrencyField`s and receive the asset's currency (the cash field
+  receives BRL, since that is what moves on the checking side). An earlier
+  version of this section claimed they "already carry the asset currency in
+  their labels" and were therefore skipped — that is no longer how the form
+  works.
+- **Statement/tile currency pass (F9.7).** The display side mirrors the input
+  side: `formatCurrency(double value, [Currency currency = Currency.brl])`
+  delegates to `formatMoney` for anything but BRL; `AmountText` and
+  `TransactionTile` each take an optional `currency` with the same default, so
+  every existing BRL call site is untouched. `AccountStatementPage` passes
+  `account.currency` to its summary rows, its credit-card limit/available lines
+  and every `TransactionTile`.
+
+  **Decision: the statement shows the native amount only — no `≈ R$` estimate.**
+  The FX estimate is a *dashboard* affordance answering "what is this worth
+  today"; a statement is a record of a specific past month, and stamping today's
+  rate onto March's rows would read as historical fact while changing every time
+  it is opened. The statement's totals are plain sums of its own rows and are
+  never FX-converted. Rule 4's `≈ R$` sub-line therefore applies to account rows
+  on the Dashboard, not to the statement.
 
 ### State machines
 - `AccountFormCubit` — currency picker at create; locked on edit.
@@ -165,7 +192,21 @@ statement layers. Returns null when no rate is cached (O3).
   the converter (BRL-only users unchanged).
 - **F9.5** — Cross-currency transfer (two leg amounts + FX default).
 - **F9.6** — Guided migration (F9-M): existing → BRL; Wise institutions → EUR
-  accounts. Docs/CLAUDE.md updates.
+  accounts. Shipped as the in-app plan-then-apply screen at `/migration`, shared
+  with F8.5 — contract in [data_migration.md](data_migration.md). Docs/CLAUDE.md
+  updates.
+- **F9.7** — Currency reaches the widgets. Input side: `FinancoCurrencyField`
+  takes a `Currency`, `BrlCurrencyInputFormatter` → `CurrencyInputFormatter`,
+  wired through the transaction form (source + cross-currency destination), the
+  account form and the transactions-import sheet. Display side:
+  `formatCurrency(value, [currency])`, `AmountText(currency:)` and
+  `TransactionTile(currency:)` all gain an optional currency defaulting to BRL,
+  and the account statement renders end-to-end in the account's own currency —
+  **native only, no `≈ R$` line** (see §5). Cross-currency transfer *edit* was
+  fixed in the same pass: `_forTransferEdit` routes the tapped leg to the
+  matching field and `_resolveTransferCounterpart` recovers the other leg's
+  amount and re-resolves both currencies
+  ([transactions.md](transactions.md) Transfer Rules 25–29).
 
 Each phase: build_runner/slang as needed, `flutter analyze` zero, `flutter test`
 green, regression on money paths (esp. BRL-unchanged invariant).

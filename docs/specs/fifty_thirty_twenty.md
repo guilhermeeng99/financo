@@ -136,7 +136,7 @@ field on `DashboardSummary`.
 | savingsAmount       | double                              | Net `checking → investment` transfer flow in the period (≥ 0)      |
 | unclassifiedSpent   | double                              | Expense sum where the resolved root category's `bucket == null` (transaction-based, period-scoped) |
 | unclassifiedCount   | int                                 | Backlog of root expense categories with `bucket == null`. **Category-based, not transaction-based** — surfaces the full classification work to do, independent of whether those categories spent this month. Subcategories and orphans never increment it. |
-| hasInvestmentAccount | bool                               | Whether the user has ≥ 1 investment account; drives which of the two under-target savings tips renders |
+| hasInvestmentDestination | bool                           | Whether the user has ≥ 1 custody **institution** (F8 retired `AccountType.investment`, so this is not read from `accounts`); drives which of the two under-target savings tips renders. Passed in by the caller — the compute service stays free of investing types |
 | targets             | FiftyThirtyTwentyTargets            | Active target split. Defaults to `FiftyThirtyTwentyTargets.classic`; production callers pass the user's saved value (§12.1) |
 | status              | FiftyThirtyTwentyStatus             | See below                                                          |
 
@@ -236,10 +236,26 @@ actual < target.
    from `lib/core/utils/date_helpers.dart`, matching the dashboard.
 8. **Orphan tolerance**: deleted categories don't crash the overview.
    Expenses on orphan categories count as `unclassifiedSpent`.
-9. **No savings without an investment account**: if the user has zero
-   investment accounts, `savingsAmount` is always 0 (no transfers can
-   possibly count). The UI shows a hint that explains this and links to
-   `/accounts/add`. This is the most common first-time-user state.
+9. **No savings without an investment destination**: with zero institutions
+   there is nowhere for an aporte to land, so `savingsAmount` is 0 for any
+   newly recorded flow. The overview carries this as
+   `hasInvestmentDestination` (renamed from `hasInvestmentAccount` in F8, and
+   now **supplied by the caller** as `institutions.isNotEmpty` rather than
+   derived from `AccountType.investment` — see §1). When it is false the card's
+   footer tip explains the situation and its CTA pushes
+   `AppRoutes.addInstitution` (`/investing/institution/add`), **not** the
+   add-account form: brokers are institutions after F8, and the account form
+   only makes checking accounts and credit cards. This is the most common
+   first-time-user state.
+
+   **Caveat until F8.6** (verified 2026-07-31, still true): the legacy leg of
+   `_netSavingsFlow` still credits a `checking → AccountType.investment`
+   transfer, which needs no institution. So a user with zero institutions but
+   surviving pre-migration investment accounts can see `savingsAmount > 0`
+   *and* the "cadastre a corretora" CTA at the same time. The F8.5 guided
+   migration deletes those accounts (`data_migration.md` rule 12), so the
+   disagreement is only reachable on data that has not been migrated; removing
+   the legacy leg is part of F8.6.
 
 ## 3. Architecture
 
@@ -247,10 +263,16 @@ The feature does **not** introduce a new repository or DI registration.
 It piggybacks on `DashboardRepositoryImpl`:
 
 - A pure function `compute50_30_20Overview(...)` lives in
-  `lib/features/dashboard/domain/services/`. Inputs: income transactions,
-  expense transactions, categories, transfer transactions, accounts.
-  Output: `FiftyThirtyTwentyOverview`. **Stateless and synchronous** — no
-  IO, no async, no DI.
+  `lib/features/dashboard/domain/services/compute_fifty_thirty_twenty.dart`.
+  Signature: `periodTransactions`, `categories`, `accounts` (all required) plus
+  `hasInvestmentDestination` (default `false`) and `targets` (default
+  `classic`). Output: `FiftyThirtyTwentyOverview`. **Stateless and
+  synchronous** — no IO, no async, no DI, and deliberately free of investing
+  types: `hasInvestmentDestination` is passed in by
+  `DashboardRepositoryImpl` / `FiftyThirtyTwentyDetailCubit` as
+  `institutions.isNotEmpty`, which is the one place the two features join.
+  `accounts` is used **only** by the legacy transfer leg of the savings
+  calculation (rule 4b) and becomes dead on F8.6.
 - `DashboardRepositoryImpl.getDashboardSummary` calls this function with
   the data it already fetched and adds the result to `DashboardSummary`
   under a new `fiftyThirtyTwenty` field.
@@ -273,18 +295,28 @@ Inputs:
   - categories           : List<CategoryEntity>
   - accounts             : List<AccountEntity>
 
+  Pre-filter (applies to every step below):
+    settledTransactions = periodTransactions.where(t.isPaid)
+      # Pending rows never move money, so they never move a bucket
+      # (transactions.md rule 11). Everything after this reads settled only.
+
   Pre-build:
     categoriesById  : Map<String, CategoryEntity>
     accountTypeById : Map<String, AccountType>
 
   Steps:
     1. income = sum(t.amount where t.type == income && !t.isTransfer
+                    && !t.isInvestmentCashFlow
                     && rootCategoryOf(t).countsIn50_30_20)
        # income categories (resolved to their root parent) may opt out of the
        # 50/30/20 base via countsIn50_30_20 == false — see rule 1 / _sumIncome
+       # a resgate (institutionId != null) is a savings withdrawal, not income;
+       # step 3 already accounts for it
 
     2. needsSpent, wantsSpent, unclassifiedSpent, unclassifiedCatIds : initialise to 0 / {}
-       for each t in periodTransactions where t.type == expense && !t.isTransfer:
+       for each t in settledTransactions where t.type == expense && !t.isTransfer
+                                           && !t.isInvestmentCashFlow:
+         # an aporte is savings, not a needs/wants expense — step 3 owns it
          cat = categoriesById[t.categoryId]
          if cat == null:
            unclassifiedSpent += t.amount
@@ -305,11 +337,14 @@ Inputs:
 
     3. savingsAmount (sum of two contributions):
        # (a) Institution aporte/resgate cash flows — the F8.3 current path.
-       for each t in periodTransactions where t.isInvestmentCashFlow (institutionId != null):
+       for each t in settledTransactions where t.isInvestmentCashFlow (institutionId != null):
          if t.type == expense:  net += t.amount   # aporte
          else:                  net -= t.amount   # resgate
        # (b) Legacy checking↔investment transfers (residual pre-F8 data).
-       Build a transfer pair map keyed by linkedTransactionId.
+       Index settledTransactions by id, then walk only the EXPENSE legs
+       (each pair is visited once; the expense leg always carries the source).
+       A leg whose mate is outside the period window is skipped, as is a pair
+       where either account id no longer resolves to a type.
        For each pair (expenseLeg, incomeLeg):
          srcType = accountTypeById[expenseLeg.accountId]
          dstType = accountTypeById[incomeLeg.accountId]
@@ -340,6 +375,9 @@ final overview = compute50_30_20Overview(
   periodTransactions: transactions,
   categories: categories,
   accounts: accounts,
+  // The one join between the dashboard and the investing module (F8).
+  hasInvestmentDestination: institutions.isNotEmpty,
+  targets: targets,
 );
 return Right(DashboardSummary(
   ...,
@@ -411,11 +449,11 @@ border-radius (matches the rest of the dashboard surfaces).
     no alvo."
   - `wantsSpent > wantsTarget`: "Você passou do orçamento de desejos em
     R$X este mês."
-  - `savingsAmount < savingsTarget && hasInvestmentAccount`: "Faltam R$X
+  - `savingsAmount < savingsTarget && hasInvestmentDestination`: "Faltam R$X
     para atingir 20% de investimento."
-  - `savingsAmount < savingsTarget && !hasInvestmentAccount`: "Crie uma
-    conta de investimento para começar a registrar seus aportes." with a
-    button-style trailing chip → `/accounts/add`.
+  - `savingsAmount < savingsTarget && !hasInvestmentDestination`: "Cadastre a
+    corretora onde você investe para começar a registrar seus aportes." with a
+    button-style trailing chip → `/investing/institution/add`.
   - `hasUnclassified`: "$count categoria(s) ainda sem classificação." +
     chip → `/categories`.
 
@@ -426,7 +464,7 @@ border-radius (matches the rest of the dashboard surfaces).
 | `income == 0`                                           | Compact card with a single no-income hint row ("Registre suas receitas...", `noIncomeHeadline`) + chart-pie icon. No baseline pill. No bars. No bucket rows. Same visual height as a `_NoAccountsHint`. |
 | `income > 0` but every expense category is unclassified | Bars rendered with all spend pooled in a 4th, muted "Sem classificação" row. CTA to classify (chip → `/categories`).                          |
 | `income > 0`, partial classification                    | Bars rendered normally + footer dica counts the unclassified                                                                                  |
-| No investment accounts                                  | Savings row still rendered (will read `R$ 0 · 0% de 20%`) + footer dica with `/accounts/add` chip                                              |
+| No institutions                                         | Savings row still rendered (will read `R$ 0 · 0% de 20%`) + footer dica with an `/investing/institution/add` chip                              |
 
 ### Colours
 
@@ -474,8 +512,10 @@ explicit verification, see §10).
 |------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Income == 0                                                                  | Card collapses to the empty hint. No division-by-zero anywhere.                                                                             |
 | Every expense category lacks `bucket`                                        | All expense spend → `unclassifiedSpent`. Status is `unclassifiedDominant`. CTA to classify.                                                 |
-| One investment account, zero transfers in the month                          | Savings row shows `R$ 0 · 0% de 20%` and the under-target hint without the "create account" CTA.                                            |
-| Transfer checking → investment of R$ 1000, then resgate of R$ 200            | `savingsAmount = 800`.                                                                                                                       |
+| One institution, zero aportes in the month                                   | Savings row shows `R$ 0 · 0% de 20%` and the under-target hint without the "add institution" CTA.                                          |
+| Aporte of R$ 1000 (buy funded from checking), then resgate of R$ 200          | `savingsAmount = 800`. The two rows are `institutionId`-tagged and excluded from income/expense buckets (rule 4a).                          |
+| Transfer checking → investment of R$ 1000, then resgate of R$ 200            | `savingsAmount = 800`. Legacy path (rule 4b); only reachable on un-migrated data.                                                            |
+| Pending (unsettled) aporte or expense                                        | Ignored entirely — the whole computation runs on `isPaid` rows only.                                                                         |
 | Resgate (investment → checking) of R$ 500 with no deposits                   | Net = -500, clamped to 0. UI shows R$ 0 + the under-target hint.                                                                            |
 | Transfer between two checking accounts                                       | Ignored. Not savings.                                                                                                                        |
 | Transfer checking → credit card (cartão payment)                             | Ignored. Not savings.                                                                                                                        |
@@ -534,8 +574,11 @@ explicit verification, see §10).
 - Renders the empty hint when `overview.hasData == false`.
 - Renders three bucket rows + footer dica when on-track.
 - Renders the unclassified CTA chip when `hasUnclassified`.
-- Renders the "create investment account" CTA when savings is under
-  target and there are no investment accounts.
+- Renders the "add institution" CTA (→ `/investing/institution/add`) when
+  savings is under target and there are no institutions. Regression: while
+  this flag was derived from `AccountType.investment` it was permanently
+  false after the F8 migration, so the CTA showed to every user and the
+  shortfall tip never rendered.
 
 ## 10. Cross-Feature Wiring
 

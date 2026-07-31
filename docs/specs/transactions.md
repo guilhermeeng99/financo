@@ -18,17 +18,23 @@ TransactionEntity {
   recurrence:            TransactionRecurrence (single | installment | fixed)
   recurrenceGroupId:     String?         (same value for a generated sequence)
   recurrenceIntervalMonths: int          (defaults to 1, monthly cadence)
+  // No `currency` field: a transaction's currency IS its account's currency
+  // (multi_currency_accounts.md D1/§3.2). The two legs of a cross-currency
+  // transfer are each native to their own account.
   recurrenceIndex:       int?            (1-based occurrence index)
   recurrenceTotal:       int?            (installment total; null for fixed)
   recurrenceBaseDescription: String?     (description without installment marker)
   recurrenceEndDate:     DateTime?       (fixed series stop boundary)
   notes:                 String?         (optional free-text)
   linkedTransactionId:   String?         (optional, non-null for transfers)
+  institutionId:         String?         (F8 — set on an investment aporte/resgate)
+  linkedInvestmentTransactionId: String? (F8 — the buy/sell that generated this row)
   createdAt:             DateTime        (required, set on creation)
   updatedAt:             DateTime        (required, set on creation and update)
 }
 
 bool get isTransfer => linkedTransactionId != null
+bool get isInvestmentCashFlow => institutionId != null
 bool get isRecurring => recurrence != single
 bool get isPending => settlementStatus == pending
 bool get isPaid => settlementStatus == paid
@@ -39,6 +45,11 @@ bool get isDueToday => isPending && day(dueDate) == day(now)
 
 // Scope selector passed to sequence-aware edit/delete flows (rule 18):
 enum TransactionSequenceScope { onlyThis, thisAndFollowing }
+
+// Recasts a transfer leg as a single-entry investment cash flow: clears
+// linkedTransactionId, sets institutionId. Used by the F8.5 guided migration
+// (docs/specs/data_migration.md rule 12).
+TransactionEntity asInstitutionCashFlow(String institutionId)
 ```
 
 ## Business Rules
@@ -64,12 +75,25 @@ enum TransactionSequenceScope { onlyThis, thisAndFollowing }
 
 ### Transfer Rules
 
-19. **Transfers create two linked transactions** — an expense on the source account and an income on the destination account, linked by `linkedTransactionId`.
+19. **Transfers create two linked transactions** — an expense on the source account and an income on the destination account, linked by `linkedTransactionId`. Each leg's `amount` is **native to its own account's currency** (see Cross-Currency Rules below); for the same-currency case — every transfer before F9.5 — the two amounts are equal.
 20. **Transfers have no category** — `categoryId` is empty string for both sides.
 21. **Deleting one side of a transfer deletes both** — cascading delete at the repository level.
-22. **Editing a transfer updates both legs** — amount, date, description, notes, **source account, and destination account** can all be changed; type stays immutable (the pill toggle is disabled in edit mode). Both the expense and income legs are rewritten so they never diverge. Each leg keeps its own `createdAt` (audit trail). The two writes are sequential, not atomic — a failure between them can leave the legs inconsistent (mirrors the non-batched create path; a repository-level transfer update is the proper fix).
-23. **Transfer edit resolves the counterpart leg on open** — the form receives only the tapped leg. It fetches the linked leg (`GetTransactionUseCase`) to populate both source (expense leg) and destination (income leg) accounts, regardless of which leg was tapped. `existingId` is normalized to the expense leg, `linkedTransactionId` to the income leg. On fetch failure the unknown account stays empty (form invalid) rather than guessing.
+22. **Editing a transfer updates both legs** — amount (and, cross-currency, the destination amount), date, description, notes, **source account, and destination account** can all be changed; type stays immutable (the pill toggle is disabled in edit mode). Both the expense and income legs are rewritten so they never diverge. Each leg keeps its own `createdAt` (audit trail). The two writes are sequential, not atomic — a failure between them can leave the legs inconsistent (mirrors the non-batched create path; a repository-level transfer update is the proper fix).
+23. **Transfer edit resolves the counterpart leg on open** — the form receives only the tapped leg. It fetches the linked leg (`GetTransactionUseCase`) to populate both source (expense leg) and destination (income leg) accounts **and both leg amounts**, regardless of which leg was tapped. `existingId` is normalized to the expense leg, `linkedTransactionId` to the income leg. On fetch failure the unknown account stays empty (form invalid) rather than guessing.
 24. **Source and destination accounts must differ** — validated in form state.
+
+### Cross-Currency Transfer Rules (F9.5)
+
+A transfer between accounts in different currencies is the only place where the
+two legs legitimately carry different numbers. See
+[multi_currency_accounts.md](multi_currency_accounts.md) D4 / rule 6 for the
+money model; these are the transaction-side contracts.
+
+25. **`amount` always means the source (expense-leg) amount; `destinationAmount` always means the far side.** `TransactionFormState._forTransferEdit` routes the tapped leg into the matching field — tapping the **income** leg seeds `destinationAmount` and leaves `amount` at 0 until the counterpart arrives. Without this the form would submit the tapped leg's figure on both sides and silently rewrite the other currency's stored value.
+26. **`isCrossCurrency = isTransfer && accountCurrency != destinationCurrency`.** Currencies are resolved from the account list, not from the transaction (a `TransactionEntity` has no currency field — its currency *is* its account's, see [multi_currency_accounts.md](multi_currency_accounts.md) §3.2).
+27. **The received amount is required when the currencies differ** — `isValid` adds `isCrossCurrency && destinationAmount > 0`. A same-currency transfer ignores `destinationAmount` entirely and reuses `amount` on both legs (`_assembleTransferLeg` is called with `amount: state.isCrossCurrency ? state.destinationAmount : null`, and `null` falls back to `state.amount`).
+28. **Currency resolution is best-effort and order-independent.** `_loadAccountCurrencies` maps account id → currency once via `GetAccountsUseCase`; a miss (or a failed load) defaults to `Currency.brl`, so cross-currency simply isn't detected rather than blocking the form. `_resolveTransferCounterpart` re-resolves **both** currencies itself, because the account it fills in is half of the cross-currency test — the two async paths may land in either order and both converge on the same answer.
+29. **No FX rate is stored.** Only the two leg amounts are persisted; the implied rate is whatever the user entered. This is the one place in the app where a specific conversion is recorded (`multi_currency_accounts.md` §1, "Key simplification").
 
 ## Repository Contract
 
@@ -207,24 +231,46 @@ Default year/month: DateTime.now() when not specified in event.
 ```
 State: { userId, type, amount, description, date, accountId, categoryId,
          destinationAccountId, notes, status, settlementStatus, recurrence,
-         recurrenceIntervalMonths, installmentCount,
+         recurrenceGroupId?, recurrenceIntervalMonths, recurrenceIndex?,
+         recurrenceTotal?, recurrenceBaseDescription?, recurrenceEndDate?,
+         installmentCount,
          isTransfer,
+         accountCurrency, destinationCurrency, destinationAmount,
          existingId?, linkedTransactionId?,
-         originalCreatedAt?, destinationCreatedAt?, failure? }
+         originalDueDate?, originalTransaction?,
+         originalCreatedAt?, destinationCreatedAt?,
+         savedTransactionId?, continueAfterSave, failure? }
 
+  // accountCurrency      = source account's currency  (default brl)
+  // destinationCurrency  = destination account's currency (default brl)
+  // destinationAmount    = amount landing on the far side, in destinationCurrency
+  //                        (cross-currency transfers only — Transfer Rules 25–29)
+  // originalDueDate      = the edited row's dueDate at form-open time
+  // originalTransaction  = the whole edited entity; backs isSequenceMember and
+  //                        the "this and following" sequence update
   // originalCreatedAt    = expense-leg createdAt (preserved on update)
   // destinationCreatedAt = income-leg createdAt (preserved on transfer update)
 
-Deps: createTransaction, updateTransaction, createTransfer, getTransaction
-Deps also include batch recurring create/update/delete use cases.
+Deps: createTransaction, updateTransaction, createTransfer, getTransaction,
+      getAccounts (GetAccountsUseCase — resolves account id → currency)
+Deps also include batch recurring create/update/delete use cases
+      (createTransactions?, updateTransactionSequence?).
 
-isEditing  = existingId != null
-isTransfer = state.isTransfer flag (or linkedTransactionId != null on existing)
+isEditing        = existingId != null
+isTransfer       = state.isTransfer flag (or linkedTransactionId != null on existing)
+isSequenceMember = originalTransaction?.isRecurring ?? recurrence != single
+isCrossCurrency  = isTransfer && accountCurrency != destinationCurrency
+
+On construct (always):
+  _loadAccountCurrencies() → getAccounts → map id → currency, then re-emit
+  only if a resolved currency actually differs (a no-op first emit would
+  surface as a spurious duplicate state).
 
 On construct (editing a transfer):
-  fetch the linked leg via getTransaction → fill the unknown account so
-  accountId = source (expense leg), destinationAccountId = destination
-  (income leg). See Transfer Rule 23.
+  fetch the linked leg via getTransaction → fill the unknown account, the
+  unknown leg *amount*, and re-resolve both currencies, so accountId =
+  source (expense leg), destinationAccountId = destination (income leg).
+  See Transfer Rules 23, 25, 28.
 
 isValid (normal):
   amount > 0 && accountId.isNotEmpty && categoryId.isNotEmpty
@@ -233,12 +279,24 @@ isValid (normal):
 isValid (transfer):
   amount > 0 && accountId.isNotEmpty && destinationAccountId.isNotEmpty
   && accountId != destinationAccountId && !date.isAfter(endOfToday)
+  && !(isCrossCurrency && destinationAmount <= 0)
 
 Field update methods:
   updateType, updateAmount, updateDescription, updateDate,
-  updateAccountId, updateCategoryId, updateDestinationAccountId, updateNotes,
+  updateAccountId, updateCategoryId, updateDestinationAccountId,
+  updateDestinationAmount, updateNotes,
   updateSettlementStatus, updateRecurrence, updateRecurrenceIntervalMonths,
   updateInstallmentCount, setTransferMode
+
+`updateAccountId` / `updateDestinationAccountId` also stamp that account's
+currency onto `accountCurrency` / `destinationCurrency`, so picking a foreign
+account is what flips `isCrossCurrency`.
+`updateDestinationAmount` parses BR/EN decimals via `parseDecimalAmount` and is
+ignored by submit when the currencies match.
+
+`prepareForNext()` emits `clearedForNextEntry()`: every user-entered field
+(including the three currency fields) survives; only `status`,
+`savedTransactionId`, `continueAfterSave` and `failure` reset.
 
 `updateType` clears the selected category on any expense↔income switch (the two
 category sets are disjoint), mirroring the import-preview "switching type clears
@@ -391,9 +449,20 @@ The CSV import flow has two stages: **parse + preview** and **confirm**. The pre
 - `recurrenceTotal`: total number of installments, null for fixed.
 - `recurrenceBaseDescription`: user-entered description without installment marker.
 - `recurrenceEndDate`: exclusive stop boundary for fixed sequences ended by deleting "this and following".
-- `sourceBillId` and `parentTransactionId` may exist on migrated Firestore
-  documents as legacy audit fields, but they are not part of `TransactionEntity`
-  or the Drift cache in V1.
+**Investing link fields (F8):**
+- `institutionId`: set on an aporte/resgate cash row; makes it invisible to the
+  month's income/expense summary and visible to the 50/30/20 savings bucket.
+- `linkedInvestmentTransactionId`: the `investment_transactions` buy/sell that
+  generated the row. Written and reconciled **only** by
+  `SyncInvestmentCashFlowUseCase` — see
+  [investing_transactions.md](investing_transactions.md) rules 9–12.
+
+**Legacy audit fields:**
+- `sourceBillId` and `parentTransactionId` exist on the documents written by
+  the 2026-06-10 bills migration (`scripts/migrate_bills_to_transactions.js`,
+  see [bills_migration.md](bills_migration.md)). They are **not** part of
+  `TransactionEntity`, the model, or the Drift cache, and no code in `lib/`
+  reads or writes them — they survive only because the migration never deletes.
 
 **Indexes** (the `transactions` composites in `firestore.indexes.json`):
 - `userId` ASC + `date` DESC

@@ -37,9 +37,17 @@ Debated in the integration plan §7 and locked before code:
    `iconKey`/`colorValue` are mapped at port time). The asset→class link moves
    **onto the asset** (`metadata`), matching Investanco.
 4. **`Money`/`Currency` (integer minor units, multi-currency) is adopted ONLY in
-   the investing module.** The rest of Financo keeps `double` BRL. `formatCurrency`
-   gains an additive `Money` overload — no transversal refactor of the ~15
-   cash-side call-sites.
+   the investing module.** The rest of Financo keeps `double` BRL. A **separate**
+   `formatMoney(Money)` is added alongside the existing `formatCurrency(double)`
+   — no transversal refactor of the ~15 cash-side call-sites.
+   *(An earlier draft said "`formatCurrency` gains an additive `Money`
+   overload", contradicting §2 of this same file: Dart has no function
+   overloading, so it was never buildable.)*
+   **Amended by F9.7**: the cash-side function is now
+   `formatCurrency(double value, [Currency currency = Currency.brl])` — an
+   optional positional, not an overload — and it delegates to `formatMoney` for
+   any non-BRL currency. Every pre-F9 call site is unchanged. See
+   [multi_currency_accounts.md](multi_currency_accounts.md) §5.
 5. **Institution is a new sibling collection**, not an overload of `Account`.
 6. **`AccountType.investment` is kept only for the 50/30/20 feature** (savings/aporte
    tag). It no longer hosts holdings; the account-delete → holdings cascade is
@@ -127,9 +135,11 @@ class Money extends Equatable {              // integer minor units — no doubl
 `Money + Money` across currencies **throws** — consolidation must go through FX
 first (`marketValueNative × fxToBase → marketValueBase`). A dedicated
 `formatMoney(Money)` uses `NumberFormat.currency(locale: m.currency.locale,
-symbol: m.currency.symbol)`; the existing `formatCurrency(double)`→BRL stays for
-the cash side. (Separate names, not an overload — Dart has no function
-overloading.)
+symbol: m.currency.symbol)` with a per-currency formatter cache; the cash-side
+`formatCurrency(double, [Currency = brl])` stays for `double` amounts and hands
+off to `formatMoney` when the currency is not BRL. (Separate names, not an
+overload — Dart has no function overloading. Both live in
+`lib/core/utils/currency_formatter.dart`.)
 
 ---
 
@@ -147,6 +157,8 @@ Persisted investing entities add a **`userId`** field (Financo top-level +
 | kind | `InstitutionKind` | `bank, broker, internationalBroker, crypto, other` (informational) |
 | currency | `Currency` | default `brl` |
 | createdAt | DateTime | |
+| bank | String? | F8 — a `BankType.name` display hint for the Dashboard avatar. |
+| color | int? | F8 — ARGB display colour; falls back to a `kind`-derived one. |
 
 Delete blocked while referenced by an asset/transaction → `InUseFailure`.
 
@@ -183,9 +195,14 @@ kind = face-value balance (valued at cost, never stale). Form's Type picker expo
 | currency | `Currency` | the asset's native currency (one column, applied to the 3 money fields) |
 | date | DateTime | not in the future |
 | notes | String? | |
+| fundingAccountId | String? | F8.4 — checking account the cash came from (buy) / went to (sell). Null → no paired cash row. |
+| cashAmountMinor | int? | F8.4 — the **BRL** that moved on the checking side (F8 O2). Non-null only alongside `fundingAccountId`. |
 | createdAt / updatedAt | DateTime | audit |
 
-Invariants (enforced in the repository so form **and** CSV are guarded): institution
+Invariants (enforced in **`SaveAssetTransactionUseCase`**, which both the form
+and the CSV importer go through — not in the repository impl; see
+[investing_transactions.md](investing_transactions.md) § Repository contract):
+institution
 matches asset (else `transactionInstitutionMismatch` / `assetInstitutionRequired`),
 positive quantity for buy/sell (`nonPositiveQuantity`), no oversell at the
 transaction's date over the whole re-validated timeline (`oversell`), no future date
@@ -205,7 +222,7 @@ createdAt`. Flat in UI. The asset→class link + per-asset target live on
 fall back to "não alocado".
 
 ### `Snapshot`  → `investment_snapshots/{id}`  (id = `${userId}_${yyyy-MM-dd}`)
-`id, userId, date, totalValueMinor, totalInvestedMinor, totalPlMinor, currency`.
+`id, userId, date, totalValueMinor, totalInvestedMinor, unrealizedPlMinor, currency`.
 Idempotent per day (`insertOnConflictUpdate`); written at the end of a dashboard
 refresh, **skipped** when no fresh-priced open position exists.
 
@@ -286,7 +303,7 @@ Confirmed: current `app_database.dart:44` → `schemaVersion => 11`.
 
 | Phase | Goal | Effort |
 |---|---|---|
-| **F0** | Scaffolding: port `core/money/`, `formatCurrency(Money)` overload, `dio`, `kInvestingV2`, bump schemaVersion 12, i18n namespace | S |
+| **F0** | Scaffolding: port `core/money/`, add `formatMoney(Money)` (a sibling function, **not** a `formatCurrency` overload — see §0.4/§2), `dio`, `kInvestingV2`, bump schemaVersion 12, i18n namespace | S |
 | **F1** | Data model + persistence: entities, `HoldingCalculator`, oversell, Drift tables+DAOs, `RemoteDataSource`+rules, remove `asset_holdings` | L |
 | **F2** | Quotes/FX + valuation: proxies (brapi/Finnhub) + client adapters (CoinGecko/Tesouro/BCB/FX), caching, `ValuationService` (incl. fixed income) | L |
 | **F3** | Buy/sell/dividend transaction form + CRUD | M |
@@ -305,7 +322,7 @@ Each phase writes its own `docs/specs/<feature>.md` **before** code (spec-driven
 |---|---|
 | Foreign holding, no FX rate | Excluded from `totalValueBase`; kept in `holdings`; UI warns. Native subtotal (`byCurrency`) still shown. |
 | Quote missing | Market value falls back to `investedBase`, `priceStale=true`, `unrealizedPL=0` (no fabricated gains). Exception: `cash` = face value, never stale. |
-| Oversell (raw or backdated) | Blocked at the repository before write (`ValidationFailure(oversell)`); calculator clamps qty to 0 defensively. |
+| Oversell (raw or backdated) | Blocked by `SaveAssetTransactionUseCase` before write (`ValidationFailure(oversell)`); calculator clamps qty to 0 defensively. |
 | Re-buy after full close | Fresh average cost (closed lot not blended). |
 | Snapshot, app opened twice/day | Single row per `yyyy-MM-dd`, updated. |
 | Class targets sum ≠ 100 | UI warns; never blocks. Save is blocked only if it pushes the sum **over** 100%+0.01. |
