@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/chat/domain/entities/chat_message_entity.dart';
 
 class ChatMessageModel extends ChatMessageEntity {
@@ -16,7 +17,7 @@ class ChatMessageModel extends ChatMessageEntity {
     return ChatMessageModel(
       id: doc.id,
       userId: data['userId'] as String,
-      role: ChatRole.values.byName(data['role'] as String),
+      role: enumByName(ChatRole.values, data['role'], ChatRole.assistant),
       content: data['content'] as String,
       metadata: data['metadata'] as Map<String, dynamic>?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),

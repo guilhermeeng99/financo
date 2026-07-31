@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 
 class AssetModel extends Asset {
@@ -34,9 +35,9 @@ class AssetModel extends Asset {
       userId: data['userId'] as String,
       ticker: data['ticker'] as String,
       name: data['name'] as String,
-      kind: AssetKind.values.byName(data['kind'] as String),
-      market: Market.values.byName(data['market'] as String),
-      currency: Currency.values.byName(data['currency'] as String),
+      kind: enumByName(AssetKind.values, data['kind'], AssetKind.cash),
+      market: enumByName(Market.values, data['market'], Market.global),
+      currency: enumByName(Currency.values, data['currency'], Currency.brl),
       institutionId: data['institutionId'] as String?,
       metadata: rawMeta.map((k, v) => MapEntry(k, v.toString())),
       createdAt: createdAtRaw is Timestamp

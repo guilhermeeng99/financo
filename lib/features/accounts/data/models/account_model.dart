@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 class AccountModel extends AccountEntity {
@@ -30,22 +31,14 @@ class AccountModel extends AccountEntity {
     required String id,
     required Map<String, dynamic> data,
   }) {
-    final bankStr = data['bank'] as String? ?? 'others';
-    final bankType =
-        BankType.values.where((b) => b.name == bankStr).firstOrNull ??
-        BankType.others;
-    final currencyStr = data['currency'] as String? ?? 'brl';
-    final currency =
-        Currency.values.where((c) => c.name == currencyStr).firstOrNull ??
-        Currency.brl;
     return AccountModel(
       id: id,
       userId: data['userId'] as String,
       name: data['name'] as String,
-      type: AccountType.values.byName(data['type'] as String),
-      bank: bankType,
+      type: enumByName(AccountType.values, data['type'], AccountType.checking),
+      bank: enumByName(BankType.values, data['bank'], BankType.others),
       initialBalance: (data['balance'] as num).toDouble(),
-      currency: currency,
+      currency: enumByName(Currency.values, data['currency'], Currency.brl),
       creditLimit: (data['creditLimit'] as num?)?.toDouble(),
       closingDay: data['closingDay'] as int?,
       dueDay: data['dueDay'] as int?,

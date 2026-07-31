@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/snapshot.dart';
 
 class SnapshotModel extends Snapshot {
@@ -17,7 +18,11 @@ class SnapshotModel extends Snapshot {
   }
 
   factory SnapshotModel.fromMap({required Map<String, dynamic> data}) {
-    final currency = Currency.values.byName(data['currency'] as String);
+    final currency = enumByName(
+      Currency.values,
+      data['currency'],
+      Currency.brl,
+    );
     final dateRaw = data['date'];
     return SnapshotModel(
       userId: data['userId'] as String,

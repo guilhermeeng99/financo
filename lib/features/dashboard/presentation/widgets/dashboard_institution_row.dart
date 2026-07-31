@@ -1,8 +1,10 @@
+import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/app/widgets/bank_avatar.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
 import 'package:financo/core/utils/currency_formatter.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:financo/features/dashboard/presentation/widgets/dashboard_row_parts.dart';
@@ -103,20 +105,13 @@ class _InstitutionAvatar extends StatelessWidget {
 
   final InvestmentAccountRow row;
 
-  BankType? _bankFromName(String? name) {
-    if (name == null) return null;
-    return BankType.values.where((b) => b.name == name).firstOrNull;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final bank = _bankFromName(row.bank);
+    final bank = enumByNameOrNull(BankType.values, row.bank);
     if (bank != null) return BankAvatar(bank: bank, size: 36);
 
     final background = Color(row.color ?? 0xFF6C63FF);
-    final foreground = background.computeLuminance() > 0.55
-        ? Colors.black
-        : Colors.white;
+    final foreground = foregroundOn(background);
     final initials = _initials(row.name);
     return Container(
       width: 36,

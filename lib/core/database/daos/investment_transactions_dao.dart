@@ -3,6 +3,7 @@ import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/investment_transactions_table.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 
 part 'investment_transactions_dao.g.dart';
@@ -61,13 +62,13 @@ class InvestmentTransactionsDao extends DatabaseAccessor<AppDatabase>
       );
 
   AssetTransaction _toEntity(LocalInvestmentTransaction row) {
-    final ccy = Currency.values.byName(row.currency);
+    final ccy = enumByName(Currency.values, row.currency, Currency.brl);
     return AssetTransaction(
       id: row.id,
       userId: row.userId,
       institutionId: row.institutionId,
       assetId: row.assetId,
-      kind: TransactionKind.values.byName(row.kind),
+      kind: enumByName(TransactionKind.values, row.kind, TransactionKind.buy),
       quantity: row.quantity,
       unitPrice: Money(row.unitPriceMinor, ccy),
       fees: Money(row.feesMinor, ccy),

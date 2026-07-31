@@ -3,6 +3,7 @@ import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/quotes_table.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/quote.dart';
 
 part 'quotes_dao.g.dart';
@@ -54,7 +55,7 @@ class QuotesDao extends DatabaseAccessor<AppDatabase> with _$QuotesDaoMixin {
   );
 
   Quote _toQuote(LocalQuote row) {
-    final ccy = Currency.values.byName(row.currency);
+    final ccy = enumByName(Currency.values, row.currency, Currency.brl);
     final previous = row.previousCloseMinor;
     return Quote(
       assetId: row.assetId,
@@ -62,7 +63,7 @@ class QuotesDao extends DatabaseAccessor<AppDatabase> with _$QuotesDaoMixin {
       previousClose: previous == null ? null : Money(previous, ccy),
       asOf: row.asOf,
       fetchedAt: row.fetchedAt,
-      source: QuoteSource.values.byName(row.source),
+      source: enumByName(QuoteSource.values, row.source, QuoteSource.manual),
     );
   }
 }

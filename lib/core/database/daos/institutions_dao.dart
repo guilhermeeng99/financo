@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/institutions_table.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 
 part 'institutions_dao.g.dart';
@@ -54,8 +55,8 @@ class InstitutionsDao extends DatabaseAccessor<AppDatabase>
     id: row.id,
     userId: row.userId,
     name: row.name,
-    kind: InstitutionKind.values.byName(row.kind),
-    currency: Currency.values.byName(row.currency),
+    kind: enumByName(InstitutionKind.values, row.kind, InstitutionKind.other),
+    currency: enumByName(Currency.values, row.currency, Currency.brl),
     createdAt: row.createdAt,
     bank: row.bank,
     color: row.color,

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/accounts_table.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 
 part 'accounts_dao.g.dart';
@@ -64,10 +65,10 @@ class AccountsDao extends DatabaseAccessor<AppDatabase>
     id: row.id,
     userId: row.userId,
     name: row.name,
-    type: AccountType.values.byName(row.type),
-    bank: BankType.values.byName(row.bank),
+    type: enumByName(AccountType.values, row.type, AccountType.checking),
+    bank: enumByName(BankType.values, row.bank, BankType.others),
     initialBalance: row.initialBalance,
-    currency: Currency.values.byName(row.currency),
+    currency: enumByName(Currency.values, row.currency, Currency.brl),
     creditLimit: row.creditLimit,
     closingDay: row.closingDay,
     dueDay: row.dueDay,

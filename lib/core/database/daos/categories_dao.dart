@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/categories_table.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 
 part 'categories_dao.g.dart';
@@ -71,14 +72,12 @@ class CategoriesDao extends DatabaseAccessor<AppDatabase>
     name: row.name,
     icon: row.icon,
     color: row.color,
-    type: CategoryType.values.byName(row.type),
+    type: enumByName(CategoryType.values, row.type, CategoryType.expense),
     parentId: row.parentId,
     // Legacy rows may carry an unknown bucket name (e.g. after enum
     // renames); fall back to `null` so the 50/30/20 pipeline treats
     // them as unclassified rather than crashing.
-    bucket: row.bucket == null
-        ? null
-        : CategoryBucket.values.where((b) => b.name == row.bucket).firstOrNull,
+    bucket: enumByNameOrNull(CategoryBucket.values, row.bucket),
     countsIn50_30_20: row.countsInFiftyThirtyTwenty,
   );
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 
 class TransactionModel extends TransactionEntity {
@@ -45,7 +46,11 @@ class TransactionModel extends TransactionEntity {
       userId: data['userId'] as String,
       accountId: data['accountId'] as String,
       categoryId: data['categoryId'] as String,
-      type: TransactionType.values.byName(data['type'] as String),
+      type: enumByName(
+        TransactionType.values,
+        data['type'],
+        TransactionType.expense,
+      ),
       amount: (data['amount'] as num).toDouble(),
       description: data['description'] as String,
       date: (data['date'] as Timestamp).toDate(),
@@ -137,20 +142,20 @@ DateTime? _readDate(Object? value) {
   return null;
 }
 
-TransactionSettlementStatus _parseSettlementStatus(Object? value) {
-  if (value is! String) return TransactionSettlementStatus.paid;
-  return TransactionSettlementStatus.values.firstWhere(
-    (status) => status.name == value,
-    orElse: () => TransactionSettlementStatus.paid,
-  );
-}
+TransactionSettlementStatus _parseSettlementStatus(Object? value) => enumByName(
+  TransactionSettlementStatus.values,
+  value,
+  TransactionSettlementStatus.paid,
+);
 
 TransactionRecurrence _parseRecurrence(Object? value) {
+  // Pre-2026-06-10 bills carried their own vocabulary; map it before the
+  // generic lookup so migrated rows keep their recurrence.
   if (value == 'oneShot') return TransactionRecurrence.single;
   if (value == 'monthly') return TransactionRecurrence.fixed;
-  if (value is! String) return TransactionRecurrence.single;
-  return TransactionRecurrence.values.firstWhere(
-    (recurrence) => recurrence.name == value,
-    orElse: () => TransactionRecurrence.single,
+  return enumByName(
+    TransactionRecurrence.values,
+    value,
+    TransactionRecurrence.single,
   );
 }

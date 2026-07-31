@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/transactions_table.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 
 part 'transactions_dao.g.dart';
@@ -153,7 +154,7 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
     userId: row.userId,
     accountId: row.accountId,
     categoryId: row.categoryId,
-    type: TransactionType.values.byName(row.type),
+    type: enumByName(TransactionType.values, row.type, TransactionType.expense),
     amount: row.amount,
     description: row.description,
     date: row.date,
@@ -176,17 +177,20 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
   );
 }
 
-TransactionSettlementStatus _parseSettlementStatus(String value) =>
-    TransactionSettlementStatus.values.firstWhere(
-      (status) => status.name == value,
-      orElse: () => TransactionSettlementStatus.paid,
-    );
+TransactionSettlementStatus _parseSettlementStatus(String value) => enumByName(
+  TransactionSettlementStatus.values,
+  value,
+  TransactionSettlementStatus.paid,
+);
 
 TransactionRecurrence _parseRecurrence(String value) {
+  // Pre-2026-06-10 bills carried their own vocabulary; map it before the
+  // generic lookup so migrated rows keep their recurrence.
   if (value == 'oneShot') return TransactionRecurrence.single;
   if (value == 'monthly') return TransactionRecurrence.fixed;
-  return TransactionRecurrence.values.firstWhere(
-    (recurrence) => recurrence.name == value,
-    orElse: () => TransactionRecurrence.single,
+  return enumByName(
+    TransactionRecurrence.values,
+    value,
+    TransactionRecurrence.single,
   );
 }

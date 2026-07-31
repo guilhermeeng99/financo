@@ -3,6 +3,7 @@ import 'package:financo/core/database/app_database.dart';
 import 'package:financo/core/database/tables/investment_snapshots_table.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/snapshot.dart';
 
 part 'investment_snapshots_dao.g.dart';
@@ -48,7 +49,7 @@ class InvestmentSnapshotsDao extends DatabaseAccessor<AppDatabase>
       );
 
   Snapshot _toEntity(LocalInvestmentSnapshot row) {
-    final currency = Currency.values.byName(row.currency);
+    final currency = enumByName(Currency.values, row.currency, Currency.brl);
     return Snapshot(
       userId: row.userId,
       date: row.date,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/money/money.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 
 class AssetTransactionModel extends AssetTransaction {
@@ -33,13 +34,17 @@ class AssetTransactionModel extends AssetTransaction {
     required String id,
     required Map<String, dynamic> data,
   }) {
-    final ccy = Currency.values.byName(data['currency'] as String);
+    final ccy = enumByName(Currency.values, data['currency'], Currency.brl);
     return AssetTransactionModel(
       id: id,
       userId: data['userId'] as String,
       institutionId: data['institutionId'] as String,
       assetId: data['assetId'] as String,
-      kind: TransactionKind.values.byName(data['kind'] as String),
+      kind: enumByName(
+        TransactionKind.values,
+        data['kind'],
+        TransactionKind.buy,
+      ),
       quantity: (data['quantity'] as num).toDouble(),
       unitPrice: Money((data['unitPriceMinor'] as num).toInt(), ccy),
       fees: Money((data['feesMinor'] as num).toInt(), ccy),

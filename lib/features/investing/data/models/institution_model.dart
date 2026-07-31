@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financo/core/money/currency.dart';
+import 'package:financo/core/utils/enum_parse.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
 
 class InstitutionModel extends Institution {
@@ -30,8 +31,12 @@ class InstitutionModel extends Institution {
       id: id,
       userId: data['userId'] as String,
       name: data['name'] as String,
-      kind: InstitutionKind.values.byName(data['kind'] as String),
-      currency: Currency.values.byName(data['currency'] as String),
+      kind: enumByName(
+        InstitutionKind.values,
+        data['kind'],
+        InstitutionKind.other,
+      ),
+      currency: enumByName(Currency.values, data['currency'], Currency.brl),
       createdAt: createdAtRaw is Timestamp
           ? createdAtRaw.toDate()
           : DateTime.tryParse(createdAtRaw?.toString() ?? '') ?? DateTime.now(),
