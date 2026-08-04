@@ -68,7 +68,7 @@ jobs:
       - name: Download Drift web assets
         run: |
           curl -L -o web/sqlite3.wasm \
-            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.0/sqlite3.wasm"
+            "https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.1/sqlite3.wasm"
           curl -L -o web/drift_worker.dart.js \
             "https://github.com/simolus3/drift/releases/download/drift-2.34.3/drift_worker.js"
       - name: Build web
