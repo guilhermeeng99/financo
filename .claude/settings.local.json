@@ -28,6 +28,7 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\nTime: %{time_total}s\\\\n\" \"https://us-central1-financo-app-2026.cloudfunctions.net/whatsappWebhook?hub.mode=subscribe&hub.verify_token=financo-webhook-2026-a7k9p3xm2v&hub.challenge=test123\")",
       "Bash(curl -v \"https://us-central1-financo-app-2026.cloudfunctions.net/whatsappWebhook?hub.mode=subscribe&hub.verify_token=financo-webhook-2026-a7k9p3xm2v&hub.challenge=test123\")",
       "Bash(node -e ' *)",
+      "Bash(node *)",
       "Read(//tmp/**)",
       "Bash(curl -s -X POST https://us-central1-financo-app-2026.cloudfunctions.net/whatsappWebhook -H 'Content-Type: application/json' -H 'x-hub-signature-256: sha256=c4c56288477d2ff6dfe024b1a710e906107ca12883f2b38023948dddb22536c7' -d '{\"object\":\"whatsapp_business_account\",\"entry\":[{\"id\":\"1497932461811065\",\"changes\":[{\"value\":{\"messaging_product\":\"whatsapp\",\"metadata\":{\"display_phone_number\":\"15556396989\",\"phone_number_id\":\"1116746368182567\"},\"contacts\":[{\"profile\":{\"name\":\"Guilherme\"},\"wa_id\":\"557183485225\"}],\"messages\":[{\"from\":\"557183485225\",\"id\":\"wamid.test-1776971492078\",\"timestamp\":\"1776971492\",\"text\":{\"body\":\"teste manual\"},\"type\":\"text\"}]},\"field\":\"messages\"}]}]}' -w '\\\\nHTTP: %{http_code}\\\\n')",
       "Bash(gcloud --version)",
