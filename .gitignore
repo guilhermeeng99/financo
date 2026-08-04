@@ -46,3 +46,11 @@ app.*.map.json
 /android/app/upload-keystore.jks
 /android/app/upload-keystore.jks.base64.txt
 /android/key.properties
+
+# slang_build_runner writes its output next to the input JSON, ignoring the
+# `output_directory` in slang.yaml. The real, imported output is the CLI's
+# (`dart run slang` -> lib/gen/i18n/). Committing this stray copy breaks CI:
+# a clean checkout has no build cache, so build_runner sees a pre-existing
+# asset it wants to write and fails with InvalidOutputException — and
+# build_runner 2.16 removed the --delete-conflicting-outputs escape hatch.
+lib/app/assets/i18n/strings*.g.dart
