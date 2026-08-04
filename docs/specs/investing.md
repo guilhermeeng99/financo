@@ -55,9 +55,10 @@ Debated in the integration plan §7 and locked before code:
 
 > **Superseded by F8 (2026-07-25)**: decisions 5 & 6 are reversed. The
 > `Institution` becomes the single "investment account" record (B1), the
-> `AccountType.investment` account is **retired in data** (removal tracked as
-> F8.6), and 50/30/20 savings is driven by `institutionId`-tagged aporte/resgate
-> cash flows rather than an account type. See
+> `AccountType.investment` account was **retired in data** by F8 and the enum
+> value **removed** in F8.6, and 50/30/20 savings is driven by
+> `institutionId`-tagged aporte/resgate cash flows rather than an account
+> type. See
 > [investing_account_unification.md](investing_account_unification.md).
 7. **Existing `asset_holdings` data is discarded** on cutover (inconvertible — no
    ticker/quantity/price). Users re-enter positions via transactions / CSV import.
@@ -284,10 +285,10 @@ Confirmed: current `app_database.dart:44` → `schemaVersion => 11`.
 ## 6. Cross-feature wiring & migration
 
 - **Model-A removal**: delete the balance-ceiling checks; market value lives in the
-  new ledger, decoupled from `account_balance_calculator.dart`. Verify the
-  dashboard and 50/30/20 (which today treat `investment` accounts like checking)
-  still behave — 50/30/20 keeps using `AccountType.investment` purely as a
-  savings/aporte tag.
+  new ledger, decoupled from `account_balance_calculator.dart`. *(Written
+  pre-F8: it also planned to keep `AccountType.investment` as a savings/aporte
+  tag for 50/30/20. F8 replaced that with `institutionId`-tagged cash flows and
+  F8.6 removed the account type.)*
 - **Account-delete cascade**: `delete_account_with_dependents_usecase.dart` no
   longer deletes holdings (they're decoupled) — that call becomes a no-op/removed.
 - **Data migration**: `asset_classes` preserved (same shape). `asset_holdings`

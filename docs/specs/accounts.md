@@ -7,14 +7,14 @@ AccountEntity {
   id:              String   (required, Firestore doc ID)
   userId:          String   (required, owner)
   name:            String   (required, non-empty)
-  type:            AccountType (required: checking | creditCard | investment — investment deprecated, see rule 12)
+  type:            AccountType (required: checking | creditCard — see rule 12)
   bank:            BankType (required: see BankBrand registry — Brazilian banks + non-BR (avenue=US, wise=international) + others)
   initialBalance:  double   (required, seed balance at account creation)
   currency:        Currency (default Currency.brl, set at creation — the currency the account is denominated in; F9, see [multi_currency_accounts.md](multi_currency_accounts.md))
-  creditLimit:     double?  (null for checking/investment, required for creditCard)
-  closingDay:      int?     (null for checking/investment, required for creditCard, 1–31)
-  dueDay:          int?     (null for checking/investment, required for creditCard, 1–31)
-  linkedAccountId: String?  (null for checking/investment, required for creditCard — the checking account that pays the bill)
+  creditLimit:     double?  (null for checking, required for creditCard)
+  closingDay:      int?     (null for checking, required for creditCard, 1–31)
+  dueDay:          int?     (null for checking, required for creditCard, 1–31)
+  linkedAccountId: String?  (null for checking, required for creditCard — the checking account that pays the bill)
   createdAt:       DateTime (required, set on creation)
   currentBalance:  double?  (runtime-only, populated by AccountsCubit from live transactions; null = not yet loaded)
 }
@@ -24,7 +24,7 @@ AccountEntity {
 
 `initialBalance` is the immutable seed entered when the account was created — it lives in Firestore. `currentBalance` is a runtime-only field set by `AccountsCubit.loadAccounts` after fetching all-time transactions (it is **not** persisted). Sign convention is type-specific so the same getter works for both:
 
-- **Checking / Investment**: `currentBalance = initialBalance + Σincome − Σexpense`. Positive means money in the account. Investment accounts track **principal only** (deposits − withdrawals) — market yield is intentionally out of scope. `AccountType.investment` is **deprecated** post-F8 (retired in data; savings now flows through institution aporte/resgate — see rule 12 and [investing_account_unification.md](investing_account_unification.md)).
+- **Checking**: `currentBalance = initialBalance + Σincome − Σexpense`. Positive means money in the account.
 - **Credit card**: `currentBalance = initialBalance + Σexpense − Σincome`. Positive means the amount currently owed; spending raises it, payments (transfers in, refunds) lower it.
 
 The pure helper `applyTransactionsToAccounts(accounts, transactions)` in `lib/features/accounts/domain/account_balance_calculator.dart` is the single source of truth for the math. Transactions that target an unknown `accountId` are ignored.
@@ -54,9 +54,9 @@ Adding a new bank means: append a value to `BankType` and add a matching entry i
 ## Business Rules
 
 1. **Name is required** — cannot be empty.
-2. **Account type is immutable after creation.** The type pill is the only top-level form section that disappears entirely on edit — there is no read-only label, no disabled toggle. Flipping any pair invalidates either the credit-card-only fields or the sign convention applied to every persisted transaction. A transient checking ↔ investment swap was available while the original users migrated their pre-investment-type accounts and has been removed.
+2. **Account type is immutable after creation.** The type pill is the only top-level form section that disappears entirely on edit — there is no read-only label, no disabled toggle. Flipping it invalidates either the credit-card-only fields or the sign convention applied to every persisted transaction.
 3. **Credit card fields are conditional:**
-   - `creditLimit`, `closingDay`, `dueDay`, `linkedAccountId` — required when `type == creditCard`, null when `type == checking` or `type == investment`.
+   - `creditLimit`, `closingDay`, `dueDay`, `linkedAccountId` — required when `type == creditCard`, null when `type == checking`.
    - `linkedAccountId` must reference an existing checking account.
 4. **Validation for credit cards:** an account form is valid when `name.isNotEmpty && (type != creditCard || linkedAccountId.isNotEmpty)`.
 5. **All accounts are deletable** — no concept of system/default accounts.
@@ -80,17 +80,19 @@ Adding a new bank means: append a value to `BankType` and add a matching entry i
 9. **Default type is checking** for new accounts.
 10. **Default closingDay is 1, default dueDay is 10** for credit card forms.
 11. **initialBalance represents the seed balance** — running balance is calculated from transactions.
-12. **`AccountType.investment` is deprecated (F8).** It is retired in data by
-    the F8 migration and no longer hosts savings — savings now flows through
-    institution aporte/resgate cash flows (see
+12. **`AccountType` is `checking | creditCard`.** The `investment` value was
+    removed in F8.6. Brokers are `Institution`s, and 50/30/20 savings flows
+    through `institutionId`-tagged aporte/resgate cash flows (see
     [investing_account_unification.md](investing_account_unification.md) §4
-    rule 7 and [fifty_thirty_twenty.md](fifty_thirty_twenty.md)). The enum value
-    is kept only until F8.6 removes it; while present it behaves like `checking`
-    for the balance calculator and transaction pickers, with no new fields.
-    (Historically, transfers `checking → investment` were the 50/30/20 savings
-    signal.)
-13. **CSV import (V1) does not surface investment accounts.** The importer recognises `Conta Corrente` / `Cartão de Crédito` only; "Investimento" rows are rejected at parse time with a `ValidationFailure` pointing to the offending row. Documented in the import dialog copy. Manual creation via the add-account form is the supported path; full CSV support for investment accounts is deferred.
-14. **Chat action handler (V1) does not create investment accounts.** The `account create` action only accepts `checking` or `creditCard`. The AI is instructed (via USER CONTEXT — see [chat.md](chat.md)) to ask the user to create investment accounts manually.
+    rule 7 and [fifty_thirty_twenty.md](fifty_thirty_twenty.md)); historically
+    a `checking → investment` transfer was the savings signal. A stored row
+    still saying `"investment"` degrades to `checking` through `enumByName`
+    rather than throwing.
+13. **CSV import recognises `Conta Corrente` / `Cartão de Crédito` only.**
+    Anything else is rejected at parse time with a `ValidationFailure` pointing
+    to the offending row. (Pre-F8.6 this rule existed to keep "Investimento"
+    rows out; there is no such type any more.)
+14. **Chat action handler creates `checking` or `creditCard` only** — which, since F8.6, is every type there is.
 
 ## Repository Contract
 
@@ -227,6 +229,19 @@ overdue, or scheduled from the account context. Pending rows are visual only:
 they do not affect `runningBalance`, `totalIncome`, `totalExpenses`, or
 `result`.
 
+**Settling from the statement.** A pending, non-transfer row carries a check
+button (`SettleButton`, shared with the payables/receivables ledger) that runs
+`SettleTransactionUseCase` in one tap. The row keeps its `date` — it stays in
+the month it was scheduled for and just flips to Paid, so confirming a
+September instalment does not move it onto August's statement. Only
+`settledAt`/`updatedAt` take today. Transfers never get the button: the use
+case rejects them with a `ValidationFailure`. After a successful settle the page reloads its own
+statement and refreshes the caches that already hold the row —
+`TransactionsBloc`, `DashboardBloc` and `AccountsCubit` — because the balance
+it just moved is rendered by all three. Editing the row and flipping the form's
+settlement toggle remains available but is no longer the only path; see
+[payables_receivables_refactor.md](payables_receivables_refactor.md).
+
 **Currency (F9.7).** Every figure on the page renders in `account.currency`:
 `AccountStatementPage` passes it to the summary rows, the credit-card
 limit/available lines and every `TransactionTile`. All rows belong to one
@@ -265,7 +280,7 @@ The parser locates each field by **header name** (accent- and case-insensitive),
 |---|---|---|
 | name (required) | `Nome`, `Name`, `Account Name`, `Apelido` | Free text, required |
 | balance (required) | `Saldo inicial`, `Saldo`, `Initial balance`, `Balance`, `Opening balance` | Number — accepts both Brazilian (`421,95`, `1.234,56`) and English (`421.95`, `1,234.56`) decimal styles. The rightmost separator is treated as the decimal point. |
-| type (required) | `Tipo`, `Type`, `Kind` | `Conta Corrente` / `Checking` for checking, `Cartão de Crédito` / `Credit Card` for credit card. Accent- and case-tolerant. **Empty or unrecognized values reject the whole import** with a `ValidationFailure` whose message points to the offending row and lists accepted values. Investment accounts are not importable via CSV in V1 (see rule 13). |
+| type (required) | `Tipo`, `Type`, `Kind` | `Conta Corrente` / `Checking` for checking, `Cartão de Crédito` / `Credit Card` for credit card. Accent- and case-tolerant. **Empty or unrecognized values reject the whole import** with a `ValidationFailure` whose message points to the offending row and lists accepted values.|
 | bank (required) | `Banco`, `Bank` | Resolved via `BankBrand.resolveAlias` — case- and accent-insensitive, accepts labels (`"Banco do Brasil"`), enum names (`"bancoDoBrasil"`) and curated short aliases (`"nu"`, `"bb"`, `"cef"`). Anything unresolved defaults to `BankType.others`. |
 | limit (optional) | `Limite`, `Credit limit`, `Limit` | Number, same format rules as balance. Only used for credit cards. |
 | due (optional) | `Próximo Vencimento`, `Vencimento`, `Due date`, `Due day`, `Next due` | `DD/MM/YYYY` or a bare day number. Only the day is used, populating `dueDay`. Only used for credit cards. |

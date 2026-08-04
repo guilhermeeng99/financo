@@ -1,26 +1,36 @@
 # TODO — Deferred Items
 
 Tracked follow-ups that are intentionally not being done right now, with the
-reason each one is parked. Last reviewed: 2026-07-31.
+reason each one is parked. Last reviewed: 2026-08-04.
 
 ## Backend / dependencies
 
-- [ ] **Migrate `functions/src` to firebase-admin 14 modular API.** Clears the
-      9 moderate `uuid` advisories; v14 removes the legacy namespace API the
-      code currently uses, so this is a code migration, not just a bump.
-- [ ] **Migrate `@google-cloud/vertexai` → `@google/genai`.** The Vertex
-      generative SDK is frozen after 2026-06-24; the pinned 1.12.0 keeps
-      working in the meantime.
-- [ ] **eslint 8 → 10 (flat config).** Blocked: `eslint-config-google` has no
-      flat-config release. `typescript-eslint` is already on 8.
+- [ ] **7 moderate `uuid` advisories (GHSA-w5hq-g745-h8pq) survive
+      transitively.** Path: `gaxios` / `teeny-request` → `@google-cloud/storage`
+      → `firebase-admin` → `firebase-functions`. Our direct `uuid` is already
+      11.1.1 (patched); the vulnerable copies are nested. **Do not run
+      `npm audit fix --force`** — it "fixes" this by downgrading
+      firebase-admin to 10.3.0. An `overrides` entry like the existing `rimraf`
+      one is the shape to try; verify the nested consumers still resolve.
 - [ ] **`uuid` pinned to 11.x** while functions emit CJS — 12+ is ESM-only.
+- [ ] **typescript 6 → 7 in `functions/`.** `site/` is already on 7, so the two
+      Node projects disagree. Major bump; check `tsc` output before adopting.
 
 ## Flutter dependencies
 
-- [ ] **record 6 → 7.** Blocked: needs AGP 9; the project is on AGP 8.11.1.
-- [ ] **package_info_plus 9 → 10.** Blocked: requires `win32 ^6` which
-      conflicts with `file_picker ≤ 11`; revisit when file_picker 12 is
-      stable.
+- [ ] **record 6 → 7.** Blocker is build-side: it needs AGP 9 and the project
+      is on AGP 8.11.1 (`android/settings.gradle.kts`). Needs a real Android
+      build to clear.
+- [ ] **package_info_plus 9 → 10.** Still blocked (re-checked 2026-08-04):
+      10.1+ needs `win32 ^6`, `file_picker` <12 stable pins `win32 ^5`.
+      Careful: `flutter pub upgrade --major-versions --dry-run` *reports* both
+      as resolvable — only because it would drag `file_picker` to a 12.x beta.
+      A plain `pub get` with the bump fails.
+- [ ] **sqlite3 3.5.0 → 3.5.1 is not a free patch.** The Drift web assets are
+      pinned by tag in both `README.md` and `.github/workflows/deploy.yml`, and
+      README states both must match the resolved `pubspec.lock` versions.
+      Bumping the package without re-downloading the matching `sqlite3.wasm`
+      ships a worker built against a different schema surface.
 
 ## Code quality
 
@@ -46,19 +56,11 @@ reason each one is parked. Last reviewed: 2026-07-31.
 
 ## Testing gaps needing small lib changes
 
-- [ ] **Drift DAO tests** — `AppDatabase` only has a no-arg constructor wired
-      to `driftDatabase()`; add an `AppDatabase.forTesting(QueryExecutor)`
-      constructor to enable in-memory DAO tests (transactions_dao first).
 - [ ] **`notification_background_handler`** — FCM background routing is not
       unit-testable as-is; extract the routing logic behind a testable seam.
 
 ## Product / UX
 
-- [ ] **Decide the payables settlement confirmation sheet.** A sheet
-      (settlement date + account adjustment) was spec'd earlier but never
-      implemented; the current UX is one-tap settle with today's date
-      (re-spec'd 2026-06-12 in `docs/specs/payables_receivables_refactor.md`).
-      Either implement the sheet or commit to one-tap permanently.
 - [ ] **50/30/20 "add institution" CTA does not refresh on return.**
       `fifty_thirty_twenty_card.dart` (`_adviceFor`, the
       `AppRoutes.addInstitution` branch — ~line 420) pushes the route without
@@ -100,16 +102,6 @@ reason each one is parked. Last reviewed: 2026-07-31.
 
 ## From deep review (2026-07-26)
 
-- [ ] **F8.6 — remove `AccountType.investment`.** Investment accounts are
-      retired in data (all migrated to institutions), but the enum value + ~15
-      usages remain: `add_account_page` pill, `account_balance_calculator`,
-      `account_card`, `accounts_page`, `dashboard_account_row`,
-      `transaction_account_picker_sheet`, the two payables pages' filters,
-      `compute_fifty_thirty_twenty._netSavingsFlow` (the legacy transfer leg —
-      see `fifty_thirty_twenty.md` rule 9's caveat), and the migration
-      planner/cubit. Real work, not a delete. **Blocked on retiring
-      `lib/features/data_migration/`**, which is built entirely around the enum
-      value — see `docs/specs/data_migration.md` §9.
 - [ ] **Dashboard row scaffold + avatar helper.** `DashboardAccountRow` and
       `DashboardInstitutionRow` still share a near-identical `Material>InkWell>
       Padding>Row` scaffold, and `_InstitutionAvatar` re-implements
@@ -124,6 +116,12 @@ reason each one is parked. Last reviewed: 2026-07-31.
 
 ## Done since the last review
 
+- [x] **firebase-admin 14, `@google/genai`, eslint 10 flat config.** All three
+      shipped in `9b90c6d`; the entries here claiming them as blocked were
+      stale. Note firebase-admin 14 did **not** clear the `uuid` advisories as
+      that entry predicted — see the open item above.
+- [x] **Drift DAO tests.** `AppDatabase.forTesting(QueryExecutor)` exists and
+      13 DAO test files live in `test/core/database/daos/`.
 - [x] **Standardize enum-from-string parsing.** ~~Four idioms across the
       codebase.~~ Shipped as `lib/core/utils/enum_parse.dart`
       (`enumByNameOrNull` / `enumByName`): 34 call sites in `lib/`, and zero
@@ -131,3 +129,14 @@ reason each one is parked. Last reviewed: 2026-07-31.
       value any more.
 - [x] **Routine safe dependency bumps.** `flutter pub upgrade` (in-constraint
       minors/patches) landed in `b78bacc`.
+- [x] **F8.6 — removed `AccountType.investment`.** ~~Blocked on retiring
+      `lib/features/data_migration/`.~~ Unblocked once the last account of that
+      type left Firestore (a test user's, deleted from the master panel). Both
+      went together: the enum value, its ~15 usages, and the whole guided
+      migration feature + spec. The transfer-pairing leg of `_netSavingsFlow`
+      went with it, so `compute50_30_20Overview` no longer takes `accounts`.
+- [x] **Decided the payables settlement confirmation sheet.** ~~Either
+      implement the sheet or commit to one-tap permanently.~~ Committed to
+      one-tap: the sheet is dropped from the spec, and the same `SettleButton`
+      now also sits on pending rows of the account statement. A retroactive
+      settlement date is set by editing the row.

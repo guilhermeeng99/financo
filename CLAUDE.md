@@ -280,7 +280,7 @@ chat_messages/{id}                   → userId, role, content, metadata, create
 allowed_emails/{email}               → addedAt, note?  (doc id is the lower-cased email; gates onboarding — see access_control)
 ```
 
-> **Guided in-app migration**: `lib/features/data_migration/` (route `/migration`) runs the one-time F8.5/F9.6 account→institution migration (see `docs/specs/investing_account_unification.md`).
+> **`AccountType` is `checking | creditCard`.** The `investment` value was removed in F8.6 — brokers are `institutions`, and 50/30/20 savings comes from `institutionId`-tagged aporte/resgate rows on checking accounts. The one-time guided migration that retired it (`lib/features/data_migration/`, route `/migration`) was deleted with it; a stored `"investment"` degrades to `checking` via `enumByName`.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands

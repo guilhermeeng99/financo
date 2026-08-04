@@ -26,15 +26,14 @@ These were debated and locked before code:
   bucket. Bucket is **nullable** because legacy categories created before
   this feature exist — `null` is rendered as "unclassified" and surfaced as
   a prompt to classify, not as an error.
-- **Savings is tracked via account type**, not via a category bucket. A
-  new `AccountType.investment` is added. The savings bucket spend is the
-  **net flow of money transferred from any `checking` account to any
-  `investment` account during the month** — resgates (investment →
-  checking) subtract. *(Superseded by F8: `AccountType.investment` is
-  retired in data and savings is now driven by `institutionId`-tagged
-  aporte/resgate cash flows — see [investing_account_unification.md](investing_account_unification.md)
-  §4 rule 7. The old checking→investment transfer path still counts for
-  any residual legacy data; both are summed — see §2 rule 4.)*
+- **Savings is not a category bucket.** It is the **net flow into the
+  carteira during the month**: `institutionId`-tagged aporte/resgate rows
+  on a checking account, aportes adding and resgates subtracting. See
+  [investing_account_unification.md](investing_account_unification.md) §4
+  rule 7. *(Originally this was a `checking → investment` account transfer,
+  with `AccountType.investment` existing purely to express it. F8 moved
+  brokers to `institutions`; F8.6 removed the account type and with it the
+  transfer-pairing path — it could no longer match anything.)*
 - **Income base is the sum of `income`-typed transactions in the month**
   (no configurable salary in V1). If the month's income sum is 0, the
   card renders an empty-state explaining why percentages can't be shown.
@@ -51,15 +50,10 @@ These were debated and locked before code:
   period only; both deferred to a later iteration. *(Partially superseded:
   V1.1 shipped a 3-month history chart on the detail page — see §12.4.
   Push notifications remain deferred.)*
-- **Account type `investment` has no special fields** (no creditLimit /
-  closingDay / dueDay / linkedAccountId). It behaves like a `checking`
-  account for every cubit/widget that isn't the 50/30/20 calculation.
-  Concretely: it shows up in transaction pickers, can be the source or
-  destination of a transfer, contributes to total balance.
-- **Rendimento (investment yield) is out of scope**. The investment
-  account's `currentBalance` tracks principal (deposits − withdrawals)
-  only. Documented in the UI copy so the user doesn't expect
-  market-value tracking.
+- **Rendimento (investment yield) is out of scope for this card.** Savings
+  counts money *moved* into the carteira, never its market value. The
+  investing feature tracks valuation separately — see
+  [valuation.md](valuation.md).
 
 ## 1. Entity Contract
 
@@ -98,30 +92,23 @@ Rules:
    subcategory to diverge from its parent's bucket. Orphan-parent
    (parent deleted) transactions count as unclassified.
 
-### `AccountType` (modified — see also [accounts.md](accounts.md))
-
-Adds `investment`:
+### `AccountType` (see [accounts.md](accounts.md))
 
 ```dart
-enum AccountType { checking, creditCard, investment }
+enum AccountType { checking, creditCard }
 ```
 
-> **Superseded by F8**: `AccountType.investment` is deprecated and retired in
-> data by the F8 migration (removal tracked as F8.6). Savings is now driven by
-> `institutionId`-tagged aporte/resgate cash flows on `checking` accounts, not
-> by an `investment` account type — see
+> **History**: V1 of this feature added a third value, `investment`, whose only
+> job was to make `checking → investment` transfers identifiable as savings. F8
+> moved brokers to `institutions` and F8.6 removed the value; savings is now
+> driven by `institutionId`-tagged aporte/resgate cash flows on `checking`
+> accounts — see
 > [investing_account_unification.md](investing_account_unification.md) §4 rule 7.
-> The rules below describe the original (pre-F8) behaviour.
+> Rules below that mention the account type describe pre-F8 behaviour.
 
-Rules:
-
-1. Investment accounts use no credit-card-specific fields. Form leaves
-   them unset (same as checking).
-2. Investment accounts contribute to "total balance" displays the same
-   way checking accounts do (positive balance = money you hold).
-3. `account_balance_calculator` treats investment identically to
-   checking: income deposits raise the balance, expenses lower it,
-   transfers move money in/out.
+Pre-F8.6 rules, kept for the record: investment accounts used no
+credit-card-specific fields, contributed to "total balance" like checking, and
+`account_balance_calculator` treated them identically to checking.
 
 ### `FiftyThirtyTwentyOverview` (computed, presentation entity)
 
@@ -133,7 +120,7 @@ field on `DashboardSummary`.
 | income              | double                              | Sum of `income`-type, non-transfer transactions in the period      |
 | needsSpent          | double                              | Sum of expenses in categories where `bucket == needs` (or child)   |
 | wantsSpent          | double                              | Sum of expenses in categories where `bucket == wants` (or child)   |
-| savingsAmount       | double                              | Net `checking → investment` transfer flow in the period (≥ 0)      |
+| savingsAmount       | double                              | Net `institutionId`-tagged aporte − resgate flow in the period (≥ 0) |
 | unclassifiedSpent   | double                              | Expense sum where the resolved root category's `bucket == null` (transaction-based, period-scoped) |
 | unclassifiedCount   | int                                 | Backlog of root expense categories with `bucket == null`. **Category-based, not transaction-based** — surfaces the full classification work to do, independent of whether those categories spent this month. Subcategories and orphans never increment it. |
 | hasInvestmentDestination | bool                           | Whether the user has ≥ 1 custody **institution** (F8 retired `AccountType.investment`, so this is not read from `accounts`); drives which of the two under-target savings tips renders. Passed in by the caller — the compute service stays free of investing types |
@@ -199,27 +186,22 @@ actual < target.
    (orphan category), the transaction counts as unclassified.
 3. **Only `expense`-type transactions count toward needs/wants**.
    Transfers excluded.
-4. **Savings calculation** — two contributions are summed
-   (`_netSavingsFlow` in `compute_fifty_thirty_twenty.dart`):
-   - **(a) Institution aporte/resgate cash flows (F8.3, the current path).**
-     Every transaction tagged with an `institutionId`
-     (`isInvestmentCashFlow`) is a single-entry investment cash flow, not an
-     account↔account transfer: an **aporte** (`expense` — cash leaving
-     checking into a broker) ADDs `amount`; a **resgate** (`income` — payout
-     back) SUBTRACTs `amount`. This is the savings source post-F8. See
+4. **Savings calculation** — one contribution (`_netSavingsFlow` in
+   `compute_fifty_thirty_twenty.dart`):
+   - **Institution aporte/resgate cash flows.** Every transaction tagged with
+     an `institutionId` (`isInvestmentCashFlow`) is a single-entry investment
+     cash flow, not an account↔account transfer: an **aporte** (`expense` —
+     cash leaving checking into a broker) ADDs `amount`; a **resgate**
+     (`income` — payout back) SUBTRACTs `amount`. See
      [investing_account_unification.md](investing_account_unification.md)
      §4 rule 7.
-   - **(b) Legacy checking↔investment transfers.** For any residual data
-     that still uses an `AccountType.investment` account:
-     - Look at every transfer in the month (`linkedTransactionId != null`).
-     - For each transfer pair (one expense leg, one income leg):
-       - expense leg `checking` AND income leg `investment`: ADD `amount`.
-       - expense leg `investment` AND income leg `checking`: SUBTRACT `amount` (resgate).
-       - Any other combination: ignore. Specifically:
-         - checking → checking: not savings, just internal moves
-         - investment → investment: rebalancing within the carteira
-         - any pair involving `creditCard`: cartão payments are not savings
-   - The combined net of (a) + (b) is clamped to `≥ 0` in the overview
+   - Untagged transfers never count, whatever the accounts involved:
+     checking → checking is an internal move, and a payment to a credit card
+     is not savings.
+   - *(Pre-F8.6 a second contribution paired transfer legs looking for a
+     `checking → AccountType.investment` account pair. That enum value is
+     gone, so the branch could not match anything and was deleted.)*
+   - The net is clamped to `≥ 0` in the overview
      (negative net flow means the user took out more than they put in this
      month — we surface savings as `0` so the percentage doesn't go negative).
 5. **Targets are customisable**: defaults are 50 / 30 / 20, but the user can
@@ -248,14 +230,11 @@ actual < target.
    only makes checking accounts and credit cards. This is the most common
    first-time-user state.
 
-   **Caveat until F8.6** (verified 2026-07-31, still true): the legacy leg of
-   `_netSavingsFlow` still credits a `checking → AccountType.investment`
-   transfer, which needs no institution. So a user with zero institutions but
-   surviving pre-migration investment accounts can see `savingsAmount > 0`
-   *and* the "cadastre a corretora" CTA at the same time. The F8.5 guided
-   migration deletes those accounts (`data_migration.md` rule 12), so the
-   disagreement is only reachable on data that has not been migrated; removing
-   the legacy leg is part of F8.6.
+   The card and the number can no longer disagree. Until F8.6, `_netSavingsFlow`
+   also credited a `checking → investment` transfer, which needs no
+   institution — so a user with zero institutions but surviving pre-migration
+   investment accounts could see `savingsAmount > 0` *and* the "cadastre a
+   corretora" CTA at once. Removing the account type removed that leg.
 
 ## 3. Architecture
 
@@ -264,15 +243,15 @@ It piggybacks on `DashboardRepositoryImpl`:
 
 - A pure function `compute50_30_20Overview(...)` lives in
   `lib/features/dashboard/domain/services/compute_fifty_thirty_twenty.dart`.
-  Signature: `periodTransactions`, `categories`, `accounts` (all required) plus
+  Signature: `periodTransactions` and `categories` (required) plus
   `hasInvestmentDestination` (default `false`) and `targets` (default
   `classic`). Output: `FiftyThirtyTwentyOverview`. **Stateless and
   synchronous** — no IO, no async, no DI, and deliberately free of investing
   types: `hasInvestmentDestination` is passed in by
   `DashboardRepositoryImpl` / `FiftyThirtyTwentyDetailCubit` as
   `institutions.isNotEmpty`, which is the one place the two features join.
-  `accounts` is used **only** by the legacy transfer leg of the savings
-  calculation (rule 4b) and becomes dead on F8.6.
+  *(An `accounts` parameter existed until F8.6 to serve the legacy transfer
+  leg of the savings calculation; both went together.)*
 - `DashboardRepositoryImpl.getDashboardSummary` calls this function with
   the data it already fetched and adds the result to `DashboardSummary`
   under a new `fiftyThirtyTwenty` field.
@@ -293,7 +272,6 @@ This avoids:
 Inputs:
   - periodTransactions   : List<TransactionEntity> for [startOfMonth, endOfMonth]
   - categories           : List<CategoryEntity>
-  - accounts             : List<AccountEntity>
 
   Pre-filter (applies to every step below):
     settledTransactions = periodTransactions.where(t.isPaid)
@@ -302,7 +280,6 @@ Inputs:
 
   Pre-build:
     categoriesById  : Map<String, CategoryEntity>
-    accountTypeById : Map<String, AccountType>
 
   Steps:
     1. income = sum(t.amount where t.type == income && !t.isTransfer
@@ -335,23 +312,10 @@ Inputs:
            null    → unclassifiedSpent += t.amount
                      unclassifiedCatIds += rootCat.id
 
-    3. savingsAmount (sum of two contributions):
-       # (a) Institution aporte/resgate cash flows — the F8.3 current path.
+    3. savingsAmount — institution aporte/resgate cash flows:
        for each t in settledTransactions where t.isInvestmentCashFlow (institutionId != null):
          if t.type == expense:  net += t.amount   # aporte
          else:                  net -= t.amount   # resgate
-       # (b) Legacy checking↔investment transfers (residual pre-F8 data).
-       Index settledTransactions by id, then walk only the EXPENSE legs
-       (each pair is visited once; the expense leg always carries the source).
-       A leg whose mate is outside the period window is skipped, as is a pair
-       where either account id no longer resolves to a type.
-       For each pair (expenseLeg, incomeLeg):
-         srcType = accountTypeById[expenseLeg.accountId]
-         dstType = accountTypeById[incomeLeg.accountId]
-         if srcType == checking && dstType == investment:
-           net += amount
-         else if srcType == investment && dstType == checking:
-           net -= amount
        savingsAmount = max(0, net)
 
     4. unclassifiedCount = unclassifiedCatIds.length
@@ -361,8 +325,8 @@ Inputs:
                                            unclassifiedCount }
 ```
 
-Order of complexity: O(T + C + A) where T = transactions, C = categories,
-A = accounts. No nested scans.
+Order of complexity: O(T + C) where T = transactions and C = categories.
+No nested scans.
 
 ## 5. Repository / Use Case
 
@@ -374,7 +338,6 @@ No new repository. No new use case.
 final overview = compute50_30_20Overview(
   periodTransactions: transactions,
   categories: categories,
-  accounts: accounts,
   // The one join between the dashboard and the investing module (F8).
   hasInvestmentDestination: institutions.isNotEmpty,
   targets: targets,
@@ -564,10 +527,10 @@ explicit verification, see §10).
 
 ### Accounts
 
-- `AccountType.investment` round-trips through `AccountModel.toJson` /
-  `fromMap`.
-- `AccountFormCubit` accepts `investment` as a valid type, skipping the
-  credit-card-only required fields.
+- *(Pre-F8.6)* `AccountType.investment` round-tripped through
+  `AccountModel.toJson` / `fromMap` and `AccountFormCubit` accepted it as a
+  valid type. The value no longer exists; a stored `"investment"` now reads
+  back as `checking`.
 
 ### Widget — `fifty_thirty_twenty_card_test.dart`
 
@@ -683,7 +646,7 @@ and we have real usage signal:
 ### 12.4 3-Month History
 
 - New entity `FiftyThirtyTwentyHistoryEntry` (`month`, `overview`).
-- New use case `GetFiftyThirtyTwentyHistoryUseCase` fetches accounts,
+- New use case `GetFiftyThirtyTwentyHistoryUseCase` fetches
   categories and the **whole 3-month window of transactions** in one
   pass, then buckets per month locally and runs
   `compute50_30_20Overview` on each.

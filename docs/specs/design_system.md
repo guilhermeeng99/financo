@@ -209,6 +209,7 @@ comment in its source.
 | `FinancoLargeAppBar` | iOS-style large left-aligned title app bar (default page header). |
 | `FinancoSidebar` | Web/tablet navigation rail (≥600px): brand, nav, month stepper, profile. |
 | `FinancoBottomBar` | Floating pill bottom nav for mobile (<600px); active item expands to a label. |
+| `FinancoSectionTabs` | Mobile-only pill strip under the large title, switching between the destinations of a navigation *group* — the stand-in for the sidebar's collapsible sub-menus (see §7). Pages never build it; `FinancoLargeAppBar` renders it from `sectionTabsListenable`. |
 | `FinancoMonthFilterPill` | Compact month stepper bound to `DateFilterCubit`. |
 | `LiftedFab` | Wraps a FAB so it floats above the mobile bottom bar (see §7). |
 | `SubPageScope` | Marks a pushed sub-page so the shell hides its bottom bar / month pill (see §7). |
@@ -262,6 +263,31 @@ comment in its source.
   `FinancoMonthFilterPill` (centered) since there's no sidebar.
 - **Sub-pages** (account detail, add/edit, accounts/categories lists, …) wrap in
   `SubPageScope`, which hides the bottom bar and month pill for their depth.
+
+### Navigation groups
+The sidebar renders two collapsible groups — Dashboard (payables/receivables,
+paid & received) and Investing (overview, allocation, transactions, assets,
+institutions). Mobile has five fixed bottom-bar destinations and no sidebar, so
+those sub-destinations had **no touch path at all**; they were reachable only by
+typing the URL.
+
+`FinancoSectionTabs` closes that gap: a scrollable pill strip under the large
+title listing the current group's destinations, each a `context.go`.
+
+- The shell is the only widget that knows both the viewport width and the
+  location, so it computes the strip and publishes it through
+  `section_tabs_scope.dart`. `FinancoLargeAppBar` reads that global in
+  `preferredSize` — a plain getter with no `BuildContext`, which is why this is
+  a global and not an inherited widget. Same reason `subPageDepthListenable`
+  exists.
+- The strip follows the bottom bar's rule: primary destinations only, hidden at
+  `SubPageScope` depth > 0.
+- **A group's destinations must not be `SubPageScope`.** They are peers, not
+  pushed pages — wrapping them hides the bottom bar and strands mobile with no
+  way back. The four investing pages were wrapped and were exactly this bug.
+- `FinancoLargeAppBar` renders its back chevron only when `showBack` **and**
+  `Navigator.canPop()`. Pages reached with `go` replace the stack, so the
+  chevron used to render dead.
 
 ### FAB & bottom clearance
 - The floating mobile bar = `16 + 64 + 16 = 96px`. `LiftedFab` lifts the FAB by

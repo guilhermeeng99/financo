@@ -61,7 +61,9 @@ Inputs: `classes: List<AllocationClass>`, `assets: List<Asset>`,
 `PortfolioPricingEngine` exactly like the overview: warm-start → price from
 cache → compute → emit (`isRefreshing: true`) → skip-if-fresh else refresh
 network → re-price → recompute → emit (`isRefreshing: false`). Route
-`/investing/allocation` (a `SubPageScope` under the shell) + sidebar sub-item.
+`/investing/allocation` + sidebar sub-item. It is a **navigation-group peer**,
+not a `SubPageScope`: the sidebar and the mobile section strip both reach it
+with `go`, and wrapping it hid the mobile bottom bar (design_system.md §7).
 
 `InvestingAllocationPage` (Investanco-style) renders: a **donut**
 (`AllocationClassDonut`, `fl_chart`) of the current mix — one arc per class sized

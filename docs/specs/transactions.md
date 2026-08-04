@@ -46,10 +46,6 @@ bool get isDueToday => isPending && day(dueDate) == day(now)
 // Scope selector passed to sequence-aware edit/delete flows (rule 18):
 enum TransactionSequenceScope { onlyThis, thisAndFollowing }
 
-// Recasts a transfer leg as a single-entry investment cash flow: clears
-// linkedTransactionId, sets institutionId. Used by the F8.5 guided migration
-// (docs/specs/data_migration.md rule 12).
-TransactionEntity asInstitutionCashFlow(String institutionId)
 ```
 
 ## Business Rules
@@ -150,10 +146,13 @@ class SettleTransactionUseCase {
 }
 ```
 
-It rejects transfers, then updates the same transaction to `paid`, sets
-`date = settledAt ?? DateTime.now()`, and sets `settledAt` and `updatedAt` to
-that same value, writing the updated row through
-`TransactionRepository.updateTransaction`.
+It rejects transfers with a `TransferNotSettleableFailure`, then updates the
+same transaction to `paid`, stamps `settledAt` and `updatedAt` with the
+confirmation instant (`settledAt ?? DateTime.now()`), and **leaves `date` on
+the row's `dueDate`** — the movement keeps belonging to the month it was
+scheduled for. Writing goes through `TransactionRepository.updateTransaction`.
+See [payables_receivables_refactor.md](payables_receivables_refactor.md)
+rule 8 for why, and rule 4 for the paid-with-a-future-date consequence.
 
 **Cache strategy:**
 - `forceRefresh: false` → read from local Drift cache only (with filters).
@@ -472,3 +471,12 @@ The CSV import flow has two stages: **parse + preview** and **confirm**. The pre
 - `settlementStatus` ASC + `dueDate` ASC — serves the cross-user
   `notifyTransactionsDue` scheduled function (`settlementStatus == 'pending'`
   + `dueDate <= end of today`; deliberately not scoped by `userId`)
+
+**Query ordering** — the remote query orders by `dueDate` whenever it filters
+on a due-date range **or** on `recurrenceGroupId` without a `date` range;
+otherwise it orders by `date`. Firestore needs a composite index for every
+`(equalities…, orderBy)` shape, so a `recurrenceGroupId` lookup ordered by
+`date` would demand a fifth index; ordering it by `dueDate` rides the declared
+one above. The ordering is not otherwise observable — the repository upserts
+the remote rows into Drift and re-reads them through the DAO, which applies
+its own sort.

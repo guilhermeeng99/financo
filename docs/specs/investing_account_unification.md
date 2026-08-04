@@ -1,8 +1,10 @@
 # Investing Account Unification (F8)
 
-**Status:** Implemented. Decisions B1 + automation + guided migration locked with
-the user 2026-07-25 and shipped; the one residual item is **F8.6 — remove
-`AccountType.investment`** (deprecated in data, enum value still present). This
+**Status:** Complete. Decisions B1 + automation + guided migration locked with
+the user 2026-07-25 and shipped. **F8.6 closed it out**: the
+`AccountType.investment` enum value is gone, and the guided migration feature
+(`lib/features/data_migration/`, route `/migration`) was deleted with it once no
+account of that type remained in Firestore. This
 spec supersedes the relevant parts of `investing.md §0` (which deliberately
 *decoupled* account and institution on 2026-07-22); F8 is a deliberate
 re-reversal toward a single record.
@@ -104,11 +106,10 @@ institution — value is always **derived** from `PortfolioValuation.byInstituti
 
 ### 3.2 `AccountEntity`
 
-- `AccountType` reduces (effectively) to `{ checking, creditCard }` for **new**
-  data. `investment` is **deprecated**, retained in the enum only so
-  legacy/in-flight docs deserialize during migration, then removed post-cutover.
-  *(F8.6 pending: the `investment` pill still renders in `add_account_page.dart`,
-  so the type is technically still creatable until the enum value is removed.)*
+- `AccountType` is `{ checking, creditCard }`. `investment` was retained through
+  the migration so legacy docs kept deserializing, then removed in F8.6 along
+  with its pill in `add_account_page.dart`. A stored `"investment"` now degrades
+  to `checking` via `enumByName`.
 - No other field changes. `linkedAccountId` (credit-card → paying checking) is
   unaffected.
 
@@ -175,9 +176,8 @@ A transaction may represent cash moving between a **checking account** and an
    is what still feeds the Total. Every institution row carries an "Investment"
    tag (not the currency code — that moved to the amount column).
 10. **No investment account creation.** The add-account form offers only
-    `checking`/`creditCard`. Brokers are created in the investing Institutions UI.
-    *(F8.6 pending: the `investment` type pill still renders in
-    `add_account_page.dart` until the enum value is removed.)*
+    `checking`/`creditCard` — since F8.6 those are the only types there are.
+    Brokers are created in the investing Institutions UI.
 11. **Market values warm at startup.** `InstitutionValuationReader` prices
     cache-only (no network), so its figures are only correct once the shared
     market-quote cache is warm — and only `InvestingOverviewCubit.load()`'s
@@ -240,13 +240,17 @@ A transaction may represent cash moving between a **checking account** and an
 
 ## 6. Migration (guided, F8-M)
 
-> **Implemented** as `lib/features/data_migration/` (route `/migration`), which
-> also carries F9.6. The steps below are the *intent*; the shipped contract —
-> planner rules, executor write order, the 5-state cubit, what a partial run
-> leaves behind — is [data_migration.md](data_migration.md). Two deliberate
-> departures from this list: step 1's JSON backup is **not** automated (the
-> executor has no rollback; a partial run is finished by re-opening the page),
-> and step 5's cutover flag does not exist (the unified model was never gated).
+> **Done and removed.** This shipped as `lib/features/data_migration/` (route
+> `/migration`), a plan-then-apply screen that also carried F9.6. Once no
+> account of type `investment` remained in Firestore, F8.6 deleted the feature
+> and its spec — a one-shot migration with nothing left to migrate is dead
+> code, and keeping it blocked removing the enum value it was built around.
+> The steps below are the original *intent*, kept as the record of what the
+> data went through. Two deliberate departures from this list: step 1's JSON
+> backup was never automated (the executor had no rollback; a partial run was
+> finished by re-opening the page), and step 5's cutover flag never existed
+> (the unified model was never gated). `git log -- lib/features/data_migration`
+> has the implementation if a similar rewrite is ever needed.
 
 Applied to the user's **production** Firestore, one reversible step at a time,
 each previewed and approved:
@@ -300,11 +304,16 @@ Rollback = restore the backed-up docs.
     `investing.md` §9 ("AI-chat actions for investing entities" is out of scope
     for V2); the F8.4 row was simply wrong. Tracked in `TODO.md`.
 - **F8.5** — Guided migration (F8-M) on real data. Shipped as an in-app,
-  plan-then-apply screen at `/migration` — full contract in
-  [data_migration.md](data_migration.md).
-- **F8.6** — Remove `AccountType.investment`, dead code, stale docs; update
-  `accounts.md`, `investing.md`, `dashboard.md`, `fifty_thirty_twenty.md`,
-  `institutions.md`, CLAUDE.md Firestore notes.
+  plan-then-apply screen at `/migration`; see §6.
+- **F8.6** — **Done.** Removed `AccountType.investment` and everything built on
+  it: the type pill and its hint in `add_account_page`, the investments section
+  of `accounts_page`, the pill/label branches in `account_card`,
+  `dashboard_account_row` and `transaction_account_picker_sheet`, the two
+  payables account filters, the `_delta` branch in
+  `account_balance_calculator`, the transfer-pairing leg of `_netSavingsFlow`
+  (and with it the `accounts` parameter of `compute50_30_20Overview`), the
+  now-callerless `TransactionEntity.asInstitutionCashFlow`, the four orphaned
+  `accounts.investment*` i18n keys, and the whole `data_migration` feature.
 
 Each phase: `dart run build_runner build` / `dart run slang` as needed,
 `flutter analyze` zero issues, `flutter test` green, regression tests for money paths.

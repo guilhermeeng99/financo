@@ -36,6 +36,7 @@ functions/
     ├── chat/     # Gemini pipeline, action extractor
     ├── quotes/   # fetchInvestmentQuotes market-data proxy (brapi / Finnhub)
     ├── transactions/ # Scheduled pending-transaction notifier
+    ├── config.ts # Project constants: master email, allowlist collection
     └── limits.ts # Request-size caps + mimetype allowlists for the AI callables
 
 docs/specs/       # Per-feature contracts (entities, business rules, state machines)
@@ -69,8 +70,8 @@ Each `features/<x>/` module follows:
 
 Backend (`functions/`):
 
-- **Node.js 22**, TypeScript, `firebase-functions` v7
-- Vertex AI Gemini via `@google-cloud/vertexai`
+- **Node.js 22**, TypeScript, `firebase-functions` v7, `firebase-admin` v14
+- Vertex AI Gemini via `@google/genai`
 
 ## Spec-driven development
 
@@ -102,7 +103,7 @@ together.
 
 ```bash
 curl -L -o web/sqlite3.wasm \
-  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.0/sqlite3.wasm
+  https://github.com/simolus3/sqlite3.dart/releases/download/sqlite3-3.5.1/sqlite3.wasm
 curl -L -o web/drift_worker.dart.js \
   https://github.com/simolus3/drift/releases/download/drift-2.34.3/drift_worker.js
 ```
@@ -154,3 +155,14 @@ GitHub Actions automates the client release on every push to `main` ([`.github/w
 - Publishes to GitHub Pages: landing page at the root (`/financo/`), the web app at `/financo/app/`, and the signed APK at `/financo.apk`
 
 Cloud Functions deploys are manual: `firebase deploy --only functions` from the repo root, or `firebase deploy --only functions:<name>` for a single function.
+
+### Building a release by hand
+
+**`--no-tree-shake-icons` is required**, on web and Android alike — a plain
+`flutter build web --release` fails outright. The category icon picker builds
+`IconData` from a runtime code point (`lib/core/utils/dynamic_icon.dart`), which
+the icon tree-shaker cannot subset. The CI workflow already passes the flag.
+
+```bash
+flutter build web --release --no-tree-shake-icons
+```

@@ -9,8 +9,9 @@ Where assets are custodied: Nubank, Avenue, a broker, a bank.
 > institution as "pure organizational grouping … a sibling collection, **not**
 > an overload of `Account`" (umbrella §0 decision 5). F8 decision **D1**
 > reverses that: the `Institution` **is** the single "investment account"
-> record. `AccountType.investment` is retired in data (removal tracked as
-> F8.6), an institution's Dashboard value is its derived market value, and it
+> record. `AccountType.investment` was retired in data by F8 and removed from
+> the enum in F8.6, an institution's Dashboard value is its derived market
+> value, and it
 > carries `bank`/`color` display hints so it renders like an account row. See
 > [investing_account_unification.md](investing_account_unification.md) §2–§4.
 > The rules below still hold — F8 added responsibilities, it did not change the
@@ -36,10 +37,10 @@ falls back to a `kind`-derived colour when null)`. `Equatable` + `copyWith`.
 2. Deleting an institution referenced by any asset or transaction is **blocked**
    → `InstitutionInUseFailure`, enforced in `DeleteInstitutionUseCase`.
    Reassign/delete the assets first.
-   > The F9.6 guided migration calls `InstitutionRepository.deleteInstitution`
-   > **directly**, bypassing this guard. Its own asset-count check
-   > ([data_migration.md](data_migration.md) rule 8) is what stands in for it;
-   > note that check counts *assets*, not transactions.
+   > The F9.6 guided migration used to call
+   > `InstitutionRepository.deleteInstitution` **directly**, bypassing this
+   > guard and relying on its own asset-count check. That migration feature was
+   > deleted in F8.6, so this guard is now the only path.
 3. `kind` is informational — it never affects pricing (pricing is per-asset).
 4. No seed defaults — the user adds institutions manually; the empty state suggests
    "Nubank, Avenue, …".
@@ -89,4 +90,4 @@ return a `Failure?` for the form.
 | Duplicate name (case-insensitive) | `ValidationFailure(duplicateInstitutionName)` |
 | Delete while referenced | `InUseFailure`; list unchanged |
 | Empty list | Empty state with "add institution" CTA. Also drives the 50/30/20 "cadastre a corretora" tip → `/investing/institution/add` (`fifty_thirty_twenty.md` rule 9) |
-| Mis-modelled as a foreign cash account (Wise) | Converted to a `checking` account by the guided migration, then deleted — only when it holds **zero** assets. See [data_migration.md](data_migration.md) rules 8/14 |
+| Mis-modelled as a foreign cash account (Wise) | Was converted to a `checking` account by the F9.6 guided migration, then deleted — only when it held **zero** assets. That migration is done and its feature removed (see [investing_account_unification.md](investing_account_unification.md) §6) |

@@ -142,16 +142,33 @@ bool get isDueToday =>
 2. New transactions dated in the future default to `pending`.
 3. New transactions dated today or in the past default to `paid`, but the form
    must allow the user to explicitly save them as `pending`.
-4. A `paid` transaction cannot have a future `date`.
+4. A transaction **being created or being flipped to paid inside the form**
+   cannot have a future `date` — the form pushes such a row back to `pending`
+   instead. This is a creation-time rule, not an invariant: settling a
+   scheduled row keeps its due date (rule 8), so an already-settled row can
+   legally sit in the future, and the form must keep it editable rather than
+   invalidating it. `TransactionFormState.wasAlreadySettled` is the switch.
 5. A `pending` transaction can have `dueDate` in the past, today, or future.
 6. `dueDate` is date-only and normalized to local midnight.
 7. `settledAt` is date-only when used as a reporting date; timestamp precision
    is not required for V1.
 8. Marking a pending payable as paid sets:
    - `settlementStatus = paid`
-   - `settledAt = chosen settlement date` (default today)
-   - `date = chosen settlement date`
+   - `settledAt = now` — when the user confirmed it
+   - `date = dueDate` — **unchanged**; the movement keeps belonging to the
+     month it was scheduled for
    - `updatedAt = now`
+
+   `date` used to become the settlement date, which dragged a September
+   credit-card instalment onto August's invoice the moment it was confirmed.
+   The invoice month is a fact of the charge, not of the confirmation.
+   Consequences, accepted deliberately:
+   - A bill paid late still counts in the month it was due, not the month the
+     money left. The app reports on `date`, so this is accrual-flavoured.
+   - Confirming a *future* row makes it count immediately in account balances
+     (`applyTransactionsToAccounts` sums every paid row regardless of date)
+     while the statement still lists it under its own month.
+   - To record a genuinely different settlement date, edit the row's date.
 9. Marking a pending receivable as received uses the same rule as payable.
 10. Pending transactions do not affect:
     - account balances
@@ -415,11 +432,21 @@ Tapping "mark as paid/received" on a pending row settles it in one tap:
 
 - The row action immediately calls `SettleTransactionUseCase(transaction)`
   with today as the settlement date — there is no confirmation sheet and no
-  date/account adjustment step in V1.
+  date/account adjustment step. **Decided permanently** (the sheet was spec'd
+  early on, never built, and is now dropped): a settle is one tap, and a
+  retroactive settlement date is set by editing the row instead.
 - On success the page shows a paid/received snackbar and refreshes itself plus
   dependent state (`TransactionsBloc`, `DashboardBloc`, `AccountsCubit`).
 - Settling updates the existing transaction; it does not create a second
   record.
+
+**The same action lives on the account statement.** `SettleButton`
+(`lib/app/widgets/settle_button.dart`) is shared by this ledger and
+`AccountStatementPage`, so both render the same check affordance, use the same
+accent rule (income green for a receivable, expense red for a payable), and run
+the same use case with the same dependent refresh. `TransactionTile` only draws
+it for rows that can actually be settled — pending and non-transfer. See
+[accounts.md](accounts.md) "Settling from the statement".
 
 ## Dashboard / Reports / Balances
 

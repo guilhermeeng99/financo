@@ -193,8 +193,9 @@ statement layers. Returns null when no rate is cached (O3).
 - **F9.5** — Cross-currency transfer (two leg amounts + FX default).
 - **F9.6** — Guided migration (F9-M): existing → BRL; Wise institutions → EUR
   accounts. Shipped as the in-app plan-then-apply screen at `/migration`, shared
-  with F8.5 — contract in [data_migration.md](data_migration.md). Docs/CLAUDE.md
-  updates.
+  with F8.5. The screen was deleted in F8.6 once the migration had nothing left
+  to do — see
+  [investing_account_unification.md](investing_account_unification.md) §6.
 - **F9.7** — Currency reaches the widgets. Input side: `FinancoCurrencyField`
   takes a `Currency`, `BrlCurrencyInputFormatter` → `CurrencyInputFormatter`,
   wired through the transaction form (source + cross-currency destination), the
