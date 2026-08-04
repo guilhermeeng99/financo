@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
-import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
@@ -8,24 +7,20 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../../harness/factories/account_factory.dart';
 import '../../../../harness/factories/category_factory.dart';
 import '../../../../harness/factories/transaction_factory.dart';
 import '../../../../harness/mocks.dart';
 
 void main() {
   late MockTransactionRepository txRepo;
-  late MockAccountRepository accRepo;
   late MockCategoryRepository catRepo;
   late GetFiftyThirtyTwentyHistoryUseCase useCase;
 
   setUp(() {
     txRepo = MockTransactionRepository();
-    accRepo = MockAccountRepository();
     catRepo = MockCategoryRepository();
     useCase = GetFiftyThirtyTwentyHistoryUseCase(
       transactionRepository: txRepo,
-      accountRepository: accRepo,
       categoryRepository: catRepo,
     );
   });
@@ -34,17 +29,8 @@ void main() {
   final needsCat = CategoryFactory.expense(id: 'cat-needs').copyWith(
     bucket: CategoryBucket.needs,
   );
-  final checking = AccountFactory.checking(id: 'acc-chk');
 
   void stubAll(List<TransactionEntity> txs) {
-    when(
-      () => accRepo.getAccounts(
-        userId: any(named: 'userId'),
-        forceRefresh: any(named: 'forceRefresh'),
-      ),
-    ).thenAnswer(
-      (_) async => Right<Failure, List<AccountEntity>>([checking]),
-    );
     when(
       () => catRepo.getCategories(
         userId: any(named: 'userId'),
@@ -145,21 +131,16 @@ void main() {
   });
 
   test('propagates failure if any read fails', () async {
-    when(
-      () => accRepo.getAccounts(
-        userId: any(named: 'userId'),
-        forceRefresh: any(named: 'forceRefresh'),
-      ),
-    ).thenAnswer(
-      (_) async => const Left<Failure, List<AccountEntity>>(ServerFailure()),
-    );
+    // Categories is the read to fail on now: the accounts fetch was dropped
+    // in the F8.6 follow-up, since the computation never used it and one
+    // unrelated failure was blanking the whole history chart.
     when(
       () => catRepo.getCategories(
         userId: any(named: 'userId'),
         forceRefresh: any(named: 'forceRefresh'),
       ),
     ).thenAnswer(
-      (_) async => const Right<Failure, List<CategoryEntity>>([]),
+      (_) async => const Left<Failure, List<CategoryEntity>>(ServerFailure()),
     );
     when(
       () => txRepo.getTransactions(

@@ -1,3 +1,5 @@
+import 'package:financo/app/widgets/financo_section_tabs.dart';
+import 'package:financo/app/widgets/section_tabs_scope.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -32,22 +34,38 @@ class FinancoLargeAppBar extends StatelessWidget
   final bool showBack;
 
   @override
-  Size get preferredSize => Size.fromHeight(_height);
+  Size get preferredSize =>
+      Size.fromHeight(_height + (_hasSectionTabs ? kSectionTabsHeight : 0));
 
   double get _height => subtitle != null ? 88 : 72;
+
+  /// Read context-free on purpose — `preferredSize` has no `BuildContext`,
+  /// and the Scaffold needs the total height before this widget builds.
+  bool get _hasSectionTabs => currentSectionTabs.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final sectionTabs = currentSectionTabs;
+    final canGoBack = showBack && Navigator.of(context).canPop();
     return AppBar(
+      bottom: sectionTabs.isEmpty
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(kSectionTabsHeight),
+              child: FinancoSectionTabs(tabs: sectionTabs),
+            ),
       backgroundColor: colors.background,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
       elevation: 0,
       automaticallyImplyLeading: false,
-      leading: showBack ? const _BackChip() : null,
-      leadingWidth: showBack ? 56 : null,
-      titleSpacing: showBack ? 4 : 20,
+      // `showBack` is the page's intent; `canPop` is whether it can be
+      // honoured. Pages reached with `go` (which replaces the stack) used to
+      // render a chevron whose `maybePop` did nothing.
+      leading: canGoBack ? const _BackChip() : null,
+      leadingWidth: canGoBack ? 56 : null,
+      titleSpacing: canGoBack ? 4 : 20,
       toolbarHeight: _height,
       centerTitle: false,
       title: Column(

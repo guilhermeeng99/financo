@@ -64,9 +64,9 @@ class FiftyThirtyTwentyOverview extends Equatable {
   /// Sum of expense transactions whose category resolves to `bucket == wants`.
   final double wantsSpent;
 
-  /// Net contribution to investment accounts in the period — i.e.
-  /// `Σ(checking → investment)` minus `Σ(investment → checking)`, clamped
-  /// at 0. See `docs/specs/fifty_thirty_twenty.md` §2 rule 4.
+  /// Net flow into the carteira in the period — `Σ(aporte)` minus
+  /// `Σ(resgate)` over `institutionId`-tagged rows, clamped at 0. See
+  /// `docs/specs/fifty_thirty_twenty.md` §2 rule 4.
   final double savingsAmount;
 
   /// Sum of expense transactions whose resolved root category lacks a

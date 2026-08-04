@@ -170,13 +170,17 @@ void main() {
 
     test('filters by account, category and settlement status', () async {
       expect(
-        (await dao.getTransactions(userId: userId, accountId: 'acc-2')).single
-            .id,
+        (await dao.getTransactions(
+          userId: userId,
+          accountId: 'acc-2',
+        )).single.id,
         'tx-expense-2',
       );
       expect(
-        (await dao.getTransactions(userId: userId, categoryId: 'cat-9')).single
-            .id,
+        (await dao.getTransactions(
+          userId: userId,
+          categoryId: 'cat-9',
+        )).single.id,
         'tx-expense-2',
       );
       expect(

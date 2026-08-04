@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/date_helpers.dart';
-import 'package:financo/features/accounts/domain/repositories/account_repository.dart';
 import 'package:financo/features/categories/domain/repositories/category_repository.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_history_entry.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
@@ -13,22 +12,22 @@ import 'package:financo/features/transactions/domain/repositories/transaction_re
 /// network/cache read for the whole window — transactions are fetched
 /// once and bucketed locally per month, avoiding N round-trips.
 ///
-/// Accounts and categories are not period-scoped, so they're fetched
-/// once and reused across all months.
+/// Categories are not period-scoped, so they're fetched once and reused
+/// across all months. Accounts are **not** read at all: since F8.6 the
+/// computation takes only transactions and categories, and gating the whole
+/// history on an accounts read it never used meant one unrelated failure
+/// blanked the chart.
 ///
 /// Example: with `monthCount: 3` on 2026-05-17 the use case returns
 /// `[March 2026, April 2026, May 2026]`.
 class GetFiftyThirtyTwentyHistoryUseCase {
   const GetFiftyThirtyTwentyHistoryUseCase({
     required TransactionRepository transactionRepository,
-    required AccountRepository accountRepository,
     required CategoryRepository categoryRepository,
   }) : _transactionRepo = transactionRepository,
-       _accountRepo = accountRepository,
        _categoryRepo = categoryRepository;
 
   final TransactionRepository _transactionRepo;
-  final AccountRepository _accountRepo;
   final CategoryRepository _categoryRepo;
 
   Future<Either<Failure, List<FiftyThirtyTwentyHistoryEntry>>> call({
@@ -44,10 +43,6 @@ class GetFiftyThirtyTwentyHistoryUseCase {
     final windowStart = startOfMonth(months.first);
     final windowEnd = endOfMonth(months.last);
 
-    final accountsResult = await _accountRepo.getAccounts(
-      userId: userId,
-      forceRefresh: forceRefresh,
-    );
     final txResult = await _transactionRepo.getTransactions(
       userId: userId,
       startDate: windowStart,
@@ -59,35 +54,30 @@ class GetFiftyThirtyTwentyHistoryUseCase {
       forceRefresh: forceRefresh,
     );
 
-    return accountsResult.fold(
+    return txResult.fold(
       Left.new,
-      (accounts) => txResult.fold(
-        Left.new,
-        (transactions) => categoriesResult.fold(Left.new, (categories) {
-          final entries = months.map((month) {
-            final periodStart = startOfMonth(month);
-            final periodEnd = endOfMonth(month);
-            final monthTxs = transactions
-                .where(
-                  (t) =>
-                      !t.date.isBefore(periodStart) &&
-                      !t.date.isAfter(periodEnd),
-                )
-                .toList();
-            final overview = compute50_30_20Overview(
-              periodTransactions: monthTxs,
-              categories: categories,
-              accounts: accounts,
-              targets: targets,
-            );
-            return FiftyThirtyTwentyHistoryEntry(
-              month: periodStart,
-              overview: overview,
-            );
-          }).toList();
-          return Right(entries);
-        }),
-      ),
+      (transactions) => categoriesResult.fold(Left.new, (categories) {
+        final entries = months.map((month) {
+          final periodStart = startOfMonth(month);
+          final periodEnd = endOfMonth(month);
+          final monthTxs = transactions
+              .where(
+                (t) =>
+                    !t.date.isBefore(periodStart) && !t.date.isAfter(periodEnd),
+              )
+              .toList();
+          final overview = compute50_30_20Overview(
+            periodTransactions: monthTxs,
+            categories: categories,
+            targets: targets,
+          );
+          return FiftyThirtyTwentyHistoryEntry(
+            month: periodStart,
+            overview: overview,
+          );
+        }).toList();
+        return Right(entries);
+      }),
     );
   }
 

@@ -86,7 +86,6 @@ class _AccountRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final typeLabel = switch (account.type) {
       AccountType.creditCard => t.accounts.creditCard,
-      AccountType.investment => t.accounts.investment,
       AccountType.checking => t.accounts.checking,
     };
     return FinancoPickerRow(

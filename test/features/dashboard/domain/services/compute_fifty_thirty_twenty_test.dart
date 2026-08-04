@@ -32,30 +32,21 @@ void main() {
   );
 
   final checking = AccountFactory.checking(id: 'acc-chk-1');
-  final investment = AccountEntity(
-    id: 'acc-invest-1',
-    userId: 'user-1',
-    name: 'XP CDB',
-    type: AccountType.investment,
-    bank: BankType.xp,
-    initialBalance: 0,
-    createdAt: DateTime(2024),
-  );
   final creditCard = AccountFactory.creditCard();
   final secondChecking = AccountFactory.checking(
     id: 'acc-chk-2',
     name: 'Itaú',
     bank: BankType.itau,
   );
-  final secondInvestment = AccountEntity(
-    id: 'acc-invest-2',
-    userId: 'user-1',
-    name: 'BTG',
-    type: AccountType.investment,
-    bank: BankType.btg,
-    initialBalance: 0,
-    createdAt: DateTime(2024),
-  );
+
+  /// An aporte — the only shape savings takes since F8.6 retired
+  /// `AccountType.investment`. An expense leaving checking, tagged with the
+  /// institution that received it.
+  TransactionEntity depositOf(double amount) => TransactionFactory.expense(
+    id: 'tx-aporte',
+    accountId: checking.id,
+    amount: amount,
+  ).copyWith(institutionId: 'inst-avenue');
 
   group('income (rule 1)', () {
     test('sums income-type, non-transfer transactions', () {
@@ -70,7 +61,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat],
-        accounts: [checking],
       );
       expect(out.income, 5000);
     });
@@ -78,7 +68,7 @@ void main() {
     test('excludes transfers from income (transfer income leg ignored)', () {
       final transfer = TransactionFactory.transfer(
         sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
+        destinationAccountId: secondChecking.id,
         amount: 800,
       );
       final txs = [
@@ -89,7 +79,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat],
-        accounts: [checking, investment],
       );
       expect(out.income, 4000);
     });
@@ -118,7 +107,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [salary, refund],
-          accounts: [checking],
         );
         // Only the salary transaction counts toward the base; the
         // reimbursement is excluded by the flag.
@@ -153,7 +141,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [excludedParent, subOfExcluded],
-          accounts: [checking],
         );
         expect(out.income, 0);
       },
@@ -182,7 +169,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [includedParent, subOfIncluded],
-          accounts: [checking],
         );
         expect(out.income, 250);
       },
@@ -192,7 +178,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: const [],
         categories: [needsCat, wantsCat],
-        accounts: [checking],
       );
       expect(out.income, 0);
       expect(out.status, FiftyThirtyTwentyStatus.noData);
@@ -207,7 +192,7 @@ void main() {
     test('routes expenses by category.bucket; transfers excluded', () {
       final transferExpenseLeg = TransactionFactory.transfer(
         sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
+        destinationAccountId: secondChecking.id,
       ).expense;
       final txs = [
         TransactionFactory.income(amount: 5000, categoryId: incomeCat.id),
@@ -228,7 +213,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat, wantsCat],
-        accounts: [checking, investment],
       );
       expect(out.needsSpent, 2400);
       expect(out.wantsSpent, 1500);
@@ -259,7 +243,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, parentNeeds, childOfNeeds],
-        accounts: [checking],
       );
       expect(out.needsSpent, 300);
       expect(out.wantsSpent, 0);
@@ -287,7 +270,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, parentUnset, child],
-        accounts: [checking],
       );
       expect(out.unclassifiedSpent, 100);
       // Counted under the resolved root, so child + sibling on the same
@@ -318,7 +300,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [incomeCat, orphanChild],
-          accounts: [checking],
         );
         expect(out.unclassifiedSpent, 70);
         expect(out.unclassifiedCount, 0);
@@ -341,7 +322,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat],
-        accounts: [checking],
       );
       expect(out.unclassifiedSpent, 80);
       expect(out.unclassifiedCount, 0);
@@ -369,7 +349,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [incomeCat, unclassifiedCat],
-          accounts: [checking],
         );
         expect(out.unclassifiedSpent, 80);
         expect(out.unclassifiedCount, 1);
@@ -402,7 +381,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: txs,
           categories: [incomeCat, root1, root2, root3, classified],
-          accounts: [checking],
         );
         expect(out.unclassifiedCount, 3);
         expect(out.unclassifiedSpent, 100);
@@ -424,7 +402,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: const [],
           categories: [root, sub1, sub2],
-          accounts: const [],
         );
         // Only the one unclassified root counts, regardless of how many
         // subcategories hang off it.
@@ -436,7 +413,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: const [],
         categories: [incomeCat, needsCat, wantsCat],
-        accounts: const [],
       );
       // All three are classified or income — none belongs in the
       // expense classification backlog.
@@ -445,80 +421,51 @@ void main() {
   });
 
   group('savings flow (rule 4)', () {
-    test('checking → investment counts as positive savings', () {
-      final transfer = TransactionFactory.transfer(
-        sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
-        amount: 1000,
-      );
+    // Since F8.6 savings has exactly one shape: an `institutionId`-tagged
+    // cash flow on a checking account. The pre-F8 path — pairing transfer
+    // legs and looking for a `checking → investment` account pair — went
+    // away with `AccountType.investment`, so the cases that used to cover
+    // it (half-pair, investment↔investment rebalance) no longer describe
+    // anything the function can compute.
+    TransactionEntity aporte(String id, double amount) =>
+        TransactionFactory.expense(
+          id: id,
+          accountId: checking.id,
+          amount: amount,
+        ).copyWith(institutionId: 'inst-avenue');
+
+    TransactionEntity resgate(String id, double amount) =>
+        TransactionFactory.income(
+          id: id,
+          accountId: checking.id,
+          amount: amount,
+        ).copyWith(institutionId: 'inst-avenue');
+
+    test('an aporte counts as positive savings', () {
       final out = compute50_30_20Overview(
-        periodTransactions: [transfer.expense, transfer.income],
+        periodTransactions: [aporte('tx-ap', 1000)],
         categories: const [],
-        accounts: [checking, investment],
       );
       expect(out.savingsAmount, 1000);
     });
 
-    test('half-pair (linked leg outside the window) is ignored', () {
-      // Only the checking → investment expense leg falls in the period; its
-      // linked income leg is outside the window, so the pair can't be
-      // resolved and must NOT be counted as savings (mate == null branch).
-      final transfer = TransactionFactory.transfer(
-        sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
-        amount: 1000,
-      );
+    test('a resgate subtracts', () {
       final out = compute50_30_20Overview(
-        periodTransactions: [transfer.expense],
+        periodTransactions: [aporte('tx-ap', 1000), resgate('tx-res', 200)],
         categories: const [],
-        accounts: [checking, investment],
-      );
-      expect(out.savingsAmount, 0);
-    });
-
-    test('resgate (investment → checking) subtracts', () {
-      final deposit = TransactionFactory.transfer(
-        expenseId: 'tx-dep-exp',
-        incomeId: 'tx-dep-inc',
-        sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
-        amount: 1000,
-      );
-      final resgate = TransactionFactory.transfer(
-        expenseId: 'tx-res-exp',
-        incomeId: 'tx-res-inc',
-        sourceAccountId: investment.id,
-        destinationAccountId: checking.id,
-        amount: 200,
-      );
-      final out = compute50_30_20Overview(
-        periodTransactions: [
-          deposit.expense,
-          deposit.income,
-          resgate.expense,
-          resgate.income,
-        ],
-        categories: const [],
-        accounts: [checking, investment],
       );
       expect(out.savingsAmount, 800);
     });
 
-    test('net resgate without deposits clamps at 0', () {
-      final resgate = TransactionFactory.transfer(
-        sourceAccountId: investment.id,
-        destinationAccountId: checking.id,
-        amount: 600,
-      );
+    test('net resgate without aportes clamps at 0', () {
       final out = compute50_30_20Overview(
-        periodTransactions: [resgate.expense, resgate.income],
+        periodTransactions: [resgate('tx-res', 600)],
         categories: const [],
-        accounts: [checking, investment],
       );
       expect(out.savingsAmount, 0);
     });
 
-    test('checking → checking is ignored', () {
+    test('an untagged checking → checking transfer is ignored', () {
       final transfer = TransactionFactory.transfer(
         sourceAccountId: checking.id,
         destinationAccountId: secondChecking.id,
@@ -527,21 +474,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: [transfer.expense, transfer.income],
         categories: const [],
-        accounts: [checking, secondChecking],
-      );
-      expect(out.savingsAmount, 0);
-    });
-
-    test('investment → investment (rebalance) is ignored', () {
-      final transfer = TransactionFactory.transfer(
-        sourceAccountId: investment.id,
-        destinationAccountId: secondInvestment.id,
-        amount: 400,
-      );
-      final out = compute50_30_20Overview(
-        periodTransactions: [transfer.expense, transfer.income],
-        categories: const [],
-        accounts: [investment, secondInvestment],
       );
       expect(out.savingsAmount, 0);
     });
@@ -555,13 +487,12 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: [transfer.expense, transfer.income],
         categories: const [],
-        accounts: [checking, creditCard],
       );
       expect(out.savingsAmount, 0);
     });
 
     // F8: the destination is an institution, so it is passed in rather than
-    // sniffed out of `accounts`. Regression — deriving it from
+    // sniffed out of the account list. Regression — deriving it from
     // `AccountType.investment` made the flag permanently false once the
     // migration retired those account docs, pinning every user to the
     // "add a broker first" tip.
@@ -569,7 +500,6 @@ void main() {
       final withInvest = compute50_30_20Overview(
         periodTransactions: const [],
         categories: const [],
-        accounts: [checking],
         hasInvestmentDestination: true,
       );
       expect(withInvest.hasInvestmentDestination, isTrue);
@@ -577,7 +507,6 @@ void main() {
       final withoutInvest = compute50_30_20Overview(
         periodTransactions: const [],
         categories: const [],
-        accounts: [checking, investment],
       );
       expect(withoutInvest.hasInvestmentDestination, isFalse);
     });
@@ -585,11 +514,7 @@ void main() {
 
   group('status aggregation', () {
     test('all on target → onTrack', () {
-      final deposit = TransactionFactory.transfer(
-        sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
-        amount: 1000,
-      );
+      final deposit = depositOf(1000);
       final txs = <TransactionEntity>[
         TransactionFactory.income(amount: 5000, categoryId: incomeCat.id),
         TransactionFactory.expense(
@@ -602,13 +527,11 @@ void main() {
           amount: 1500,
           categoryId: wantsCat.id,
         ),
-        deposit.expense,
-        deposit.income,
+        deposit,
       ];
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat, wantsCat],
-        accounts: [checking, investment],
       );
       expect(out.needsPercent, 0.5);
       expect(out.wantsPercent, 0.3);
@@ -633,7 +556,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat, wantsCat],
-        accounts: [checking, investment],
       );
       expect(out.savingsStatus, BucketStatus.under);
       expect(out.status, FiftyThirtyTwentyStatus.needsAttention);
@@ -656,7 +578,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat, unclassifiedCat],
-        accounts: [checking],
       );
       expect(
         out.status,
@@ -676,7 +597,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat],
-        accounts: [checking],
       );
       expect(out.needsStatus, BucketStatus.onTrack);
     });
@@ -693,7 +613,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat],
-        accounts: [checking],
       );
       expect(out.needsStatus, BucketStatus.over);
     });
@@ -717,7 +636,6 @@ void main() {
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat, needsCat, wantsCat],
-        accounts: [checking, investment],
       );
       expect(out.needsTarget, 2500);
       expect(out.wantsTarget, 1500);
@@ -728,20 +646,13 @@ void main() {
     });
 
     test('savingsShortfall is 0 when over target', () {
-      final deposit = TransactionFactory.transfer(
-        sourceAccountId: checking.id,
-        destinationAccountId: investment.id,
-        amount: 1500,
-      );
       final txs = <TransactionEntity>[
         TransactionFactory.income(amount: 5000, categoryId: incomeCat.id),
-        deposit.expense,
-        deposit.income,
+        depositOf(1500),
       ];
       final out = compute50_30_20Overview(
         periodTransactions: txs,
         categories: [incomeCat],
-        accounts: [checking, investment],
       );
       expect(out.savingsShortfall, 0);
     });
@@ -763,7 +674,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: [salary, aporte],
           categories: const [],
-          accounts: [AccountFactory.checking(id: 'acc-chk')],
         );
 
         expect(out.income, 5000);
@@ -792,7 +702,6 @@ void main() {
         final out = compute50_30_20Overview(
           periodTransactions: [aporte, resgate],
           categories: const [],
-          accounts: [AccountFactory.checking(id: 'acc-chk')],
         );
 
         // 1000 aporte − 300 resgate = 700.

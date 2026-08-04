@@ -65,6 +65,26 @@ final class NegativeAmountFailure extends Failure {
   const NegativeAmountFailure() : super('Amount must be at least zero.');
 }
 
+/// Raised when a settle is attempted on a transfer leg. Transfers are not
+/// payables — see docs/specs/payables_receivables_refactor.md rule 13.
+final class TransferNotSettleableFailure extends Failure {
+  const TransferNotSettleableFailure()
+    : super('Transfers cannot be pending payables.');
+}
+
+/// Raised when the 50/30/20 targets do not add up to 100% or contain a
+/// negative share.
+final class TargetsMustSumTo100Failure extends Failure {
+  const TargetsMustSumTo100Failure()
+    : super('Targets must sum to 100% and be non-negative.');
+}
+
+/// Raised when deleting a category that still owns subcategories.
+final class CategoryHasSubcategoriesFailure extends Failure {
+  const CategoryHasSubcategoriesFailure()
+    : super('Cannot delete a category that has subcategories.');
+}
+
 /// Raised when an asset-class target percent falls outside the [0, 100]
 /// range.
 final class TargetPercentOutOfRangeFailure extends Failure {

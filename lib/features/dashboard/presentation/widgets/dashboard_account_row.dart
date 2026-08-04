@@ -150,7 +150,6 @@ class _AccountTypeTag extends StatelessWidget {
     final colors = context.appColors;
     final (label, tint) = switch (type) {
       AccountType.checking => (t.accounts.checkingShort, colors.primary),
-      AccountType.investment => (t.accounts.investmentShort, colors.income),
       AccountType.creditCard => (t.accounts.creditCard, colors.warning),
     };
     return DashboardPill(label: label, tint: tint);

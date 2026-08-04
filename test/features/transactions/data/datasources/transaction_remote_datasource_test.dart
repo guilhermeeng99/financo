@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:financo/features/transactions/data/datasources/transaction_remote_datasource.dart';
 import 'package:financo/features/transactions/data/models/transaction_model.dart';
+import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../harness/factories/transaction_factory.dart';
@@ -21,6 +22,64 @@ void main() {
         .get();
     return snap.docs.length;
   }
+
+  group('getTransactions', () {
+    // Rows whose `date` order is the exact reverse of their `dueDate` order,
+    // so the assertion can only pass under one of the two orderings.
+    Future<void> seedSequence() async {
+      await datasource.createTransactions([
+        for (final row in const [
+          ('first', 1, 3),
+          ('second', 2, 2),
+          ('third', 3, 1),
+        ])
+          TransactionModel.fromEntity(
+            TransactionFactory.expense(
+              id: 'tx-${row.$1}',
+              description: row.$1,
+              date: DateTime(2024, row.$2, 10),
+              dueDate: DateTime(2024, row.$3, 10),
+              recurrence: TransactionRecurrence.installment,
+              recurrenceGroupId: 'grp-1',
+            ),
+          ),
+      ]);
+    }
+
+    test('orders a recurrenceGroupId lookup by dueDate', () async {
+      // Regression: the sequence delete query (userId + recurrenceGroupId,
+      // no date range) used to order by `date` — a shape with no composite
+      // index, so Firestore answered FAILED_PRECONDITION and the UI showed
+      // "Couldn't reach the server" on "delete this and following".
+      await seedSequence();
+
+      final result = await datasource.getTransactions(
+        userId: 'user-1',
+        recurrenceGroupId: 'grp-1',
+      );
+
+      expect(
+        result.map((tx) => tx.description),
+        ['first', 'second', 'third'],
+      );
+    });
+
+    test('still orders by date when a date range is given', () async {
+      await seedSequence();
+
+      final result = await datasource.getTransactions(
+        userId: 'user-1',
+        startDate: DateTime(2024),
+        endDate: DateTime(2024, 12, 31),
+        recurrenceGroupId: 'grp-1',
+      );
+
+      expect(
+        result.map((tx) => tx.description),
+        ['third', 'second', 'first'],
+      );
+    });
+  });
 
   group('createTransfer', () {
     test('persists both legs with cross-links set atomically', () async {

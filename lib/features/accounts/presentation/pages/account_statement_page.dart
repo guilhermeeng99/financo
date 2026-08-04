@@ -20,6 +20,7 @@ import 'package:financo/features/accounts/presentation/widgets/account_detail_se
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/categories/presentation/cubit/categories_cubit.dart';
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:financo/features/transactions/presentation/settle_and_refresh.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -86,6 +87,17 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
     _triggerLoad(_account!);
   }
 
+  /// One-tap settle straight from the statement row, same contract as the
+  /// payables/receivables ledger. Reaching the form to flip the toggle was
+  /// three taps behind an unlabelled icon.
+  Future<void> _settleTransaction(TransactionEntity tx) async {
+    final settled = await settleAndRefresh(context, tx);
+    if (!settled || !mounted || _account == null) return;
+    // The statement owns its own cubit, which the shared helper doesn't know
+    // about — reload it so the row flips to Paid without leaving the page.
+    _triggerLoad(_account!);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -145,6 +157,7 @@ class _AccountStatementPageState extends State<AccountStatementPage> {
                 return _StatementContent(
                   state: state,
                   onTransactionTap: _openEditTransaction,
+                  onTransactionSettle: _settleTransaction,
                 );
               }
               return const SizedBox.shrink();
@@ -160,10 +173,12 @@ class _StatementContent extends StatelessWidget {
   const _StatementContent({
     required this.state,
     required this.onTransactionTap,
+    required this.onTransactionSettle,
   });
 
   final AccountStatementLoaded state;
   final ValueChanged<TransactionEntity> onTransactionTap;
+  final ValueChanged<TransactionEntity> onTransactionSettle;
 
   static const _kWideBreakpoint = 600.0;
 
@@ -190,6 +205,7 @@ class _StatementContent extends StatelessWidget {
             child: _TransactionsSide(
               state: state,
               onTransactionTap: onTransactionTap,
+              onTransactionSettle: onTransactionSettle,
             ),
           ),
         ],
@@ -210,6 +226,7 @@ class _StatementContent extends StatelessWidget {
           child: _TransactionsSide(
             state: state,
             onTransactionTap: onTransactionTap,
+            onTransactionSettle: onTransactionSettle,
           ),
         ),
       ],
@@ -399,10 +416,12 @@ class _TransactionsSide extends StatelessWidget {
   const _TransactionsSide({
     required this.state,
     required this.onTransactionTap,
+    required this.onTransactionSettle,
   });
 
   final AccountStatementLoaded state;
   final ValueChanged<TransactionEntity> onTransactionTap;
+  final ValueChanged<TransactionEntity> onTransactionSettle;
 
   @override
   Widget build(BuildContext context) {
@@ -452,6 +471,9 @@ class _TransactionsSide extends StatelessWidget {
           // Awaited via the parent so the statement reloads after edit
           // or delete; `context.push` directly would not refresh.
           onTap: () => onTransactionTap(tx),
+          // The tile decides which rows actually get the button — pending
+          // and non-transfer.
+          onSettle: () => onTransactionSettle(tx),
         );
       },
     );

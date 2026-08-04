@@ -88,7 +88,12 @@ class TransactionFormCubit extends Cubit<TransactionFormState> {
       emit(state.copyWith(description: value));
 
   void updateDate(DateTime date) {
-    final settlementStatus = !state.isTransfer && isAfterEndOfToday(date)
+    // Auto-flipping a future date to pending is a convenience for new
+    // entries. An already-settled row must not be un-paid behind the user's
+    // back (rule 16 forbids paid → pending), and after F-settle it can
+    // legitimately carry a future date.
+    final settlementStatus =
+        !state.isTransfer && !state.wasAlreadySettled && isAfterEndOfToday(date)
         ? TransactionSettlementStatus.pending
         : state.settlementStatus;
     emit(

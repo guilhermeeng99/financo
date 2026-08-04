@@ -19,7 +19,10 @@
     "ai": "O assistente encontrou um problema. Tente novamente.",
     "accessDenied": "O acesso é restrito para esta conta.",
     "emptyName": "O nome não pode ficar vazio.",
-    "negativeAmount": "O valor não pode ser negativo."
+    "negativeAmount": "O valor não pode ser negativo.",
+    "transferNotSettleable": "Uma transferência não pode ser agendada como conta a pagar.",
+    "targetsMustSumTo100": "Os percentuais precisam somar 100% e ser não-negativos.",
+    "categoryHasSubcategories": "Exclua ou mova as subcategorias antes de excluir esta categoria."
   },
   "investing": {
     "errors": {
@@ -449,11 +452,7 @@
     "editAccount": "Editar conta",
     "checking": "Conta corrente",
     "creditCard": "Cartão de crédito",
-    "investment": "Conta investimento",
     "checkingShort": "Corrente",
-    "investmentShort": "Investimento",
-    "investmentDescription": "Conta dedicada a aportes. Aparece como 'investimento' nas transferências e alimenta o cartão 50/30/20.",
-    "investmentYieldDisclaimer": "O saldo reflete apenas seus aportes (principal). Rendimentos do mercado não são acompanhados.",
     "name": "Apelido da conta",
     "nameHint": "ex.: Nubank Gui",
     "bank": "Banco",
@@ -567,7 +566,7 @@
     "bucketNeeds": "Necessidade",
     "bucketWants": "Desejo",
     "bucketUnclassified": "Sem classificação",
-    "bucketHelp": "Necessidades cobrem o essencial (aluguel, mercado, transporte). Desejos cobrem o discricionário (lazer, restaurantes). Investimento é tratado pelas transferências para contas de investimento.",
+    "bucketHelp": "Necessidades cobrem o essencial (aluguel, mercado, transporte). Desejos cobrem o discricionário (lazer, restaurantes). Investimento é contado pelos aportes nas suas corretoras, não por categoria.",
     "pickParent": "Categoria pai",
     "searchHint": "Buscar categorias",
     "searchNoResults": "Nenhuma categoria corresponde à busca.",

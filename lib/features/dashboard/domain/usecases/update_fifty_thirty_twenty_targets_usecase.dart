@@ -21,11 +21,7 @@ class UpdateFiftyThirtyTwentyTargetsUseCase {
     required FiftyThirtyTwentyTargets targets,
   }) async {
     if (!targets.isValid) {
-      return const Left(
-        ValidationFailure(
-          'Os percentuais precisam somar 100% e ser não-negativos.',
-        ),
-      );
+      return const Left(TargetsMustSumTo100Failure());
     }
     final profileResult = await _profileRepository.getProfile(userId);
     return profileResult.fold(

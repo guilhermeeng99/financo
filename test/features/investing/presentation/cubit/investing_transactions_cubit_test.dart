@@ -255,14 +255,16 @@ void main() {
         isA<InvestingTransactionsLoaded>(),
       ],
       verify: (_) {
-        final captured = verify(
-          () => importTransactionsCsv.importItems(
-            items: captureAny(named: 'items'),
-            userId: 'user-1',
-            skippedCount: any(named: 'skippedCount'),
-            onProgress: any(named: 'onProgress'),
-          ),
-        ).captured.single as List<InvestingTransactionImportPreviewItem>;
+        final captured =
+            verify(
+                  () => importTransactionsCsv.importItems(
+                    items: captureAny(named: 'items'),
+                    userId: 'user-1',
+                    skippedCount: any(named: 'skippedCount'),
+                    onProgress: any(named: 'onProgress'),
+                  ),
+                ).captured.single
+                as List<InvestingTransactionImportPreviewItem>;
         expect(captured, [importableItem]);
       },
     );

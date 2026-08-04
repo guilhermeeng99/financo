@@ -191,8 +191,17 @@ class TransactionFormState extends Equatable {
         settlementStatus == TransactionSettlementStatus.pending) {
       return true;
     }
+    // "Paid can't be in the future" is a *creation* rule. Settling a
+    // scheduled row keeps its due date (SettleTransactionUseCase), so an
+    // already-settled row legitimately sits in the future — blocking it here
+    // would leave it uneditable forever.
+    if (wasAlreadySettled) return true;
     return !isAfterEndOfToday(date);
   }
+
+  /// The row arrived at the form already paid — as opposed to being flipped
+  /// to paid inside this editing session.
+  bool get wasAlreadySettled => originalTransaction?.isPaid ?? false;
 
   /// A transfer between accounts in different currencies (e.g. BRL → EUR).
   /// The two legs then carry different amounts.

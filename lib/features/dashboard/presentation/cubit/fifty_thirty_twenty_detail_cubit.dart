@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/utils/date_helpers.dart';
-import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_history_entry.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
@@ -14,29 +13,26 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Owns the data behind `FiftyThirtyTwentyPage`. Coordinates four reads —
-/// accounts, categories, period transactions, and a 3-month history —
-/// then composes the overview + per-bucket breakdown for the selected
-/// month. Distinct from the dashboard pipeline so the detail page can
-/// evolve (different filters, larger windows) without dragging the
-/// dashboard along.
+/// Owns the data behind `FiftyThirtyTwentyPage`. Coordinates three blocking
+/// reads — categories, period transactions and a 3-month history — plus a
+/// non-blocking institutions read, then composes the overview + per-bucket
+/// breakdown for the selected month. Distinct from the dashboard pipeline so
+/// the detail page can evolve (different filters, larger windows) without
+/// dragging the dashboard along.
 class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
   FiftyThirtyTwentyDetailCubit({
-    required GetAccountsUseCase getAccounts,
     required GetCategoriesUseCase getCategories,
     required GetTransactionsUseCase getTransactions,
     required GetFiftyThirtyTwentyHistoryUseCase getHistory,
     required GetInstitutionsUseCase getInstitutions,
     required String userId,
-  }) : _getAccounts = getAccounts,
-       _getCategories = getCategories,
+  }) : _getCategories = getCategories,
        _getTransactions = getTransactions,
        _getHistory = getHistory,
        _getInstitutions = getInstitutions,
        _userId = userId,
        super(const FiftyThirtyTwentyDetailState.initial());
 
-  final GetAccountsUseCase _getAccounts;
   final GetCategoriesUseCase _getCategories;
   final GetTransactionsUseCase _getTransactions;
   final GetFiftyThirtyTwentyHistoryUseCase _getHistory;
@@ -53,7 +49,6 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
   }) async {
     emit(state.copyWith(status: FiftyThirtyTwentyDetailStatus.loading));
 
-    final accountsResult = await _getAccounts(userId: _userId);
     final categoriesResult = await _getCategories(userId: _userId);
     final txResult = await _getTransactions(
       userId: _userId,
@@ -67,10 +62,9 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
     );
     // Institutions only decide which savings tip the card shows, so a failure
     // here degrades the copy rather than the page — it is not in the guard
-    // below with the four reads the page cannot render without.
+    // below with the three reads the page cannot render without.
     final institutionsResult = await _getInstitutions(userId: _userId);
 
-    final accounts = accountsResult.fold((_) => null, (a) => a);
     final categories = categoriesResult.fold((_) => null, (c) => c);
     final txs = txResult.fold(
       (_) => null,
@@ -78,14 +72,10 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
     );
     final history = historyResult.fold((_) => null, (h) => h);
 
-    if (accounts == null ||
-        categories == null ||
-        txs == null ||
-        history == null) {
+    if (categories == null || txs == null || history == null) {
       // Surface the first failure that fired — folds short-circuit, so
       // grabbing them in turn is enough.
       final failure = _firstFailure([
-        accountsResult.fold((f) => f, (_) => null),
         categoriesResult.fold((f) => f, (_) => null),
         txResult.fold((f) => f, (_) => null),
         historyResult.fold((f) => f, (_) => null),
@@ -102,7 +92,6 @@ class FiftyThirtyTwentyDetailCubit extends Cubit<FiftyThirtyTwentyDetailState> {
     final overview = compute50_30_20Overview(
       periodTransactions: txs,
       categories: categories,
-      accounts: accounts,
       hasInvestmentDestination: institutionsResult
           .getOrElse(() => const [])
           .isNotEmpty,

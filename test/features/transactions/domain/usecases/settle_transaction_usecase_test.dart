@@ -49,13 +49,41 @@ void main() {
         expect(result.isRight(), isTrue);
         final updated = capturedUpdate();
         expect(updated.settlementStatus, TransactionSettlementStatus.paid);
-        // The settlement date becomes the effective cash-flow date: the
-        // transaction moves from "due on dueDate" to "happened on date".
-        expect(updated.date, explicit);
         expect(updated.settledAt, explicit);
         expect(updated.updatedAt, explicit);
       },
     );
+
+    test('keeps the row on its due date, not the settlement date', () async {
+      // Regression: settling used to overwrite `date` with the settlement
+      // instant, so confirming a September credit-card instalment dragged it
+      // onto August's invoice (spec rule 8).
+      stubUpdateEcho();
+      final pending = pendingPayable();
+
+      await usecase(pending, settledAt: DateTime(2026, 6, 15));
+
+      final updated = capturedUpdate();
+      expect(updated.date, pending.dueDate);
+      expect(updated.dueDate, pending.dueDate);
+    });
+
+    test('settles a row still due in the future without moving it', () async {
+      stubUpdateEcho();
+      final future = DateTime.now().add(const Duration(days: 30));
+      final scheduled = TransactionFactory.expense(
+        settlementStatus: TransactionSettlementStatus.pending,
+        dueDate: future,
+      );
+
+      await usecase(scheduled);
+
+      final updated = capturedUpdate();
+      expect(updated.settlementStatus, TransactionSettlementStatus.paid);
+      // A paid row legitimately carries a future date — the form treats
+      // "no future paid dates" as a creation rule only (spec rule 4).
+      expect(updated.date, future);
+    });
 
     test('defaults settledAt to now when omitted', () async {
       stubUpdateEcho();
@@ -68,9 +96,8 @@ void main() {
       expect(updated.settledAt, isNotNull);
       expect(updated.settledAt!.isBefore(before), isFalse);
       expect(updated.settledAt!.isAfter(after), isFalse);
-      // date / settledAt / updatedAt must be the exact same instant so
-      // ledgers and sync ordering agree on when the settlement happened.
-      expect(updated.date, updated.settledAt);
+      // settledAt / updatedAt must be the exact same instant so ledgers and
+      // sync ordering agree on when the confirmation happened.
       expect(updated.updatedAt, updated.settledAt);
     });
 
@@ -105,7 +132,7 @@ void main() {
     });
 
     test(
-      'rejects transfers with a ValidationFailure and never hits the repo',
+      'rejects transfers with a typed failure and never hits the repo',
       () async {
         final transferLeg = TransactionFactory.transfer().expense;
 
@@ -113,7 +140,7 @@ void main() {
 
         expect(result.isLeft(), isTrue);
         result.fold(
-          (failure) => expect(failure, isA<ValidationFailure>()),
+          (failure) => expect(failure, isA<TransferNotSettleableFailure>()),
           (_) => fail('Expected Left'),
         );
         verifyNever(() => repository.updateTransaction(any()));

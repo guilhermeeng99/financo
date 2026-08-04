@@ -122,6 +122,26 @@ void main() {
         expect(model.linkedAccountId, 'acc-1');
       });
 
+      test('should read a legacy "investment" type back as checking', () {
+        // F8.6 removed AccountType.investment, but every account document
+        // written before the migration still says "investment" on disk. The
+        // shared `enumByName` fallback is what keeps that from throwing and
+        // crashing the accounts screen — this pins it.
+        final model = AccountModel.fromMap(
+          id: 'acc-1',
+          data: {
+            'userId': 'user-1',
+            'name': 'XP CDB',
+            'type': 'investment',
+            'bank': 'xp',
+            'balance': 1000,
+            'createdAt': Timestamp.fromDate(DateTime(2024)),
+          },
+        );
+
+        expect(model.type, AccountType.checking);
+      });
+
       test('should fallback to BankType.others for unknown bank', () {
         final model = AccountModel.fromMap(
           id: 'acc-1',

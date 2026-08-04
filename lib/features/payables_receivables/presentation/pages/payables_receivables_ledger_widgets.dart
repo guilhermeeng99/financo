@@ -238,9 +238,6 @@ class _TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final amountAccent = transaction.isReceivable
-        ? colors.income
-        : colors.expense;
     final statusAccent = _statusAccent(context, transaction);
     final category = _categoryLabel(context, transaction.categoryId);
     final isPendingView =
@@ -300,9 +297,8 @@ class _TransactionTile extends StatelessWidget {
                 _Amount(transaction: transaction),
                 if (isPendingView) ...[
                   const SizedBox(width: 8),
-                  _SettleButton(
+                  SettleButton(
                     transaction: transaction,
-                    color: amountAccent,
                     onPressed: onSettle,
                   ),
                 ],
@@ -336,7 +332,7 @@ class _TransactionTile extends StatelessWidget {
             : t.payablesReceivables.paid,
       );
     }
-    return parts.join(' Â· ');
+    return parts.join(' · ');
   }
 
   String? _categoryLabel(BuildContext context, String categoryId) {
@@ -388,43 +384,6 @@ class _Amount extends StatelessWidget {
       style: context.textTheme.titleSmall?.copyWith(
         color: color,
         fontWeight: FontWeight.w700,
-      ),
-    );
-  }
-}
-
-class _SettleButton extends StatelessWidget {
-  const _SettleButton({
-    required this.transaction,
-    required this.color,
-    required this.onPressed,
-  });
-
-  final TransactionEntity transaction;
-  final Color color;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: transaction.isReceivable
-          ? t.payablesReceivables.markAsReceived
-          : t.payablesReceivables.markAsPaid,
-      child: Material(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            width: 36,
-            height: 36,
-            child: Center(
-              child: FaIcon(FontAwesomeIcons.check, size: 14, color: color),
-            ),
-          ),
-        ),
       ),
     );
   }

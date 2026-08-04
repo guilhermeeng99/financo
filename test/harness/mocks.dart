@@ -73,7 +73,6 @@ import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twen
 import 'package:financo/features/dashboard/domain/usecases/update_fifty_thirty_twenty_targets_usecase.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_state.dart';
-import 'package:financo/features/data_migration/domain/account_migration_executor.dart';
 import 'package:financo/features/investing/data/datasources/asset_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/asset_transaction_remote_datasource.dart';
 import 'package:financo/features/investing/data/datasources/institution_remote_datasource.dart';
@@ -478,9 +477,6 @@ class MockInstitutionValuationReader extends Mock
     implements InstitutionValuationReader {}
 
 class MockAccountFxConverter extends Mock implements AccountFxConverter {}
-
-class MockAccountMigrationExecutor extends Mock
-    implements AccountMigrationExecutor {}
 
 class MockQuoteRepository extends Mock implements QuoteRepository {}
 

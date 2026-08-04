@@ -39,7 +39,7 @@ void main() {
 
   // Two distinct accounts so the happy path can resolve both legs.
   final source = AccountFactory.checking(id: 'acc-source', name: 'Nubank Gui');
-  final destination = AccountFactory.investment(
+  final destination = AccountFactory.checking(
     id: 'acc-dest',
     name: 'XP Invest',
   );

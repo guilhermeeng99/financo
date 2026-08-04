@@ -1,4 +1,3 @@
-import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_targets.dart';
@@ -19,7 +18,6 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 /// final overview = compute50_30_20Overview(
 ///   periodTransactions: txs,
 ///   categories: cats,
-///   accounts: accs,
 ///   hasInvestmentDestination: institutions.isNotEmpty,
 /// );
 /// final percent = (overview.needsPercent * 100).round();
@@ -34,7 +32,6 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 FiftyThirtyTwentyOverview compute50_30_20Overview({
   required List<TransactionEntity> periodTransactions,
   required List<CategoryEntity> categories,
-  required List<AccountEntity> accounts,
   bool hasInvestmentDestination = false,
   FiftyThirtyTwentyTargets targets = FiftyThirtyTwentyTargets.classic,
 }) {
@@ -44,19 +41,13 @@ FiftyThirtyTwentyOverview compute50_30_20Overview({
   final categoriesById = <String, CategoryEntity>{
     for (final c in categories) c.id: c,
   };
-  final accountTypeById = <String, AccountType>{
-    for (final a in accounts) a.id: a.type,
-  };
 
   final income = _sumIncome(settledTransactions, categoriesById);
   final expenseBuckets = _bucketExpenses(
     settledTransactions,
     categoriesById,
   );
-  final savingsAmount = _netSavingsFlow(
-    settledTransactions,
-    accountTypeById,
-  );
+  final savingsAmount = _netSavingsFlow(settledTransactions);
   return FiftyThirtyTwentyOverview(
     income: income,
     needsSpent: expenseBuckets.needs,
@@ -174,48 +165,18 @@ _bucketExpenses(
   );
 }
 
-/// Pairs transfer legs by `linkedTransactionId` and tallies the net flow
-/// `checking → investment`. Every other source/destination combination
-/// is ignored (see `docs/specs/fifty_thirty_twenty.md` §2 rule 4).
+/// Tallies the net flow into the user's carteira: investment cash flows
+/// tagged with an `institutionId` (a single-entry aporte/resgate, not an
+/// account↔account transfer). An aporte — an expense leaving a checking
+/// account into an institution — adds to savings; a resgate coming back
+/// subtracts. See `docs/specs/investing_account_unification.md` §4 rule 7.
 ///
-/// **Pairing detail**: the expense leg carries the source account; the
-/// income leg carries the destination. The pair is established by
-/// matching one leg's id with the other's `linkedTransactionId`. We
-/// process each pair once by keying the lookup on the expense leg.
-double _netSavingsFlow(
-  List<TransactionEntity> txs,
-  Map<String, AccountType> accountTypeById,
-) {
-  final byId = <String, TransactionEntity>{
-    for (final t in txs) t.id: t,
-  };
-
+/// The pre-F8 path — pairing transfer legs and counting `checking →
+/// investment` — was dropped with `AccountType.investment` in F8.6. Brokers
+/// are institutions now, so no account pair can express savings and the
+/// branch was unreachable.
+double _netSavingsFlow(List<TransactionEntity> txs) {
   var net = 0.0;
-  for (final t in txs) {
-    if (!t.isTransfer) continue;
-    if (t.type != TransactionType.expense) continue;
-    // Only walk one side of each pair. The expense leg is the canonical
-    // entry point because it always carries the source account.
-    final mate = byId[t.linkedTransactionId];
-    if (mate == null) continue; // half-pair (other leg outside the window)
-    final srcType = accountTypeById[t.accountId];
-    final dstType = accountTypeById[mate.accountId];
-    if (srcType == null || dstType == null) continue;
-
-    if (srcType == AccountType.checking && dstType == AccountType.investment) {
-      net += t.amount;
-    } else if (srcType == AccountType.investment &&
-        dstType == AccountType.checking) {
-      net -= t.amount;
-    }
-    // checking ↔ checking, investment ↔ investment, anything with credit
-    // card: not savings — ignored.
-  }
-
-  // F8.3: investment cash flows tagged with an institution (a single-entry
-  // aporte/resgate, not an account↔account transfer). An aporte (expense
-  // leaving checking into an institution) adds to savings; a resgate (income
-  // back) subtracts. See docs/specs/investing_account_unification.md.
   for (final t in txs) {
     if (!t.isInvestmentCashFlow) continue;
     if (t.type == TransactionType.expense) {

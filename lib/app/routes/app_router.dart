@@ -42,7 +42,6 @@ import 'package:financo/features/dashboard/presentation/cubit/dashboard_account_
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_targets_cubit.dart';
 import 'package:financo/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:financo/features/dashboard/presentation/pages/planning_page.dart';
-import 'package:financo/features/data_migration/presentation/pages/migration_page.dart';
 import 'package:financo/features/investing/domain/entities/asset.dart';
 import 'package:financo/features/investing/domain/entities/asset_transaction.dart';
 import 'package:financo/features/investing/domain/entities/institution.dart';
@@ -340,11 +339,6 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           ),
         ),
         GoRoute(
-          path: AppRoutes.migration,
-          builder: (context, state) =>
-              const SubPageScope(child: MigrationPage()),
-        ),
-        GoRoute(
           path: AppRoutes.accountDetail,
           builder: (context, state) {
             final id = state.pathParameters['id']!;
@@ -515,10 +509,14 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
           path: AppRoutes.investingOverview,
           builder: (context, state) => const InvestingOverviewPage(),
         ),
+        // The five investing destinations are peers of a navigation group,
+        // not pushed sub-pages: the sidebar reaches them with `go` (which
+        // replaces the stack) and mobile reaches them through the section
+        // strip. Wrapping them in SubPageScope hid the bottom bar and left
+        // mobile with no way back out — see financo_section_tabs.dart.
         GoRoute(
           path: AppRoutes.investingAllocation,
-          builder: (context, state) =>
-              const SubPageScope(child: InvestingAllocationPage()),
+          builder: (context, state) => const InvestingAllocationPage(),
         ),
         GoRoute(
           path: AppRoutes.allocationClassDetail,
@@ -531,17 +529,15 @@ GoRouter createRouter(AuthBloc authBloc) => GoRouter(
         ),
         GoRoute(
           path: AppRoutes.institutions,
-          builder: (context, state) =>
-              const SubPageScope(child: InstitutionsPage()),
+          builder: (context, state) => const InstitutionsPage(),
         ),
         GoRoute(
           path: AppRoutes.assets,
-          builder: (context, state) => const SubPageScope(child: AssetsPage()),
+          builder: (context, state) => const AssetsPage(),
         ),
         GoRoute(
           path: AppRoutes.investingTransactions,
-          builder: (context, state) =>
-              const SubPageScope(child: InvestingTransactionsPage()),
+          builder: (context, state) => const InvestingTransactionsPage(),
         ),
         GoRoute(
           path: AppRoutes.importInvestingAssets,

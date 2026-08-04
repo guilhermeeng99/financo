@@ -217,17 +217,8 @@ class _AddAccountViewState extends State<_AddAccountView> {
                                 label: t.accounts.creditCard,
                                 icon: FontAwesomeIcons.creditCard,
                               ),
-                              FinancoPillToggleOption(
-                                value: AccountType.investment,
-                                label: t.accounts.investmentShort,
-                                icon: FontAwesomeIcons.piggyBank,
-                              ),
                             ],
                           ),
-                          if (state.type == AccountType.investment) ...[
-                            const SizedBox(height: 12),
-                            _InvestmentHint(),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -453,53 +444,6 @@ class _RowSelector extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Inline tip rendered under the type pill when the user picks
-/// "Investment". Investment accounts opt the user into the 50/30/20 card
-/// (transfers from checking to here count as savings), and the disclaimer
-/// makes it explicit that we don't track market yield.
-class _InvestmentHint extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: colors.income.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FaIcon(FontAwesomeIcons.piggyBank, size: 14, color: colors.income),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  t.accounts.investmentDescription,
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: colors.onBackground,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  t.accounts.investmentYieldDisclaimer,
-                  style: context.textTheme.labelSmall?.copyWith(
-                    color: colors.onBackgroundLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

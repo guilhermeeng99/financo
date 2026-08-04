@@ -68,11 +68,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       final children = await _dao.getChildCategories(id);
       if (children.isNotEmpty) {
-        return const Left(
-          ValidationFailure(
-            'Cannot delete a category that has subcategories.',
-          ),
-        );
+        return const Left(CategoryHasSubcategoriesFailure());
       }
       await _remote.deleteCategory(id);
       await _dao.deleteCategory(id);

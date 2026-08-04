@@ -132,6 +132,31 @@ void main() {
       verifyNever(() => masterRepo.listAllUsers());
     });
 
+    blocTest<MasterPanelCubit, MasterPanelState>(
+      'flags busy while the server cascade runs',
+      // Regression: the delete is a multi-second server-side sweep of 12
+      // collections plus Auth. `busy` was emitted but only ever read to
+      // disable the allowlist FAB, so pressing Delete on the users tab looked
+      // like nothing happened. The page now gates an overlay on this flag.
+      setUp: () {
+        stubLoadOk();
+        when(
+          () => masterRepo.deleteUserAsAdmin(any()),
+        ).thenAnswer((_) async => const Right(null));
+      },
+      build: buildCubit,
+      seed: () => const MasterPanelLoaded(users: [], allowedEmails: []),
+      act: (cubit) => cubit.deleteUser('uid-1'),
+      expect: () => [
+        predicate<MasterPanelState>(
+          (state) => state is MasterPanelLoaded && state.busy,
+        ),
+        predicate<MasterPanelState>(
+          (state) => state is MasterPanelLoaded && !state.busy,
+        ),
+      ],
+    );
+
     test('resolves to Right and reloads when the repo accepts', () async {
       stubLoadOk();
       when(

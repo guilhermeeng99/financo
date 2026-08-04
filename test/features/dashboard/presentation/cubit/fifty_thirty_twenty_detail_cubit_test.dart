@@ -1,7 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:financo/core/errors/failures.dart';
-import 'package:financo/features/accounts/domain/entities/account_entity.dart';
 import 'package:financo/features/categories/domain/entities/category_entity.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_history_entry.dart';
 import 'package:financo/features/dashboard/domain/entities/fifty_thirty_twenty_overview.dart';
@@ -11,14 +10,12 @@ import 'package:financo/features/transactions/domain/entities/transaction_entity
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../../harness/factories/account_factory.dart';
 import '../../../../harness/factories/category_factory.dart';
 import '../../../../harness/factories/transaction_factory.dart';
 import '../../../../harness/helpers.dart';
 import '../../../../harness/mocks.dart';
 
 void main() {
-  late MockGetAccountsUseCase getAccounts;
   late MockGetCategoriesUseCase getCategories;
   late MockGetTransactionsUseCase getTransactions;
   late MockGetFiftyThirtyTwentyHistoryUseCase getHistory;
@@ -31,7 +28,6 @@ void main() {
   setUpAll(registerDashboardFallbackValues);
 
   setUp(() {
-    getAccounts = MockGetAccountsUseCase();
     getCategories = MockGetCategoriesUseCase();
     getTransactions = MockGetTransactionsUseCase();
     getHistory = MockGetFiftyThirtyTwentyHistoryUseCase();
@@ -45,22 +41,12 @@ void main() {
   });
 
   FiftyThirtyTwentyDetailCubit buildCubit() => FiftyThirtyTwentyDetailCubit(
-    getAccounts: getAccounts,
     getCategories: getCategories,
     getTransactions: getTransactions,
     getHistory: getHistory,
     getInstitutions: getInstitutions,
     userId: userId,
   );
-
-  void stubAccounts(Either<Failure, List<AccountEntity>> result) {
-    when(
-      () => getAccounts(
-        userId: userId,
-        forceRefresh: any(named: 'forceRefresh'),
-      ),
-    ).thenAnswer((_) async => result);
-  }
 
   void stubCategories(Either<Failure, List<CategoryEntity>> result) {
     when(
@@ -124,7 +110,6 @@ void main() {
       'emits loading then ready with the composed overview, keeping only '
       'paid transactions',
       setUp: () {
-        stubAccounts(Right([AccountFactory.checking()]));
         stubCategories(
           Right([
             CategoryFactory.income(id: 'cat-salary'),
@@ -188,10 +173,9 @@ void main() {
     );
 
     blocTest<FiftyThirtyTwentyDetailCubit, FiftyThirtyTwentyDetailState>(
-      'emits error carrying the failure when the accounts read fails',
+      'emits error carrying the failure when the categories read fails',
       setUp: () {
-        stubAccounts(const Left(ServerFailure('accounts down')));
-        stubCategories(const Right([]));
+        stubCategories(const Left(ServerFailure('categories down')));
         stubTransactions(const Right([]));
         stubHistory(Right(historyEntries));
       },
@@ -212,7 +196,7 @@ void main() {
             .having(
               (s) => s.failure?.message,
               'failure message',
-              'accounts down',
+              'categories down',
             ),
       ],
     );
@@ -220,7 +204,6 @@ void main() {
     blocTest<FiftyThirtyTwentyDetailCubit, FiftyThirtyTwentyDetailState>(
       'surfaces the first failing read when several succeed before it',
       setUp: () {
-        stubAccounts(const Right([]));
         stubCategories(const Right([]));
         stubTransactions(const Left(ServerFailure('tx down')));
         stubHistory(const Left(ServerFailure('history down')));

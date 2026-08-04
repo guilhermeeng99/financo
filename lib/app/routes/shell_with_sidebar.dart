@@ -1,5 +1,7 @@
 import 'package:financo/app/widgets/financo_mobile_nav.dart';
+import 'package:financo/app/widgets/financo_section_tabs.dart';
 import 'package:financo/app/widgets/financo_sidebar.dart';
+import 'package:financo/app/widgets/section_tabs_scope.dart';
 import 'package:financo/app/widgets/sub_page_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -48,12 +50,23 @@ class ShellWithSidebarState extends State<ShellWithSidebar> {
     final isMobile =
         MediaQuery.of(context).size.width < ShellWithSidebar._mobileBreakpoint;
 
+    if (!isMobile) publishSectionTabs(const []);
+
     if (isMobile) {
       return ValueListenableBuilder<int>(
         valueListenable: subPageDepthListenable,
         builder: (context, depth, _) {
           final isOnSubPage = depth > 0;
           final showBottomBar = !isOnSubPage;
+
+          // The section strip is the mobile stand-in for the sidebar's
+          // collapsible sub-menus, so it follows the same rule as the bottom
+          // bar: primary tabs only, never over a pushed sub-page.
+          publishSectionTabs(
+            isOnSubPage
+                ? const []
+                : sectionTabsFor(GoRouterState.of(context).matchedLocation),
+          );
 
           return Scaffold(
             // Lets scrollable content flow behind the floating bottom bar

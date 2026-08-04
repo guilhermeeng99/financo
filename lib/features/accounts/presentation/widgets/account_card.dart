@@ -25,12 +25,10 @@ class AccountCard extends StatelessWidget {
     final isCredit = account.type == AccountType.creditCard;
     final typeLabel = switch (account.type) {
       AccountType.creditCard => t.accounts.creditCard,
-      AccountType.investment => t.accounts.investment,
       AccountType.checking => t.accounts.checking,
     };
     final typeIcon = switch (account.type) {
       AccountType.creditCard => FontAwesomeIcons.creditCard,
-      AccountType.investment => FontAwesomeIcons.piggyBank,
       AccountType.checking => FontAwesomeIcons.buildingColumns,
     };
 
@@ -125,7 +123,10 @@ class _Amount extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          formatCurrency(amount),
+          // The account's own currency, never the BRL default — a Wise
+          // balance in euros was rendering as "R$" here while the dashboard
+          // and the statement got it right (F9.7).
+          formatCurrency(amount, account.currency),
           style: context.textTheme.titleSmall?.copyWith(
             color: colors.onBackground,
             fontWeight: FontWeight.w700,
@@ -179,7 +180,8 @@ class _CreditUsageBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${formatCurrency(used)} / ${formatCurrency(limit)}',
+              '${formatCurrency(used, account.currency)} / '
+              '${formatCurrency(limit, account.currency)}',
               style: context.textTheme.labelSmall?.copyWith(
                 color: colors.onBackgroundLight,
               ),

@@ -70,10 +70,18 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
             }
             final loaded = state as MasterPanelLoaded;
             final currentUid = _currentUid(context);
-            return TabBarView(
+            return Stack(
               children: [
-                _UsersTab(users: loaded.users, currentUid: currentUid),
-                _AllowlistTab(allowedEmails: loaded.allowedEmails),
+                TabBarView(
+                  children: [
+                    _UsersTab(users: loaded.users, currentUid: currentUid),
+                    _AllowlistTab(allowedEmails: loaded.allowedEmails),
+                  ],
+                ),
+                // A user delete is a server-side cascade over 12 collections
+                // plus Auth — several seconds during which nothing on screen
+                // moved, so the action read as "the button did nothing".
+                if (loaded.busy) const _BusyOverlay(),
               ],
             );
           },
@@ -114,6 +122,24 @@ class _MasterPanelPageState extends State<MasterPanelPage> {
     outcome.fold(
       (failure) => context.showSnack(localizedFailure(failure)),
       (_) => context.showSnack(t.masterPanel.addEmailSuccess),
+    );
+  }
+}
+
+/// Blocks the panel while a delete/allowlist write is in flight.
+///
+/// Indeterminate on purpose: the callable returns one result at the end, so
+/// there is no progress to report — only "still working".
+class _BusyOverlay extends StatelessWidget {
+  const _BusyOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: context.appColors.scrim.withValues(alpha: 0.45),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }

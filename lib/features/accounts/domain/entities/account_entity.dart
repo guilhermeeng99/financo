@@ -2,15 +2,14 @@ import 'package:equatable/equatable.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/features/accounts/domain/bank_brand.dart';
 
-/// Persisted as `enum.name` in Firestore + Drift. `investment` is
-/// **deprecated** post-F8: 50/30/20 savings is now driven by
-/// `institutionId`-tagged aporte/resgate cash flows, not by
-/// checking→investment transfers (see
-/// docs/specs/investing_account_unification.md). The value is retired in data
-/// by the F8 migration and kept only so legacy/in-flight docs deserialize
-/// until F8.6 removes it; until then it still behaves like `checking` for any
-/// remaining widget or calculation.
-enum AccountType { checking, creditCard, investment }
+/// Persisted as `enum.name` in Firestore + Drift.
+///
+/// `investment` was removed in F8.6. Brokers are `Institution`s and 50/30/20
+/// savings is driven by `institutionId`-tagged aporte/resgate cash flows (see
+/// docs/specs/investing_account_unification.md). Any stored row that still
+/// says `"investment"` degrades to [checking] through `enumByName` rather
+/// than throwing — that is the whole point of the shared parse helper.
+enum AccountType { checking, creditCard }
 
 /// Supported banks. Persisted as `enum.name` in Firestore + Drift, so
 /// any rename here is a breaking change for existing rows. Add new

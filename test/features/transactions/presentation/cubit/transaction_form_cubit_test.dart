@@ -1017,6 +1017,38 @@ void main() {
         expect(cubit.state.isValid, isTrue);
         addTearDown(cubit.close);
       });
+
+      test('an already-settled row stays editable on a future date', () {
+        // Settling keeps the row on its due date, so a confirmed instalment
+        // due next month is paid *and* future. "No future paid dates" is a
+        // creation rule — invalidating this row would strand it.
+        final future = DateTime.now().add(const Duration(days: 30));
+        final cubit = buildCubit(
+          existing: TransactionFactory.expense(
+            id: 'tx-settled',
+            date: future,
+            dueDate: future,
+          ),
+        );
+
+        expect(cubit.state.wasAlreadySettled, isTrue);
+        expect(cubit.state.isValid, isTrue);
+        addTearDown(cubit.close);
+      });
+
+      test('editing an already-settled row never flips it back to pending', () {
+        // Rule 16: paid cannot revert to pending. The auto-flip that helps
+        // new entries must not fire here.
+        final cubit = buildCubit(
+          existing: TransactionFactory.expense(id: 'tx-settled'),
+        )..updateDate(DateTime.now().add(const Duration(days: 45)));
+
+        expect(
+          cubit.state.settlementStatus,
+          TransactionSettlementStatus.paid,
+        );
+        addTearDown(cubit.close);
+      });
     });
 
     group('amount validation', () {

@@ -192,7 +192,7 @@ void main() {
     });
 
     test(
-      'should return ValidationFailure when category has children',
+      'should return CategoryHasSubcategoriesFailure when it has children',
       () async {
         when(
           () => mockDao.getChildCategories(any()),
@@ -204,8 +204,8 @@ void main() {
 
         expect(result, isA<Left<Failure, void>>());
         result.fold(
-          (failure) => expect(failure, isA<ValidationFailure>()),
-          (_) => fail('Expected ValidationFailure'),
+          (failure) => expect(failure, isA<CategoryHasSubcategoriesFailure>()),
+          (_) => fail('Expected CategoryHasSubcategoriesFailure'),
         );
         verifyNever(() => mockRemote.deleteCategory(any()));
         verifyNever(() => mockDao.deleteCategory(any()));

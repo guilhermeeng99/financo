@@ -19,7 +19,10 @@
     "ai": "The assistant ran into a problem. Please try again.",
     "accessDenied": "Access is restricted for this account.",
     "emptyName": "The name cannot be empty.",
-    "negativeAmount": "The amount cannot be negative."
+    "negativeAmount": "The amount cannot be negative.",
+    "transferNotSettleable": "A transfer can't be scheduled as a payable.",
+    "targetsMustSumTo100": "The percentages must add up to 100% and can't be negative.",
+    "categoryHasSubcategories": "Delete or move the subcategories before deleting this category."
   },
   "investing": {
     "errors": {
@@ -449,11 +452,7 @@
     "editAccount": "Edit Account",
     "checking": "Checking Account",
     "creditCard": "Credit Card",
-    "investment": "Savings Account",
     "checkingShort": "Checking",
-    "investmentShort": "Savings",
-    "investmentDescription": "Dedicated account for contributions. Shows up as 'investment' on transfers and feeds the 50/30/20 card.",
-    "investmentYieldDisclaimer": "Balance reflects only your contributions (principal). Market yield is not tracked.",
     "name": "Account Nickname",
     "nameHint": "e.g. Nubank Gui",
     "bank": "Bank",
@@ -567,7 +566,7 @@
     "bucketNeeds": "Need",
     "bucketWants": "Want",
     "bucketUnclassified": "Unclassified",
-    "bucketHelp": "Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is handled by transfers to investment accounts.",
+    "bucketHelp": "Needs cover essentials (rent, groceries, transport). Wants cover discretionary (leisure, dining out). Savings is counted from contributions to your brokers, not from a category.",
     "pickParent": "Parent category",
     "searchHint": "Search categories",
     "searchNoResults": "No categories match your search.",

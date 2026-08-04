@@ -136,9 +136,11 @@ void main() {
         force: true,
       );
 
-      final captured = verify(
-        () => engine.refreshNetwork(captureAny(), any()),
-      ).captured.single as List<Asset>;
+      final captured =
+          verify(
+                () => engine.refreshNetwork(captureAny(), any()),
+              ).captured.single
+              as List<Asset>;
       expect(captured, [held]);
     });
 
@@ -149,9 +151,11 @@ void main() {
         force: false,
       );
 
-      final captured = verify(
-        () => engine.quotesAreFresh(captureAny()),
-      ).captured.single as Set<String>;
+      final captured =
+          verify(
+                () => engine.quotesAreFresh(captureAny()),
+              ).captured.single
+              as Set<String>;
       expect(captured, {held.id});
     });
 

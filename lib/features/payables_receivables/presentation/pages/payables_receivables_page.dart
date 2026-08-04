@@ -12,6 +12,7 @@ import 'package:financo/app/widgets/financo_section_header.dart';
 import 'package:financo/app/widgets/lifted_fab.dart';
 import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/responsive_layout.dart';
+import 'package:financo/app/widgets/settle_button.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/errors/failures.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
@@ -28,9 +29,9 @@ import 'package:financo/features/dashboard/presentation/bloc/dashboard_event_sta
 import 'package:financo/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:financo/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:financo/features/transactions/domain/usecases/get_transactions_usecase.dart';
-import 'package:financo/features/transactions/domain/usecases/settle_transaction_usecase.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:financo/features/transactions/presentation/bloc/transactions_event_state.dart';
+import 'package:financo/features/transactions/presentation/settle_and_refresh.dart';
 import 'package:financo/gen/i18n/strings.g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -144,20 +145,9 @@ class _PayablesReceivablesPageState extends State<PayablesReceivablesPage> {
   }
 
   Future<void> _settle(TransactionEntity transaction) async {
-    final result = await GetIt.I<SettleTransactionUseCase>()(transaction);
-    if (!mounted) return;
-    result.fold(
-      (failure) => context.showSnack(localizedFailure(failure)),
-      (_) {
-        context.showSnack(
-          transaction.isReceivable
-              ? t.payablesReceivables.transactionReceived
-              : t.payablesReceivables.transactionPaid,
-        );
-        _refreshDependents();
-        _refresh(forceRefresh: true);
-      },
-    );
+    final settled = await settleAndRefresh(context, transaction);
+    if (!settled || !mounted) return;
+    _refresh(forceRefresh: true);
   }
 
   Future<void> _delete(TransactionEntity transaction) async {
@@ -286,7 +276,6 @@ class _PayablesReceivablesContent extends StatelessWidget {
         .watch<AccountsCubit>()
         .state
         .accountsOrEmpty
-        .where((account) => account.type != AccountType.investment)
         .map((account) => account.id)
         .toSet();
     final effectiveSelectedAccountIds = selectedAccountIds == null

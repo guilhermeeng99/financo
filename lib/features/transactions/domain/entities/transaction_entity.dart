@@ -76,40 +76,6 @@ class TransactionEntity extends Equatable {
   /// True when this is an investment aporte/resgate (cash ↔ institution).
   bool get isInvestmentCashFlow => institutionId != null;
 
-  /// Recasts this transfer leg as a single-entry investment cash flow tagged to
-  /// [institutionId]: the account↔account [linkedTransactionId] is cleared and
-  /// [institutionId] is set. Used by the F8.5 migration when an investment
-  /// account is folded into an institution — `copyWith` can't clear a nullable
-  /// field, so this rebuilds the entity. See
-  /// `docs/specs/investing_account_unification.md` §6.
-  TransactionEntity asInstitutionCashFlow(String institutionId) {
-    return TransactionEntity(
-      id: id,
-      userId: userId,
-      accountId: accountId,
-      categoryId: categoryId,
-      type: type,
-      amount: amount,
-      description: description,
-      date: date,
-      settlementStatus: settlementStatus,
-      dueDate: dueDate,
-      settledAt: settledAt,
-      recurrence: recurrence,
-      recurrenceGroupId: recurrenceGroupId,
-      recurrenceIntervalMonths: recurrenceIntervalMonths,
-      recurrenceIndex: recurrenceIndex,
-      recurrenceTotal: recurrenceTotal,
-      recurrenceBaseDescription: recurrenceBaseDescription,
-      recurrenceEndDate: recurrenceEndDate,
-      notes: notes,
-      institutionId: institutionId,
-      linkedInvestmentTransactionId: linkedInvestmentTransactionId,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
-
   bool get isRecurring => recurrence != TransactionRecurrence.single;
   bool get isPending => settlementStatus == TransactionSettlementStatus.pending;
   bool get isPaid => settlementStatus == TransactionSettlementStatus.paid;

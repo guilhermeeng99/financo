@@ -7,7 +7,6 @@ import 'package:financo/app/widgets/loading_shimmer.dart';
 import 'package:financo/app/widgets/responsive_layout.dart';
 import 'package:financo/core/date_filter/date_filter_cubit.dart';
 import 'package:financo/core/extensions/context_user_extensions.dart';
-import 'package:financo/features/accounts/domain/usecases/get_accounts_usecase.dart';
 import 'package:financo/features/categories/domain/usecases/get_categories_usecase.dart';
 import 'package:financo/features/dashboard/domain/usecases/get_fifty_thirty_twenty_history_usecase.dart';
 import 'package:financo/features/dashboard/presentation/cubit/fifty_thirty_twenty_detail_cubit.dart';
@@ -46,7 +45,6 @@ class FiftyThirtyTwentyPage extends StatelessWidget {
     final userId = context.currentUserId;
     return BlocProvider(
       create: (_) => FiftyThirtyTwentyDetailCubit(
-        getAccounts: GetIt.I<GetAccountsUseCase>(),
         getCategories: GetIt.I<GetCategoriesUseCase>(),
         getTransactions: GetIt.I<GetTransactionsUseCase>(),
         getHistory: GetIt.I<GetFiftyThirtyTwentyHistoryUseCase>(),

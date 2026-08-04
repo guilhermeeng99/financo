@@ -69,9 +69,11 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
   }) async {
     try {
       var query = _collection.where('userId', isEqualTo: userId);
-      final dateField = dueStartDate != null || dueEndDate != null
-          ? 'dueDate'
-          : 'date';
+      final dateField = _orderField(
+        hasDueRange: dueStartDate != null || dueEndDate != null,
+        hasDateRange: startDate != null || endDate != null,
+        isSequenceLookup: recurrenceGroupId != null,
+      );
 
       if (startDate != null) {
         query = query.where(
@@ -303,4 +305,23 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
       throw const ServerException('Failed to reassign transactions.');
     }
   }
+}
+
+/// Picks the date field `getTransactions` orders by.
+///
+/// Firestore wants a composite index for every `(equalities…, orderBy)`
+/// shape, and the first `orderBy` must be the field carrying an inequality.
+/// A sequence lookup (`recurrenceGroupId`, no `date` range — what the
+/// edit/delete-sequence use cases run) therefore orders by `dueDate` so it
+/// rides the declared `userId + recurrenceGroupId + dueDate` index; ordering
+/// it by `date` asked for an index that does not exist and came back as
+/// `FAILED_PRECONDITION`. See docs/specs/transactions.md "Query ordering".
+String _orderField({
+  required bool hasDueRange,
+  required bool hasDateRange,
+  required bool isSequenceLookup,
+}) {
+  if (hasDueRange) return 'dueDate';
+  if (isSequenceLookup && !hasDateRange) return 'dueDate';
+  return 'date';
 }

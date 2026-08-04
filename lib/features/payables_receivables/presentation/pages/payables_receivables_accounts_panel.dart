@@ -21,7 +21,6 @@ class _AccountsTotalsCard extends StatelessWidget {
         .watch<AccountsCubit>()
         .state
         .accountsOrEmpty
-        .where((account) => account.type != AccountType.investment)
         .toList();
     final accountIds = accounts.map((account) => account.id).toList();
     final rows = accounts

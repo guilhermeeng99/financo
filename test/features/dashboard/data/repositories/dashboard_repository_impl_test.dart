@@ -283,22 +283,20 @@ void main() {
           name: 'Nubank',
           initialBalance: 0,
         ),
-        AccountFactory.investment(
-          id: 'acc-inv',
-          name: 'XP',
-          initialBalance: 0,
-        ),
       ];
 
       // March: income 5000, needs 2500 (cat-needs), wants 1500 (cat-wants),
-      // savings 1000 (checking → investment transfer).
-      final transfer = TransactionFactory.transfer(
-        sourceAccountId: 'acc-chk',
-        destinationAccountId: 'acc-inv',
+      // savings 1000 — an aporte, i.e. an expense leaving checking tagged
+      // with an institution. Since F8.6 that is the only savings path; the
+      // old checking→investment transfer went away with the account type.
+      final aporte = TransactionFactory.expense(
+        id: 'tx-aporte',
+        accountId: 'acc-chk',
+        categoryId: '',
         amount: 1000,
         description: 'Aporte',
         date: DateTime(2024, 3, 15),
-      );
+      ).copyWith(institutionId: 'inst-1');
       final transactions = [
         TransactionFactory.income(
           id: 'tx-income',
@@ -324,8 +322,7 @@ void main() {
           description: 'Lazer',
           date: DateTime(2024, 3, 12),
         ),
-        transfer.expense,
-        transfer.income,
+        aporte,
       ];
 
       stubAccounts(accounts);
@@ -357,8 +354,8 @@ void main() {
           expect(overview.needsSpent, 2500);
           expect(overview.wantsSpent, 1500);
           expect(overview.savingsAmount, 1000);
-          // No institutions stubbed — the legacy `acc-inv` account must not
-          // stand in for one (F8 retired that account type).
+          // The aporte still counts even with no institution stubbed on the
+          // repository: the flag drives advice copy, not the arithmetic.
           expect(overview.hasInvestmentDestination, isFalse);
           expect(overview.unclassifiedSpent, 0);
         },

@@ -1,5 +1,6 @@
 import 'package:financo/app/theme/app_colors.dart';
 import 'package:financo/app/widgets/amount_text.dart';
+import 'package:financo/app/widgets/settle_button.dart';
 import 'package:financo/core/extensions/context_extensions.dart';
 import 'package:financo/core/money/currency.dart';
 import 'package:financo/core/utils/date_helpers.dart';
@@ -24,6 +25,7 @@ class TransactionTile extends StatelessWidget {
     this.showSettlementStatus = false,
     this.currency = Currency.brl,
     this.onTap,
+    this.onSettle,
     super.key,
   });
 
@@ -45,6 +47,12 @@ class TransactionTile extends StatelessWidget {
   final bool showSettlementStatus;
 
   final VoidCallback? onTap;
+
+  /// Settles the row in one tap. When supplied, a [SettleButton] is appended
+  /// to rows that can actually be settled — pending, non-transfer (transfers
+  /// are rejected by `SettleTransactionUseCase`). Leave null on pages with no
+  /// settle action, like the transactions list.
+  final VoidCallback? onSettle;
 
   @override
   Widget build(BuildContext context) {
@@ -109,12 +117,22 @@ class TransactionTile extends StatelessWidget {
                 fontSize: 15,
                 currency: currency,
               ),
+              if (_canSettle) ...[
+                const SizedBox(width: 8),
+                SettleButton(
+                  transaction: transaction,
+                  onPressed: onSettle!,
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
+
+  bool get _canSettle =>
+      onSettle != null && transaction.isPending && !transaction.isTransfer;
 
   String _subtitleFor(TransactionEntity tx) {
     final date = formatDayMonth(tx.isPending ? tx.dueDate : tx.date);
